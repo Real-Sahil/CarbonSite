@@ -8,6 +8,7 @@ import type { FieldSubmissionStatus } from "@prisma/client";
 import { SubmissionsTable } from "./submissions-table";
 import { ocrFieldChecks } from "@/lib/field-submissions/ocr-confidence";
 import { ClipboardList } from "lucide-react";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
@@ -31,6 +32,7 @@ export default async function SubmissionsPage({
   searchParams,
 }: SubmissionsPageProps) {
   const { orgId } = await params;
+  const L = await getOrgLocale(orgId);
   const { status: rawStatus, limit: rawLimit } = await searchParams;
 
   const statusFilter = STATUS_FILTERS.some((f) => f.value === rawStatus)
@@ -188,7 +190,7 @@ export default async function SubmissionsPage({
                 >
                   {filter.label}
                   <span className={`ml-1.5 ${active ? "text-[#FED7AA]" : "text-[#6B7280]"}`}>
-                    {count.toLocaleString("en-GB")}
+                    {count.toLocaleString(L)}
                   </span>
                 </Link>
               );
@@ -227,11 +229,11 @@ export default async function SubmissionsPage({
               href={filterHref(statusFilter, limit + PAGE_SIZE)}
               className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed] transition-colors"
             >
-              Show more ({initialSubmissions.length.toLocaleString("en-GB")} of{" "}
+              Show more ({initialSubmissions.length.toLocaleString(L)} of{" "}
               {(statusFilter === "all"
                 ? total
                 : statusCounts.get(statusFilter) ?? 0
-              ).toLocaleString("en-GB")}
+              ).toLocaleString(L)}
               )
             </Link>
           </div>

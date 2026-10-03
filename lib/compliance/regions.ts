@@ -4,6 +4,8 @@
 // company with a site in Dublin still sees the EU. Regions with no rules loaded
 // say so instead of showing nothing.
 
+import { countryIso2 } from "@/lib/calculation/geography";
+
 export type Region = "uk" | "eu" | "uae";
 
 const EU_27 = new Set([
@@ -13,7 +15,7 @@ const EU_27 = new Set([
 
 /** The region whose rules are loaded for an ISO 3166-1 alpha-2 country, if any. */
 export function regionOf(country: string | null | undefined): Region | null {
-  const c = (country ?? "").trim().toUpperCase();
+  const c = countryIso2(country) ?? "";
   if (c === "GB") return "uk";
   if (c === "AE") return "uae";
   return EU_27.has(c) ? "eu" : null;
@@ -27,8 +29,9 @@ export function relevantRegions(
   const regions = new Set<Region>();
   const unloaded = new Set<string>();
   for (const raw of [hqCountry, ...facilityCountries]) {
-    const c = (raw ?? "").trim().toUpperCase();
-    if (!/^[A-Z]{2}$/.test(c)) continue;
+    // Facilities hold whatever was typed ("UK", "United Kingdom", "de").
+    const c = countryIso2(raw);
+    if (!c) continue;
     const r = regionOf(c);
     if (r) regions.add(r);
     else unloaded.add(c);

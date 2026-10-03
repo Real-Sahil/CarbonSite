@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     const { orgId, caseStudyId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const body = caseStudyBody.parse(await req.json());
-    const bad = await orgRefsError(orgId, { contractId: body.contractId });
+    const bad = await orgRefsError(orgId, { contractId: body.contractId, evidenceFileId: body.photoEvidenceFileId });
     if (bad) return bad;
 
     const found = await prisma.caseStudy.updateMany({ where: { id: caseStudyId, organizationId: orgId }, data: body });

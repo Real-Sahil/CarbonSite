@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, ChevronRight, FileText, Loader2 } from "lucide-react";
 import { EVIDENCE_TIER_LABEL, EVIDENCE_TIER_ORDER, type EvidenceTier, type TierSplit } from "@/lib/data-quality/evidence-tier";
+import { useOrgLocale } from "@/components/org/org-locale";
 
 type Category = { id: string; code: string; name: string; scope: number; kgCo2e: number; recordCount: number };
 type Item = {
@@ -36,7 +37,6 @@ type Lineage = {
   records: { categoryId: string; nextCursor: string | null; items: Item[] } | null;
 };
 
-const t = (kg: number) => (kg / 1000).toLocaleString("en-GB", { maximumFractionDigits: 2 });
 const TIER_BAR: Record<EvidenceTier, string> = { verified: "bg-emerald-500", partial: "bg-amber-400", estimated: "bg-slate-300" };
 const TIER_CHIP: Record<EvidenceTier, string> = {
   verified: "border-emerald-200 bg-emerald-50 text-emerald-800",
@@ -45,6 +45,8 @@ const TIER_CHIP: Record<EvidenceTier, string> = {
 };
 
 export default function LineagePage() {
+  const locale = useOrgLocale();
+  const t = (kg: number) => (kg / 1000).toLocaleString(locale, { maximumFractionDigits: 2 });
   const { orgId } = useParams<{ orgId: string }>();
   const search = useSearchParams();
   const router = useRouter();
@@ -189,7 +191,7 @@ export default function LineagePage() {
                 <dt className="text-sm text-[#374151]">{EVIDENCE_TIER_LABEL[k]}</dt>
                 <dd className="ml-auto text-sm tabular-nums text-[#111827]">
                   {data.tiers![k].percent.toFixed(0)}%
-                  <span className="ml-1 text-xs text-[#6B7280]">{data.tiers![k].records.toLocaleString("en-GB")} records</span>
+                  <span className="ml-1 text-xs text-[#6B7280]">{data.tiers![k].records.toLocaleString(locale)} records</span>
                 </dd>
               </div>
             ))}
@@ -224,7 +226,7 @@ export default function LineagePage() {
                     </td>
                     <td className="py-2.5 text-right tabular-nums">{t(c.kgCo2e)}</td>
                     <td className="py-2.5 text-right tabular-nums text-[#6B7280]">{totalKg > 0 ? `${((c.kgCo2e / totalKg) * 100).toFixed(1)}%` : "-"}</td>
-                    <td className="py-2.5 pr-4 text-right tabular-nums">{c.recordCount.toLocaleString("en-GB")}</td>
+                    <td className="py-2.5 pr-4 text-right tabular-nums">{c.recordCount.toLocaleString(locale)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -235,7 +237,7 @@ export default function LineagePage() {
         <section aria-labelledby="recs" className="flex flex-col gap-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 id="recs" className="text-sm font-semibold text-[#111827]">
-              {selected.name}: {t(selected.kgCo2e)} tCO₂e from {selected.recordCount.toLocaleString("en-GB")} records, largest first
+              {selected.name}: {t(selected.kgCo2e)} tCO₂e from {selected.recordCount.toLocaleString(locale)} records, largest first
             </h2>
             <button type="button" onClick={() => go(null)} className="text-xs text-[#374151] underline underline-offset-2">
               All categories
@@ -249,7 +251,7 @@ export default function LineagePage() {
                   <div>
                     <p className="text-sm font-medium text-[#111827]">{it.record.description ?? "Activity record"}</p>
                     <p className="text-xs text-[#6B7280]">
-                      {new Date(it.record.activityDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                      {new Date(it.record.activityDate).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}
                       {it.record.facility ? `, ${it.record.facility}` : ""}. {it.record.source}
                     </p>
                   </div>
@@ -261,8 +263,8 @@ export default function LineagePage() {
                   </div>
                 </div>
                 <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-2">
-                  <div className="flex gap-2"><dt className="text-[#6B7280]">Activity</dt><dd className="tabular-nums">{it.record.amount.toLocaleString("en-GB")} {it.record.unit} ({it.normalized})</dd></div>
-                  <div className="flex gap-2"><dt className="text-[#6B7280]">Factor</dt><dd>{it.factorValue != null ? it.factorValue.toLocaleString("en-GB", { maximumSignificantDigits: 6 }) : "-"} from {it.factorSource}</dd></div>
+                  <div className="flex gap-2"><dt className="text-[#6B7280]">Activity</dt><dd className="tabular-nums">{it.record.amount.toLocaleString(locale)} {it.record.unit} ({it.normalized})</dd></div>
+                  <div className="flex gap-2"><dt className="text-[#6B7280]">Factor</dt><dd>{it.factorValue != null ? it.factorValue.toLocaleString(locale, { maximumSignificantDigits: 6 }) : "-"} from {it.factorSource}</dd></div>
                   <div className="flex gap-2 sm:col-span-2"><dt className="text-[#6B7280]">Formula</dt><dd className="font-mono break-all">{it.formula}</dd></div>
                   {it.selectionReason ? <div className="flex gap-2 sm:col-span-2"><dt className="text-[#6B7280]">Why this factor</dt><dd>{it.selectionReason}</dd></div> : null}
                   {it.warnings.length ? <div className="flex gap-2 sm:col-span-2"><dt className="text-amber-700">Warnings</dt><dd className="text-amber-800">{it.warnings.join(" ")}</dd></div> : null}

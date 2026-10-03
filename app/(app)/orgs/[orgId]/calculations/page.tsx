@@ -27,6 +27,7 @@ import { RetryCalculationButton } from "./retry-button";
 import { CancelRunButton } from "./cancel-run-button";
 import { CalculationRunContinuation } from "./calculation-run-continuation";
 import { CalculationControls } from "@/app/(app)/orgs/[orgId]/dashboard/calculation-controls";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface CalculationsPageProps {
   params: Promise<{ orgId: string }>;
@@ -63,9 +64,9 @@ function statusConfig(status: string) {
   }
 }
 
-function formatTimestamp(value: Date | null): string {
+function formatTimestamp(locale: string, value: Date | null): string {
   if (!value) return "-";
-  return value.toLocaleString("en-GB", {
+  return value.toLocaleString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -85,6 +86,7 @@ function formatDuration(start: Date | null, end: Date | null): string {
 
 export default async function CalculationsPage({ params }: CalculationsPageProps) {
   const { orgId } = await params;
+  const L = await getOrgLocale(orgId);
 
   let role = "viewer";
   try {
@@ -341,7 +343,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                             {run.triggeredBy ? (run.triggeredBy.name ?? run.triggeredBy.email) : "System"}
                           </TableCell>
                           <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
-                            {formatTimestamp(run.startedAt)}
+                            {formatTimestamp(L, run.startedAt)}
                           </TableCell>
                           <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
                             {run.status === "running"
@@ -351,8 +353,8 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
                           </TableCell>
                           <TableCell className="text-sm text-[#6B7280] py-3.5 text-right tabular-nums">
                             {run.status === "running" && run.totalRecordCount != null
-                              ? `${run.processedRecordCount.toLocaleString("en-GB")} / ${run.totalRecordCount.toLocaleString("en-GB")}`
-                              : run._count.calculations.toLocaleString("en-GB")}
+                              ? `${run.processedRecordCount.toLocaleString(L)} / ${run.totalRecordCount.toLocaleString(L)}`
+                              : run._count.calculations.toLocaleString(L)}
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
                             {run.status === "succeeded" && (

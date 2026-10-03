@@ -12,6 +12,7 @@ const data = (over: Partial<NoticeboardData> = {}, c: object = {}): NoticeboardD
   pack: { snapshot: { version: 2, periodLabel: "FY2025" } } as never,
   contract: contract(c) as never,
   caseStudies: [],
+  policies: [],
   format: { locale: "en-GB", currency: "GBP" },
   ...over,
 });
@@ -60,5 +61,35 @@ describe("renderSiteNoticeboardHtml", () => {
     const html = renderSiteNoticeboardHtml(data());
     expect(html).not.toContain("What we are doing on this project");
     expect(html).toContain("Riverside &lt;Phase 2&gt;");
+  });
+});
+
+import { noticeboardPolicies } from "@/lib/case-studies";
+
+describe("case study photo", () => {
+  it("prints the photo on its card and leaves the card plain without one", () => {
+    const withPhoto = renderSiteNoticeboardHtml(data({ caseStudies: [{ ...study, photoDataUri: "data:image/png;base64,AAAA" }] }));
+    expect(withPhoto).toContain('<img class="photo" src="data:image/png;base64,AAAA"');
+    expect(renderSiteNoticeboardHtml(data({ caseStudies: [study] }))).not.toContain("<img");
+  });
+});
+
+describe("noticeboard policy statement", () => {
+  const pol = (o: Partial<Parameters<typeof noticeboardPolicies>[0][number]> = {}) => ({
+    title: "Environmental policy", category: null, body: "We will cut waste.", version: 1, status: "approved", approvedOn: null, ...o,
+  });
+  it("prints only approved environmental policies with text, highest version, never an internal one", () => {
+    const out = noticeboardPolicies([
+      pol(), pol({ version: 3, body: "Version three." }), pol({ title: "Information security policy", body: "Secret." }),
+      pol({ title: "Draft carbon policy", status: "draft" }), pol({ title: "Energy policy", body: "  " }),
+      pol({ title: "Quality manual", category: "Climate and quality" }),
+    ]);
+    expect(out.map((p) => `${p.title} v${p.version}`)).toEqual(["Environmental policy v3", "Quality manual v1"]);
+  });
+  it("shows the policy on the board with its version, and nothing when there is none", () => {
+    const withPolicy = renderSiteNoticeboardHtml(data({ policies: [{ title: "Environmental policy", version: 3, approvedOn: new Date("2026-01-05"), body: "We will cut waste." }] }));
+    expect(withPolicy).toContain("Our policy");
+    expect(withPolicy).toContain("Version 3, approved 5 January 2026");
+    expect(renderSiteNoticeboardHtml(data())).not.toContain("Our policy");
   });
 });

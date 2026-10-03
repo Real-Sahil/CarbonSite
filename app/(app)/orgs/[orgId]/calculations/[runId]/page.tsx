@@ -24,6 +24,7 @@ import { ArrowLeft } from "lucide-react";
 import { ScopeDonut } from "@/components/charts/scope-donut";
 import { CategoryBar } from "@/components/charts/category-bar";
 import { PublishSnapshotButton } from "./publish-snapshot-button";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface CalculationRunPageProps {
   params: Promise<{ orgId: string; runId: string }>;
@@ -43,9 +44,9 @@ const STATUS_CLASSES: Record<string, string> = {
   failed: "bg-red-100 text-red-700 border-transparent",
 };
 
-function formatTimestamp(value: Date | null): string {
+function formatTimestamp(locale: string, value: Date | null): string {
   if (!value) return "Not yet";
-  return value.toLocaleString("en-GB", {
+  return value.toLocaleString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -54,19 +55,20 @@ function formatTimestamp(value: Date | null): string {
   });
 }
 
-function formatTonnes(kg: number): string {
-  return `${(kg / 1000).toLocaleString("en-GB", {
+function formatTonnes(locale: string, kg: number): string {
+  return `${(kg / 1000).toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })} tCO₂e`;
 }
 
-function formatAmount(value: unknown, unit: string): string {
-  return `${Number(value).toLocaleString("en-GB", { maximumFractionDigits: 3 })} ${unit}`;
+function formatAmount(locale: string, value: unknown, unit: string): string {
+  return `${Number(value).toLocaleString(locale, { maximumFractionDigits: 3 })} ${unit}`;
 }
 
 export default async function CalculationRunPage({ params }: CalculationRunPageProps) {
   const { orgId, runId } = await params;
+  const L = await getOrgLocale(orgId);
 
   try {
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
@@ -260,13 +262,13 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
       <Card className="mb-6">
         <CardContent className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-5">
           <MetaItem label="Triggered by" value={run.triggeredBy ? (run.triggeredBy.name ?? run.triggeredBy.email) : "System (scheduled)"} />
-          <MetaItem label="Started" value={formatTimestamp(run.startedAt)} />
-          <MetaItem label="Finished" value={formatTimestamp(run.finishedAt)} />
+          <MetaItem label="Started" value={formatTimestamp(L, run.startedAt)} />
+          <MetaItem label="Finished" value={formatTimestamp(L, run.finishedAt)} />
           <MetaItem
             label="Calculations"
-            value={run._count.calculations.toLocaleString("en-GB")}
+            value={run._count.calculations.toLocaleString(L)}
           />
-          <MetaItem label="Total footprint" value={formatTonnes(totalKg)} />
+          <MetaItem label="Total footprint" value={formatTonnes(L, totalKg)} />
         </CardContent>
       </Card>
 
@@ -285,7 +287,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                 <li key={w.warning} className="flex flex-col gap-1 py-2 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-6">
                   <span className="text-slate-800">{w.warning}</span>
                   <span className="shrink-0 tabular-nums text-slate-500">
-                    {Number(w.records).toLocaleString("en-GB")} record{Number(w.records) === 1 ? "" : "s"} · {formatTonnes(w.kg ?? 0)}
+                    {Number(w.records).toLocaleString(L)} record{Number(w.records) === 1 ? "" : "s"} · {formatTonnes(L, w.kg ?? 0)}
                   </span>
                 </li>
               ))}
@@ -310,11 +312,11 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                 Monte Carlo 95% interval
               </p>
               <p className="mt-1 text-sm font-medium text-slate-900">
-                {formatTonnes(Number(uncertainty.monteCarloP2_5))} to{" "}
-                {formatTonnes(Number(uncertainty.monteCarloP97_5))}
+                {formatTonnes(L, Number(uncertainty.monteCarloP2_5))} to{" "}
+                {formatTonnes(L, Number(uncertainty.monteCarloP97_5))}
               </p>
               <p className="mt-1 text-xs text-slate-500">
-                {uncertainty.iterations.toLocaleString("en-GB")} simulated draws, seed{" "}
+                {uncertainty.iterations.toLocaleString(L)} simulated draws, seed{" "}
                 {uncertainty.seed}
               </p>
             </div>
@@ -323,8 +325,8 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                 Naive linear summation would claim
               </p>
               <p className="mt-1 text-sm font-medium text-slate-900">
-                {formatTonnes(Number(uncertainty.naiveIntervalLower))} to{" "}
-                {formatTonnes(Number(uncertainty.naiveIntervalUpper))}
+                {formatTonnes(L, Number(uncertainty.naiveIntervalLower))} to{" "}
+                {formatTonnes(L, Number(uncertainty.naiveIntervalUpper))}
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 {(() => {
@@ -334,7 +336,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                     Number(uncertainty.monteCarloP97_5) - Number(uncertainty.monteCarloP2_5);
                   const tighterBy = naiveWidth > 0 ? (1 - mcWidth / naiveWidth) * 100 : 0;
                   return tighterBy > 0
-                    ? `Monte Carlo interval is ${tighterBy.toFixed(0)}% tighter, capturing diversification across ${uncertainty.recordCount.toLocaleString("en-GB")} independent records.`
+                    ? `Monte Carlo interval is ${tighterBy.toFixed(0)}% tighter, capturing diversification across ${uncertainty.recordCount.toLocaleString(L)} independent records.`
                     : "No diversification gain for this record set.";
                 })()}
               </p>
@@ -344,7 +346,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                 Biogenic CO2 (memo item)
               </p>
               <p className="mt-1 text-sm font-medium text-slate-900">
-                {formatTonnes(Number(biogenicAgg._sum.biogenicCo2e ?? 0))}
+                {formatTonnes(L, Number(biogenicAgg._sum.biogenicCo2e ?? 0))}
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 {biogenicAgg._count.biogenicCo2e} record
@@ -442,7 +444,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
           <CardTitle className="text-base">
             Largest calculations{" "}
             <span className="text-sm font-normal text-slate-500">
-              (top {largestCalculations.length} of {run._count.calculations.toLocaleString("en-GB")})
+              (top {largestCalculations.length} of {run._count.calculations.toLocaleString(L)})
             </span>
           </CardTitle>
           <CardDescription>
@@ -479,10 +481,10 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                         "Activity record"}
                     </TableCell>
                     <TableCell className="text-slate-600 whitespace-nowrap">
-                      {formatAmount(calc.originalAmount, calc.originalUnit)}
+                      {formatAmount(L, calc.originalAmount, calc.originalUnit)}
                     </TableCell>
                     <TableCell className="text-slate-600 whitespace-nowrap">
-                      {formatAmount(calc.normalizedAmount, calc.normalizedUnit)}
+                      {formatAmount(L, calc.normalizedAmount, calc.normalizedUnit)}
                     </TableCell>
                     <TableCell className="text-slate-600 whitespace-nowrap">
                       {calc.factorLibraryVersion}
@@ -494,7 +496,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                       {calc.formula}
                     </TableCell>
                     <TableCell className="text-right text-slate-900 font-medium whitespace-nowrap">
-                      {formatTonnes(Number(calc.totalCo2e))}
+                      {formatTonnes(L, Number(calc.totalCo2e))}
                     </TableCell>
                   </TableRow>
                 ))}

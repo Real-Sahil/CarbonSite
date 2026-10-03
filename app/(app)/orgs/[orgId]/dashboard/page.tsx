@@ -63,29 +63,31 @@ import { hasFeature } from "@/lib/billing/limits";
 import { OnboardingChecklist } from "./onboarding-checklist";
 import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
+import { orgFormat } from "@/lib/i18n/org-format";
+import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
+import { countryOf } from "@/lib/i18n/countries";
 import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from "@/lib/dashboard/page-data";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string }>;
 }
 
-function formatKgCo2e(value: unknown): string {
+function formatKgCo2e(locale: string, value: unknown): string {
   const numeric = Number(value ?? 0);
   if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO₂e";
-  if (numeric >= 1000) return `${(numeric / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO₂e`;
-  return `${numeric.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kgCO₂e`;
+  if (numeric >= 1000) return `${(numeric / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO₂e`;
+  return `${numeric.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kgCO₂e`;
 }
 
 
-function formatCurrency(value: unknown, currency = "GBP"): string {
+function formatCurrency(locale: string, value: unknown, currency = "GBP"): string {
   const numeric = Number(value ?? 0);
-  if (!Number.isFinite(numeric) || numeric === 0) return "£0";
-  return new Intl.NumberFormat("en-GB", {
+  return new Intl.NumberFormat(locale, {
     currency,
     maximumFractionDigits: 0,
     style: "currency",
-  }).format(numeric);
+  }).format(Number.isFinite(numeric) ? numeric : 0);
 }
 
 function formatPercent(complete: number, total: number): string {
@@ -96,7 +98,7 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId, contractId: selectedContractId } = await searchParams;
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry } = await searchParams;
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
   let dashAuthErr: AuthError | null = null;
@@ -146,7 +148,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         : Promise.resolve(null),
       prisma.organization.findUnique({
         where: { id: orgId },
-        select: { name: true, industry: true, hqCountry: true, plan: true, isPilot: true },
+        select: { name: true, industry: true, hqCountry: true, reportingCurrency: true, plan: true, isPilot: true },
       }).catch(onLoadFailure(() => null)),
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
@@ -194,7 +196,40 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     return <div className="p-8"><p className="text-sm text-red-600">Organisation not found or database is temporarily unavailable — please refresh.</p></div>;
   }
   const organization = org;
+  // Numbers and dates follow the organisation's country, not the UK.
+  const L = orgFormat(org).locale;
   const liveDashboardEnabled = org.isPilot || hasFeature(org.plan ?? "trial", "liveDashboard");
+
+  // One organisation is one reporting group: entity and country are filters
+  // inside it, applied as the set of facilities they cover (like a contract).
+  const [groupEntities, groupFacilities] = await Promise.all([
+    prisma.legalEntity.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true, parentId: true },
+      orderBy: { name: "asc" },
+    }).catch(onLoadFailure(() => [] as { id: string; name: string; parentId: string | null }[])),
+    prisma.facility.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, country: true, legalEntityId: true },
+    }).catch(onLoadFailure(() => [] as { id: string; country: string | null; legalEntityId: string | null }[])),
+  ]);
+  const groupCountries = facilityCountries(groupFacilities);
+  const groupFacilityIds = facilityScope(groupFacilities, groupEntities, { entityId: selectedEntityId, country: selectedCountry });
+  const scopeFacilityIds =
+    contractFacilityIds === null
+      ? groupFacilityIds
+      : groupFacilityIds === null
+        ? contractFacilityIds
+        : contractFacilityIds.filter((id) => groupFacilityIds.includes(id));
+  const scoped = scopeFacilityIds !== null;
+  const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
+    const q = new URLSearchParams();
+    if (p.contractId) q.set("contractId", p.contractId);
+    if (p.entityId) q.set("entityId", p.entityId);
+    if (p.country) q.set("country", p.country);
+    const qs = q.toString();
+    return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
+  };
 
   const currentPeriod = reportingPeriods[0] ?? null;
   const priorPeriod = reportingPeriods[1] ?? null;
@@ -279,7 +314,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               // Contract scope is expressed through facility rows; org-wide
               // totals come from the facility-agnostic rollup rows.
               facilityId:
-                contractFacilityIds !== null ? { in: contractFacilityIds } : null,
+                scopeFacilityIds !== null ? { in: scopeFacilityIds } : null,
             },
             _sum: { totalCo2e: true, recordCount: true },
             orderBy: { scope: "asc" },
@@ -398,7 +433,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               // is scoped the same way the totals above are. Org-wide, read the
               // facility-agnostic category rows.
               facilityId:
-                contractFacilityIds !== null ? { in: contractFacilityIds } : null,
+                scopeFacilityIds !== null ? { in: scopeFacilityIds } : null,
             },
             include: {
               emissionCategory: { select: { name: true, scope: true } },
@@ -485,7 +520,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             // period-on-period change compares differently-scoped totals.
             ...SCOPE_ROLLUP_DIMENSIONS,
             facilityId:
-              contractFacilityIds !== null ? { in: contractFacilityIds } : null,
+              scopeFacilityIds !== null ? { in: scopeFacilityIds } : null,
           },
           _sum: { totalCo2e: true, recordCount: true },
           orderBy: { scope: "asc" },
@@ -589,7 +624,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         return {
           type: "public_procurement" as const,
           crpStatus: latestCrp?.status ?? null,
-          crpDate: latestCrp?.createdAt?.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) ?? null,
+          crpDate: latestCrp?.createdAt?.toLocaleDateString(L, { day: "numeric", month: "short", year: "numeric" }) ?? null,
         };
       }
       return null;
@@ -847,7 +882,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const latestTrendTotal = trendTotals.length > 0 ? trendTotals[trendTotals.length - 1] : 0;
   const previousTrendTotal = trendTotals.length > 1 ? trendTotals[trendTotals.length - 2] : null;
   const periodDeltaPct =
-    !selectedContractId && previousTrendTotal && previousTrendTotal > 0
+    !scoped && previousTrendTotal && previousTrendTotal > 0
       ? ((latestTrendTotal - previousTrendTotal) / previousTrendTotal) * 100
       : null;
   const scopesWithActivity = scopeRows.filter((row) => Number(row.records) > 0).length;
@@ -894,7 +929,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       href: target.href,
       assigneeLabel: task.assignee.name ?? task.assignee.email,
       createdByLabel: task.createdBy.name ?? task.createdBy.email,
-      createdAt: task.createdAt.toLocaleDateString("en-GB", {
+      createdAt: task.createdAt.toLocaleDateString(L, {
         day: "numeric",
         month: "short",
       }),
@@ -1070,6 +1105,48 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
+      {/* Group filter: legal entity (with its subsidiaries) and country */}
+      {(groupEntities.length > 0 || groupCountries.length > 1) && (
+        <div className="flex flex-col gap-2">
+          {groupEntities.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by entity:</span>
+              {[{ id: "", name: "All" }, ...groupEntities].map((e) => (
+                <Link
+                  key={e.id || "all"}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: e.id || undefined, country: selectedCountry })}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    (selectedEntityId ?? "") === e.id
+                      ? "bg-[#c2410c] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  }`}
+                >
+                  {e.name}
+                </Link>
+              ))}
+            </div>
+          )}
+          {groupCountries.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by country:</span>
+              {["", ...groupCountries].map((c) => (
+                <Link
+                  key={c || "all"}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: c || undefined })}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    (selectedCountry ?? "") === c
+                      ? "bg-[#c2410c] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  }`}
+                >
+                  {c ? countryOf(c)?.name ?? c : "All"}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Contract filter */}
       {activeContracts.length > 0 && (
         <div className="flex flex-col gap-3">
@@ -1101,7 +1178,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {activeContracts.map((contract) => (
               <Link
                 key={contract.id}
-                href={`/orgs/${orgId}/dashboard?contractId=${contract.id}`}
+                href={dashboardHref({ contractId: contract.id, entityId: selectedEntityId, country: selectedCountry })}
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
                     ? "bg-[#c2410c] text-white"
@@ -1128,10 +1205,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <AlertTriangle aria-hidden="true" className="inline h-4 w-4 mr-2 align-text-bottom" />
               <span className="font-medium">
                 Unpublished changes: {deltaKg >= 0 ? "+" : "\u2212"}
-                {deltaT.toLocaleString("en-GB", { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO₂e
+                {deltaT.toLocaleString(L, { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO₂e
               </span>{" "}
-              since snapshot v{latestSnapshot.version} ({formatKgCo2e(snapshotTotalCo2e)}). The figures below are live
-              ({formatKgCo2e(liveTotalCo2e)}); reports still use the published snapshot until you publish again.
+              since snapshot v{latestSnapshot.version} ({formatKgCo2e(L, snapshotTotalCo2e)}). The figures below are live
+              ({formatKgCo2e(L, liveTotalCo2e)}); reports still use the published snapshot until you publish again.
             </p>
             {latestPeriodRun && (
               <Link
@@ -1158,7 +1235,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </p>
           </div>
           <p className="mt-3 text-4xl font-normal tracking-[-0.4px]">
-            {currentFootprint > 0 ? formatKgCo2e(currentFootprint) : "—"}
+            {currentFootprint > 0 ? formatKgCo2e(L, currentFootprint) : "—"}
           </p>
           <p className="mt-1 text-xs text-white tracking-[-0.36px]">
             {currentFootprint > 0
@@ -1176,8 +1253,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               : "—"
           }
           detail={
-            selectedContractId
-              ? "Clear the contract filter to compare"
+            scoped
+              ? "Clear the filters to compare"
               : periodDeltaPct !== null
                 ? "vs previous reporting period"
                 : "Calculate a second period to compare"
@@ -1189,15 +1266,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           icon={Gauge}
           label="Scope coverage"
           value={`${scopesWithActivity}/3`}
-          detail={`${currentCalculatedRecords.toLocaleString("en-GB")} calculated records`}
+          detail={`${currentCalculatedRecords.toLocaleString(L)} calculated records`}
         />
 
         {targetCount > 0 ? (
           <HeroStat
             icon={Target}
             label="Target ambition"
-            value={formatKgCo2e(targetReductionTotal)}
-            detail={`${targetCount.toLocaleString("en-GB")} active reduction target${targetCount !== 1 ? "s" : ""}`}
+            value={formatKgCo2e(L, targetReductionTotal)}
+            detail={`${targetCount.toLocaleString(L)} active reduction target${targetCount !== 1 ? "s" : ""}`}
             href={`/orgs/${orgId}/targets`}
           />
         ) : (
@@ -1234,6 +1311,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-6">
           <LiveDashboard
             orgId={orgId}
+            locale={L}
             fallbackComponent={
               <div className="text-sm text-[#6B7280]">
                 <p>Real-time emissions updates will appear here as calculations complete.</p>
@@ -1367,28 +1445,28 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             <MetricCard
               icon={Droplets}
               label="Water withdrawal"
-              value={`${(environmentalTotals.water_withdrawal ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })} m3`}
+              value={`${(environmentalTotals.water_withdrawal ?? 0).toLocaleString(L, { maximumFractionDigits: 1 })} m3`}
               detail="This reporting period"
               href={`/orgs/${orgId}/water`}
             />
             <MetricCard
               icon={Droplets}
               label="Water consumption"
-              value={`${(environmentalTotals.water_consumption ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })} m3`}
+              value={`${(environmentalTotals.water_consumption ?? 0).toLocaleString(L, { maximumFractionDigits: 1 })} m3`}
               detail="This reporting period"
               href={`/orgs/${orgId}/water`}
             />
             <MetricCard
               icon={Trash2}
               label="Waste generated"
-              value={`${(environmentalTotals.waste_generated ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} t`}
+              value={`${(environmentalTotals.waste_generated ?? 0).toLocaleString(L, { maximumFractionDigits: 2 })} t`}
               detail={wasteDiversionPct != null ? `${wasteDiversionPct}% diverted from disposal` : "This reporting period"}
               href={`/orgs/${orgId}/waste`}
             />
             <MetricCard
               icon={AlertTriangle}
               label="Hazardous waste"
-              value={`${(environmentalTotals.waste_hazardous ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })} t`}
+              value={`${(environmentalTotals.waste_hazardous ?? 0).toLocaleString(L, { maximumFractionDigits: 2 })} t`}
               detail="This reporting period"
               href={`/orgs/${orgId}/waste`}
               tone={environmentalTotals.waste_hazardous ? "bad" : "neutral"}
@@ -1405,26 +1483,26 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <MetricCard
           icon={Activity}
           label="Activity records"
-          value={recordCount.toLocaleString("en-GB")}
+          value={recordCount.toLocaleString(L)}
           detail={`${formatPercent(approvedRecordCount, recordCount)} approved`}
         />
         <MetricCard
           icon={Inbox}
           label="Open field submissions"
-          value={pendingSubmissionCount.toLocaleString("en-GB")}
+          value={pendingSubmissionCount.toLocaleString(L)}
           detail="Awaiting triage or reviewer action"
         />
         <MetricCard
           icon={Upload}
           label="Import batches"
-          value={importCount.toLocaleString("en-GB")}
+          value={importCount.toLocaleString(L)}
           detail={failedImportCount > 0 ? `${failedImportCount} need attention` : "No failed imports"}
         />
         <MetricCard
           icon={FileText}
           label="Reports"
-          value={readyReportCount.toLocaleString("en-GB")}
-          detail={`${reportCount.toLocaleString("en-GB")} total requested`}
+          value={readyReportCount.toLocaleString(L)}
+          detail={`${reportCount.toLocaleString(L)} total requested`}
         />
       </div>
 
@@ -1554,7 +1632,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           {fac.name}
                         </td>
                         <td className="px-4 py-3 text-right font-normal text-[#111827] tracking-[-0.42px]">
-                          {formatKgCo2e(fac.totalCo2e)}
+                          {formatKgCo2e(L, fac.totalCo2e)}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -1570,7 +1648,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           </div>
                         </td>
                         <td className="px-4 py-3 text-right text-xs text-[#374151] tracking-[-0.36px]">
-                          {fac.recordCount.toLocaleString("en-GB")}
+                          {fac.recordCount.toLocaleString(L)}
                         </td>
                       </tr>
                     );
@@ -1604,10 +1682,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       Scope {row.scope}
                     </p>
                     <p className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#111827]">
-                      {formatKgCo2e(row.total)}
+                      {formatKgCo2e(L, row.total)}
                     </p>
                     <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">
-                      {Number(row.records).toLocaleString("en-GB")} calculated records
+                      {Number(row.records).toLocaleString(L)} calculated records
                     </p>
                   </div>
                 ))}
@@ -1654,7 +1732,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Scope {scope}</p>
                       <div className="mt-2 flex items-end justify-between gap-2">
                         <div>
-                          <p className="text-xl font-normal tracking-[-0.4px] text-[#111827]">{formatKgCo2e(currentVal)}</p>
+                          <p className="text-xl font-normal tracking-[-0.4px] text-[#111827]">{formatKgCo2e(L, currentVal)}</p>
                           <p className="text-xs text-[#374151]">{currentPeriod?.label}</p>
                         </div>
                         {deltaPct !== null && (
@@ -1665,7 +1743,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                         )}
                       </div>
                       <div className="mt-2 pt-2 border-t border-[#E5E7EB]">
-                        <p className="text-xs text-[#6B7280]">{formatKgCo2e(priorVal)} in {priorPeriod.label}</p>
+                        <p className="text-xs text-[#6B7280]">{formatKgCo2e(L, priorVal)} in {priorPeriod.label}</p>
                       </div>
                     </div>
                   );
@@ -1763,7 +1841,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   missingEvidenceCount > 0 ? "text-amber-600" : "text-[#111827]"
                 }`}
               >
-                {missingEvidenceCount.toLocaleString("en-GB")}
+                {missingEvidenceCount.toLocaleString(L)}
               </dd>
               <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">
                 Approved records with no linked evidence files
@@ -1779,7 +1857,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   pendingAttentionCount > 0 ? "text-amber-600" : "text-[#111827]"
                 }`}
               >
-                {pendingAttentionCount.toLocaleString("en-GB")}
+                {pendingAttentionCount.toLocaleString(L)}
               </dd>
               <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">
                 Records in draft or in review status
@@ -1907,8 +1985,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     <ProgressRow
                       key={aggregate.id}
                       label={aggregate.emissionCategory?.name ?? "Uncategorised"}
-                      meta={`Scope ${aggregate.emissionCategory?.scope ?? aggregate.scope} - ${aggregate.recordCount.toLocaleString("en-GB")} records`}
-                      value={formatKgCo2e(aggregate.totalCo2e)}
+                      meta={`Scope ${aggregate.emissionCategory?.scope ?? aggregate.scope} - ${aggregate.recordCount.toLocaleString(L)} records`}
+                      value={formatKgCo2e(L, aggregate.totalCo2e)}
                       percent={
                         maxCategoryTotal > 0
                           ? (Number(aggregate.totalCo2e) / maxCategoryTotal) * 100
@@ -1930,13 +2008,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <InsightCard
                 icon={Scale}
                 label="Calculated records"
-                value={currentCalculatedRecords.toLocaleString("en-GB")}
+                value={currentCalculatedRecords.toLocaleString(L)}
                 detail="Records included in current scope totals"
               />
               <InsightCard
                 icon={BarChart3}
                 label="Current footprint"
-                value={formatKgCo2e(currentFootprint)}
+                value={formatKgCo2e(L, currentFootprint)}
                 detail="Scope 1, 2, and 3 combined"
               />
               <InsightCard
@@ -1970,6 +2048,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {reportStatusRows.length > 0 ? (
               reportStatusRows.map((row) => (
                 <PipelineRow
+                  locale={L}
                   key={row.status}
                   label={row.status.replaceAll("_", " ")}
                   count={row._count._all}
@@ -1988,13 +2067,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <InsightCard
                 icon={FileText}
                 label="Ready outputs"
-                value={readyReportCount.toLocaleString("en-GB")}
+                value={readyReportCount.toLocaleString(L)}
                 detail="Downloadable report artefacts"
               />
               <InsightCard
                 icon={AlertTriangle}
                 label="Failed outputs"
-                value={failedReportCount.toLocaleString("en-GB")}
+                value={failedReportCount.toLocaleString(L)}
                 detail="Require rerun or investigation"
               />
             </div>
@@ -2034,7 +2113,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               ))}
               {pilotKitData?.data?.generatedAt && (
                 <div className="pt-1 text-xs text-[#6B7280]">
-                  Generated {new Date(pilotKitData.data.generatedAt).toLocaleDateString("en-GB", {
+                  Generated {new Date(pilotKitData.data.generatedAt).toLocaleDateString(L, {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
@@ -2066,31 +2145,31 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <InsightCard
                 icon={Target}
                 label="Target ambition"
-                value={formatKgCo2e(targetReductionTotal)}
-                detail={`${targetCount.toLocaleString("en-GB")} active target records`}
+                value={formatKgCo2e(L, targetReductionTotal)}
+                detail={`${targetCount.toLocaleString(L)} active target records`}
               />
               <InsightCard
                 icon={TrendingUp}
                 label="Expected initiative impact"
-                value={formatKgCo2e(initiativeTotalImpact)}
-                detail={`${initiativeCount.toLocaleString("en-GB")} initiatives tracked`}
+                value={formatKgCo2e(L, initiativeTotalImpact)}
+                detail={`${initiativeCount.toLocaleString(L)} initiatives tracked`}
               />
               <InsightCard
                 icon={Scale}
                 label="Planned investment"
-                value={formatCurrency(initiativeTotalCost)}
+                value={formatCurrency(L, initiativeTotalCost)}
                 detail="Cost recorded against initiatives"
               />
               <InsightCard
                 icon={Handshake}
                 label="TOMS social value"
-                value={formatCurrency(socialValueStats._sum.valuePounds ?? 0)}
-                detail={`${socialValueStats._count._all.toLocaleString("en-GB")} TOMS records`}
+                value={formatCurrency(L, socialValueStats._sum.valuePounds ?? 0)}
+                detail={`${socialValueStats._count._all.toLocaleString(L)} TOMS records`}
               />
               <InsightCard
                 icon={Route}
                 label="Pending submissions"
-                value={pendingSubmissionCount.toLocaleString("en-GB")}
+                value={pendingSubmissionCount.toLocaleString(L)}
                 detail="Awaiting review from field workers"
               />
             </div>
@@ -2104,7 +2183,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           {row.status.replaceAll("_", " ")}
                         </p>
                         <p className="text-xs text-[#374151] tracking-[-0.36px]">
-                          {formatKgCo2e(row._sum.expectedImpactCo2e)} expected impact
+                          {formatKgCo2e(L, row._sum.expectedImpactCo2e)} expected impact
                         </p>
                       </div>
                       <Badge variant="outline">{row._count._all}</Badge>
@@ -2147,6 +2226,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 {submissionStatusRows.length > 0 ? (
                   submissionStatusRows.map((row) => (
                     <PipelineRow
+                      locale={L}
                       key={row.status}
                       label={row.status.replaceAll("_", " ")}
                       count={row._count._all}
@@ -2169,6 +2249,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 {submissionDocumentRows.length > 0 ? (
                   submissionDocumentRows.map((row) => (
                     <PipelineRow
+                      locale={L}
                       key={row.documentType}
                       label={row.documentType.replaceAll("_", " ")}
                       count={row._count._all}
@@ -2185,13 +2266,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 <InsightCard
                   icon={Upload}
                   label="Evidence files"
-                  value={evidenceFileCount.toLocaleString("en-GB")}
+                  value={evidenceFileCount.toLocaleString(L)}
                   detail="Stored and linked documents"
                 />
                 <InsightCard
                   icon={Route}
                   label="Field submissions"
-                  value={pendingSubmissionCount.toLocaleString("en-GB")}
+                  value={pendingSubmissionCount.toLocaleString(L)}
                   detail="Pending review"
                 />
               </div>
@@ -2247,7 +2328,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       </p>
                     </div>
                     <time className="shrink-0 text-xs text-[#374151] tracking-[-0.36px]">
-                      {log.createdAt.toLocaleDateString("en-GB", {
+                      {log.createdAt.toLocaleDateString(L, {
                         day: "numeric",
                         month: "short",
                       })}
@@ -2430,10 +2511,12 @@ function ProgressRow({
 }
 
 function PipelineRow({
+  locale,
   label,
   count,
   total,
 }: {
+  locale: string;
   label: string;
   count: number;
   total: number;
@@ -2444,7 +2527,7 @@ function PipelineRow({
     <div className="rounded-[14px] border border-[#E5E7EB] p-3">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-normal capitalize text-[#374151] tracking-[-0.42px]">{label}</span>
-        <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{count.toLocaleString("en-GB")}</span>
+        <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{count.toLocaleString(locale)}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
         <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />

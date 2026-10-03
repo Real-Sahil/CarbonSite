@@ -586,60 +586,63 @@ model FieldWorkerAssignment {
 }
 
 model Facility {
-  id                    String            @id @default(cuid())
-  organizationId        String            @map("organization_id")
-  name                  String
-  country               String?
-  region                String?
-  addressLine           String?           @map("address_line")
-  postcode              String?
-  latitude              Decimal?          @db.Decimal(10, 7)
-  longitude             Decimal?          @db.Decimal(10, 7)
+  id                        String            @id @default(cuid())
+  organizationId            String            @map("organization_id")
+  name                      String
+  country                   String?
+  region                    String?
+  addressLine               String?           @map("address_line")
+  postcode                  String?
+  latitude                  Decimal?          @db.Decimal(10, 7)
+  longitude                 Decimal?          @db.Decimal(10, 7)
   /// Free-text classification (office, warehouse, depot, plant, retail, data_centre).
-  siteType              String?           @map("site_type")
+  siteType                  String?           @map("site_type")
   /// Gross internal floor area, the denominator for per-m2 intensity metrics.
-  floorAreaM2           Decimal?          @map("floor_area_m2") @db.Decimal(15, 2)
-  headcount             Int?
+  floorAreaM2               Decimal?          @map("floor_area_m2") @db.Decimal(15, 2)
+  headcount                 Int?
   /// Which legal entity owns or operates this facility. Drives consolidation.
-  legalEntityId         String?           @map("legal_entity_id")
+  legalEntityId             String?           @map("legal_entity_id")
   /// Whether the org has operational control. Under the operational control
   /// consolidation approach only controlled facilities are consolidated at 100%.
-  operationalControl    Boolean           @default(true) @map("operational_control")
+  operationalControl        Boolean           @default(true) @map("operational_control")
   /// Date the facility entered the inventory boundary. Activity before this
   /// date belongs to a prior owner and is excluded from consolidated totals.
-  operationalFrom       DateTime?         @map("operational_from") @db.Date
+  operationalFrom           DateTime?         @map("operational_from") @db.Date
   /// Date the facility left the boundary (divestiture, closure).
-  operationalTo         DateTime?         @map("operational_to") @db.Date
-  externalRef           String?           @map("external_ref")
+  operationalTo             DateTime?         @map("operational_to") @db.Date
+  externalRef               String?           @map("external_ref")
+  /// Regulator identifiers some regimes ask for per facility (for example the Abu Dhabi MRV report).
+  economicLicenceNumber     String?           @map("economic_licence_number")
+  environmentalPermitNumber String?           @map("environmental_permit_number")
   /// ESRS E3 water-stress classification for this facility's location.
   /// Manually assessed for now (e.g. against WRI Aqueduct); not live-looked-up.
-  waterStressLevel      WaterStressLevel? @map("water_stress_level")
-  waterStressSource     String?           @map("water_stress_source")
-  waterStressAssessedAt DateTime?         @map("water_stress_assessed_at")
+  waterStressLevel          WaterStressLevel? @map("water_stress_level")
+  waterStressSource         String?           @map("water_stress_source")
+  waterStressAssessedAt     DateTime?         @map("water_stress_assessed_at")
   /// EA Flood Monitoring API — flood zone at this facility's coordinates.
   /// Populated by the facility enrichment endpoint (GET /facilities/:id/enrich).
-  eaFloodZone           String?           @map("ea_flood_zone")
-  eaFloodRiskAssessedAt DateTime?         @map("ea_flood_risk_assessed_at") @db.Timestamptz(6)
+  eaFloodZone               String?           @map("ea_flood_zone")
+  eaFloodRiskAssessedAt     DateTime?         @map("ea_flood_risk_assessed_at") @db.Timestamptz(6)
   /// Nearest SSSI (Site of Special Scientific Interest) within 2 km.
   /// Distance 0 means the facility falls within the SSSI boundary.
-  sssiProximityM        Int?              @map("sssi_proximity_m")
-  sssiName              String?           @map("sssi_name")
+  sssiProximityM            Int?              @map("sssi_proximity_m")
+  sssiName                  String?           @map("sssi_name")
   /// WFD (Water Framework Directive) water body that contains this facility.
-  wfdWaterBodyId        String?           @map("wfd_water_body_id")
-  wfdEcologicalStatus   String?           @map("wfd_ecological_status")
+  wfdWaterBodyId            String?           @map("wfd_water_body_id")
+  wfdEcologicalStatus       String?           @map("wfd_ecological_status")
   /// Nearest AURN (Automatic Urban Rural Network) monitoring station code.
-  aurnStationCode       String?           @map("aurn_station_code")
+  aurnStationCode           String?           @map("aurn_station_code")
   /// ISO timestamp of the last successful run of the facility enrichment endpoint.
-  eaEnrichmentLastRunAt DateTime?         @map("ea_enrichment_last_run_at") @db.Timestamptz(6)
+  eaEnrichmentLastRunAt     DateTime?         @map("ea_enrichment_last_run_at") @db.Timestamptz(6)
   /// UK EPC (Energy Performance Certificate) data from epc.opendatacommunities.org.
   /// Populated by the facility enrichment endpoint when a UK postcode is set.
-  epcRating             String?           @map("epc_rating") // A–G
-  epcSapScore           Decimal?          @map("epc_sap_score") @db.Decimal(6, 2)
-  epcCertNumber         String?           @map("epc_cert_number")
-  epcAssessedAt         DateTime?         @map("epc_assessed_at") @db.Timestamptz(6)
-  epcHeatingType        String?           @map("epc_heating_type")
-  createdAt             DateTime          @default(now()) @map("created_at")
-  updatedAt             DateTime          @updatedAt @map("updated_at")
+  epcRating                 String?           @map("epc_rating") // A–G
+  epcSapScore               Decimal?          @map("epc_sap_score") @db.Decimal(6, 2)
+  epcCertNumber             String?           @map("epc_cert_number")
+  epcAssessedAt             DateTime?         @map("epc_assessed_at") @db.Timestamptz(6)
+  epcHeatingType            String?           @map("epc_heating_type")
+  createdAt                 DateTime          @default(now()) @map("created_at")
+  updatedAt                 DateTime          @updatedAt @map("updated_at")
 
   legalEntity                   LegalEntity?                   @relation("LegalEntityFacilities", fields: [legalEntityId], references: [id], onDelete: SetNull)
   organization                  Organization                   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -1101,25 +1104,27 @@ model ClimateDisclosure {
 /// results and the assumptions behind them. The figures are the organisation's
 /// own statement, not calculated from its records, and the board says so.
 model CaseStudy {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
+  id                  String   @id @default(cuid())
+  organizationId      String   @map("organization_id")
   /// The contract it belongs to; null for a company-wide case study.
-  contractId      String?  @map("contract_id")
-  title           String
-  problem         String   @default("")
-  solution        String   @default("")
+  contractId          String?  @map("contract_id")
+  title               String
+  problem             String   @default("")
+  solution            String   @default("")
   /// What the results are measured against, for example "a standard diesel generator running the same hours".
-  baseline        String   @default("")
-  results         String   @default("")
+  baseline            String   @default("")
+  results             String   @default("")
   /// Up to six headline figures: label, value and unit, as the organisation states them.
-  kpis            Json     @default("[]")
+  kpis                Json     @default("[]")
   /// The prices, rates and other assumptions behind the figures.
-  assumptions     String   @default("")
+  assumptions         String   @default("")
+  /// One photo, an evidence file of the organisation (an image), printed on the card.
+  photoEvidenceFileId String?  @map("photo_evidence_file_id")
   /// Only published case studies appear on a noticeboard.
-  published       Boolean  @default(false)
-  createdByUserId String   @map("created_by_user_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  published           Boolean  @default(false)
+  createdByUserId     String   @map("created_by_user_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 

@@ -43,6 +43,7 @@ export function renderSiteNoticeboardHtml(d: NoticeboardData & { logoDataUri?: s
       (s) => `
   <div class="card">
     <h3>${esc(s.title)}</h3>
+    ${s.photoDataUri ? `<img class="photo" src="${esc(s.photoDataUri)}" alt="">` : ""}
     ${s.problem ? `<p><strong>The problem.</strong> ${esc(s.problem)}</p>` : ""}
     ${s.solution ? `<p><strong>What we did.</strong> ${esc(s.solution)}</p>` : ""}
     ${
@@ -56,6 +57,16 @@ export function renderSiteNoticeboardHtml(d: NoticeboardData & { logoDataUri?: s
     )
     .join("")}
   <p class="note">${esc(FIGURES_NOTE)}</p>
+</section>`
+    : "";
+
+  const policies = d.policies.length
+    ? `
+<section>
+  <h2>Our policy</h2>
+  ${d.policies
+    .map((pol) => `<div class="card"><h3>${esc(pol.title)}</h3>${para(pol.body)}<p class="note">Version ${pol.version}${pol.approvedOn ? `, approved ${esc(F.date(pol.approvedOn))}` : ""}.</p></div>`)
+    .join("")}
 </section>`
     : "";
 
@@ -85,6 +96,7 @@ export function renderSiteNoticeboardHtml(d: NoticeboardData & { logoDataUri?: s
   td { padding: 5px 8px; border: 1px solid #dde6e8 }
   .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap }
   .card { border: 1px solid #d5e1e3; border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; page-break-inside: avoid }
+  .photo { display: block; max-width: 100%; max-height: 70mm; border-radius: 4px; margin: 4px 0 10px }
   .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 }
   .kpi { background: #16323d; color: #fff; border-radius: 6px; padding: 10px 12px }
   .kpi .val { font-size: 16pt; font-weight: 700; display: block }
@@ -109,6 +121,7 @@ export function renderSiteNoticeboardHtml(d: NoticeboardData & { logoDataUri?: s
 
 ${social}
 ${cards}
+${policies}
 ${para("")}
 <footer>${esc(d.orgName)} · Carbon, waste and social value from published snapshot v${p.snapshot.version} (${esc(p.snapshot.periodLabel)}), calculated from the organisation's records · Case study figures are stated by the organisation</footer>
 </body>

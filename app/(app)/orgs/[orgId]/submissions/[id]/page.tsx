@@ -22,6 +22,7 @@ import { SubmissionClaimBanner } from "../claim-banner";
 import { deliveryDescription, matchMaterial } from "@/lib/embodied-carbon/delivery-notes";
 import { ocrFieldChecks } from "@/lib/field-submissions/ocr-confidence";
 import { socialValueEntry } from "@/lib/social-value/field-capture";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface SubmissionDetailPageProps {
   params: Promise<{ orgId: string; id: string }>;
@@ -58,6 +59,7 @@ const DOC_TYPE_LABELS: Record<string, string> = {
 
 export default async function SubmissionDetailPage({ params }: SubmissionDetailPageProps) {
   const { orgId, id } = await params;
+  const L = await getOrgLocale(orgId);
 
   try {
     await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
@@ -325,7 +327,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           </span>
           <p className="text-sm text-[#374151] font-normal tracking-[-0.42px]">
             Submitted by {submission.submittedBy.name ?? submission.submittedBy.email} on{" "}
-            {submission.createdAt.toLocaleDateString("en-GB", {
+            {submission.createdAt.toLocaleDateString(L, {
               day: "numeric",
               month: "long",
               year: "numeric",
@@ -334,7 +336,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
           {isResolved && submission.reviewedAt && (
             <p className="text-sm text-[#374151] font-normal tracking-[-0.42px]">
               Reviewed by {reviewer?.name ?? "Unknown reviewer"} at{" "}
-              {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(submission.reviewedAt))}
+              {new Intl.DateTimeFormat(L, { dateStyle: "medium", timeStyle: "short" }).format(new Date(submission.reviewedAt))}
             </p>
           )}
         </div>
@@ -375,7 +377,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               {periodMismatch && (
                 <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 tracking-[-0.36px]">
                   Captured on{" "}
-                  {captureDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}{" "}
+                  {captureDate.toLocaleDateString(L, { day: "numeric", month: "short", year: "numeric" })}{" "}
                   — outside this reporting period&apos;s date range. It was booked into
                   the most recent period; check the period setup if this is unexpected.
                 </div>
@@ -396,13 +398,13 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               {isSocialValue && svEntry && (
                 <>
                   <DetailRow label="KPI" value={svKpi ? `${svKpi.title}${svKpi.outcome ? ` (${svKpi.outcome.name})` : ""}` : "Not found"} />
-                  <DetailRow label="Quantity" value={`${svEntry.quantity.toLocaleString("en-GB")}${svKpi?.targetUnit ? ` ${svKpi.targetUnit}` : ""}`} />
-                  {svEntry.activityDate && <DetailRow label="Delivered on" value={new Date(`${svEntry.activityDate}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} />}
+                  <DetailRow label="Quantity" value={`${svEntry.quantity.toLocaleString(L)}${svKpi?.targetUnit ? ` ${svKpi.targetUnit}` : ""}`} />
+                  {svEntry.activityDate && <DetailRow label="Delivered on" value={new Date(`${svEntry.activityDate}T00:00:00Z`).toLocaleDateString(L, { day: "numeric", month: "long", year: "numeric" })} />}
                   {svEntry.note && <DetailRow label="Note" value={svEntry.note} />}
                   {svKpi && (
                     <DetailRow
                       label="KPI so far"
-                      value={`${svDelivered.toLocaleString("en-GB")}${svKpi.targetValue != null ? ` of ${Number(svKpi.targetValue).toLocaleString("en-GB")}` : ""}${svKpi.targetUnit ? ` ${svKpi.targetUnit}` : ""} approved`}
+                      value={`${svDelivered.toLocaleString(L)}${svKpi.targetValue != null ? ` of ${Number(svKpi.targetValue).toLocaleString(L)}` : ""}${svKpi.targetUnit ? ` ${svKpi.targetUnit}` : ""} approved`}
                     />
                   )}
                   {svActivity && submission.contractId && (
@@ -799,7 +801,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 >
                   {DOC_TYPE_LABELS[submission.resubmittedFrom.documentType] ?? submission.resubmittedFrom.documentType}
                   {" · "}
-                  {submission.resubmittedFrom.createdAt.toLocaleDateString("en-GB", {
+                  {submission.resubmittedFrom.createdAt.toLocaleDateString(L, {
                     day: "numeric",
                     month: "short",
                     year: "numeric",
@@ -856,7 +858,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                         {comment.author.name ?? comment.author.email}
                       </p>
                       <time className="text-xs text-[#374151] tracking-[-0.36px]">
-                        {comment.createdAt.toLocaleDateString("en-GB", {
+                        {comment.createdAt.toLocaleDateString(L, {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
@@ -874,7 +876,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               comments={comments.map((comment) => ({
                 id: comment.id,
                 body: comment.body,
-                createdAt: comment.createdAt.toLocaleDateString("en-GB", {
+                createdAt: comment.createdAt.toLocaleDateString(L, {
                   day: "numeric",
                   month: "short",
                 }),

@@ -17,6 +17,8 @@ interface DashboardData {
 
 interface LiveDashboardProps {
   orgId: string;
+  /** BCP 47 locale for numbers and dates (the organisation's), default en-GB. */
+  locale?: string;
   onUpdate?: (data: DashboardData) => void;
   fallbackComponent?: React.ReactNode;
 }
@@ -29,6 +31,7 @@ interface LiveDashboardProps {
  */
 export function LiveDashboard({
   orgId,
+  locale = "en-GB",
   onUpdate,
   fallbackComponent,
 }: LiveDashboardProps) {
@@ -164,7 +167,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Total CO2e</p>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {(data.aggregates.totalCo2e / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {(data.aggregates.totalCo2e / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -172,7 +175,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Scope 1</p>
           <p className="mt-2 text-2xl font-bold text-orange-600">
-            {(data.aggregates.scope1 / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {(data.aggregates.scope1 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -180,7 +183,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Scope 2</p>
           <p className="mt-2 text-2xl font-bold text-blue-600">
-            {(data.aggregates.scope2 / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {(data.aggregates.scope2 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -188,7 +191,7 @@ export function LiveDashboard({
         <div className="rounded-lg border border-gray-200 bg-white p-4">
           <p className="text-xs font-medium text-gray-600 uppercase">Scope 3</p>
           <p className="mt-2 text-2xl font-bold text-green-600">
-            {(data.aggregates.scope3 / 1000).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {(data.aggregates.scope3 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-gray-500">tonnes</p>
         </div>
@@ -201,7 +204,7 @@ export function LiveDashboard({
       )}
 
       <p className="text-xs text-gray-500 text-center">
-        Last calculated: {new Date(data.timestamp).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+        Last calculated: {new Date(data.timestamp).toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
       </p>
     </div>
   );

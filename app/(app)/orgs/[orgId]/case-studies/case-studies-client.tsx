@@ -13,9 +13,9 @@ const selectClass = "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-2
 
 type Study = {
   id: string; contractId: string | null; title: string; problem: string; solution: string; baseline: string;
-  results: string; kpis: Kpi[]; assumptions: string; published: boolean;
+  results: string; kpis: Kpi[]; assumptions: string; photoEvidenceFileId: string | null; published: boolean;
 };
-const blank: Study = { id: "", contractId: null, title: "", problem: "", solution: "", baseline: "", results: "", kpis: [], assumptions: "", published: false };
+const blank: Study = { id: "", contractId: null, title: "", problem: "", solution: "", baseline: "", results: "", kpis: [], assumptions: "", photoEvidenceFileId: null, published: false };
 
 export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: string; canEdit: boolean; contracts: { id: string; name: string }[]; studies: Study[] }) {
   const router = useRouter();
@@ -44,6 +44,23 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
         }
         setEditing(null);
         router.refresh();
+      } catch {
+        setMsg("Couldn't reach the server. Check your connection and try again.");
+      }
+    });
+  }
+
+  function uploadPhoto(file: File | undefined) {
+    if (!file) return;
+    setMsg(null);
+    start(async () => {
+      try {
+        const form = new FormData();
+        form.set("file", file);
+        const res = await fetch(`/api/orgs/${orgId}/case-studies/photo`, { method: "POST", body: form });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) { setMsg(data?.message ?? "Could not upload the photo."); return; }
+        setEditing((e) => (e ? { ...e, photoEvidenceFileId: data.evidenceId } : e));
       } catch {
         setMsg("Couldn't reach the server. Check your connection and try again.");
       }
@@ -112,6 +129,16 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
               <li key={c.id} className={c.ok ? "text-green-700" : "text-amber-700"}>{c.ok ? "Done" : "To do"}: {c.label}{c.ok ? "" : `. ${c.detail}`}</li>
             ))}
           </ul>
+          <div className="md:col-span-2 flex flex-col gap-1.5">
+            <Label htmlFor="cs-photo" className={labelClass}>Photo (optional, JPEG, PNG or WebP up to 5 MB)</Label>
+            <input id="cs-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} onChange={(e) => uploadPhoto(e.target.files?.[0])} className="text-sm" />
+            {editing.photoEvidenceFileId && (
+              <p className="text-xs text-[#374151]">
+                Photo attached. <button type="button" className="underline" onClick={() => set({ photoEvidenceFileId: null })}>Remove</button>
+                {" "}Do not use a photo that shows people who have not agreed to appear on the board.
+              </p>
+            )}
+          </div>
           <label className="flex items-center gap-2 text-sm text-[#374151] md:col-span-2">
             <input type="checkbox" checked={editing.published} onChange={(e) => set({ published: e.target.checked })} />
             Publish: show on the site noticeboard of its contract

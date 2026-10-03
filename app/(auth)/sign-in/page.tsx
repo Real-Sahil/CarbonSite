@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
+import { LanguageSwitch, useUiLocale } from "@/components/i18n/ui-locale";
 
 // A per-org SSO deep link (shared by an admin, e.g.
 // https://app.metricora.co.uk/sign-in?orgId=X&ssoProvider=saml) is how an
@@ -96,6 +97,7 @@ const INPUT_CLS =
   "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
 export default function SignInPage() {
+  const { locale, setLocale, t } = useUiLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -116,7 +118,7 @@ export default function SignInPage() {
       }
       window.location.href = "/app";
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed. Please try again.");
+      setError(err instanceof Error ? err.message : t("signInFailed"));
     } finally {
       setLoading(false);
     }
@@ -125,8 +127,8 @@ export default function SignInPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight text-white">Welcome back</h1>
-        <p className="text-sm text-white/60 mt-1">Sign in to your MetricOra account.</p>
+        <h1 className="text-xl font-semibold tracking-tight text-white">{t("welcomeBack")}</h1>
+        <p className="text-sm text-white/60 mt-1">{t("signInSubtitle")}</p>
       </div>
 
       <Suspense fallback={null}>
@@ -136,7 +138,7 @@ export default function SignInPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">
-            Email
+            {t("email")}
           </label>
           <input
             id="email"
@@ -154,10 +156,10 @@ export default function SignInPage() {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="password" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">
-              Password
+              {t("password")}
             </label>
             <Link href="/forgot-password" className="text-xs text-amber-400 hover:text-amber-300 transition-colors" tabIndex={-1}>
-              Forgot password?
+              {t("forgotPassword")}
             </Link>
           </div>
           <input
@@ -186,15 +188,18 @@ export default function SignInPage() {
           disabled={loading}
           className="mt-1 w-full rounded-xl bg-[#c2410c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:bg-[#9a3412] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? t("signingIn") : t("signIn")}
         </button>
       </form>
 
       <p className="mt-5 text-center text-sm text-white/60">
-        Don&apos;t have an account?{" "}
+        {t("noAccount")}{" "}
         <Link href="/sign-up" className="text-amber-400 underline underline-offset-4 hover:text-amber-300 transition-colors">
-          Create account
+          {t("createAccount")}
         </Link>
+      </p>
+      <p className="mt-3 text-center">
+        <LanguageSwitch locale={locale} setLocale={setLocale} />
       </p>
     </div>
   );

@@ -72,6 +72,8 @@ export async function PATCH(
         }),
         ...(body.operationalTo !== undefined && { operationalTo: body.operationalTo ?? null }),
         ...(body.externalRef !== undefined && { externalRef: body.externalRef ?? null }),
+        ...(body.economicLicenceNumber !== undefined && { economicLicenceNumber: body.economicLicenceNumber || null }),
+        ...(body.environmentalPermitNumber !== undefined && { environmentalPermitNumber: body.environmentalPermitNumber || null }),
         ...(body.waterStressLevel !== undefined && {
           waterStressLevel: body.waterStressLevel ?? null,
           waterStressAssessedAt: body.waterStressLevel ? new Date() : null,

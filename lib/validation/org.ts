@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { acquisitionSchema } from "@/lib/marketing/acquisition";
-import { countryOf } from "@/lib/i18n/countries";
+import { countryIso2 } from "@/lib/calculation/geography";
 import {
   EVIDENCE_MAX_BYTES,
   isAllowedEvidenceMimeType,
@@ -32,11 +32,11 @@ export const orgRoleSchema = z.enum([
 const orgFieldsSchema = z.object({
   name: z.string().min(2).max(100),
   industry: z.string().optional(),
-  // ISO 3166-1 alpha-2. A value we do not list is dropped, never a reason to refuse the sign-up.
+  // Stored as ISO 3166-1 alpha-2 whatever was sent ("UK", "United Kingdom"); a value that is no country is dropped, never a reason to refuse the sign-up.
   hqCountry: z
     .string()
     .optional()
-    .transform((v) => countryOf(v)?.code),
+    .transform((v) => countryIso2(v) ?? undefined),
   fiscalYearStartMonth: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
   reportingCurrency: z
     .string()
@@ -73,6 +73,9 @@ export const createFacilitySchema = z.object({
   operationalFrom: z.coerce.date().optional(),
   operationalTo: z.coerce.date().optional(),
   externalRef: z.string().max(100).optional(),
+  // Regulator identifiers (for example the Abu Dhabi MRV report asks for both). Null clears.
+  economicLicenceNumber: z.string().trim().max(60).nullable().optional(),
+  environmentalPermitNumber: z.string().trim().max(60).nullable().optional(),
   // ESRS E3 water-stress classification. Manually assessed for now (e.g.
   // against WRI Aqueduct), not a live GIS lookup.
   waterStressLevel: z.enum(["low", "medium_high", "high", "extremely_high", "unknown"]).nullable().optional(),

@@ -23,6 +23,8 @@ interface StatutoryDeadline {
   complianceFramework: string; // matches ComplianceRecord.framework
   /** Official page the date and thresholds were checked against. */
   source: string;
+  /** A page in this app that helps with it, relative to the organisation. */
+  action?: { label: string; path: string };
 }
 
 interface ComplianceRecord {
@@ -206,6 +208,7 @@ const STATUTORY_DEADLINES: StatutoryDeadline[] = [
     penalty: 'Written notice with corrective actions, then the Decree-Law fines',
     category: 'uae',
     complianceFramework: 'ABU_DHABI_MRV',
+    action: { label: 'Prepare facility Scope 1 data', path: 'compliance/abu-dhabi-mrv' },
     source: 'https://www.ropesgray.com/en/insights/alerts/2026/04/preparing-for-new-uae-ghg-emissions-reporting-and-reduction-requirements',
   },
   // International
@@ -366,6 +369,9 @@ export default function RegulatoryCalendarPage() {
                       <p className="text-xs text-red-600"><span className="font-medium">Penalty:</span> {deadline.penalty}</p>
                     )}
                     <a href={deadline.source} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">Official source</a>
+                    {deadline.action && (
+                      <Link href={`/orgs/${orgId}/${deadline.action.path}`} className="ml-3 text-xs text-blue-600 hover:underline">{deadline.action.label}</Link>
+                    )}
                   </div>
                   <div className="text-right shrink-0">
                     <div className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm font-medium ${getUrgencyColor(days)}`}>

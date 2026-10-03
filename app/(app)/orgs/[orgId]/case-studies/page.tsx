@@ -47,6 +47,7 @@ export default async function CaseStudiesPage({ params }: { params: Promise<{ or
           results: r.results,
           kpis: parseKpis(r.kpis),
           assumptions: r.assumptions,
+          photoEvidenceFileId: r.photoEvidenceFileId,
           published: r.published,
         }))}
       />
