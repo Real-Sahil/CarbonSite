@@ -42,6 +42,7 @@ const createReportSchema = z.object({
     "ecology_survey",
     "bid_carbon_pack",
     "transition_plan",
+    "sustainability_report",
   ]),
   contractId: z.string().min(1).optional(),
   options: z.record(z.any()).optional(),

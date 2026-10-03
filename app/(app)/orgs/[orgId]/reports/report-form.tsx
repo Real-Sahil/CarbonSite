@@ -113,6 +113,7 @@ const REPORT_TYPE_OPTIONS = [
   { value: "ppn_006_crp",      label: "Carbon Reduction Plan (PPN 006, public tenders)" },
   { value: "secr",             label: "SECR (Directors' Report energy and carbon)" },
   { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
+  { value: "sustainability_report", label: "Annual sustainability report" },
   { value: "transition_plan",  label: "Climate transition plan (ESRS E1-1)" },
   { value: "inventory",        label: "Inventory" },
   { value: "monthly_snapshot", label: "Monthly snapshot" },

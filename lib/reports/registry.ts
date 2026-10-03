@@ -32,6 +32,8 @@ import { loadBidPackData } from "@/lib/bids/carbon-pack";
 import { renderTransitionPlanHtml } from "./templates/transition-plan";
 import { loadTransitionPlan } from "@/lib/transition-plan/load";
 import { loadOrgCommitments, type OrgCommitments } from "./commitments";
+import { renderSustainabilityReportHtml } from "./templates/sustainability-report";
+import { loadSustainabilityReport } from "@/lib/sustainability-report/load";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
   return Promise.race([
@@ -730,6 +732,11 @@ const handlers: Record<string, ReportHandler> = {
   bid_carbon_pack: async (ctx) => {
     const data = await withQueryTimeout(loadBidPackData(ctx.orgId, ctx.report.snapshot.id, ctx.opts), 60_000);
     return { html: renderBidCarbonPackHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
+  },
+
+  sustainability_report: async (ctx) => {
+    const data = await withQueryTimeout(loadSustainabilityReport(ctx.orgId, ctx.report.snapshot.id), 60_000);
+    return { html: renderSustainabilityReportHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
   },
 
   transition_plan: async (ctx) => {
