@@ -14,12 +14,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { COUNTRIES, CURRENCIES, currencyForCountry } from "@/lib/i18n/countries";
 
 export default function NewOrgPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
   const [hqCountry, setHqCountry] = useState("");
+  const [currency, setCurrency] = useState("");
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,9 @@ export default function NewOrgPage() {
     const errors: Record<string, string> = {};
     if (!name.trim()) {
       errors.name = "Organisation name is required.";
+    }
+    if (!hqCountry) {
+      errors.hqCountry = "Choose the country your organisation is based in.";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -48,7 +53,8 @@ export default function NewOrgPage() {
         body: JSON.stringify({
           name: name.trim(),
           industry: industry.trim() || undefined,
-          hqCountry: hqCountry.trim() || undefined,
+          hqCountry,
+          reportingCurrency: currency || undefined,
         }),
       });
 
@@ -120,14 +126,39 @@ export default function NewOrgPage() {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="hqCountry">HQ country (optional)</Label>
-                <Input
+                <Label htmlFor="hqCountry">Country</Label>
+                <select
                   id="hqCountry"
-                  type="text"
                   value={hqCountry}
-                  onChange={(e) => setHqCountry(e.target.value)}
+                  onChange={(e) => { setHqCountry(e.target.value); setCurrency(currencyForCountry(e.target.value) ?? ""); }}
                   disabled={loading}
-                />
+                  className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                >
+                  <option value="">Select a country</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>{c.name}</option>
+                  ))}
+                </select>
+                {fieldErrors.hqCountry && (
+                  <p className="text-sm text-red-600" role="alert">
+                    {fieldErrors.hqCountry}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="reportingCurrency">Reporting currency</Label>
+                <select
+                  id="reportingCurrency"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  disabled={loading || !hqCountry}
+                  className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                >
+                  {!currency && <option value="">Choose a country first</option>}
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               {error && (
                 <p className="text-sm text-red-600" role="alert">
