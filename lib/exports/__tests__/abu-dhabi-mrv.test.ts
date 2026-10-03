@@ -41,6 +41,8 @@ describe("buildMrvWorkbook", () => {
     expect(wb.SheetNames).toEqual(["Read me", "Identifiers", "Source streams"]);
     const ids = XLSX.utils.sheet_to_json<string[]>(wb.Sheets["Identifiers"], { header: 1 });
     expect(ids[3]).toEqual(["Economic licence number", "CN-1"]);
+    expect(ids[7][0]).toBe("Plus Code of the same position");
+    expect(String(ids[7][1])).toMatch(/^[0-9A-Z]{8}\+[0-9A-Z]{2}$/);
     const streams = XLSX.utils.sheet_to_json<(string | number)[]>(wb.Sheets["Source streams"], { header: 1 });
     expect(streams.at(-1)?.[0]).toBe("Total Scope 1");
     expect(streams.at(-1)?.[5]).toBeCloseTo(2.5);

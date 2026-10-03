@@ -121,6 +121,10 @@ export default async function OperationsSettingsPage({
           name: facility.name,
           country: facility.country ?? "",
           region: facility.region ?? "",
+          addressLine: facility.addressLine ?? "",
+          postcode: facility.postcode ?? "",
+          latitude: facility.latitude == null ? null : Number(facility.latitude),
+          longitude: facility.longitude == null ? null : Number(facility.longitude),
           waterStressLevel: facility.waterStressLevel,
         }))}
         businessUnits={businessUnits.map((businessUnit) => ({

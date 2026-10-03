@@ -7,6 +7,7 @@
 // based sources, methane, verification, quality assurance, mitigation).
 
 import * as XLSX from "xlsx";
+import { plusCode } from "@/lib/geo/address";
 
 
 export type MrvCalcRow = {
@@ -101,6 +102,7 @@ export function buildMrvWorkbook(f: MrvFacilityInput): Buffer {
     ["Environmental permit number", f.environmentalPermitNumber ?? ""],
     ["Facility address", f.address ?? ""],
     ["Coordinates of the main entrance", f.latitude != null && f.longitude != null ? `${f.latitude}, ${f.longitude}` : ""],
+    ["Plus Code of the same position", f.latitude != null && f.longitude != null ? plusCode(f.latitude, f.longitude) : ""],
   ], [36, 60]);
   add("Source streams", [
     ["Source stream", "Quantity", "Unit", "Emission factor (kg CO2e per unit)", "Factor source", "tCO2e", "Records", "Data origin"],
