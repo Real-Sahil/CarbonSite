@@ -43,6 +43,8 @@ const createReportSchema = z.object({
     "bid_carbon_pack",
     "transition_plan",
     "sustainability_report",
+    "tcfd_statement",
+    "site_noticeboard",
   ]),
   contractId: z.string().min(1).optional(),
   options: z.record(z.any()).optional(),
@@ -172,6 +174,29 @@ export async function POST(req: NextRequest, { params }: Params) {
         select: { updatedAt: true },
       });
       planVersion = `plan@${plan.updatedAt.toISOString()}:${lastInitiative?.updatedAt.toISOString() ?? ""}:`;
+    }
+
+    // A noticeboard is for one contract, and its case studies change without the snapshot changing.
+    if (body.type === "site_noticeboard") {
+      if (!body.contractId) return apiError("VALIDATION_ERROR", "Choose the contract this noticeboard is for.", 422);
+      const [latest, count] = await Promise.all([
+        prisma.caseStudy.findFirst({ where: { organizationId: orgId, contractId: body.contractId, published: true }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+        prisma.caseStudy.count({ where: { organizationId: orgId, contractId: body.contractId, published: true } }),
+      ]);
+      planVersion = `board@${latest?.updatedAt.toISOString() ?? ""}:${count}:`;
+    }
+
+    // The disclosure, the TCFD scenarios and the risk assessments change without the snapshot changing.
+    if (body.type === "tcfd_statement") {
+      const [disclosure, lastScenario, lastRisk, scenarioCount, riskCount] = await Promise.all([
+        prisma.climateDisclosure.findUnique({ where: { organizationId: orgId }, select: { updatedAt: true } }),
+        prisma.tcfdScenario.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+        prisma.tcfdRiskAssessment.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+        prisma.tcfdScenario.count({ where: { organizationId: orgId } }),
+        prisma.tcfdRiskAssessment.count({ where: { organizationId: orgId } }),
+      ]);
+      if (!disclosure) return apiError("NOT_FOUND", "Save a climate disclosure before generating its report.", 404);
+      planVersion = `tcfd@${disclosure.updatedAt.toISOString()}:${lastScenario?.updatedAt.toISOString() ?? ""}:${scenarioCount}:${lastRisk?.updatedAt.toISOString() ?? ""}:${riskCount}:`;
     }
 
     // Idempotency — same snapshot + type + contract + options = same report

@@ -164,6 +164,9 @@ const registry: Record<string, UnitConversion> = {
   gallons: { toCanonical: 4.54609, canonical: "litre" },
   "us gallon": { toCanonical: 3.78541, canonical: "litre" },
   "us gallons": { toCanonical: 3.78541, canonical: "litre" },
+  "us gal": { toCanonical: 3.78541, canonical: "litre" },
+  "uk gallon": { toCanonical: 4.54609, canonical: "litre" },
+  "imperial gallon": { toCanonical: 4.54609, canonical: "litre" },
   m3: { toCanonical: 1000, canonical: "litre" },
   // UK gas bills state volume as m³ in several spellings. Without these the
   // record throws UnitError before it can reach the calorific conversion.

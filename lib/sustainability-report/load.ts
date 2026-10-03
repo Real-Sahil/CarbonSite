@@ -8,16 +8,24 @@ import { prisma } from "@/lib/db";
 import { loadBidPackData, type BidPackData } from "@/lib/bids/carbon-pack";
 import { parseSections } from "@/lib/crp/plan";
 import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
+import { formatters, orgFormat, type OrgFormat } from "@/lib/i18n/org-format";
+import { normalizeUnit } from "@/lib/calculation/units";
+import { materialByStandard } from "@/lib/materiality";
 import {
+  fuelSummary,
   highlights,
   intensity,
+  perMillion,
+  waterSummary,
   scope3Disclosure,
   wasteSummary,
   yearTable,
   type Intensity,
   type Scope3Row,
   type Tile,
+  type Fuel,
   type Waste,
+  type Water,
   type YearRow,
 } from "./model";
 
@@ -29,8 +37,23 @@ export type SustainabilityReportData = {
   intensity: Intensity | null;
   scope3: Scope3Row[];
   waste: Waste | null;
+  /** Tonnes of waste per million of revenue. */
+  wasteIntensity: number | null;
+  fuel: Fuel | null;
+  water: (Water & { withdrawalPerMillion: number | null }) | null;
   socialValue: { totalPounds: number; byTheme: { name: string; pounds: number }[] } | null;
   boundary: { approach: string; sites: string; exclusions: { item: string; reason: string }[] } | null;
+  /** The latest approved or published materiality assessment, with its material topics. */
+  materiality: {
+    name: string;
+    status: string;
+    approvedAt: Date | null;
+    method: string | null;
+    stakeholders: string | null;
+    groups: ReturnType<typeof materialByStandard>;
+  } | null;
+  /** The organisation's locale and reporting currency. */
+  format: OrgFormat;
 };
 
 const BOUNDARY_LABELS: Record<string, string> = {
@@ -46,12 +69,13 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     select: {
       reportingPeriodId: true,
       reportingPeriod: { select: { revenueAmount: true, revenueCurrency: true, fteCount: true } },
+      organization: { select: { hqCountry: true, reportingCurrency: true } },
     },
   });
   if (!snap) throw Object.assign(new Error("Snapshot not found."), { code: "NOT_FOUND", status: 404 });
   const periodId = snap.reportingPeriodId;
 
-  const [wasteRows, svRows, periodPlan] = await Promise.all([
+  const [wasteRows, svRows, periodPlan, fuelRows, waterRows, assessment] = await Promise.all([
     prisma.wasteRecord.findMany({
       where: { organizationId: orgId, reportingPeriodId: periodId },
       select: { weightTonnes: true, disposalRoute: true },
@@ -61,6 +85,35 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
       select: { valuePounds: true, measure: { select: { theme: { select: { name: true } } } } },
     }),
     prisma.carbonReductionPlan.findFirst({ where: { organizationId: orgId, reportingPeriodId: periodId }, select: { sections: true } }),
+    // Fuel the organisation burns itself: fleet and site fuel, counted once reviewed or approved.
+    prisma.activityRecord.findMany({
+      where: {
+        organizationId: orgId,
+        reportingPeriodId: periodId,
+        reviewStatus: { in: ["in_review", "approved"] },
+        emissionCategory: { code: { in: ["s1-mobile", "s1-stationary"] } },
+      },
+      select: { amount: true, unit: true, fuelType: true },
+    }),
+    prisma.waterRecord.findMany({
+      where: { organizationId: orgId, reportingPeriodId: periodId },
+      select: { metricType: true, volumeM3: true },
+    }),
+    // Only an assessment the organisation has approved is reported.
+    prisma.materialityAssessment.findFirst({
+      where: { organizationId: orgId, status: { in: ["approved", "published"] } },
+      orderBy: [{ approvedAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        name: true,
+        status: true,
+        approvedAt: true,
+        methodologyNotes: true,
+        stakeholderInput: true,
+        topics: {
+          select: { esrsCode: true, topicName: true, iroType: true, impactScore: true, financialScore: true, isMaterial: true, rationale: true },
+        },
+      },
+    }),
   ]);
   const plan = periodPlan
     ?? (await prisma.carbonReductionPlan.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { sections: true } }));
@@ -77,6 +130,18 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     wasteRows.map((w) => ({ tonnes: Number(w.weightTonnes), diverted: wasteHierarchyOf(w.disposalRoute) !== "landfill" })),
   );
 
+  const revenue = rev.revenueAmount != null ? { amount: Number(rev.revenueAmount) } : null;
+  const wasteIntensity = waste && inten ? perMillion(waste.totalTonnes, revenue) : null;
+  // Only litres count: a record in kWh or tonnes cannot be added to a litre total.
+  const fuel = fuelSummary(
+    fuelRows
+      .map((r) => ({ n: normalizeUnit(Number(r.amount), r.unit), fuelType: r.fuelType }))
+      .filter((r) => r.n.unit === "litre")
+      .map((r) => ({ litres: r.n.amount, fuelType: r.fuelType })),
+  );
+  const waterTotals = waterSummary(waterRows.map((w) => ({ metric: w.metricType, m3: Number(w.volumeM3) })));
+  const water = waterTotals ? { ...waterTotals, withdrawalPerMillion: perMillion(waterTotals.withdrawalM3, revenue) } : null;
+
   const themes = new Map<string, number>();
   for (const r of svRows) {
     const name = r.measure.theme.name;
@@ -87,6 +152,7 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     : null;
 
   const top = pack.categories[0];
+  const format = orgFormat(snap.organization);
   return {
     orgName: pack.orgName,
     pack,
@@ -96,13 +162,29 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
       baseYear: pack.baseYear,
       intensity: inten,
       waste,
+      wasteIntensity,
+      fuel,
       socialValuePounds: pack.socialValuePounds,
       topCategory: top ? { name: top.name, tonnes: top.tonnes } : null,
+      fmt: formatters(format),
     }),
     years: yearTable(pack.baseYear, pack.history, pack.current, pack.snapshot.periodLabel),
     intensity: inten,
     scope3: scope3Disclosure(pack.categories, sections?.scope3 ?? []),
     waste,
+    wasteIntensity,
+    fuel,
+    water,
+    materiality: assessment
+      ? {
+          name: assessment.name,
+          status: assessment.status,
+          approvedAt: assessment.approvedAt,
+          method: assessment.methodologyNotes,
+          stakeholders: assessment.stakeholderInput,
+          groups: materialByStandard(assessment.topics),
+        }
+      : null,
     socialValue,
     boundary: sections
       ? {
@@ -111,5 +193,6 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
           exclusions: sections.organisation.exclusions.map((e) => ({ item: e.item, reason: e.reason })),
         }
       : null,
+    format,
   };
 }

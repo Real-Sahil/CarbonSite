@@ -48,6 +48,8 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
   bid_carbon_pack: "Bid carbon pack",
   transition_plan: "Transition plan",
   sustainability_report: "Sustainability report",
+  tcfd_statement: "Climate disclosure (TCFD)",
+  site_noticeboard: "Site noticeboard",
   nhs_evergreen:   "NHS Evergreen L1",
   breeam_evidence: "BREEAM Evidence",
   national_toms:   "National TOMS",

@@ -9,14 +9,24 @@
 import { esc, brandStyles, brandLogoHtml, svgHBars, svgDonut } from "./shared";
 import { change, STANDARD_LABELS } from "@/lib/bids/carbon-pack";
 import { ESRS_SECTION_REFS, ESRS_STATEMENT } from "@/lib/sustainability-report/model";
+import { formatters } from "@/lib/i18n/org-format";
+import { IRO_LABELS, basisOf } from "@/lib/materiality";
 import type { SustainabilityReportData } from "@/lib/sustainability-report/load";
 
-const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-const fmtT = (n: number | null | undefined) =>
-  n == null ? "Not reported" : n.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: n < 10 ? 2 : 1 });
-const fmtMoney = (n: number) => `£${Math.round(n).toLocaleString("en-GB")}`;
-const fmtSignDate = (s: string) => (/^\d{4}-\d{2}-\d{2}$/.test(s) ? fmtDate(new Date(`${s}T00:00:00Z`)) : s);
-const fmtChange = (c: number) => `${c <= 0 ? "−" : "+"}${Math.abs(c * 100).toFixed(1)}%`;
+function fmtFor(format: SustainabilityReportData["format"]) {
+  const F = formatters(format);
+  const fmtT = (n: number | null | undefined) => (n == null ? "Not reported" : F.tonnes(n));
+  return {
+    fmtDate: F.date,
+    fmtT,
+    /** Social value is recorded in GBP (National TOMs), so it is shown in GBP whatever the reporting currency. */
+    fmtMoney: (n: number) => F.money(n, "GBP"),
+    fmtSignDate: (s: string) => (/^\d{4}-\d{2}-\d{2}$/.test(s) ? F.date(new Date(`${s}T00:00:00Z`)) : s),
+    fmtChange: (c: number) => `${c <= 0 ? "−" : "+"}${F.percent(Math.abs(c))}`,
+    pct: F.percent,
+    num: F.number,
+  };
+}
 
 const KIND_LABELS = { base: "Base year", previous: "Previous period", current: "Reporting period" } as const;
 const STATUS_TEXT = {
@@ -39,6 +49,7 @@ const ASSURANCE_STATUS: Record<string, string> = {
 
 export function renderSustainabilityReportHtml(d: SustainabilityReportData & { logoDataUri?: string }): string {
   const p = d.pack;
+  const { fmtDate, fmtT, fmtMoney, fmtSignDate, fmtChange, pct, num } = fmtFor(d.format);
   const s12 = p.current.s1 + p.current.s2;
   const baseS12 = p.baseYear?.s1 != null && p.baseYear?.s2 != null ? p.baseYear.s1 + p.baseYear.s2 : null;
   const reduction = change(baseS12, s12); // negative = fell
@@ -61,10 +72,32 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
     <tr><td>Methodology</td><td>${esc(p.snapshot.methodology)}, GHG Protocol Corporate Standard</td></tr>
     <tr><td>Emission factors</td><td>${esc(p.snapshot.factorLibrary)}</td></tr>
     <tr><td>Global warming potentials</td><td>${esc(p.snapshot.gwpVersion)}</td></tr>
-    <tr><td>Activity records</td><td>${p.snapshot.recordCount.toLocaleString("en-GB")}</td></tr>
+    <tr><td>Activity records</td><td>${num(p.snapshot.recordCount, 0)}</td></tr>
   </table>
   <p class="note">${esc(ESRS_STATEMENT)}</p>
 </section>`;
+
+  const mat = d.materiality && d.materiality.groups.length > 0 ? d.materiality : null;
+  if (mat) present.push("materiality");
+  const materiality = mat
+    ? `
+<section>
+  ${h("materiality", "Material topics")}
+  <p>Topics the organisation found material in its double materiality assessment, <strong>${esc(mat.name)}</strong> (${esc(mat.status)}${mat.approvedAt ? `, approved ${fmtDate(mat.approvedAt)}` : ""}). A topic is material if its impact or its financial effect scores 3 or more on a 1 to 5 scale, or the organisation judged it so.</p>
+  ${mat.method ? `<h3>How it was assessed</h3><p>${esc(mat.method).replace(/\r?\n/g, "<br>")}</p>` : ""}
+  ${mat.stakeholders ? `<h3>Stakeholders consulted</h3><p>${esc(mat.stakeholders).replace(/\r?\n/g, "<br>")}</p>` : ""}
+  <table>
+    <tr><th>Standard</th><th>Topic</th><th>Type</th><th class="num">Impact</th><th class="num">Financial</th><th>Basis</th><th>Reason</th></tr>
+    ${mat.groups
+      .flatMap((g) => g.topics.map((t) => ({ code: g.code, t })))
+      .map(({ code, t }) => {
+        const basis = basisOf(t);
+        return `<tr><td>${esc(code)}</td><td>${esc(t.topicName)}</td><td>${esc(IRO_LABELS[t.iroType] ?? t.iroType)}</td><td class="num">${t.impactScore ?? "–"}</td><td class="num">${t.financialScore ?? "–"}</td><td>${basis ? (basis === "both" ? "Impact and financial" : basis === "impact" ? "Impact" : "Financial") : "Organisation's judgement"}</td><td>${t.rationale ? esc(t.rationale) : ""}</td></tr>`;
+      })
+      .join("")}
+  </table>
+</section>`
+    : "";
 
   const scopeSlices = [
     { label: "Scope 1", value: p.current.s1 * 1000, scope: 1 },
@@ -103,8 +136,8 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
   <p class="note">Revenue and headcount are the figures entered for this reporting period.</p>`
       : `<p class="muted">Intensity is not shown: no revenue is entered for this reporting period.</p>`
   }
-  ${scopeSlices.length ? `<h3>Split by scope</h3>${svgDonut(scopeSlices, { title: "Total" })}` : ""}
-  ${topCats.length ? `<h3>Largest sources</h3>${svgHBars(topCats)}` : ""}
+  ${scopeSlices.length ? `<h3>Split by scope</h3>${svgDonut(scopeSlices, { title: "Total", formatValue: (v) => fmtT(v / 1000) })}` : ""}
+  ${topCats.length ? `<h3>Largest sources</h3>${svgHBars(topCats, { formatValue: (v) => fmtT(v / 1000) })}` : ""}
 </section>`;
 
   const scope3 = `
@@ -171,6 +204,8 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
     : "";
 
   if (d.waste) present.push("waste");
+  if (d.water) present.push("water");
+  if (d.fuel) present.push("fuel");
   const waste = d.waste
     ? `
 <section>
@@ -178,8 +213,35 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
   <table>
     <tr><td>Waste recorded</td><td class="num">${fmtT(d.waste.totalTonnes)} tonnes</td></tr>
     <tr><td>Diverted from landfill</td><td class="num">${fmtT(d.waste.divertedTonnes)} tonnes</td></tr>
-    <tr><td>Diversion rate</td><td class="num">${d.waste.diversionRate != null ? `${(d.waste.diversionRate * 100).toFixed(1)}%` : "Not reported"}</td></tr>
+    <tr><td>Diversion rate</td><td class="num">${d.waste.diversionRate != null ? `${pct(d.waste.diversionRate)}` : "Not reported"}</td></tr>
+    ${d.wasteIntensity != null && d.intensity ? `<tr><td>Tonnes of waste per million ${esc(d.intensity.currency)} revenue</td><td class="num">${fmtT(d.wasteIntensity)}</td></tr>` : ""}
   </table>
+</section>`
+    : "";
+
+  const water = d.water
+    ? `
+<section>
+  ${h("water", "Water")}
+  <table>
+    <tr><td>Withdrawal</td><td class="num">${num(d.water.withdrawalM3, 1)} m³</td></tr>
+    <tr><td>Discharge</td><td class="num">${num(d.water.dischargeM3, 1)} m³</td></tr>
+    <tr><td>Consumption</td><td class="num">${num(d.water.consumptionM3, 1)} m³</td></tr>
+    ${d.water.withdrawalPerMillion != null && d.intensity ? `<tr><td>Withdrawal per million ${esc(d.intensity.currency)} revenue</td><td class="num">${num(d.water.withdrawalPerMillion, 1)} m³</td></tr>` : ""}
+  </table>
+</section>`
+    : "";
+
+  const fuel = d.fuel
+    ? `
+<section>
+  ${h("fuel", "Fuel")}
+  <table>
+    <tr><td>Fuel burned, fleet and site (litres)</td><td class="num">${num(d.fuel.totalLitres, 0)}</td></tr>
+    <tr><td>Of which HVO (litres, blends counted by their HVO share)</td><td class="num">${num(d.fuel.hvoLitres, 0)}</td></tr>
+    <tr><td>HVO share of fuel litres</td><td class="num">${pct(d.fuel.hvoShare)}</td></tr>
+  </table>
+  <p class="note">Only records measured in litres are counted. HVO's CO₂ is mostly biogenic and is reported outside the scopes, not in the totals above.</p>
 </section>`
     : "";
 
@@ -188,7 +250,7 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
     ? `
 <section>
   ${h("social", "Social value")}
-  <p>National TOMs social value recorded in ${esc(p.snapshot.periodLabel)}: <strong>${fmtMoney(d.socialValue.totalPounds)}</strong>.</p>
+  <p>National TOMs (UK) social value recorded in ${esc(p.snapshot.periodLabel)}, in GBP: <strong>${fmtMoney(d.socialValue.totalPounds)}</strong>.</p>
   ${
     d.socialValue.byTheme.length
       ? `<table><tr><th>Theme</th><th class="num">Value</th></tr>${d.socialValue.byTheme.map((t) => `<tr><td>${esc(t.name)}</td><td class="num">${fmtMoney(t.pounds)}</td></tr>`).join("")}</table>`
@@ -280,11 +342,14 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
 </div>
 
 ${about}
+${materiality}
 ${emissions}
 ${scope3}
 ${targets}
 ${measures}
 ${waste}
+${water}
+${fuel}
 ${social}
 ${assurance}
 ${signoff}

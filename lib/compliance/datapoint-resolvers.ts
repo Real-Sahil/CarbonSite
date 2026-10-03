@@ -213,6 +213,28 @@ async function transitionPlanDisclosed(orgId: string, db: PrismaClient): Promise
   };
 }
 
+/// ESRS E1-9. Conservative: satisfied only when physical and transition risk
+/// each have an assessment with a financial impact estimate. Whether a risk is
+/// material is the organisation's call, so this checks the estimate exists, not
+/// that it is right.
+async function climateFinancialEffects(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  const rows = await db.tcfdRiskAssessment.findMany({
+    where: { organizationId: orgId },
+    select: { financialImpactLow: true, financialImpactHigh: true, scenario: { select: { scenarioType: true } } },
+  });
+  if (rows.length === 0) return { status: "gap", evidenceSummary: "No climate risk assessments recorded (Carbon forecast, TCFD scenarios)." };
+  const estimated = rows.filter((r) => r.financialImpactLow != null || r.financialImpactHigh != null);
+  const types = new Set(estimated.map((r) => r.scenario.scenarioType));
+  if (types.has("physical") && types.has("transition")) {
+    return { status: "satisfied", evidenceSummary: `${estimated.length} of ${rows.length} risk assessments carry a financial impact estimate, for physical and transition risk.` };
+  }
+  const missing = (["physical", "transition"] as const).filter((t) => !types.has(t));
+  return {
+    status: "partial",
+    evidenceSummary: `${rows.length} risk assessments recorded, ${estimated.length} with a financial impact estimate. No estimate yet for ${missing.join(" or ")} risk.`,
+  };
+}
+
 /// ESRS E1-8. With no price recorded, a manual entry (e.g. "we use no internal
 /// carbon price", which E1-8 accepts as a disclosure) is respected.
 async function internalCarbonPrice(orgId: string, db: PrismaClient): Promise<ResolverResult> {
@@ -368,6 +390,7 @@ export const DATAPOINT_RESOLVERS: Record<string, Resolver> = {
   primary_data_share_disclosed: primaryDataShareDisclosed,
   transition_plan_disclosed: transitionPlanDisclosed,
   internal_carbon_price: internalCarbonPrice,
+  climate_financial_effects: climateFinancialEffects,
   restatement_disclosed: restatementDisclosed,
   offsets_disclosed: offsetsDisclosed,
   water_metrics_disclosed: waterMetricsDisclosed,

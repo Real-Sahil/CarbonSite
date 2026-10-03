@@ -118,6 +118,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Activities",   href: `/orgs/${orgId}/social-value/activities`,     icon: ListChecks,    roles: EXTENDED_VIEW_ROLES },
         { label: "Local spend",  href: `/orgs/${orgId}/social-value/local-spend`,    icon: MapPin,        roles: EXTENDED_VIEW_ROLES },
         { label: "Obligations",  href: `/orgs/${orgId}/social-value/obligations`,    icon: Landmark,      roles: EXTENDED_VIEW_ROLES },
+        { label: "Case studies", href: `/orgs/${orgId}/case-studies`,                icon: BookOpen,      roles: EXTENDED_VIEW_ROLES },
         { label: "Frameworks",   href: `/orgs/${orgId}/social-value/frameworks`,     icon: Network,       roles: ["admin", "sustainability_director"] },
       ]},
     ]},
@@ -156,6 +157,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { items: [
         { label: "Pathway",      href: `/orgs/${orgId}/pathway`,      icon: Compass,      roles: CORE_ROLES },
         { label: "Transition plan", href: `/orgs/${orgId}/transition-plan`, icon: ClipboardCheck, roles: CORE_ROLES },
+        { label: "Climate disclosure", href: `/orgs/${orgId}/climate-disclosure`, icon: ClipboardCheck, roles: CORE_ROLES },
         { label: "Targets",      href: `/orgs/${orgId}/targets`,      icon: Target,       roles: CORE_ROLES },
         { label: "SBTi roadmap", href: `/orgs/${orgId}/sbti`,         icon: TrendingDown, roles: CORE_ROLES },
         { label: "Offsets",      href: `/orgs/${orgId}/offsets`,      icon: Sprout,       roles: CORE_ROLES },
