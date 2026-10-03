@@ -1,52 +1,60 @@
 // Climate-related financial disclosure statement, in the TCFD structure
 // (governance, strategy, risk management, metrics and targets). It prints what
-// the organisation wrote and recorded, plus the published totals of the
-// report's snapshot. It claims consistency with the recommendations only when
-// every disclosure is met and the board has approved this version; otherwise
-// it says how many are addressed. Not tied to any one jurisdiction.
+// the organisation wrote, its TCFD scenarios and risk assessments, and the
+// published totals of the report's snapshot. It claims consistency with the
+// recommendations only when every disclosure is met and the board has approved
+// this version; otherwise it says how many are addressed. Not tied to any one
+// jurisdiction, currency or scenario set.
 
 import { esc, brandStyles, brandLogoHtml } from "./shared";
-import { formatters } from "@/lib/i18n/org-format";
+import { formatters, type Formatters } from "@/lib/i18n/org-format";
 import {
   FRAMEWORK_NOTE,
-  IFRS_S2_AREAS,
   HORIZONS,
+  IFRS_S2_AREAS,
   PILLARS,
   RATING_LABELS,
-  RISK_KINDS,
-  RISK_STATUSES,
   coverage,
+  horizonLabel,
   inherentScore,
   mayClaimConsistency,
   ratingOf,
   residualScore,
+  riskFamily,
   type RiskRow,
+  type ScenarioRow,
 } from "@/lib/climate-disclosure";
 import type { ClimateDisclosureView } from "@/lib/climate-disclosure/load";
 
 const para = (s: string) => (s.trim() ? `<p>${esc(s).replace(/\r?\n/g, "<br>")}</p>` : `<p class="muted">Not yet written.</p>`);
-const kindLabel = (k: string) => RISK_KINDS.find((x) => x.value === k)?.label ?? k;
-const statusLabel = (s: string) => RISK_STATUSES.find((x) => x.value === s)?.label ?? s;
-const horizonLabel = (h: string) => HORIZONS.find((x) => x.value === h)?.label ?? h;
 const STATUS_TEXT = { met: "Addressed", partial: "Partly addressed", gap: "Not yet addressed" } as const;
+const FAMILY_TEXT = { physical: "Physical risk", transition: "Transition risk", opportunity: "Opportunity" } as const;
 
 const scoreCell = (s: number | null) =>
   s == null ? `<span class="muted">Not assessed</span>` : `${s} <span class="muted">(${RATING_LABELS[ratingOf(s)]})</span>`;
 
-function riskTable(rows: RiskRow[]) {
+/** A low to high range of money, or a single figure, or nothing. */
+function range(F: Formatters, low: number | null, high: number | null): string {
+  if (low == null && high == null) return `<span class="muted">Not estimated</span>`;
+  if (low != null && high != null && low !== high) return `${esc(F.money(low))} to ${esc(F.money(high))}`;
+  return esc(F.money((low ?? high)!));
+}
+
+function riskTable(F: Formatters, rows: RiskRow[], scenarios: Map<string, ScenarioRow>) {
   return `<table class="risks">
-    <tr><th style="width:30%">Risk or opportunity</th><th style="width:9%">Horizon</th><th style="width:13%" class="num">Before</th><th style="width:13%" class="num">After</th><th>Response and owner</th><th style="width:10%">Status</th></tr>
+    <tr><th style="width:26%">Risk or opportunity</th><th style="width:15%">Scenario</th><th style="width:8%">Horizon</th><th style="width:11%" class="num">Before</th><th style="width:11%" class="num">After</th><th>Financial impact and response</th></tr>
     ${rows
-      .map(
-        (r) => `<tr>
-      <td><strong>${esc(r.title)}</strong><br><span class="note">${esc(kindLabel(r.kind))}</span>${r.description ? `<br><span class="muted">${esc(r.description)}</span>` : ""}${r.financialEffect ? `<br><span class="note">Financial effect: ${esc(r.financialEffect)}</span>` : ""}</td>
-      <td>${esc(horizonLabel(r.horizon))}</td>
+      .map((r) => {
+        const sc = scenarios.get(r.scenarioId);
+        return `<tr>
+      <td><strong>${esc(r.category)}</strong><br><span class="note">${FAMILY_TEXT[riskFamily(r, sc)]}</span><br><span class="muted">${esc(r.description)}</span></td>
+      <td>${sc ? `${esc(sc.name)}${sc.pathway ? `<br><span class="note">${esc(sc.pathway)}</span>` : ""}` : ""}</td>
+      <td>${sc ? esc(horizonLabel(sc.horizon)) : ""}</td>
       <td class="num">${scoreCell(inherentScore(r))}</td>
       <td class="num">${scoreCell(residualScore(r))}</td>
-      <td>${r.mitigation ? esc(r.mitigation) : `<span class="muted">None recorded</span>`}${r.ownerRole ? `<br><span class="note">Owner: ${esc(r.ownerRole)}</span>` : ""}</td>
-      <td>${esc(statusLabel(r.status))}</td>
-    </tr>`,
-      )
+      <td>${range(F, r.financialLow, r.financialHigh)}<br>${r.actions ? esc(r.actions) : `<span class="muted">No action recorded</span>`}</td>
+    </tr>`;
+      })
       .join("")}
   </table>`;
 }
@@ -60,6 +68,7 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
   const cov = coverage(d.checklist);
   const consistent = mayClaimConsistency(d.checklist, approved);
   const period = d.snapshot;
+  const scenarioById = new Map(d.scenarios.map((x) => [x.id, x]));
 
   const statement = consistent
     ? `<p>This statement is consistent with the eleven recommended disclosures of the TCFD. It was approved by ${esc(d.approvalBody ?? "the board")} on ${fmtDate(d.approvedAt!)}.</p>`
@@ -74,19 +83,19 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
       .join("")}`,
   ).join("");
 
-  const physicalAndTransition = d.risks.filter((r) => r.status !== "closed");
-  const horizonRows = HORIZONS.map((h) => `<tr><td>${h.label}</td><td>${s.horizons[h.value] ? esc(s.horizons[h.value]) : `<span class="muted">Not defined</span>`}</td></tr>`).join("");
+  const horizonRows = HORIZONS.map((h) => `<tr><td>${h.label}</td><td>${h.meaning}</td></tr>`).join("");
 
-  const scenarios = s.scenarios.length
+  const scenarios = d.scenarios.length
     ? `<table>
-    <tr><th>Scenario</th><th>Source</th><th>Transition</th><th>Physical</th></tr>
-    ${s.scenarios
+    <tr><th>Scenario</th><th>Type</th><th>Pathway</th><th>Horizon</th><th>Description</th><th>Gross value at risk</th></tr>
+    ${d.scenarios
       .map(
         (x) =>
-          `<tr><td><strong>${esc(x.name)}</strong>${x.lowCarbon ? `<br><span class="note">Consistent with 2°C or lower</span>` : ""}</td><td>${esc(x.source)}</td><td>${esc(x.transition)}</td><td>${esc(x.physical)}</td></tr>`,
+          `<tr><td><strong>${esc(x.name)}</strong></td><td>${x.type === "physical" ? "Physical" : "Transition"}</td><td>${x.pathway ? esc(x.pathway) : ""}</td><td>${esc(horizonLabel(x.horizon))}</td><td>${x.description ? esc(x.description) : ""}</td><td>${range(F, x.valueAtRiskLow, x.valueAtRiskHigh)}</td></tr>`,
       )
       .join("")}
-  </table>`
+  </table>
+  <p class="note">Amounts are in ${esc(d.format.currency)}, the organisation's reporting currency.</p>`
     : `<p class="muted">No scenarios recorded.</p>`;
 
   const totals = d.totals;
@@ -124,7 +133,7 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
   .cover .meta { font-size: 9pt; opacity: 0.7; margin-top: 18px }
   section { margin: 26px 40px }
   h2 { font-size: 13pt; font-weight: 700; color: #16323d; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 2px solid #16323d }
-  h3 { font-size: 10.5pt; font-weight: 700; color: #16323d; margin: 16px 0 6px }
+  h3 { font-size: 10.5pt; font-weight: 700; color: #16323d; margin: 16px 0 6px; page-break-after: avoid }
   p { margin-bottom: 6px; max-width: 170mm }
   .muted { color: #5b6b70; font-size: 9pt }
   .note { color: #4b5d63; font-size: 8.5pt }
@@ -133,7 +142,6 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
   td { padding: 5px 8px; border: 1px solid #dde6e8; vertical-align: top }
   table.risks { table-layout: fixed }
   table.risks td.num { white-space: normal }
-  h3 { page-break-after: avoid }
   tr.pillar td { background: #f1f6f6; font-weight: 700; color: #16323d }
   .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap }
   footer { font-size: 8pt; color: #6b7a7f; text-align: center; padding: 18px; border-top: 1px solid #dde6e8; margin-top: 30px }
@@ -170,9 +178,9 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
 <section>
   <h2>Strategy</h2>
   <h3>Time horizons</h3>
-  <table><tr><th>Horizon</th><th>Meaning for this organisation</th></tr>${horizonRows}</table>
+  <table><tr><th>Horizon</th><th>Meaning</th></tr>${horizonRows}</table>
   <h3>Climate-related risks and opportunities</h3>
-  ${physicalAndTransition.length ? riskTable(physicalAndTransition) : `<p class="muted">None recorded.</p>`}
+  ${d.risks.length ? riskTable(F, d.risks, scenarioById) : `<p class="muted">None assessed.</p>`}
   <h3>Impact on the business, strategy and financial planning</h3>
   ${para(s.strategyImpact)}
   <h3>Resilience under different scenarios</h3>

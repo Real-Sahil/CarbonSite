@@ -6,7 +6,6 @@ import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { loadClimateDisclosure } from "@/lib/climate-disclosure/load";
 import { PILLARS, coverage, mayClaimConsistency } from "@/lib/climate-disclosure";
 import { ApproveForm, DisclosureForm } from "./disclosure-client";
-import { RiskRegister } from "./risk-register";
 
 const TONE = {
   met: "bg-green-50 text-green-800 border-green-200",
@@ -85,12 +84,15 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
 
       <section className="rounded-[10px] border border-[#E5E7EB] bg-white">
         <div className="border-b border-[#F3F4F6] px-5 py-4">
-          <h2 className="text-base font-semibold text-[#111827]">Risk and opportunity register</h2>
+          <h2 className="text-base font-semibold text-[#111827]">Scenarios and risks</h2>
           <p className="mt-1 max-w-[70ch] text-xs text-[#6B7280]">
-            Score each from 1 to 5 for likelihood and for impact, before and after your response. The score is the product: up to 4 low, up to 9 medium, up to 15 high, above that very high.
+            The statement reports your TCFD scenarios and risk assessments. Add and score them on the{" "}
+            <Link href={`/orgs/${orgId}/tcfd`} className="text-[#111827] underline underline-offset-2">TCFD scenarios page</Link>.
           </p>
         </div>
-        <RiskRegister orgId={orgId} canEdit={canEdit} risks={view.risks} />
+        <p className="px-5 py-4 text-sm text-[#374151]">
+          {view.scenarios.length} scenario{view.scenarios.length === 1 ? "" : "s"} and {view.risks.length} risk assessment{view.risks.length === 1 ? "" : "s"} recorded.
+        </p>
       </section>
 
       <section className="rounded-[10px] border border-[#E5E7EB] bg-white">

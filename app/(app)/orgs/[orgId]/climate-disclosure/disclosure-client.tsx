@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { HORIZONS, SCENARIO_PRESETS, type DisclosureSections, type Scenario } from "@/lib/climate-disclosure";
+import type { DisclosureSections } from "@/lib/climate-disclosure";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
@@ -26,7 +26,7 @@ const GROUPS: { title: string; fields: { key: NarrativeKey; label: string; help:
     title: "Strategy",
     fields: [
       { key: "strategyImpact", label: "Impact on the business", help: "How the risks and opportunities in your register affect your business, strategy and financial planning." },
-      { key: "scenarioNarrative", label: "Resilience under the scenarios", help: "What the scenarios below mean for your strategy, and how resilient it is." },
+      { key: "scenarioNarrative", label: "Resilience under the scenarios", help: "What your TCFD scenarios mean for your strategy, and how resilient it is." },
     ],
   },
   {
@@ -45,15 +45,10 @@ const GROUPS: { title: string; fields: { key: NarrativeKey; label: string; help:
   },
 ];
 
-const newId = () => `s${Math.random().toString(36).slice(2, 10)}`;
-
 export function DisclosureForm({ orgId, canEdit, sections, approved }: { orgId: string; canEdit: boolean; sections: DisclosureSections; approved: boolean }) {
   const router = useRouter();
-  const [scenarios, setScenarios] = useState<Scenario[]>(sections.scenarios);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
-
-  const patch = (id: string, change: Partial<Scenario>) => setScenarios((list) => list.map((s) => (s.id === id ? { ...s, ...change } : s)));
 
   function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,10 +58,8 @@ export function DisclosureForm({ orgId, canEdit, sections, approved }: { orgId: 
     const body: DisclosureSections = {
       governanceBoard: str("governanceBoard"),
       governanceManagement: str("governanceManagement"),
-      horizons: { short: str("h-short"), medium: str("h-medium"), long: str("h-long") },
       strategyImpact: str("strategyImpact"),
       scenarioNarrative: str("scenarioNarrative"),
-      scenarios: scenarios.filter((s) => s.name.trim()),
       riskIdentification: str("riskIdentification"),
       riskManagement: str("riskManagement"),
       riskIntegration: str("riskIntegration"),
@@ -94,51 +87,7 @@ export function DisclosureForm({ orgId, canEdit, sections, approved }: { orgId: 
       <p className="text-xs text-[#6B7280]">{approved ? "Saving changes returns the statement to draft until it is approved again." : "Save as you go; approval comes last."}</p>
 
       <Group group={GROUPS[0]} canEdit={canEdit} sections={sections} />
-      <Group group={GROUPS[1]} canEdit={canEdit} sections={sections} only={["strategyImpact"]} extra={<Horizons canEdit={canEdit} sections={sections} />} />
-
-      <fieldset className="flex flex-col gap-3">
-        <legend className="text-sm font-semibold text-[#111827]">Climate scenarios</legend>
-        <p className="text-xs text-[#6B7280]">
-          Use at least two, and include one consistent with limiting warming to 2°C or lower. Name the scenarios you actually used; the list offers well-known public sets as suggestions.
-        </p>
-        <datalist id="scenario-presets">{SCENARIO_PRESETS.map((p) => <option key={p} value={p} />)}</datalist>
-        {scenarios.map((s) => (
-          <div key={s.id} className="grid grid-cols-1 gap-3 rounded-md border border-[#E5E7EB] p-3 md:grid-cols-2">
-            <div>
-              <Label htmlFor={`sc-name-${s.id}`} className={labelClass}>Scenario</Label>
-              <Input id={`sc-name-${s.id}`} list="scenario-presets" value={s.name} maxLength={120} disabled={!canEdit} onChange={(e) => patch(s.id, { name: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor={`sc-source-${s.id}`} className={labelClass}>Source and outcome</Label>
-              <Input id={`sc-source-${s.id}`} value={s.source} maxLength={300} disabled={!canEdit} placeholder="Publisher, version, warming outcome" onChange={(e) => patch(s.id, { source: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor={`sc-tr-${s.id}`} className={labelClass}>Transition effects</Label>
-              <textarea id={`sc-tr-${s.id}`} rows={2} maxLength={3000} disabled={!canEdit} value={s.transition} className={areaClass} onChange={(e) => patch(s.id, { transition: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor={`sc-ph-${s.id}`} className={labelClass}>Physical effects</Label>
-              <textarea id={`sc-ph-${s.id}`} rows={2} maxLength={3000} disabled={!canEdit} value={s.physical} className={areaClass} onChange={(e) => patch(s.id, { physical: e.target.value })} />
-            </div>
-            <div className="flex items-center justify-between md:col-span-2">
-              <label className="flex items-center gap-2 text-sm text-[#374151]">
-                <input type="checkbox" checked={s.lowCarbon} disabled={!canEdit} onChange={(e) => patch(s.id, { lowCarbon: e.target.checked })} />
-                Consistent with 2°C or lower
-              </label>
-              {canEdit && (
-                <Button type="button" variant="outline" size="sm" onClick={() => setScenarios((l) => l.filter((x) => x.id !== s.id))}>Remove</Button>
-              )}
-            </div>
-          </div>
-        ))}
-        {canEdit && scenarios.length < 10 && (
-          <div>
-            <Button type="button" variant="outline" size="sm" onClick={() => setScenarios((l) => [...l, { id: newId(), name: "", source: "", lowCarbon: false, transition: "", physical: "" }])}>
-              Add a scenario
-            </Button>
-          </div>
-        )}
-      </fieldset>
+      <Group group={GROUPS[1]} canEdit={canEdit} sections={sections} only={["strategyImpact"]} />
 
       <Group group={{ ...GROUPS[1], title: "Strategy: resilience" }} canEdit={canEdit} sections={sections} only={["scenarioNarrative"]} />
       <Group group={GROUPS[2]} canEdit={canEdit} sections={sections} />
@@ -171,22 +120,6 @@ function Group({
         </div>
       ))}
     </fieldset>
-  );
-}
-
-function Horizons({ canEdit, sections }: { canEdit: boolean; sections: DisclosureSections }) {
-  return (
-    <div>
-      <p className={labelClass}>Time horizons: what do short, medium and long term mean for you?</p>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        {HORIZONS.map((h) => (
-          <div key={h.value}>
-            <Label htmlFor={`cd-h-${h.value}`} className="mb-1 block text-xs text-[#6B7280]">{h.label}</Label>
-            <Input id={`cd-h-${h.value}`} name={`h-${h.value}`} maxLength={200} disabled={!canEdit} defaultValue={sections.horizons[h.value]} placeholder="For example 0 to 2 years" />
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 

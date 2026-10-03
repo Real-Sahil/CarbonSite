@@ -49,7 +49,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ orgI
       action: "climate_disclosure.updated",
       resourceType: "ClimateDisclosure",
       resourceId: row.id,
-      metadata: { created: !existing, reopenedFromApproved: reopened, scenarios: sections.scenarios.length },
+      metadata: { created: !existing, reopenedFromApproved: reopened },
     });
 
     return NextResponse.json({ reopened });

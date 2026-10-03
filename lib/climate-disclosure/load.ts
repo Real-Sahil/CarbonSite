@@ -1,20 +1,21 @@
 import { prisma } from "@/lib/db";
 import { scopeTotalsFromRollup } from "@/lib/bids/carbon-pack";
 import { orgFormat } from "@/lib/i18n/org-format";
-import { parseSections, tcfdChecklist, type RiskRow } from "./index";
+import { parseSections, tcfdChecklist, type RiskRow, type ScenarioRow } from "./index";
+
+const num = (d: { toString(): string } | null | undefined) => (d == null ? null : Number(d));
 
 /**
  * Everything the climate disclosure page and report need, scoped to the
- * organisation: the statement's narrative, the risk register, the published
- * totals of one snapshot (the given one, else the latest) and the checklist.
+ * organisation: the statement's narrative, the organisation's TCFD scenarios
+ * and risk assessments, the published totals of one snapshot (the given one,
+ * else the latest) and the checklist.
  */
 export async function loadClimateDisclosure(orgId: string, snapshotId?: string) {
-  const [row, riskRows, snapshot, reductionTargets, sbti, transition, org] = await Promise.all([
+  const [row, scenarioRows, riskRows, snapshot, reductionTargets, sbti, transition, org] = await Promise.all([
     prisma.climateDisclosure.findUnique({ where: { organizationId: orgId } }),
-    prisma.climateRisk.findMany({
-      where: { organizationId: orgId },
-      orderBy: [{ createdAt: "asc" }],
-    }),
+    prisma.tcfdScenario.findMany({ where: { organizationId: orgId }, orderBy: { createdAt: "asc" } }),
+    prisma.tcfdRiskAssessment.findMany({ where: { organizationId: orgId }, orderBy: { createdAt: "asc" } }),
     prisma.publishedSnapshot.findFirst({
       where: { organizationId: orgId, ...(snapshotId ? { id: snapshotId } : {}) },
       orderBy: [{ reportingPeriod: { endDate: "desc" } }, { version: "desc" }],
@@ -45,24 +46,34 @@ export async function loadClimateDisclosure(orgId: string, snapshotId?: string) 
   const hasTarget = reductionTargets.length > 0 || !!sbti || transition?.netZeroYear != null;
 
   const sections = parseSections(row?.sections);
+  const scenarios: ScenarioRow[] = scenarioRows.map((s) => ({
+    id: s.id,
+    name: s.name,
+    type: s.scenarioType,
+    pathway: s.temperaturePathway,
+    horizon: s.timeHorizon,
+    description: s.description,
+    valueAtRiskLow: num(s.grossValueAtRiskLow),
+    valueAtRiskHigh: num(s.grossValueAtRiskHigh),
+  }));
   const risks: RiskRow[] = riskRows.map((r) => ({
     id: r.id,
-    kind: r.kind,
-    title: r.title,
+    scenarioId: r.scenarioId,
+    category: r.riskCategory,
     description: r.description,
-    horizon: r.horizon,
-    inherentLikelihood: r.inherentLikelihood,
-    inherentImpact: r.inherentImpact,
+    likelihood: r.likelihood,
+    impact: r.impact,
     residualLikelihood: r.residualLikelihood,
     residualImpact: r.residualImpact,
-    mitigation: r.mitigation,
-    financialEffect: r.financialEffect,
-    ownerRole: r.ownerRole,
-    status: r.status,
+    financialLow: num(r.financialImpactLow),
+    financialHigh: num(r.financialImpactHigh),
+    actions: r.adaptationActions,
+    reviewDate: r.reviewDate,
   }));
 
   const checklist = tcfdChecklist({
     sections,
+    scenarios,
     risks,
     totals: snapshot && totals ? { periodLabel: snapshot.reportingPeriod.label, scope3Tonnes: totals.s3 } : null,
     hasTarget,
@@ -75,6 +86,7 @@ export async function loadClimateDisclosure(orgId: string, snapshotId?: string) 
     approvedAt: row?.approvedAt ?? null,
     updatedAt: row?.updatedAt ?? null,
     sections,
+    scenarios,
     risks,
     snapshot: snapshot
       ? { id: snapshot.id, version: snapshot.version, publishedAt: snapshot.publishedAt, ...snapshot.reportingPeriod }

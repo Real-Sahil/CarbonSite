@@ -1,78 +1,33 @@
 // Climate-related financial disclosure (TCFD structure; IFRS S2 builds on the
 // same four pillars). Pure; the loader is ./load.ts.
 //
-// Built for any organisation in any jurisdiction: nothing here is tied to one
-// country's rules, currency or scenario set. Scenario names are the
-// organisation's own text (the presets are only well-known public names), the
-// risk scale is a plain 1 to 5 likelihood and impact, and the organisation
+// The scenarios and risks the statement reports are the organisation's TCFD
+// scenarios and risk assessments (the TCFD page); this module adds the
+// narrative, the checklist of the eleven recommended disclosures and the board
+// approval. Built for any organisation in any jurisdiction: nothing here is
+// tied to one country's rules, currency or scenario set, and the organisation
 // writes its own narrative. The TCFD recommendations are the structure, not
 // text we copy: labels and guidance below are our own.
 
 import { z } from "zod";
 
+/** The time horizons the TCFD page records on each scenario. */
 export const HORIZONS = [
-  { value: "short", label: "Short term" },
-  { value: "medium", label: "Medium term" },
-  { value: "long", label: "Long term" },
+  { value: "short", label: "Short term", meaning: "Up to 3 years" },
+  { value: "medium", label: "Medium term", meaning: "3 to 10 years" },
+  { value: "long", label: "Long term", meaning: "Beyond 10 years" },
 ] as const;
-export type Horizon = (typeof HORIZONS)[number]["value"];
+export const horizonLabel = (h: string) => HORIZONS.find((x) => x.value === h)?.label ?? h;
 
-export const RISK_KINDS = [
-  { value: "physical_acute", label: "Physical, acute (storms, floods, heatwaves)", family: "physical" },
-  { value: "physical_chronic", label: "Physical, chronic (sea level, heat, water stress)", family: "physical" },
-  { value: "transition_policy", label: "Transition, policy and legal", family: "transition" },
-  { value: "transition_technology", label: "Transition, technology", family: "transition" },
-  { value: "transition_market", label: "Transition, market", family: "transition" },
-  { value: "transition_reputation", label: "Transition, reputation", family: "transition" },
-  { value: "opportunity", label: "Opportunity", family: "opportunity" },
-] as const;
-export type RiskKind = (typeof RISK_KINDS)[number]["value"];
-export const riskFamily = (kind: string) => RISK_KINDS.find((k) => k.value === kind)?.family ?? "transition";
-
-export const RISK_STATUSES = [
-  { value: "open", label: "Open" },
-  { value: "mitigating", label: "Being mitigated" },
-  { value: "accepted", label: "Accepted" },
-  { value: "closed", label: "Closed" },
-] as const;
-
-/** Well-known public scenario sets, offered as suggestions only. The organisation may name any scenario. */
-export const SCENARIO_PRESETS = [
-  "IPCC SSP1-2.6",
-  "IPCC SSP2-4.5",
-  "IPCC SSP5-8.5",
-  "NGFS Net Zero 2050",
-  "NGFS Delayed Transition",
-  "NGFS Current Policies",
-  "IEA Net Zero Emissions by 2050",
-  "IEA Announced Pledges",
-  "IEA Stated Policies",
-] as const;
-
-const text = (max: number) => z.string().trim().max(max).default("");
-const long = text(10_000);
-
-export const scenarioSchema = z.object({
-  id: z.string().min(1).max(40),
-  name: z.string().trim().min(1).max(120),
-  /** Where it comes from, in the organisation's words (publisher, version, temperature outcome). */
-  source: text(300),
-  /** The organisation says this scenario is consistent with limiting warming to 2°C or lower. */
-  lowCarbon: z.boolean().default(false),
-  transition: text(3000),
-  physical: text(3000),
-});
-export type Scenario = z.infer<typeof scenarioSchema>;
+const long = z.string().trim().max(10_000).default("");
 
 export const disclosureSectionsSchema = z
   .object({
     governanceBoard: long,
     governanceManagement: long,
-    /** What "short", "medium" and "long" mean for this organisation, for example "0 to 2 years". */
-    horizons: z.object({ short: text(200), medium: text(200), long: text(200) }).default({}),
     strategyImpact: long,
+    /** How resilient the strategy is across the scenarios on the TCFD page. */
     scenarioNarrative: long,
-    scenarios: z.array(scenarioSchema).max(10).default([]),
     riskIdentification: long,
     riskManagement: long,
     riskIntegration: long,
@@ -84,6 +39,56 @@ export type DisclosureSections = z.infer<typeof disclosureSectionsSchema>;
 export function parseSections(raw: unknown): DisclosureSections {
   const r = disclosureSectionsSchema.safeParse(raw ?? {});
   return r.success ? r.data : disclosureSectionsSchema.parse({});
+}
+
+// ── Scenarios and risks, as the TCFD page records them ────────────────────────
+
+export type ScenarioRow = {
+  id: string;
+  name: string;
+  type: "physical" | "transition";
+  /** The organisation's own label, such as "1.5°C" or "Net Zero 2050". */
+  pathway: string | null;
+  horizon: string;
+  description: string | null;
+  valueAtRiskLow: number | null;
+  valueAtRiskHigh: number | null;
+};
+
+export type RiskRow = {
+  id: string;
+  scenarioId: string;
+  category: string;
+  description: string;
+  likelihood: number;
+  impact: number;
+  residualLikelihood: number | null;
+  residualImpact: number | null;
+  financialLow: number | null;
+  financialHigh: number | null;
+  actions: string | null;
+  reviewDate: Date | null;
+};
+
+/**
+ * Whether a pathway label reads as consistent with limiting warming to 2°C or
+ * lower: it names net zero, "below 2", 1.5 or Paris, or gives a temperature of
+ * 2 or less. A heuristic on the organisation's own wording; the checklist says
+ * so when it matters.
+ */
+export function isLowCarbonPathway(pathway: string | null | undefined): boolean {
+  const t = (pathway ?? "").toLowerCase();
+  if (/net.?zero|below\s*2|well.?below|1\.5|paris/.test(t)) return true;
+  const m = t.match(/(\d+(?:[.,]\d+)?)\s*°?\s*c\b/);
+  return m ? parseFloat(m[1].replace(",", ".")) <= 2 : false;
+}
+
+export type RiskFamily = "physical" | "transition" | "opportunity";
+
+/** An assessment is an opportunity when its category or description says so; otherwise it takes its scenario's type. */
+export function riskFamily(r: Pick<RiskRow, "category" | "description">, scenario: Pick<ScenarioRow, "type"> | undefined): RiskFamily {
+  if (/opportunit/i.test(`${r.category} ${r.description}`)) return "opportunity";
+  return scenario?.type ?? "transition";
 }
 
 // ── Risk scoring ──────────────────────────────────────────────────────────────
@@ -98,23 +103,7 @@ export function ratingOf(s: number): Rating {
   return s <= 4 ? "low" : s <= 9 ? "medium" : s <= 15 ? "high" : "very_high";
 }
 
-export type RiskRow = {
-  id: string;
-  kind: string;
-  title: string;
-  description: string | null;
-  horizon: string;
-  inherentLikelihood: number;
-  inherentImpact: number;
-  residualLikelihood: number | null;
-  residualImpact: number | null;
-  mitigation: string | null;
-  financialEffect: string | null;
-  ownerRole: string | null;
-  status: string;
-};
-
-export const inherentScore = (r: RiskRow) => score(r.inherentLikelihood, r.inherentImpact);
+export const inherentScore = (r: RiskRow) => score(r.likelihood, r.impact);
 export const residualScore = (r: RiskRow) =>
   r.residualLikelihood != null && r.residualImpact != null ? score(r.residualLikelihood, r.residualImpact) : null;
 
@@ -133,6 +122,7 @@ export type Check = { id: string; code: string; pillar: Pillar; label: string; s
 
 export type ChecklistInput = {
   sections: DisclosureSections;
+  scenarios: ScenarioRow[];
   risks: RiskRow[];
   /** The latest published totals, or null when nothing is published. */
   totals: { periodLabel: string; scope3Tonnes: number } | null;
@@ -147,10 +137,11 @@ const filled = (s: string | null | undefined) => !!s && s.trim().length >= 20;
  * organisation's own terms, what is still missing. "Met" means the material is
  * there, not that it is good: the board owns the judgement.
  */
-export function tcfdChecklist({ sections: s, risks, totals, hasTarget }: ChecklistInput): Check[] {
+export function tcfdChecklist({ sections: s, scenarios, risks, totals, hasTarget }: ChecklistInput): Check[] {
   const checks: Check[] = [];
   const add = (id: string, code: string, pillar: Pillar, label: string, status: CheckStatus, detail: string) =>
     checks.push({ id, code, pillar, label, status, detail });
+  const byScenario = new Map(scenarios.map((x) => [x.id, x]));
 
   add(
     "gov-a", "Governance (a)", "governance", "Board oversight of climate-related risks and opportunities",
@@ -163,21 +154,18 @@ export function tcfdChecklist({ sections: s, risks, totals, hasTarget }: Checkli
     filled(s.governanceManagement) ? "Recorded." : "Describe which management roles and committees assess and manage climate risks and how they report to the board.",
   );
 
-  const horizonsDefined = HORIZONS.every((h) => s.horizons[h.value].trim().length >= 3);
-  const families = new Set(risks.map((r) => riskFamily(r.kind)));
-  const strA: CheckStatus =
-    risks.length === 0 ? "gap" : horizonsDefined && families.has("physical") && families.has("transition") ? "met" : "partial";
+  const families = new Set(risks.map((r) => riskFamily(r, byScenario.get(r.scenarioId))));
+  const strA: CheckStatus = risks.length === 0 ? "gap" : families.has("physical") && families.has("transition") ? "met" : "partial";
   add(
     "str-a", "Strategy (a)", "strategy", "Risks and opportunities identified over the short, medium and long term",
     strA,
     risks.length === 0
-      ? "No risks or opportunities recorded. Add them to the register."
+      ? "No risks assessed. Add scenarios and assess risks on the TCFD scenarios page."
       : strA === "met"
-        ? `${risks.length} recorded, covering physical and transition risk, with the time horizons defined.`
+        ? `${risks.length} risk${risks.length === 1 ? "" : "s"} assessed, covering physical and transition risk.`
         : [
-            !horizonsDefined ? "Define what short, medium and long term mean for you." : null,
-            !families.has("physical") ? "No physical risk recorded." : null,
-            !families.has("transition") ? "No transition risk recorded." : null,
+            !families.has("physical") ? "No physical risk assessed." : null,
+            !families.has("transition") ? "No transition risk assessed." : null,
           ].filter(Boolean).join(" "),
   );
   add(
@@ -186,17 +174,17 @@ export function tcfdChecklist({ sections: s, risks, totals, hasTarget }: Checkli
     filled(s.strategyImpact) ? "Recorded." : "Explain how these risks and opportunities affect your business, strategy and financial planning.",
   );
 
-  const lowCarbon = s.scenarios.some((x) => x.lowCarbon);
+  const lowCarbon = scenarios.some((x) => isLowCarbonPathway(x.pathway));
   const strC: CheckStatus =
-    s.scenarios.length >= 2 && lowCarbon && filled(s.scenarioNarrative) ? "met" : s.scenarios.length > 0 || filled(s.scenarioNarrative) ? "partial" : "gap";
+    scenarios.length >= 2 && lowCarbon && filled(s.scenarioNarrative) ? "met" : scenarios.length > 0 || filled(s.scenarioNarrative) ? "partial" : "gap";
   add(
     "str-c", "Strategy (c)", "strategy", "Resilience of the strategy under different climate scenarios",
     strC,
     strC === "met"
-      ? `${s.scenarios.length} scenarios, including one consistent with 2°C or lower.`
+      ? `${scenarios.length} scenarios, including one consistent with 2°C or lower.`
       : [
-          s.scenarios.length < 2 ? "Use at least two scenarios." : null,
-          !lowCarbon ? "Include a scenario consistent with limiting warming to 2°C or lower and mark it." : null,
+          scenarios.length < 2 ? "Use at least two scenarios." : null,
+          !lowCarbon ? "Include a scenario consistent with limiting warming to 2°C or lower, and name its pathway (for example 1.5°C or Net Zero 2050)." : null,
           !filled(s.scenarioNarrative) ? "Describe how resilient your strategy is across them." : null,
         ].filter(Boolean).join(" "),
   );
@@ -205,18 +193,18 @@ export function tcfdChecklist({ sections: s, risks, totals, hasTarget }: Checkli
     "rm-a", "Risk management (a)", "risk_management", "Processes for identifying and assessing climate-related risks",
     filled(s.riskIdentification) && risks.length > 0 ? "met" : filled(s.riskIdentification) || risks.length > 0 ? "partial" : "gap",
     filled(s.riskIdentification) && risks.length > 0
-      ? "Process described and risks scored in the register."
-      : "Describe how you identify and assess climate risks, and score them in the register.",
+      ? "Process described and risks scored."
+      : "Describe how you identify and assess climate risks, and score them on the TCFD scenarios page.",
   );
-  const unmitigated = risks.filter((r) => r.status !== "closed" && !filled(r.mitigation));
+  const unmitigated = risks.filter((r) => !r.actions || r.actions.trim().length === 0);
   add(
     "rm-b", "Risk management (b)", "risk_management", "Processes for managing climate-related risks",
     filled(s.riskManagement) ? (unmitigated.length === 0 ? "met" : "partial") : "gap",
     !filled(s.riskManagement)
       ? "Describe how you manage, prioritise and monitor climate risks."
       : unmitigated.length === 0
-        ? "Recorded, and every open risk has a response."
-        : `${unmitigated.length} open risk(s) have no response recorded.`,
+        ? "Recorded, and every assessed risk has an action."
+        : `${unmitigated.length} assessed risk(s) have no adaptation action recorded.`,
   );
   add(
     "rm-c", "Risk management (c)", "risk_management", "Integration into overall risk management",
