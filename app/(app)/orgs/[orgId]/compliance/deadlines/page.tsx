@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { relevantRegions, type Region } from '@/lib/compliance/regions';
 
 interface StatutoryDeadline {
   id: string;
@@ -18,7 +19,7 @@ interface StatutoryDeadline {
   applicability: string;
   authority: string;
   penalty?: string;
-  category: 'uk' | 'eu' | 'international';
+  category: 'uk' | 'eu' | 'uae' | 'international';
   complianceFramework: string; // matches ComplianceRecord.framework
   /** Official page the date and thresholds were checked against. */
   source: string;
@@ -178,6 +179,35 @@ const STATUTORY_DEADLINES: StatutoryDeadline[] = [
     complianceFramework: 'CSRD_ESRS_E1',
     source: 'https://www.consilium.europa.eu/en/press/press-releases/2026/02/24/council-signs-off-simplification-of-sustainability-reporting-and-due-diligence-requirements-to-boost-eu-competitiveness/',
   },
+  // UAE
+  {
+    id: 'uae-decree-11-2024',
+    framework: 'UAE Climate Law',
+    description: 'Measure, report and reduce greenhouse gas emissions under Federal Decree-Law 11/2024. The date in the decree is 30 May 2026; the ministry has said it expects to move it once its technical guidance is issued',
+    dueDate: '2026-05-30',
+    dueNote: 'Check the ministry (MOCCAE) for the revised date and the national reporting platform. The decree sets no size threshold and covers free zones; the ministry decides which sources report.',
+    reportingYear: 2025,
+    applicability: 'Emission sources in the UAE, including free zones, as the ministry or the emirate\'s authority determines',
+    authority: 'Ministry of Climate Change and Environment (MOCCAE) and each emirate\'s competent authority',
+    penalty: 'Fine of AED 50,000 to 2,000,000 for breaching the measurement, reporting and record-keeping duties',
+    category: 'uae',
+    complianceFramework: 'UAE_CLIMATE_LAW',
+    source: 'https://uaelegislation.gov.ae/en/legislations/2558',
+  },
+  {
+    id: 'abu-dhabi-mrv-2026',
+    framework: 'Abu Dhabi MRV',
+    description: 'Facility-level Scope 1 emissions report for calendar year 2025 through the Environment Agency portal; independent verification starts with the 2026 report',
+    dueDate: '2027-03-31',
+    dueNote: 'Due 31 March each year for the previous calendar year. One report per facility. Source for the date and threshold is a law-firm summary (Ropes & Gray with Al Tamimi, April 2026); the Agency\'s own guidance is the authority.',
+    reportingYear: 2026,
+    applicability: 'Operators of facilities in Abu Dhabi with Scope 1 emissions of 25,000 tCO2e or more in the covered sectors: industry, power and water, oil and gas, transport fleets',
+    authority: 'Abu Dhabi Environment Agency',
+    penalty: 'Written notice with corrective actions, then the Decree-Law fines',
+    category: 'uae',
+    complianceFramework: 'ABU_DHABI_MRV',
+    source: 'https://www.ropesgray.com/en/insights/alerts/2026/04/preparing-for-new-uae-ghg-emissions-reporting-and-reduction-requirements',
+  },
   // International
   {
     id: 'cdp-2026',
@@ -211,6 +241,7 @@ function getCategoryBadge(cat: string) {
   switch (cat) {
     case 'uk': return 'bg-blue-100 text-blue-800';
     case 'eu': return 'bg-purple-100 text-purple-800';
+    case 'uae': return 'bg-emerald-100 text-emerald-800';
     default: return 'bg-gray-100 text-gray-700';
   }
 }
@@ -228,6 +259,25 @@ export default function RegulatoryCalendarPage() {
       .catch(() => {});
   }, [orgId]);
 
+  // Regions the organisation's HQ and facilities touch; null until loaded, and everything when the person asks.
+  const [scope, setScope] = useState<{ regions: Region[]; unloaded: string[] } | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  useEffect(() => {
+    if (!orgId) return;
+    Promise.all([
+      fetch(`/api/orgs/${orgId}`).then((r) => r.json()),
+      fetch(`/api/orgs/${orgId}/facilities`).then((r) => r.json()),
+    ])
+      .then(([org, facilities]) =>
+        setScope(relevantRegions(org?.hqCountry, Array.isArray(facilities) ? facilities.map((f: { country?: string | null }) => f.country) : [])),
+      )
+      .catch(() => {});
+  }, [orgId]);
+
+  const inScope = (d: StatutoryDeadline) =>
+    showAll || !scope || scope.regions.length === 0 || d.category === 'international' || scope.regions.includes(d.category);
+
   const getOrgStatus = (deadline: StatutoryDeadline) => {
     return complianceRecords.find(
       (r) => r.framework === deadline.complianceFramework && r.reportingYear === deadline.reportingYear
@@ -235,10 +285,10 @@ export default function RegulatoryCalendarPage() {
   };
 
   const now = new Date();
-  const upcoming = STATUTORY_DEADLINES.filter((d) => new Date(d.dueDate) >= now).sort(
+  const upcoming = STATUTORY_DEADLINES.filter(inScope).filter((d) => new Date(d.dueDate) >= now).sort(
     (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
   );
-  const past = STATUTORY_DEADLINES.filter((d) => new Date(d.dueDate) < now).sort(
+  const past = STATUTORY_DEADLINES.filter(inScope).filter((d) => new Date(d.dueDate) < now).sort(
     (a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
   );
 
@@ -249,7 +299,7 @@ export default function RegulatoryCalendarPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Regulatory Calendar</h1>
-          <p className="mt-2 text-gray-600">Statutory reporting deadlines for UK, EU and international frameworks</p>
+          <p className="mt-2 text-gray-600">Statutory reporting deadlines for the UK, EU, UAE and international frameworks</p>
           <p className="mt-1 text-xs text-gray-500">Dates and thresholds checked against the official sources on {LAST_CHECKED}. Confirm your own dates with your adviser.</p>
         </div>
         <Link
@@ -259,6 +309,18 @@ export default function RegulatoryCalendarPage() {
           Compliance tracker <ChevronRight className="h-4 w-4" />
         </Link>
       </div>
+
+      {scope && scope.regions.length > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+          <span>
+            {showAll ? 'Showing every region.' : `Showing ${scope.regions.map((r) => r.toUpperCase()).join(', ')} and international, from your headquarters and sites.`}
+            {!showAll && scope.unloaded.length > 0 && ` No rules are loaded yet for ${scope.unloaded.join(', ')}.`}
+          </span>
+          <button type="button" onClick={() => setShowAll((v) => !v)} className="text-blue-600 hover:underline">
+            {showAll ? 'Show only mine' : 'Show all regions'}
+          </button>
+        </div>
+      )}
 
       {nextUrgent && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">

@@ -313,7 +313,7 @@ Reports generated asynchronously from a `PublishedSnapshot` using Puppeteer. Rep
 
 **ESRS E5 without a waste register:** when a period has no `WasteRecord` rows, the E5 report uses the tonnes on the run's `s3-waste` activity records (`wasteRowsFromRecords()`, `lib/waste/from-records.ts`; t and kg only). Route and hazard status come only from the record's own text (a route word, an EWC code with or without `*`), never from the factor the calculation chose; unknown ones print "Not recorded" and diversion is a share of tonnes with a known route.
 
-**Regulatory calendar** (`compliance/deadlines/page.tsx`): each entry carries its official `source` and the page shows `LAST_CHECKED`. Recheck dates and thresholds each quarter and move `LAST_CHECKED`.
+**Regulatory calendar** (`compliance/deadlines/page.tsx`): each entry carries its official `source` and the page shows `LAST_CHECKED`. Recheck dates and thresholds each quarter and move `LAST_CHECKED`. The page shows the regions the org's HQ country and facility countries touch (`lib/compliance/regions.ts`: UK, EU-27, UAE loaded), with a toggle for all; a country with no rules loaded is named, never hidden.
 
 **Report picker:** the report form shows `CORE_REPORT_TYPES` first (GHG Protocol, PPN 006 CRP, SECR, and the bid carbon pack where the plan includes it); every other type is under "Show all report types".
 
