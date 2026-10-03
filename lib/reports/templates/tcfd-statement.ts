@@ -6,8 +6,10 @@
 // it says how many are addressed. Not tied to any one jurisdiction.
 
 import { esc, brandStyles, brandLogoHtml } from "./shared";
+import { formatters } from "@/lib/i18n/org-format";
 import {
   FRAMEWORK_NOTE,
+  IFRS_S2_AREAS,
   HORIZONS,
   PILLARS,
   RATING_LABELS,
@@ -22,8 +24,6 @@ import {
 } from "@/lib/climate-disclosure";
 import type { ClimateDisclosureView } from "@/lib/climate-disclosure/load";
 
-const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-const fmtT = (n: number) => n.toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: n < 10 ? 2 : 1 });
 const para = (s: string) => (s.trim() ? `<p>${esc(s).replace(/\r?\n/g, "<br>")}</p>` : `<p class="muted">Not yet written.</p>`);
 const kindLabel = (k: string) => RISK_KINDS.find((x) => x.value === k)?.label ?? k;
 const statusLabel = (s: string) => RISK_STATUSES.find((x) => x.value === s)?.label ?? s;
@@ -53,6 +53,9 @@ function riskTable(rows: RiskRow[]) {
 
 export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: string; logoDataUri?: string }): string {
   const s = d.sections;
+  const F = formatters(d.format);
+  const fmtDate = F.date;
+  const fmtT = F.tonnes;
   const approved = d.status === "approved" && d.approvedAt != null;
   const cov = coverage(d.checklist);
   const consistent = mayClaimConsistency(d.checklist, approved);
@@ -64,10 +67,10 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
 
   const coverageTable = PILLARS.map(
     (p) => `
-    <tr class="pillar"><td colspan="3">${esc(p.label)}</td></tr>
+    <tr class="pillar"><td colspan="4">${esc(p.label)}</td></tr>
     ${d.checklist
       .filter((c) => c.pillar === p.value)
-      .map((c) => `<tr><td>${esc(c.code)}</td><td>${esc(c.label)}</td><td>${STATUS_TEXT[c.status]}</td></tr>`)
+      .map((c) => `<tr><td>${esc(c.code)}</td><td>${esc(c.label)}</td><td class="note">${esc(IFRS_S2_AREAS[c.id] ?? "")}</td><td>${STATUS_TEXT[c.status]}</td></tr>`)
       .join("")}`,
   ).join("");
 
@@ -150,7 +153,7 @@ export function renderTcfdStatementHtml(d: ClimateDisclosureView & { orgName: st
   <h2>About this statement</h2>
   ${statement}
   <table>
-    <tr><th>Reference</th><th>Recommended disclosure</th><th>Status</th></tr>
+    <tr><th>Reference</th><th>Recommended disclosure</th><th>IFRS S2 area (indicative)</th><th>Status</th></tr>
     ${coverageTable}
   </table>
   <p class="note">${esc(FRAMEWORK_NOTE)}</p>

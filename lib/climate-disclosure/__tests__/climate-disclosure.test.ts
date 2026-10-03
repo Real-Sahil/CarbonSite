@@ -97,7 +97,7 @@ describe("renderTcfdStatementHtml", () => {
     sections: full(), risks: all.risks,
     snapshot: { id: "s", version: 2, publishedAt: new Date("2026-03-01"), label: "FY2025", startDate: new Date("2025-01-01"), endDate: new Date("2025-12-31") } as never,
     totals: { s1: 10, s2: 5, s2Market: null, s3: 100, total: 115 },
-    targets: [], netZeroYear: 2045,
+    targets: [], netZeroYear: 2045, format: { locale: "en-GB", currency: "GBP" },
     checklist: tcfdChecklist(all),
     ...over,
   });
@@ -112,6 +112,12 @@ describe("renderTcfdStatementHtml", () => {
   it("states how many are addressed when some are missing", () => {
     const html = renderTcfdStatementHtml(view({ checklist: tcfdChecklist({ ...all, hasTarget: false }) }));
     expect(html).toContain("addresses 10 of the 11 recommended disclosures");
+  });
+
+  it("maps each disclosure to its IFRS S2 area and formats for the organisation's country", () => {
+    const html = renderTcfdStatementHtml(view({ format: { locale: "de-DE", currency: "EUR" } }));
+    expect(html).toContain("Strategy: climate resilience, using scenario analysis");
+    expect(html).toContain("115,0"); // the total with a decimal comma
   });
 
   it("escapes organisation text and keeps jurisdiction-neutral wording", () => {

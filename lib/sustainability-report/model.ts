@@ -4,6 +4,8 @@
 // of claiming "not applicable".
 
 import { change, type ScopeTotals } from "@/lib/bids/carbon-pack";
+import type { Formatters } from "@/lib/i18n/org-format";
+import { hvoShare } from "@/lib/calculation/fuels";
 
 /** The 15 GHG Protocol Scope 3 categories, in order, with the seeded category code. */
 export const SCOPE3_CATEGORIES = [
@@ -89,8 +91,7 @@ export function intensity(total: number, s12: number, revenue: { amount: number;
 
 export type Tile = { value: string; label: string };
 
-const fmtT = (n: number) => n.toLocaleString("en-GB", { maximumFractionDigits: n < 10 ? 2 : 1 });
-const pct = (c: number) => `${c <= 0 ? "−" : "+"}${Math.abs(c * 100).toFixed(1)}%`;
+const pct = (fmt: Formatters, c: number) => `${c <= 0 ? "−" : "+"}${fmt.percent(Math.abs(c))}`;
 
 export type HighlightInput = {
   periodLabel: string;
@@ -98,25 +99,33 @@ export type HighlightInput = {
   baseYear: BaseYear;
   intensity: Intensity | null;
   waste: { diversionRate: number | null } | null;
+  /** Tonnes of waste per million of revenue, when both exist. */
+  wasteIntensity?: number | null;
+  fuel?: Fuel | null;
   socialValuePounds: number;
   topCategory: { name: string; tonnes: number } | null;
+  /** The organisation's number formatting. */
+  fmt: Formatters;
 };
 
 /** Headline tiles. A tile appears only when its figure exists. */
 export function highlights(i: HighlightInput): Tile[] {
-  const tiles: Tile[] = [{ value: fmtT(i.current.total), label: `tCO₂e total, ${i.periodLabel}` }];
+  const fmt = i.fmt;
+  const tiles: Tile[] = [{ value: fmt.tonnes(i.current.total), label: `tCO₂e total, ${i.periodLabel}` }];
   const s12 = i.current.s1 + i.current.s2;
   const baseS12 = i.baseYear?.s1 != null && i.baseYear?.s2 != null ? i.baseYear.s1 + i.baseYear.s2 : null;
   const vsBase = change(baseS12, s12);
-  if (vsBase != null && i.baseYear) tiles.push({ value: pct(vsBase), label: `Scope 1 and 2 vs ${i.baseYear.label}` });
-  if (i.current.total > 0) tiles.push({ value: `${((i.current.s3 / i.current.total) * 100).toFixed(0)}%`, label: "of emissions are Scope 3" });
+  if (vsBase != null && i.baseYear) tiles.push({ value: pct(fmt, vsBase), label: `Scope 1 and 2 vs ${i.baseYear.label}` });
+  if (i.current.total > 0) tiles.push({ value: fmt.percent(i.current.s3 / i.current.total, 0), label: "of emissions are Scope 3" });
   if (i.topCategory && i.current.total > 0) {
-    tiles.push({ value: `${((i.topCategory.tonnes / i.current.total) * 100).toFixed(0)}%`, label: `from ${i.topCategory.name}, the largest source` });
+    tiles.push({ value: fmt.percent(i.topCategory.tonnes / i.current.total, 0), label: `from ${i.topCategory.name}, the largest source` });
   }
-  if (i.intensity) tiles.push({ value: fmtT(i.intensity.perMillionTotal), label: `tCO₂e per million ${i.intensity.currency} revenue` });
-  if (i.waste?.diversionRate != null) tiles.push({ value: `${(i.waste.diversionRate * 100).toFixed(1)}%`, label: "of waste diverted from landfill" });
-  if (i.socialValuePounds > 0) tiles.push({ value: `£${Math.round(i.socialValuePounds).toLocaleString("en-GB")}`, label: "National TOMs social value recorded" });
-  return tiles.slice(0, 6);
+  if (i.intensity) tiles.push({ value: fmt.tonnes(i.intensity.perMillionTotal), label: `tCO₂e per million ${i.intensity.currency} revenue` });
+  if (i.waste?.diversionRate != null) tiles.push({ value: fmt.percent(i.waste.diversionRate), label: "of waste diverted from landfill" });
+  if (i.fuel && i.fuel.hvoShare > 0) tiles.push({ value: fmt.percent(i.fuel.hvoShare), label: "of fuel litres is HVO" });
+  if (i.wasteIntensity != null && i.intensity) tiles.push({ value: fmt.tonnes(i.wasteIntensity), label: `tonnes of waste per million ${i.intensity.currency} revenue` });
+  if (i.socialValuePounds > 0) tiles.push({ value: fmt.money(i.socialValuePounds, "GBP"), label: "National TOMs (UK) social value recorded, GBP" });
+  return tiles.slice(0, 9);
 }
 
 /** ESRS disclosure each section of the report speaks to; only sections present are listed. */
@@ -125,6 +134,8 @@ export const ESRS_SECTION_REFS: Record<string, string> = {
   targets: "ESRS E1-4: Targets related to climate change mitigation",
   measures: "ESRS E1-3: Actions and resources in relation to climate change",
   waste: "ESRS E5-5: Resource outflows (waste)",
+  water: "ESRS E3-4: Water consumption (withdrawal, discharge, consumption)",
+  fuel: "ESRS E1-5: Energy consumption and mix (fuel only; electricity is not covered here)",
   social: "Social value (National TOMs); no ESRS equivalent",
 };
 
@@ -139,4 +150,31 @@ export function wasteSummary(rows: { tonnes: number; diverted: boolean }[]): Was
   const totalTonnes = rows.reduce((s, r) => s + r.tonnes, 0);
   const divertedTonnes = rows.reduce((s, r) => s + (r.diverted ? r.tonnes : 0), 0);
   return { totalTonnes, divertedTonnes, diversionRate: totalTonnes > 0 ? divertedTonnes / totalTonnes : null };
+}
+
+export type Fuel = { totalLitres: number; hvoLitres: number; hvoShare: number };
+
+/**
+ * HVO's share of site and fleet fuel, in litres. A record whose fuel type does
+ * not name HVO counts as fossil fuel; one that names a blend counts its HVO
+ * part (HVO50 is half). Null with no litres recorded.
+ */
+export function fuelSummary(rows: { litres: number; fuelType: string | null }[]): Fuel | null {
+  const totalLitres = rows.reduce((s, r) => s + r.litres, 0);
+  if (!(totalLitres > 0)) return null;
+  const hvoLitres = rows.reduce((s, r) => s + r.litres * (hvoShare(r.fuelType) ?? 0), 0);
+  return { totalLitres, hvoLitres, hvoShare: hvoLitres / totalLitres };
+}
+
+export type Water = { withdrawalM3: number; dischargeM3: number; consumptionM3: number };
+
+export function waterSummary(rows: { metric: "withdrawal" | "discharge" | "consumption"; m3: number }[]): Water | null {
+  if (rows.length === 0) return null;
+  const sum = (m: "withdrawal" | "discharge" | "consumption") => rows.filter((r) => r.metric === m).reduce((s, r) => s + r.m3, 0);
+  return { withdrawalM3: sum("withdrawal"), dischargeM3: sum("discharge"), consumptionM3: sum("consumption") };
+}
+
+/** A quantity per million of the period's revenue; null without revenue. */
+export function perMillion(value: number, revenue: { amount: number } | null): number | null {
+  return revenue && revenue.amount > 0 ? value / (revenue.amount / 1_000_000) : null;
 }

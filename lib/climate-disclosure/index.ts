@@ -261,5 +261,24 @@ export function mayClaimConsistency(checks: Check[], approved: boolean): boolean
   return approved && checks.length > 0 && checks.every((c) => c.status === "met");
 }
 
+/**
+ * Where each recommended disclosure sits in IFRS S2, by area of the standard
+ * (not paragraph numbers). Indicative: the standard itself is the authority,
+ * and a jurisdiction may adopt it with changes.
+ */
+export const IFRS_S2_AREAS: Record<string, string> = {
+  "gov-a": "Governance: the body responsible for oversight",
+  "gov-b": "Governance: management's role",
+  "str-a": "Strategy: climate-related risks and opportunities, and time horizons",
+  "str-b": "Strategy: business model and value chain, strategy and decision-making, financial position and performance",
+  "str-c": "Strategy: climate resilience, using scenario analysis",
+  "rm-a": "Risk management: identifying, assessing, prioritising and monitoring",
+  "rm-b": "Risk management: identifying, assessing, prioritising and monitoring",
+  "rm-c": "Risk management: integration into overall risk management",
+  "mt-a": "Metrics and targets: climate-related metrics",
+  "mt-b": "Metrics and targets: Scope 1, 2 and 3 greenhouse gas emissions",
+  "mt-c": "Metrics and targets: climate-related targets and progress",
+};
+
 export const FRAMEWORK_NOTE =
   "The structure follows the four pillars and eleven recommended disclosures of the Task Force on Climate-related Financial Disclosures (TCFD). IFRS S2 Climate-related Disclosures builds on the same pillars. Whether and how a climate disclosure is required depends on the organisation's jurisdiction and legal form.";

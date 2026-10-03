@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { scopeTotalsFromRollup } from "@/lib/bids/carbon-pack";
+import { orgFormat } from "@/lib/i18n/org-format";
 import { parseSections, tcfdChecklist, type RiskRow } from "./index";
 
 /**
@@ -8,7 +9,7 @@ import { parseSections, tcfdChecklist, type RiskRow } from "./index";
  * totals of one snapshot (the given one, else the latest) and the checklist.
  */
 export async function loadClimateDisclosure(orgId: string, snapshotId?: string) {
-  const [row, riskRows, snapshot, reductionTargets, sbti, transition] = await Promise.all([
+  const [row, riskRows, snapshot, reductionTargets, sbti, transition, org] = await Promise.all([
     prisma.climateDisclosure.findUnique({ where: { organizationId: orgId } }),
     prisma.climateRisk.findMany({
       where: { organizationId: orgId },
@@ -31,6 +32,7 @@ export async function loadClimateDisclosure(orgId: string, snapshotId?: string) 
     }),
     prisma.sbtiTarget.findUnique({ where: { organizationId: orgId }, select: { id: true } }),
     prisma.transitionPlan.findUnique({ where: { organizationId: orgId }, select: { netZeroYear: true } }),
+    prisma.organization.findUnique({ where: { id: orgId }, select: { hqCountry: true, reportingCurrency: true } }),
   ]);
 
   const rollup = snapshot
@@ -85,6 +87,7 @@ export async function loadClimateDisclosure(orgId: string, snapshotId?: string) 
       reductionTonnes: Number(t.reductionAmount) / 1000,
     })),
     netZeroYear: transition?.netZeroYear ?? null,
+    format: orgFormat(org ?? {}),
     checklist,
   };
 }

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { highlights, intensity, scope3Disclosure, wasteSummary, yearTable } from "../model";
+import { fuelSummary, highlights, intensity, perMillion, scope3Disclosure, waterSummary, wasteSummary, yearTable } from "../model";
 import { renderSustainabilityReportHtml } from "@/lib/reports/templates/sustainability-report";
 import type { SustainabilityReportData } from "../load";
+import { formatters } from "@/lib/i18n/org-format";
+
+const GB = { locale: "en-GB", currency: "GBP" };
 
 const totals = (s1: number, s2: number, s3: number) => ({ s1, s2, s2Market: null, s3, total: s1 + s2 + s3 });
 
@@ -84,6 +87,38 @@ describe("wasteSummary", () => {
   });
 });
 
+describe("fuelSummary", () => {
+  it("counts a blend by its HVO share and unnamed fuel as fossil", () => {
+    const f = fuelSummary([
+      { litres: 1000, fuelType: "HVO100" },
+      { litres: 1000, fuelType: "HVO50" },
+      { litres: 2000, fuelType: "diesel" },
+      { litres: 1000, fuelType: null },
+    ]);
+    expect(f?.totalLitres).toBe(5000);
+    expect(f?.hvoLitres).toBe(1500);
+    expect(f?.hvoShare).toBeCloseTo(0.3);
+  });
+  it("is null with no litres", () => {
+    expect(fuelSummary([])).toBeNull();
+    expect(fuelSummary([{ litres: 0, fuelType: "HVO" }])).toBeNull();
+  });
+});
+
+describe("waterSummary and perMillion", () => {
+  it("totals each metric and is null with no records", () => {
+    expect(waterSummary([])).toBeNull();
+    expect(waterSummary([{ metric: "withdrawal", m3: 10 }, { metric: "withdrawal", m3: 5 }, { metric: "discharge", m3: 4 }])).toEqual({
+      withdrawalM3: 15, dischargeM3: 4, consumptionM3: 0,
+    });
+  });
+  it("divides by the revenue in millions", () => {
+    expect(perMillion(30, { amount: 15_000_000 })).toBe(2);
+    expect(perMillion(30, null)).toBeNull();
+    expect(perMillion(30, { amount: 0 })).toBeNull();
+  });
+});
+
 describe("highlights", () => {
   const base = {
     periodLabel: "FY2025",
@@ -93,7 +128,19 @@ describe("highlights", () => {
     waste: null,
     socialValuePounds: 0,
     topCategory: { name: "Purchased goods", tonnes: 600 },
+    fmt: formatters(GB),
   };
+
+  it("adds the HVO share and waste intensity tiles when they exist", () => {
+    const labels = highlights({
+      ...base,
+      intensity: { currency: "EUR", perMillionTotal: 1, perMillionS12: 1, perFte: null },
+      wasteIntensity: 12.5,
+      fuel: { totalLitres: 100, hvoLitres: 40, hvoShare: 0.4 },
+    }).map((t) => t.label);
+    expect(labels).toContain("of fuel litres is HVO");
+    expect(labels).toContain("tonnes of waste per million EUR revenue");
+  });
 
   it("shows only tiles whose figure exists", () => {
     const labels = highlights(base).map((t) => t.label);
@@ -139,8 +186,12 @@ describe("renderSustainabilityReportHtml", () => {
     intensity: null,
     scope3: scope3Disclosure([], []),
     waste: null,
+    wasteIntensity: null,
+    fuel: null,
+    water: null,
     socialValue: null,
     boundary: null,
+    format: GB,
     ...over,
   });
 
@@ -166,6 +217,37 @@ describe("renderSustainabilityReportHtml", () => {
     const html = renderSustainabilityReportHtml(data({ waste: { totalTonnes: 100, divertedTonnes: 90, diversionRate: 0.9 } }));
     expect(html).toContain("ESRS E5-5");
     expect(html).toMatch(/ESRS E1-6[^<]*<\/td><td>Section 2</);
+  });
+
+  it("adds water and fuel sections, numbered, and points the ESRS index at them", () => {
+    const html = renderSustainabilityReportHtml(
+      data({
+        water: { withdrawalM3: 1200, dischargeM3: 900, consumptionM3: 300, withdrawalPerMillion: 50 },
+        fuel: { totalLitres: 10000, hvoLitres: 4000, hvoShare: 0.4 },
+        intensity: { currency: "GBP", perMillionTotal: 1, perMillionS12: 1, perFte: null },
+      }),
+    );
+    expect(html).toContain("Water</h2>");
+    expect(html).toContain("Fuel</h2>");
+    expect(html).toContain("ESRS E3-4");
+    expect(html).toContain("ESRS E1-5");
+    expect(html).toContain("40.0%");
+  });
+
+  it("formats numbers, dates and money the way the organisation's country does", () => {
+    const de = renderSustainabilityReportHtml(data({ format: { locale: "de-DE", currency: "EUR" } }));
+    expect(de).toContain("1. März 2026"); // published date, German month name and order
+    expect(de).toContain("935,0"); // decimal comma
+    const us = renderSustainabilityReportHtml(data({ format: { locale: "en-US", currency: "USD" } }));
+    expect(us).toContain("March 1, 2026");
+  });
+
+  it("shows social value in GBP whatever the reporting currency, since National TOMs records GBP", () => {
+    const html = renderSustainabilityReportHtml(
+      data({ format: { locale: "en-US", currency: "USD" }, socialValue: { totalPounds: 5000, byTheme: [] } }),
+    );
+    expect(html).toContain("£5,000");
+    expect(html).not.toContain("$5,000");
   });
 
   it("escapes organisation text", () => {
