@@ -206,6 +206,7 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
   if (d.waste) present.push("waste");
   if (d.water) present.push("water");
   if (d.fuel) present.push("fuel");
+  if (d.fleet) present.push("fleet");
   const waste = d.waste
     ? `
 <section>
@@ -242,6 +243,21 @@ export function renderSustainabilityReportHtml(d: SustainabilityReportData & { l
     <tr><td>HVO share of fuel litres</td><td class="num">${pct(d.fuel.hvoShare)}</td></tr>
   </table>
   <p class="note">Only records measured in litres are counted. HVO's CO₂ is mostly biogenic and is reported outside the scopes, not in the totals above.</p>
+</section>`
+    : "";
+
+  const fleet = d.fleet
+    ? `
+<section>
+  ${h("fleet", "Fleet")}
+  <table>
+    <tr><td>Vehicles in the fleet at the end of the period</td><td class="num">${d.fleet.total}</td></tr>
+    <tr><td>Zero tailpipe emission (battery electric and hydrogen fuel cell)</td><td class="num">${d.fleet.zeroEmission} (${pct(d.fleet.zeroShare)})</td></tr>
+    <tr><td>Plug-in hybrid</td><td class="num">${d.fleet.plugInHybrid}</td></tr>
+    <tr><td>Hybrid, not plug-in</td><td class="num">${d.fleet.hybrid}</td></tr>
+    <tr><td>Petrol, diesel, gas and other combustion</td><td class="num">${d.fleet.combustion}</td></tr>
+  </table>
+  <p class="note">Counted by vehicle from the organisation's fleet register, not by distance driven. A vehicle sold before the end of the period is not counted.</p>
 </section>`
     : "";
 
@@ -350,6 +366,7 @@ ${measures}
 ${waste}
 ${water}
 ${fuel}
+${fleet}
 ${social}
 ${assurance}
 ${signoff}

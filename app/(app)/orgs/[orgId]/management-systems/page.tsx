@@ -18,6 +18,7 @@ const FAMILY_LABELS: Record<FrameworkFamily, string> = {
   healthcare: "Healthcare",
   payments: "Payments",
   ai: "Artificial intelligence",
+  sustainability_reporting: "Sustainability reporting",
 };
 
 const STATUS_LABELS: Record<string, string> = {

@@ -12,6 +12,7 @@ import { euGdpr, ukGdpr } from "./gdpr";
 import { hipaa } from "./hipaa";
 import { ccpa, nis2, pipeda } from "./privacy-other";
 import { cyberEssentials, pciDss, soc2 } from "./security-other";
+import { vsme } from "./vsme";
 
 export type { CatalogueFramework, CatalogueRequirement, EditionChange, FrameworkFamily } from "./types";
 export { transitionMap } from "./revise";
@@ -36,6 +37,7 @@ export const FRAMEWORKS: CatalogueFramework[] = [
   pciDss,
   hipaa,
   iso42001,
+  vsme,
 ];
 
 const BY_SLUG = new Map(FRAMEWORKS.map((f) => [f.slug, f]));

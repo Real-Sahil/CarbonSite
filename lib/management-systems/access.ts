@@ -67,6 +67,9 @@ export const EVIDENCE_RECORD_KINDS = [
   "ms_nonconformity",
   "ms_supplier_evaluation",
   "ms_equipment",
+  "ms_toolbox_talk",
+  "ms_toolbox_delivery",
+  "ms_fleet_vehicle",
   "ms_management_review",
 ] as const;
 

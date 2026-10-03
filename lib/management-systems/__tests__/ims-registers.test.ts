@@ -11,6 +11,9 @@ const db = vi.hoisted(() => {
     msCompetence: model(),
     msTrainingRecord: model(),
     msEquipment: model(),
+    msToolboxTalk: model(),
+    msToolboxDelivery: model(),
+    msFleetVehicle: model(),
     msInspectionTemplate: model(),
     msInspection: model(),
     msCorrectiveAction: model(),
@@ -228,5 +231,32 @@ describe("training matrix", () => {
     expect(rows.map((r) => r.name)).toEqual(["Ana Silva", "Tom Reed"]);
     expect(rows[1].cells.cscs).toMatchObject({ recordId: "r2", state: "valid" });
     expect(totals).toEqual({ expired: 0, expiring: 1 });
+  });
+});
+
+describe("toolbox talk and fleet registers", () => {
+  it("starts a new draft version when an approved talk's content changes, and not when it is retired", () => {
+    const existing = { id: "t1", status: "approved", version: 2, content: "Old", title: "Working at height" };
+    expect(applyRules("toolbox-talks", existing, { content: "New" }, "u").data).toMatchObject({ status: "draft", version: 3 });
+    expect(applyRules("toolbox-talks", existing, { content: "New", status: "retired" }, "u").data.version).toBeUndefined();
+    expect(applyRules("toolbox-talks", existing, { reviewOn: new Date() }, "u").data.status).toBeUndefined();
+  });
+
+  it("needs a talk, a date and a place to record a delivery, and refuses a talk from another organisation", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/management-systems/registers/[register]/route");
+    expect((await POST(req({ deliveredOn: "2026-10-01" }), listParams("toolbox-deliveries"))).status).toBe(422);
+    db.msToolboxTalk.findFirst.mockResolvedValue(null);
+    expect((await POST(req({ talkId: "talk-of-org-b", deliveredOn: "2026-10-01", location: "Site 4" }), listParams("toolbox-deliveries"))).status).toBe(404);
+    expect(db.msToolboxTalk.findFirst.mock.calls[0][0].where).toEqual({ id: "talk-of-org-b", organizationId: "org-a" });
+    expect(db.msToolboxDelivery.create).not.toHaveBeenCalled();
+  });
+
+  it("saves a vehicle under the organisation in the URL and rejects an unknown powertrain", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/management-systems/registers/[register]/route");
+    expect((await POST(req({ registration: "AB12 CDE", powertrain: "steam" }), listParams("fleet-vehicles"))).status).toBe(422);
+    db.msFleetVehicle.create.mockImplementation(async ({ data }: { data: object }) => ({ id: "v1", ...data }));
+    const res = await POST(req({ registration: "AB12 CDE", powertrain: "bev" }), listParams("fleet-vehicles"));
+    expect(res.status).toBe(201);
+    expect(db.msFleetVehicle.create.mock.calls[0][0].data).toMatchObject({ organizationId: "org-a", registration: "AB12 CDE", powertrain: "bev" });
   });
 });
