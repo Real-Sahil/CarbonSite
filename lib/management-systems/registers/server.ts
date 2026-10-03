@@ -35,6 +35,9 @@ const MODELS: Record<RegisterKey, string> = {
   nonconformities: "msNonconformity",
   "supplier-evaluations": "msSupplierEvaluation",
   equipment: "msEquipment",
+  "toolbox-talks": "msToolboxTalk",
+  "toolbox-deliveries": "msToolboxDelivery",
+  "fleet-vehicles": "msFleetVehicle",
   "management-reviews": "msManagementReview",
 };
 
@@ -57,12 +60,15 @@ const TABLES: Record<RegisterKey, string> = {
   nonconformities: "ms_nonconformities",
   "supplier-evaluations": "ms_supplier_evaluations",
   equipment: "ms_equipment",
+  "toolbox-talks": "ms_toolbox_talks",
+  "toolbox-deliveries": "ms_toolbox_deliveries",
+  "fleet-vehicles": "ms_fleet_vehicles",
   "management-reviews": "ms_management_reviews",
 };
 
 /**
  * Rows per register for the organisation in one statement (Prisma has one
- * connection per function, so eighteen counts would be eighteen round trips).
+ * connection per function, so twenty-one counts would be twenty-one round trips).
  * Table names come from the constant above, never from the request.
  */
 export async function registerCounts(orgId: string): Promise<Record<RegisterKey, number>> {
@@ -77,6 +83,7 @@ export async function registerCounts(orgId: string): Promise<Record<RegisterKey,
 export const REFERENCED_BY: Partial<Record<RegisterKey, Array<{ key: RegisterKey; field: string }>>> = {
   competences: [{ key: "training-records", field: "competenceId" }],
   "inspection-templates": [{ key: "inspections", field: "templateId" }],
+  "toolbox-talks": [{ key: "toolbox-deliveries", field: "talkId" }],
 };
 
 export function delegate(key: RegisterKey): Delegate {
@@ -216,6 +223,13 @@ export function applyRules(key: RegisterKey, existing: Row, body: Record<string,
     } else if (body.status === "approved" && existing.status !== "approved") {
       data.approvedByUserId = userId;
       data.approvedOn = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
+    }
+  }
+  if (key === "toolbox-talks") {
+    const contentChanged = ["title", "content", "legalBasis", "country", "fileId"].some((k) => k in body && body[k] !== existing[k]);
+    if (existing.status === "approved" && contentChanged && body.status !== "retired") {
+      data.status = "draft";
+      data.version = (existing.version as number) + 1;
     }
   }
   if (key === "changes" && body.status === "approved" && existing.status !== "approved") data.approvedByUserId = userId;

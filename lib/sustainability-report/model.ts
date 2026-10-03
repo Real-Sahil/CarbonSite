@@ -102,6 +102,7 @@ export type HighlightInput = {
   /** Tonnes of waste per million of revenue, when both exist. */
   wasteIntensity?: number | null;
   fuel?: Fuel | null;
+  fleet?: Fleet | null;
   socialValuePounds: number;
   topCategory: { name: string; tonnes: number } | null;
   /** The organisation's number formatting. */
@@ -123,6 +124,9 @@ export function highlights(i: HighlightInput): Tile[] {
   if (i.intensity) tiles.push({ value: fmt.tonnes(i.intensity.perMillionTotal), label: `tCO₂e per million ${i.intensity.currency} revenue` });
   if (i.waste?.diversionRate != null) tiles.push({ value: fmt.percent(i.waste.diversionRate), label: "of waste diverted from landfill" });
   if (i.fuel && i.fuel.hvoShare > 0) tiles.push({ value: fmt.percent(i.fuel.hvoShare), label: "of fuel litres is HVO" });
+  if (i.fleet && i.fleet.total > 0) {
+    tiles.push({ value: fmt.percent(i.fleet.zeroShare, 0), label: `of vehicles are zero tailpipe emission (${i.fleet.zeroEmission} of ${i.fleet.total})` });
+  }
   if (i.wasteIntensity != null && i.intensity) tiles.push({ value: fmt.tonnes(i.wasteIntensity), label: `tonnes of waste per million ${i.intensity.currency} revenue` });
   if (i.socialValuePounds > 0) tiles.push({ value: fmt.money(i.socialValuePounds, "GBP"), label: "National TOMs (UK) social value recorded, GBP" });
   return tiles.slice(0, 9);
@@ -137,6 +141,7 @@ export const ESRS_SECTION_REFS: Record<string, string> = {
   waste: "ESRS E5-5: Resource outflows (waste)",
   water: "ESRS E3-4: Water consumption (withdrawal, discharge, consumption)",
   fuel: "ESRS E1-5: Energy consumption and mix (fuel only; electricity is not covered here)",
+  fleet: "Fleet powertrain mix by vehicle count; no ESRS datapoint of its own (supports E1-3 actions)",
   social: "Social value (National TOMs); no ESRS equivalent",
 };
 
@@ -165,6 +170,35 @@ export function fuelSummary(rows: { litres: number; fuelType: string | null }[])
   if (!(totalLitres > 0)) return null;
   const hvoLitres = rows.reduce((s, r) => s + r.litres * (hvoShare(r.fuelType) ?? 0), 0);
   return { totalLitres, hvoLitres, hvoShare: hvoLitres / totalLitres };
+}
+
+export type Fleet = { total: number; zeroEmission: number; plugInHybrid: number; hybrid: number; combustion: number; zeroShare: number };
+
+type FleetRow = { powertrain: string; status: string; inServiceFrom: Date | null; inServiceTo: Date | null };
+
+/**
+ * The fleet on the last day of the period, by vehicle count (not distance).
+ * Zero tailpipe emission is battery electric plus hydrogen fuel cell; a plug-in
+ * hybrid is counted apart. A vehicle sold before the period end, or not yet in
+ * service, is left out. Null when no vehicle was in the fleet.
+ */
+export function fleetSummary(rows: FleetRow[], periodEnd: Date): Fleet | null {
+  const inFleet = rows.filter((r) => {
+    if (r.inServiceFrom && r.inServiceFrom > periodEnd) return false;
+    if (r.inServiceTo && r.inServiceTo < periodEnd) return false;
+    return !(r.status === "disposed" && !r.inServiceTo);
+  });
+  if (inFleet.length === 0) return null;
+  const count = (f: (p: string) => boolean) => inFleet.filter((r) => f(r.powertrain)).length;
+  const zeroEmission = count((p) => p === "bev" || p === "hydrogen");
+  return {
+    total: inFleet.length,
+    zeroEmission,
+    plugInHybrid: count((p) => p === "phev"),
+    hybrid: count((p) => p === "hybrid"),
+    combustion: count((p) => p.startsWith("ice_")),
+    zeroShare: zeroEmission / inFleet.length,
+  };
 }
 
 export type Water = { withdrawalM3: number; dischargeM3: number; consumptionM3: number };

@@ -382,6 +382,9 @@ model Organization {
   msNonconformities              MsNonconformity[]
   msSupplierEvaluations          MsSupplierEvaluation[]
   msEquipment                    MsEquipment[]
+  msToolboxTalks                 MsToolboxTalk[]
+  msToolboxDeliveries            MsToolboxDelivery[]
+  msFleetVehicles                MsFleetVehicle[]
   msInspectionTemplates          MsInspectionTemplate[]
   msInspections                  MsInspection[]
   msChanges                      MsChange[]
@@ -7173,6 +7176,9 @@ enum MsEvidenceKind {
   ms_inspection_template
   ms_inspection
   ms_change
+  ms_toolbox_talk
+  ms_toolbox_delivery
+  ms_fleet_vehicle
 }
 
 /// An organisation working towards, or certified against, a framework.
@@ -7609,6 +7615,82 @@ model MsEquipment {
 
   @@index([organizationId, nextDueOn])
   @@map("ms_equipment")
+}
+
+/// A toolbox talk the organisation has written or adopted: its own content and
+/// the law or guidance it relies on, per country. MetricOra ships no talks.
+model MsToolboxTalk {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  title           String
+  topic           String    @default("general")
+  /// Country (or countries) the talk is written for, as the organisation states it.
+  country         String?
+  /// The law, regulation or guidance the talk relies on, in the organisation's words.
+  legalBasis      String?   @map("legal_basis")
+  content         String?
+  status          String    @default("draft")
+  version         Int       @default(1)
+  fileId          String?   @map("file_id")
+  ownerUserId     String?   @map("owner_user_id")
+  reviewOn        DateTime? @map("review_on") @db.Date
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_toolbox_talks")
+}
+
+/// One delivery of a toolbox talk: when, where, by whom and who attended.
+model MsToolboxDelivery {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  talkId          String   @map("talk_id")
+  deliveredOn     DateTime @map("delivered_on") @db.Date
+  location        String?
+  presenterUserId String?  @map("presenter_user_id")
+  attendeeCount   Int?     @map("attendee_count")
+  /// Names as the organisation records them. Personal data: keep only what it needs.
+  attendees       String?
+  durationMinutes Int?     @map("duration_minutes")
+  notes           String?
+  /// The signed attendance sheet, as an evidence file.
+  fileId          String?  @map("file_id")
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, deliveredOn])
+  @@index([organizationId, talkId])
+  @@map("ms_toolbox_deliveries")
+}
+
+/// A vehicle the organisation runs, for the fleet's zero-emission share.
+model MsFleetVehicle {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  registration    String
+  description     String?
+  powertrain      String    @default("ice_diesel")
+  /// Where it is based, as the organisation states it.
+  location        String?
+  inServiceFrom   DateTime? @map("in_service_from") @db.Date
+  inServiceTo     DateTime? @map("in_service_to") @db.Date
+  status          String    @default("active")
+  ownerUserId     String?   @map("owner_user_id")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status])
+  @@map("ms_fleet_vehicles")
 }
 
 /// Inspection checklists (site, plant, housekeeping, environmental).

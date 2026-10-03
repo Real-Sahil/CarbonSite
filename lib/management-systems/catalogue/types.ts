@@ -19,7 +19,8 @@ export type FrameworkFamily =
   | "cyber"
   | "healthcare"
   | "payments"
-  | "ai";
+  | "ai"
+  | "sustainability_reporting";
 
 export type ContentBasis =
   /** Clause references with MetricOra's own titles and guidance. */

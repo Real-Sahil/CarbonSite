@@ -12,6 +12,7 @@ import { formatters, orgFormat, type OrgFormat } from "@/lib/i18n/org-format";
 import { normalizeUnit } from "@/lib/calculation/units";
 import { materialByStandard } from "@/lib/materiality";
 import {
+  fleetSummary,
   fuelSummary,
   highlights,
   intensity,
@@ -23,6 +24,7 @@ import {
   type Intensity,
   type Scope3Row,
   type Tile,
+  type Fleet,
   type Fuel,
   type Waste,
   type Water,
@@ -40,6 +42,8 @@ export type SustainabilityReportData = {
   /** Tonnes of waste per million of revenue. */
   wasteIntensity: number | null;
   fuel: Fuel | null;
+  /** The fleet by powertrain on the last day of the period, from the fleet register. */
+  fleet: Fleet | null;
   water: (Water & { withdrawalPerMillion: number | null }) | null;
   socialValue: { totalPounds: number; byTheme: { name: string; pounds: number }[] } | null;
   boundary: { approach: string; sites: string; exclusions: { item: string; reason: string }[] } | null;
@@ -68,14 +72,14 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     where: { id: snapshotId, organizationId: orgId },
     select: {
       reportingPeriodId: true,
-      reportingPeriod: { select: { revenueAmount: true, revenueCurrency: true, fteCount: true } },
+      reportingPeriod: { select: { revenueAmount: true, revenueCurrency: true, fteCount: true, endDate: true } },
       organization: { select: { hqCountry: true, reportingCurrency: true } },
     },
   });
   if (!snap) throw Object.assign(new Error("Snapshot not found."), { code: "NOT_FOUND", status: 404 });
   const periodId = snap.reportingPeriodId;
 
-  const [wasteRows, svRows, periodPlan, fuelRows, waterRows, assessment] = await Promise.all([
+  const [wasteRows, svRows, periodPlan, fuelRows, waterRows, assessment, fleetRows] = await Promise.all([
     prisma.wasteRecord.findMany({
       where: { organizationId: orgId, reportingPeriodId: periodId },
       select: { weightTonnes: true, disposalRoute: true },
@@ -114,6 +118,10 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
         },
       },
     }),
+    prisma.msFleetVehicle.findMany({
+      where: { organizationId: orgId },
+      select: { powertrain: true, status: true, inServiceFrom: true, inServiceTo: true },
+    }),
   ]);
   const plan = periodPlan
     ?? (await prisma.carbonReductionPlan.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { sections: true } }));
@@ -139,6 +147,7 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
       .filter((r) => r.n.unit === "litre")
       .map((r) => ({ litres: r.n.amount, fuelType: r.fuelType })),
   );
+  const fleet = fleetSummary(fleetRows, snap.reportingPeriod.endDate);
   const waterTotals = waterSummary(waterRows.map((w) => ({ metric: w.metricType, m3: Number(w.volumeM3) })));
   const water = waterTotals ? { ...waterTotals, withdrawalPerMillion: perMillion(waterTotals.withdrawalM3, revenue) } : null;
 
@@ -164,6 +173,7 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
       waste,
       wasteIntensity,
       fuel,
+      fleet,
       socialValuePounds: pack.socialValuePounds,
       topCategory: top ? { name: top.name, tonnes: top.tonnes } : null,
       fmt: formatters(format),
@@ -174,6 +184,7 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     waste,
     wasteIntensity,
     fuel,
+    fleet,
     water,
     materiality: assessment
       ? {

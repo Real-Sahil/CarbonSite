@@ -34,6 +34,9 @@ export const RECORD_KINDS = [
   "ms_nonconformity",
   "ms_supplier_evaluation",
   "ms_equipment",
+  "ms_toolbox_talk",
+  "ms_toolbox_delivery",
+  "ms_fleet_vehicle",
 ] as const satisfies readonly MsEvidenceKind[];
 
 /** Register rows that can be linked as evidence, by evidence kind. */
@@ -72,6 +75,9 @@ export const KIND_LABELS: Record<MsEvidenceKind, string> = {
   ms_nonconformity: "Nonconforming output",
   ms_supplier_evaluation: "Supplier evaluation",
   ms_equipment: "Equipment",
+  ms_toolbox_talk: "Toolbox talk",
+  ms_toolbox_delivery: "Toolbox talk delivery",
+  ms_fleet_vehicle: "Vehicle",
 };
 
 type Option = { id: string; label: string };

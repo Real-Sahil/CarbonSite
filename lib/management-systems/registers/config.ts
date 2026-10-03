@@ -50,13 +50,16 @@ export type RegisterKey =
   | "nonconformities"
   | "supplier-evaluations"
   | "equipment"
+  | "toolbox-talks"
+  | "toolbox-deliveries"
+  | "fleet-vehicles"
   | "management-reviews";
 
 /** Groups on the overview, in order. */
 export const REGISTER_GROUPS: Array<{ label: string; keys: RegisterKey[] }> = [
   { label: "Plan", keys: ["risks", "interested-parties", "objectives", "changes"] },
   { label: "Support", keys: ["policies", "documents", "competences", "training-records", "equipment"] },
-  { label: "Operate", keys: ["supplier-evaluations", "inspection-templates", "inspections"] },
+  { label: "Operate", keys: ["supplier-evaluations", "inspection-templates", "inspections", "toolbox-talks", "toolbox-deliveries", "fleet-vehicles"] },
   { label: "Check and improve", keys: ["audits", "audit-findings", "complaints", "nonconformities", "corrective-actions", "management-reviews"] },
 ];
 
@@ -438,6 +441,66 @@ export const REGISTERS: Record<RegisterKey, RegisterConfig> = {
       { name: "fileId", label: "Certificate", type: "file" },
       { name: "ownerUserId", label: "Responsible person", type: "member" },
       { name: "status", label: "Status", type: "select", options: [["in_service", "In service"], ["quarantined", "Quarantined"], ["retired", "Retired"]] },
+    ],
+  },
+  "toolbox-talks": {
+    key: "toolbox-talks",
+    label: "Toolbox talks",
+    singular: "toolbox talk",
+    intro: "Your library of toolbox talks, written or adopted by you for the countries you work in, with the law or guidance each relies on (ISO 45001 clauses 7.3 and 7.4, ISO 14001 7.3). MetricOra ships no talk content: enter your own, and have a competent person confirm it for each country.",
+    titleField: "title",
+    columns: ["topic", "country", "status", "version", "reviewOn"],
+    evidenceKind: "ms_toolbox_talk",
+    reminders: [{ field: "reviewOn", label: "Toolbox talk review", ownerField: "ownerUserId", skipStatuses: ["retired"] }],
+    fields: [
+      { name: "title", label: "Title", type: "text", required: true },
+      { name: "topic", label: "Topic", type: "select", options: [["general", "General"], ["working_at_height", "Working at height"], ["manual_handling", "Manual handling"], ["plant_and_traffic", "Plant and traffic"], ["excavations", "Excavations and services"], ["confined_spaces", "Confined spaces"], ["hot_works", "Hot works and fire"], ["hazardous_substances", "Hazardous substances"], ["electrical", "Electrical safety"], ["heat_and_weather", "Heat and weather"], ["environment", "Environment and waste"], ["wellbeing", "Health and wellbeing"], ["other", "Other"]] },
+      { name: "country", label: "Country or countries", type: "text", help: "Where the content applies, for example United Kingdom or United Arab Emirates" },
+      { name: "legalBasis", label: "Law or guidance relied on", type: "textarea", help: "In your own words, with the reference you checked" },
+      { name: "content", label: "Talk content", type: "textarea" },
+      { name: "fileId", label: "Handout or slides", type: "file" },
+      { name: "status", label: "Status", type: "select", options: [["draft", "Draft"], ["approved", "Approved for use"], ["retired", "Retired"]] },
+      { name: "ownerUserId", label: "Owner", type: "member" },
+      { name: "reviewOn", label: "Next review", type: "date" },
+    ],
+  },
+  "toolbox-deliveries": {
+    key: "toolbox-deliveries",
+    label: "Toolbox talk deliveries",
+    singular: "toolbox talk delivery",
+    intro: "Each time a talk was given: when, where, by whom and who attended, with the signed attendance sheet. Attendee names are personal data: record only what you need and follow your own retention rules.",
+    titleField: "location",
+    columns: ["talkId", "deliveredOn", "attendeeCount", "presenterUserId"],
+    evidenceKind: "ms_toolbox_delivery",
+    fields: [
+      { name: "talkId", label: "Talk", type: "row", ref: "toolbox-talks", required: true },
+      { name: "deliveredOn", label: "Delivered on", type: "date", required: true },
+      { name: "location", label: "Site or location", type: "text", required: true },
+      { name: "presenterUserId", label: "Delivered by", type: "member" },
+      { name: "attendeeCount", label: "Number attending", type: "number" },
+      { name: "attendees", label: "Attendees", type: "textarea", help: "Names, one per line, if you keep them here" },
+      { name: "durationMinutes", label: "Minutes", type: "number" },
+      { name: "notes", label: "Notes and questions raised", type: "textarea" },
+      { name: "fileId", label: "Signed attendance sheet", type: "file" },
+    ],
+  },
+  "fleet-vehicles": {
+    key: "fleet-vehicles",
+    label: "Fleet",
+    singular: "vehicle",
+    intro: "The vehicles you run and their powertrain, so reports can state your zero-emission share. The share counts vehicles, not distance driven, and says so.",
+    titleField: "registration",
+    columns: ["description", "powertrain", "location", "status"],
+    evidenceKind: "ms_fleet_vehicle",
+    fields: [
+      { name: "registration", label: "Registration or fleet number", type: "text", required: true },
+      { name: "description", label: "Make and model", type: "text" },
+      { name: "powertrain", label: "Powertrain", type: "select", options: [["bev", "Battery electric"], ["hydrogen", "Hydrogen fuel cell"], ["phev", "Plug-in hybrid"], ["hybrid", "Hybrid (not plug-in)"], ["ice_petrol", "Petrol"], ["ice_diesel", "Diesel"], ["ice_gas", "Gas (LPG or CNG)"], ["ice_other", "Other combustion"]] },
+      { name: "location", label: "Based at", type: "text" },
+      { name: "inServiceFrom", label: "In service from", type: "date" },
+      { name: "inServiceTo", label: "Left the fleet on", type: "date" },
+      { name: "status", label: "Status", type: "select", options: [["active", "Active"], ["off_road", "Off the road"], ["disposed", "Sold or scrapped"]] },
+      { name: "ownerUserId", label: "Responsible person", type: "member" },
     ],
   },
   "management-reviews": {

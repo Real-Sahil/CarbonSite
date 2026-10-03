@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fuelSummary, highlights, intensity, perMillion, scope3Disclosure, waterSummary, wasteSummary, yearTable } from "../model";
+import { fleetSummary, fuelSummary, highlights, intensity, perMillion, scope3Disclosure, waterSummary, wasteSummary, yearTable } from "../model";
 import { renderSustainabilityReportHtml } from "@/lib/reports/templates/sustainability-report";
 import type { SustainabilityReportData } from "../load";
 import { formatters } from "@/lib/i18n/org-format";
@@ -188,6 +188,7 @@ describe("renderSustainabilityReportHtml", () => {
     waste: null,
     wasteIntensity: null,
     fuel: null,
+    fleet: null,
     water: null,
     materiality: null,
     socialValue: null,
@@ -245,6 +246,14 @@ describe("renderSustainabilityReportHtml", () => {
     expect(html).not.toContain("Material topics");
   });
 
+  it("adds a fleet section counted by vehicle, with its caveat, and leaves it out with no fleet", () => {
+    const html = renderSustainabilityReportHtml(data({ fleet: { total: 8, zeroEmission: 2, plugInHybrid: 1, hybrid: 0, combustion: 5, zeroShare: 0.25 } }));
+    expect(html).toContain("Fleet</h2>");
+    expect(html).toContain("2 (25.0%)");
+    expect(html).toContain("not by distance driven");
+    expect(renderSustainabilityReportHtml(data())).not.toContain("Fleet</h2>");
+  });
+
   it("adds water and fuel sections, numbered, and points the ESRS index at them", () => {
     const html = renderSustainabilityReportHtml(
       data({
@@ -280,5 +289,33 @@ describe("renderSustainabilityReportHtml", () => {
     const html = renderSustainabilityReportHtml(data({ orgName: "A <b>&</b> Co" }));
     expect(html).not.toContain("<b>&</b>");
     expect(html).toContain("A &lt;b&gt;&amp;&lt;/b&gt; Co");
+  });
+});
+
+describe("fleetSummary", () => {
+  const end = new Date("2025-12-31");
+  const v = (powertrain: string, over: Partial<{ status: string; inServiceFrom: Date | null; inServiceTo: Date | null }> = {}) => ({
+    powertrain, status: "active", inServiceFrom: null, inServiceTo: null, ...over,
+  });
+  it("counts battery electric and hydrogen as zero tailpipe emission and plug-in hybrids apart", () => {
+    const f = fleetSummary([v("bev"), v("bev"), v("hydrogen"), v("phev"), v("hybrid"), v("ice_diesel"), v("ice_petrol")], end)!;
+    expect(f).toMatchObject({ total: 7, zeroEmission: 3, plugInHybrid: 1, hybrid: 1, combustion: 2 });
+    expect(f.zeroShare).toBeCloseTo(3 / 7);
+  });
+  it("leaves out a vehicle sold before the period end or not yet in service, and keeps an off-road one", () => {
+    const f = fleetSummary(
+      [v("bev", { status: "disposed", inServiceTo: new Date("2025-06-30") }), v("bev", { inServiceFrom: new Date("2026-02-01") }), v("ice_diesel", { status: "off_road" }), v("bev", { status: "disposed" })],
+      end,
+    )!;
+    expect(f.total).toBe(1);
+    expect(f.zeroEmission).toBe(0);
+  });
+  it("is null with no vehicle, so no tile or section appears", () => {
+    expect(fleetSummary([], end)).toBeNull();
+    expect(highlights({ periodLabel: "FY", current: { s1: 1, s2: 1, s3: 1, total: 3 } as never, baseYear: null, intensity: null, waste: null, socialValuePounds: 0, topCategory: null, fmt: formatters(GB), fleet: null }).some((t) => t.label.includes("vehicles"))).toBe(false);
+  });
+  it("adds a tile with the count behind the share", () => {
+    const tiles = highlights({ periodLabel: "FY", current: { s1: 1, s2: 1, s3: 1, total: 3 } as never, baseYear: null, intensity: null, waste: null, socialValuePounds: 0, topCategory: null, fmt: formatters(GB), fleet: fleetSummary([v("bev"), v("ice_diesel")], end) });
+    expect(tiles.find((t) => t.label.includes("vehicles"))).toMatchObject({ value: "50%", label: "of vehicles are zero tailpipe emission (1 of 2)" });
   });
 });
