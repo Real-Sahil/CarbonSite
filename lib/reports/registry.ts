@@ -36,6 +36,8 @@ import { renderSustainabilityReportHtml } from "./templates/sustainability-repor
 import { loadSustainabilityReport } from "@/lib/sustainability-report/load";
 import { renderTcfdStatementHtml } from "./templates/tcfd-statement";
 import { loadClimateDisclosure } from "@/lib/climate-disclosure/load";
+import { renderSiteNoticeboardHtml } from "./templates/site-noticeboard";
+import { loadSiteNoticeboard } from "@/lib/noticeboard/load";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
   return Promise.race([
@@ -739,6 +741,11 @@ const handlers: Record<string, ReportHandler> = {
   sustainability_report: async (ctx) => {
     const data = await withQueryTimeout(loadSustainabilityReport(ctx.orgId, ctx.report.snapshot.id), 60_000);
     return { html: renderSustainabilityReportHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
+  },
+
+  site_noticeboard: async (ctx) => {
+    const data = await withQueryTimeout(loadSiteNoticeboard(ctx.orgId, ctx.report.snapshot.id, ctx.report.contractId), 60_000);
+    return { html: renderSiteNoticeboardHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
   },
 
   tcfd_statement: async (ctx) => {

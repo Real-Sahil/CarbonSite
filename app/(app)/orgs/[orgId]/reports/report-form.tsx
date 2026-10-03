@@ -82,7 +82,7 @@ const CHECK_FIX_ACTIONS: Record<string, FixAction> = {
 };
 
 // Report types that require a contract selection
-const CONTRACT_REQUIRED_TYPES = new Set(["national_toms", "contract_carbon"]);
+const CONTRACT_REQUIRED_TYPES = new Set(["national_toms", "contract_carbon", "site_noticeboard"]);
 
 // Report types that have framework-specific validation rules
 const FRAMEWORK_VALIDATED_TYPES = new Set([
@@ -114,6 +114,7 @@ const REPORT_TYPE_OPTIONS = [
   { value: "secr",             label: "SECR (Directors' Report energy and carbon)" },
   { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
   { value: "sustainability_report", label: "Annual sustainability report" },
+  { value: "site_noticeboard", label: "Site noticeboard (one contract)" },
   { value: "tcfd_statement", label: "Climate disclosure (TCFD structure)" },
   { value: "transition_plan",  label: "Climate transition plan (ESRS E1-1)" },
   { value: "inventory",        label: "Inventory" },

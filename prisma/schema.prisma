@@ -349,6 +349,7 @@ model Organization {
   internalCarbonPrices           InternalCarbonPrice[]
   transitionPlan                 TransitionPlan?
   climateDisclosure              ClimateDisclosure?
+  caseStudies                    CaseStudy[]
   carbonReductionPlans           CarbonReductionPlan[]
   environmentalMetricAggregates  EnvironmentalMetricAggregate[]
   onboardingProgress             OnboardingProgress?
@@ -1091,6 +1092,37 @@ model ClimateDisclosure {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("climate_disclosures")
+}
+
+/// A project case study the organisation shows on a site noticeboard or in a
+/// bid: the problem, what was done, the baseline it is measured against, the
+/// results and the assumptions behind them. The figures are the organisation's
+/// own statement, not calculated from its records, and the board says so.
+model CaseStudy {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  /// The contract it belongs to; null for a company-wide case study.
+  contractId      String?  @map("contract_id")
+  title           String
+  problem         String   @default("")
+  solution        String   @default("")
+  /// What the results are measured against, for example "a standard diesel generator running the same hours".
+  baseline        String   @default("")
+  results         String   @default("")
+  /// Up to six headline figures: label, value and unit, as the organisation states them.
+  kpis            Json     @default("[]")
+  /// The prices, rates and other assumptions behind the figures.
+  assumptions     String   @default("")
+  /// Only published case studies appear on a noticeboard.
+  published       Boolean  @default(false)
+  createdByUserId String   @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, contractId])
+  @@map("case_studies")
 }
 
 model ActivityRecord {
@@ -1996,6 +2028,7 @@ enum ReportType {
   transition_plan
   sustainability_report
   tcfd_statement
+  site_noticeboard
 
   @@map("report_type")
 }

@@ -118,6 +118,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Activities",   href: `/orgs/${orgId}/social-value/activities`,     icon: ListChecks,    roles: EXTENDED_VIEW_ROLES },
         { label: "Local spend",  href: `/orgs/${orgId}/social-value/local-spend`,    icon: MapPin,        roles: EXTENDED_VIEW_ROLES },
         { label: "Obligations",  href: `/orgs/${orgId}/social-value/obligations`,    icon: Landmark,      roles: EXTENDED_VIEW_ROLES },
+        { label: "Case studies", href: `/orgs/${orgId}/case-studies`,                icon: BookOpen,      roles: EXTENDED_VIEW_ROLES },
         { label: "Frameworks",   href: `/orgs/${orgId}/social-value/frameworks`,     icon: Network,       roles: ["admin", "sustainability_director"] },
       ]},
     ]},
