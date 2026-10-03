@@ -103,7 +103,7 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       if (report.type !== "national_toms" && report.type !== "cbam"
         && report.type !== "csrd_esrs_e3" && report.type !== "csrd_esrs_e5"
         && report.type !== "ecology_scan" && report.type !== "ecology_survey"
-        && report.type !== "transition_plan") {
+        && report.type !== "transition_plan" && report.type !== "tcfd_statement") {
         const calculations = await fetchCalculations(orgId, report.snapshot.calculationRunId, report.contractId ?? undefined);
         csvBuffer = buildCsv(calculations, report, attribution);
         reportLogger.info("CSV buffer built", {
@@ -446,6 +446,8 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
     || report.type === "bid_carbon_pack"
     // The sustainability report reads the same snapshot aggregates (lib/sustainability-report/load.ts).
     || report.type === "sustainability_report"
+    // The TCFD statement reads its own register and the snapshot totals (lib/climate-disclosure/load.ts).
+    || report.type === "tcfd_statement"
     // The transition plan reads its own pathway and published totals (lib/transition-plan/load.ts).
     || report.type === "transition_plan";
 
@@ -466,7 +468,7 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
   // Ecology report types carry no GHG emission calculations — basePdfData has
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
-  const noNarrativeTypes = new Set(["bid_carbon_pack", "sustainability_report", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
+  const noNarrativeTypes = new Set(["bid_carbon_pack", "sustainability_report", "tcfd_statement", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
   if (!noNarrativeTypes.has(report.type) && (await aiAssistEnabled(report.organizationId))) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,

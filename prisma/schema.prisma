@@ -348,6 +348,8 @@ model Organization {
   energyInstruments              EnergyInstrument[]
   internalCarbonPrices           InternalCarbonPrice[]
   transitionPlan                 TransitionPlan?
+  climateDisclosure              ClimateDisclosure?
+  climateRisks                   ClimateRisk[]
   carbonReductionPlans           CarbonReductionPlan[]
   environmentalMetricAggregates  EnvironmentalMetricAggregate[]
   onboardingProgress             OnboardingProgress?
@@ -1068,6 +1070,55 @@ model TransitionPlan {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("transition_plans")
+}
+
+/// Climate-related financial disclosure (TCFD structure), one per organisation:
+/// the narrative for the recommended disclosures and the board approval. The
+/// risk register is ClimateRisk. Any later edit returns it to draft.
+model ClimateDisclosure {
+  id               String    @id @default(cuid())
+  organizationId   String    @unique @map("organization_id")
+  status           String    @default("draft")
+  /// Governance, strategy, risk management and metrics narrative plus the scenarios, validated by lib/climate-disclosure.
+  sections         Json      @default("{}")
+  approvalBody     String?   @map("approval_body")
+  approvedByUserId String?   @map("approved_by_user_id")
+  approvedAt       DateTime? @map("approved_at")
+  updatedByUserId  String    @map("updated_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("climate_disclosures")
+}
+
+/// One climate risk or opportunity in the organisation's register, scored 1 to 5
+/// for likelihood and impact before and after its response.
+model ClimateRisk {
+  id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
+  kind               String
+  title              String
+  description        String?
+  horizon            String
+  inherentLikelihood Int      @map("inherent_likelihood")
+  inherentImpact     Int      @map("inherent_impact")
+  residualLikelihood Int?     @map("residual_likelihood")
+  residualImpact     Int?     @map("residual_impact")
+  mitigation         String?
+  financialEffect    String?  @map("financial_effect")
+  /// A role or team, in the organisation's words.
+  ownerRole          String?  @map("owner_role")
+  status             String   @default("open")
+  updatedByUserId    String   @map("updated_by_user_id")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, horizon])
+  @@map("climate_risks")
 }
 
 model ActivityRecord {
@@ -1972,6 +2023,7 @@ enum ReportType {
   bid_carbon_pack
   transition_plan
   sustainability_report
+  tcfd_statement
 
   @@map("report_type")
 }

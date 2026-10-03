@@ -43,6 +43,7 @@ const createReportSchema = z.object({
     "bid_carbon_pack",
     "transition_plan",
     "sustainability_report",
+    "tcfd_statement",
   ]),
   contractId: z.string().min(1).optional(),
   options: z.record(z.any()).optional(),
@@ -172,6 +173,17 @@ export async function POST(req: NextRequest, { params }: Params) {
         select: { updatedAt: true },
       });
       planVersion = `plan@${plan.updatedAt.toISOString()}:${lastInitiative?.updatedAt.toISOString() ?? ""}:`;
+    }
+
+    // The disclosure and its risk register change without the snapshot changing.
+    if (body.type === "tcfd_statement") {
+      const [disclosure, lastRisk, riskCount] = await Promise.all([
+        prisma.climateDisclosure.findUnique({ where: { organizationId: orgId }, select: { updatedAt: true } }),
+        prisma.climateRisk.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+        prisma.climateRisk.count({ where: { organizationId: orgId } }),
+      ]);
+      if (!disclosure) return apiError("NOT_FOUND", "Save a climate disclosure before generating its report.", 404);
+      planVersion = `tcfd@${disclosure.updatedAt.toISOString()}:${lastRisk?.updatedAt.toISOString() ?? ""}:${riskCount}:`;
     }
 
     // Idempotency — same snapshot + type + contract + options = same report
