@@ -101,6 +101,8 @@ export async function POST(
         operationalFrom: body.operationalFrom ?? null,
         operationalTo: body.operationalTo ?? null,
         externalRef: body.externalRef ?? null,
+        economicLicenceNumber: body.economicLicenceNumber || null,
+        environmentalPermitNumber: body.environmentalPermitNumber || null,
       },
     });
 

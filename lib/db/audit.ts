@@ -143,6 +143,7 @@ export type AuditAction =
   | "species_record.updated"
   | "assurance.engagement_created"
   | "assurance.pack_downloaded"
+  | "export.abu_dhabi_mrv"
   | "assurance.engagement_updated"
   | "assurance.engagement_signed"
   | "assurance.evidence_request_created"

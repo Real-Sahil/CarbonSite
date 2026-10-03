@@ -73,6 +73,9 @@ export const createFacilitySchema = z.object({
   operationalFrom: z.coerce.date().optional(),
   operationalTo: z.coerce.date().optional(),
   externalRef: z.string().max(100).optional(),
+  // Regulator identifiers (for example the Abu Dhabi MRV report asks for both). Null clears.
+  economicLicenceNumber: z.string().trim().max(60).nullable().optional(),
+  environmentalPermitNumber: z.string().trim().max(60).nullable().optional(),
   // ESRS E3 water-stress classification. Manually assessed for now (e.g.
   // against WRI Aqueduct), not a live GIS lookup.
   waterStressLevel: z.enum(["low", "medium_high", "high", "extremely_high", "unknown"]).nullable().optional(),
