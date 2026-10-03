@@ -1104,25 +1104,27 @@ model ClimateDisclosure {
 /// results and the assumptions behind them. The figures are the organisation's
 /// own statement, not calculated from its records, and the board says so.
 model CaseStudy {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
+  id                  String   @id @default(cuid())
+  organizationId      String   @map("organization_id")
   /// The contract it belongs to; null for a company-wide case study.
-  contractId      String?  @map("contract_id")
-  title           String
-  problem         String   @default("")
-  solution        String   @default("")
+  contractId          String?  @map("contract_id")
+  title               String
+  problem             String   @default("")
+  solution            String   @default("")
   /// What the results are measured against, for example "a standard diesel generator running the same hours".
-  baseline        String   @default("")
-  results         String   @default("")
+  baseline            String   @default("")
+  results             String   @default("")
   /// Up to six headline figures: label, value and unit, as the organisation states them.
-  kpis            Json     @default("[]")
+  kpis                Json     @default("[]")
   /// The prices, rates and other assumptions behind the figures.
-  assumptions     String   @default("")
+  assumptions         String   @default("")
+  /// One photo, an evidence file of the organisation (an image), printed on the card.
+  photoEvidenceFileId String?  @map("photo_evidence_file_id")
   /// Only published case studies appear on a noticeboard.
-  published       Boolean  @default(false)
-  createdByUserId String   @map("created_by_user_id")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  published           Boolean  @default(false)
+  createdByUserId     String   @map("created_by_user_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 

@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     const body = caseStudyBody.parse(await req.json());
-    const bad = await orgRefsError(orgId, { contractId: body.contractId });
+    const bad = await orgRefsError(orgId, { contractId: body.contractId, evidenceFileId: body.photoEvidenceFileId });
     if (bad) return bad;
 
     const created = await prisma.caseStudy.create({

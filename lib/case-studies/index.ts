@@ -29,6 +29,7 @@ export const caseStudyBody = z.object({
   results: text(3000),
   kpis: z.array(kpiSchema).max(MAX_KPIS).default([]),
   assumptions: text(2000),
+  photoEvidenceFileId: z.string().min(1).nullable().optional().transform((v) => v ?? null),
   published: z.boolean().default(false),
 });
 export type CaseStudyBody = z.infer<typeof caseStudyBody>;
@@ -58,3 +59,30 @@ export function caseStudyChecks(c: Pick<CaseStudyBody, "problem" | "solution" | 
 }
 
 export const FIGURES_NOTE = "Figures on this card are stated by the organisation. They are not calculated from its records.";
+
+
+export type PolicyRow = { title: string; category: string | null; body: string | null; version: number; status: string; approvedOn: Date | null };
+export type NoticeboardPolicy = { title: string; version: number; approvedOn: Date | null; body: string };
+
+const PUBLIC_POLICY = /environment|carbon|sustainab|climate|energy|waste|biodiversity/i;
+
+/**
+ * The approved policies a site noticeboard may print: only approved ones with
+ * text, and only those about the environment (by category or title), so an
+ * internal policy such as information security is never put on a cabin wall.
+ * One per title, the highest version, at most three.
+ */
+export function noticeboardPolicies(rows: PolicyRow[]): NoticeboardPolicy[] {
+  const best = new Map<string, PolicyRow>();
+  for (const r of rows) {
+    if (r.status !== "approved" || !r.body?.trim()) continue;
+    if (!PUBLIC_POLICY.test(`${r.category ?? ""} ${r.title}`)) continue;
+    const key = r.title.trim().toLowerCase();
+    const cur = best.get(key);
+    if (!cur || r.version > cur.version) best.set(key, r);
+  }
+  return [...best.values()]
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .slice(0, 3)
+    .map((r) => ({ title: r.title, version: r.version, approvedOn: r.approvedOn, body: r.body!.trim() }));
+}

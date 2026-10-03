@@ -9,6 +9,7 @@ import { NextRequest } from "next/server";
 const db = vi.hoisted(() => ({
   prisma: {
     contract: { findFirst: vi.fn() },
+    evidenceFile: { findFirst: vi.fn() },
     organizationMembership: { findFirst: vi.fn() },
     caseStudy: { create: vi.fn(), updateMany: vi.fn(), deleteMany: vi.fn(), findMany: vi.fn() },
   },
@@ -36,6 +37,15 @@ describe("case study tenancy", () => {
     expect((await POST(req("POST", { title: "Solar units", contractId: "contract-of-org-b" }), orgCtx)).status).toBe(404);
     expect((await PATCH(req("PATCH", { title: "Solar units", contractId: "contract-of-org-b" }), ctx)).status).toBe(404);
     expect(db.prisma.contract.findFirst.mock.calls[0][0].where).toEqual({ id: "contract-of-org-b", organizationId: "org-a" });
+    expect(db.prisma.caseStudy.create).not.toHaveBeenCalled();
+    expect(db.prisma.caseStudy.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("refuses a photo that is another org's evidence file before writing anything", async () => {
+    db.prisma.evidenceFile.findFirst.mockResolvedValue(null);
+    expect((await POST(req("POST", { title: "Solar units", photoEvidenceFileId: "file-of-org-b" }), orgCtx)).status).toBe(404);
+    expect((await PATCH(req("PATCH", { title: "Solar units", photoEvidenceFileId: "file-of-org-b" }), ctx)).status).toBe(404);
+    expect(db.prisma.evidenceFile.findFirst.mock.calls[0][0].where).toEqual({ id: "file-of-org-b", organizationId: "org-a" });
     expect(db.prisma.caseStudy.create).not.toHaveBeenCalled();
     expect(db.prisma.caseStudy.updateMany).not.toHaveBeenCalled();
   });
