@@ -444,6 +444,8 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
     || report.type === "csrd_esrs_e3" || report.type === "csrd_esrs_e5"
     // The bid pack reads snapshot aggregates itself (lib/bids/carbon-pack.ts).
     || report.type === "bid_carbon_pack"
+    // The sustainability report reads the same snapshot aggregates (lib/sustainability-report/load.ts).
+    || report.type === "sustainability_report"
     // The transition plan reads its own pathway and published totals (lib/transition-plan/load.ts).
     || report.type === "transition_plan";
 
@@ -464,7 +466,7 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
   // Ecology report types carry no GHG emission calculations — basePdfData has
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
-  const noNarrativeTypes = new Set(["bid_carbon_pack", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
+  const noNarrativeTypes = new Set(["bid_carbon_pack", "sustainability_report", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
   if (!noNarrativeTypes.has(report.type) && (await aiAssistEnabled(report.organizationId))) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,

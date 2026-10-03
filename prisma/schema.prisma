@@ -1971,6 +1971,7 @@ enum ReportType {
   snapshot_export
   bid_carbon_pack
   transition_plan
+  sustainability_report
 
   @@map("report_type")
 }
