@@ -116,6 +116,7 @@ jobs:
             mobile/build/app/outputs/flutter-apk/*.apk
             mobile/build/app/outputs/bundle/release/*.aab
           if-no-files-found: error
+          retention-days: 3
 
   ios:
     name: iOS release artifact
@@ -504,11 +505,15 @@ jobs:
         run: ditto -c -k --sequesterRsrc --keepParent build/ios/iphoneos/Runner.app build/ios/iphoneos/metricora-ios-unsigned.zip
       - name: Upload signed IPA artifact
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
+        # A full artifact store (free plan: 500 MB) must not stop the App Store
+        # Connect upload in the next step, which is what ships the build.
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: metricora-ios-release
           path: mobile/build/ios/ipa/*.ipa
           if-no-files-found: error
+          retention-days: 3
       - name: Upload to TestFlight / App Store Connect
         if: env.METRICORA_IOS_SIGNING_READY == 'true'
         env:
@@ -537,6 +542,7 @@ jobs:
           name: metricora-ios-unsigned-release
           path: mobile/build/ios/iphoneos/metricora-ios-unsigned.zip
           if-no-files-found: error
+          retention-days: 3
       - name: Clean up signing keychain
         if: always()
         run: |
