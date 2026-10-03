@@ -8,6 +8,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { handleRouteError } from "@/lib/validation/api";
 import { createOrgSchema } from "@/lib/validation/org";
 import { TRIAL_LENGTH_DAYS } from "@/lib/billing/limits";
+import { currencyForCountry } from "@/lib/i18n/countries";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,6 +20,7 @@ export async function POST(req: NextRequest) {
     });
     if (limited) return limited;
     const body = createOrgSchema.parse(await req.json());
+    const currency = body.reportingCurrency ?? currencyForCountry(body.hqCountry);
 
     const org = await prisma.$transaction(async (tx) => {
       const created = await tx.organization.create({
@@ -26,6 +28,9 @@ export async function POST(req: NextRequest) {
           name: body.name,
           industry: body.industry ?? null,
           hqCountry: body.hqCountry ?? null,
+          // Their own currency, else the country's, else the schema default (GBP).
+          ...(currency ? { reportingCurrency: currency } : {}),
+          ...(body.fiscalYearStartMonth ? { fiscalYearStartMonth: body.fiscalYearStartMonth } : {}),
           acquisitionSource: body.acquisition?.source ?? null,
           acquisitionMedium: body.acquisition?.medium ?? null,
           acquisitionCampaign: body.acquisition?.campaign ?? null,

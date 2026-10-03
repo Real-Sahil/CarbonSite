@@ -30,6 +30,7 @@ const REPORT_SELECT = {
   organization: {
     select: {
       name: true,
+      hqCountry: true,
       branding: { select: { reportHeaderLogoKey: true, logoStorageKey: true } },
     },
   },

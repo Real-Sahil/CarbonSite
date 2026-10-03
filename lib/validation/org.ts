@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { acquisitionSchema } from "@/lib/marketing/acquisition";
+import { countryOf } from "@/lib/i18n/countries";
 import {
   EVIDENCE_MAX_BYTES,
   isAllowedEvidenceMimeType,
@@ -31,7 +32,18 @@ export const orgRoleSchema = z.enum([
 const orgFieldsSchema = z.object({
   name: z.string().min(2).max(100),
   industry: z.string().optional(),
-  hqCountry: z.string().optional(),
+  // ISO 3166-1 alpha-2. A value we do not list is dropped, never a reason to refuse the sign-up.
+  hqCountry: z
+    .string()
+    .optional()
+    .transform((v) => countryOf(v)?.code),
+  fiscalYearStartMonth: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
+  reportingCurrency: z
+    .string()
+    .regex(/^[A-Za-z]{3}$/)
+    .transform((v) => v.toUpperCase())
+    .optional()
+    .catch(undefined),
 });
 
 // Acquisition is accepted on creation only; a malformed one is dropped, never

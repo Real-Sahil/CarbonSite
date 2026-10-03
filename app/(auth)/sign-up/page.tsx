@@ -6,6 +6,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { acquisitionFromParams, referrerSource } from "@/lib/marketing/acquisition";
 import { ArrowRight, Building2 } from "lucide-react";
+import { COUNTRIES, CURRENCIES, currencyForCountry } from "@/lib/i18n/countries";
 
 type Step = "account" | "org";
 
@@ -29,19 +30,7 @@ function mapSignUpError(err: { code?: string; message?: string } | null | undefi
   }
 }
 
-const HQ_COUNTRIES: Array<[string, string]> = [
-  ["GB", "United Kingdom"],
-  ["IE", "Ireland"],
-  ["US", "United States"],
-  ["FR", "France"],
-  ["DE", "Germany"],
-  ["NL", "Netherlands"],
-  ["ES", "Spain"],
-  ["IT", "Italy"],
-  ["BE", "Belgium"],
-  ["CA", "Canada"],
-  ["AU", "Australia"],
-];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const INPUT_CLS =
   "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
@@ -55,7 +44,9 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [orgName, setOrgName] = useState("");
   const [industry, setIndustry] = useState("");
-  const [hqCountry, setHqCountry] = useState("GB");
+  const [hqCountry, setHqCountry] = useState("");
+  const [currency, setCurrency] = useState("");
+  const [startMonth, setStartMonth] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -71,6 +62,7 @@ export default function SignUpPage() {
     e.preventDefault();
     setError("");
     if (!orgName.trim()) { setError("Organisation name is required."); return; }
+    if (!hqCountry) { setError("Choose the country your organisation is based in."); return; }
     setLoading(true);
     try {
       const result = await authClient.signUp.email({ name: name.trim(), email: email.trim().toLowerCase(), password });
@@ -90,6 +82,8 @@ export default function SignUpPage() {
           name: orgName.trim(),
           industry: industry.trim() || undefined,
           hqCountry,
+          reportingCurrency: currency || undefined,
+          fiscalYearStartMonth: startMonth,
           acquisition:
             acquisitionFromParams(
               new URLSearchParams(window.location.search),
@@ -150,12 +144,39 @@ export default function SignUpPage() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="hqCountry" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Country</label>
-            <select id="hqCountry" value={hqCountry} onChange={(e) => setHqCountry(e.target.value)} disabled={loading} className={INPUT_CLS}>
-              {HQ_COUNTRIES.map(([code, label]) => (
-                <option key={code} value={code} className="bg-zinc-900">{label}</option>
+            <select
+              id="hqCountry"
+              value={hqCountry}
+              required
+              onChange={(e) => { setHqCountry(e.target.value); setCurrency(currencyForCountry(e.target.value) ?? ""); }}
+              disabled={loading}
+              className={INPUT_CLS}
+            >
+              <option value="" className="bg-zinc-900">Select a country</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code} className="bg-zinc-900">{c.name}</option>
               ))}
             </select>
             <p className="text-[11px] text-white/60">Sets the grid electricity and fuel factors used when a site has no country of its own.</p>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="reportingCurrency" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Reporting currency</label>
+            <select id="reportingCurrency" value={currency} onChange={(e) => setCurrency(e.target.value)} disabled={loading || !hqCountry} className={INPUT_CLS}>
+              {!currency && <option value="" className="bg-zinc-900">Choose a country first</option>}
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c} className="bg-zinc-900">{c}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-white/60">Used for spend, revenue and how money prints in your reports. You can change it later in settings.</p>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="fiscalYearStartMonth" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Financial year starts</label>
+            <select id="fiscalYearStartMonth" value={startMonth} onChange={(e) => setStartMonth(Number(e.target.value))} disabled={loading} className={INPUT_CLS}>
+              {MONTHS.map((m, i) => (
+                <option key={m} value={i + 1} className="bg-zinc-900">{m}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-white/60">Suggests the dates and label when you add a reporting period.</p>
           </div>
           {error && (
             <div className="flex items-start gap-2 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-2.5" role="alert">

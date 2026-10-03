@@ -1,3 +1,4 @@
+import { loc } from "./locale";
 // Shared utilities, branding helpers, and SVG chart generators for all report templates.
 
 export function esc(s: string | null | undefined): string {
@@ -91,7 +92,7 @@ export function svgDonut(
   const stroke = size * 0.13;     // ring thickness
   const circ = 2 * Math.PI * r;
   const unit = opts.unit ?? "tCO2e";
-  const fmt = opts.formatValue ?? ((v: number) => (v / 1000).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+  const fmt = opts.formatValue ?? ((v: number) => (v / 1000).toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
 
   const total = slices.reduce((s, sl) => s + sl.value, 0);
   if (total === 0) return "";
@@ -171,7 +172,7 @@ export function svgHBars(
   if (items.length === 0) return "";
 
   const unit = opts.unit ?? "tCO2e";
-  const fmt = opts.formatValue ?? ((v: number) => (v / 1000).toLocaleString("en-GB", { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
+  const fmt = opts.formatValue ?? ((v: number) => (v / 1000).toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }));
   const barH = opts.barHeight ?? 16;
   const gap = opts.gap ?? 8;
   const maxVal = Math.max(...items.map((b) => b.value), 1);

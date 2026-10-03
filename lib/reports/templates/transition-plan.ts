@@ -7,6 +7,7 @@
 import { esc, brandStyles, brandLogoHtml } from "./shared";
 import { ACA_RATE_1_5C, type PathwayPoint } from "@/lib/transition-plan";
 import type { TransitionPlanView } from "@/lib/transition-plan/load";
+import { loc } from "./locale";
 
 export type TransitionPlanReportData = TransitionPlanView & {
   orgName: string;
@@ -14,9 +15,9 @@ export type TransitionPlanReportData = TransitionPlanView & {
   logoDataUri?: string;
 };
 
-const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const fmtT = (n: number | null | undefined) => (n == null ? "–" : n.toLocaleString("en-GB", { maximumFractionDigits: 0 }));
-const fmtMoney = (n: number, currency: string) => n.toLocaleString("en-GB", { style: "currency", currency, maximumFractionDigits: 0 });
+const fmtDate = (d: Date) => d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+const fmtT = (n: number | null | undefined) => (n == null ? "–" : n.toLocaleString(loc(), { maximumFractionDigits: 0 }));
+const fmtMoney = (n: number, currency: string) => n.toLocaleString(loc(), { style: "currency", currency, maximumFractionDigits: 0 });
 const STATUS: Record<string, string> = { met: "Done", partial: "Partly", gap: "Missing" };
 const LEVER_STATUS: Record<string, string> = { planned: "Planned", in_progress: "In progress", complete: "Completed", canceled: "Cancelled" };
 

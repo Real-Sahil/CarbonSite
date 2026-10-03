@@ -4,6 +4,7 @@
 // and C8 (Energy) — the core modules relevant to MetricOra's dataset.
 
 import { brandStyles, esc } from "./shared";
+import { loc } from "./locale";
 
 export interface CdpCategoryRow {
   code: string;
@@ -45,11 +46,11 @@ export interface CdpData {
 }
 
 function fmt(d: Date) {
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString(loc(), { day: "numeric", month: "long", year: "numeric" });
 }
 
 function fmtN(n: number, dp = 3) {
-  return n.toLocaleString("en-GB", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  return n.toLocaleString(loc(), { minimumFractionDigits: dp, maximumFractionDigits: dp });
 }
 
 const SCOPE3_CATEGORY_LABELS: Record<number, string> = {
@@ -120,7 +121,7 @@ export function renderCdpHtml(data: CdpData): string {
         ${row2("Scope 2 methods", "Location-based and market-based (dual-reporting per GHG Protocol Scope 2 Guidance)")}
         ${row2("Consolidation approach", "Operational control (default)")}
         ${row2("Reporting period", `${fmt(data.periodStart)} to ${fmt(data.periodEnd)}`)}
-        ${row2("Activity records", `${data.recordCount.toLocaleString("en-GB")} records`)}
+        ${row2("Activity records", `${data.recordCount.toLocaleString(loc())} records`)}
       </table>`
     )}
     ${questionBlock("C5.2", "Provide any additional context on your emission calculation methodology.",
