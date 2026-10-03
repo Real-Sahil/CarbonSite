@@ -16,7 +16,6 @@ import { generateReportPdf, stampAuditMetadata, addQrCodeToFooter, addLogoToHead
 import { generateAuditNarrative } from "./narrative-generator";
 import { llmClient } from "@/lib/llm/client";
 import { aiAssistEnabled } from "@/lib/llm/org-consent";
-import { withArabicSupport } from "./arabic";
 
 const REPORT_SELECT = {
   id: true,
@@ -555,9 +554,7 @@ async function resolveLocalChromiumPath(): Promise<string | undefined> {
   return undefined;
 }
 
-async function renderPdf(rawHtml: string): Promise<Buffer> {
-  // Arabic names need an embedded font; the server has none.
-  const html = withArabicSupport(rawHtml);
+async function renderPdf(html: string): Promise<Buffer> {
   let browser: import("puppeteer").Browser | null = null;
   try {
     const puppeteer = (await import("puppeteer")).default;
