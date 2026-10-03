@@ -37,6 +37,7 @@ const orgFieldsSchema = z.object({
     .string()
     .optional()
     .transform((v) => countryOf(v)?.code),
+  fiscalYearStartMonth: z.coerce.number().int().min(1).max(12).optional().catch(undefined),
   reportingCurrency: z
     .string()
     .regex(/^[A-Za-z]{3}$/)

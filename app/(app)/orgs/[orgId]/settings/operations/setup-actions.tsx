@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiDataSourcesPanel } from "./api-data-sources";
 import { PilotKitPanel } from "./pilot-kit-panel";
+import { COUNTRIES, countryOf } from "@/lib/i18n/countries";
+import { fiscalYearOf } from "@/lib/i18n/fiscal-year";
 
 type ReportingPeriod = {
   id: string;
@@ -103,7 +105,10 @@ type OrgProfile = {
   industry: string;
   hqCountry: string;
   reportingCurrency: string;
+  fiscalYearStartMonth: number;
 };
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export function OperationsSetup({
   orgId,
@@ -129,7 +134,7 @@ export function OperationsSetup({
   return (
     <div className="flex flex-col gap-[28px]">
       <OrgProfilePanel orgId={orgId} profile={orgProfile} />
-      <ReportingPeriodsPanel orgId={orgId} periods={periods} />
+      <ReportingPeriodsPanel orgId={orgId} periods={periods} fiscalYearStartMonth={orgProfile.fiscalYearStartMonth} />
       <div className="grid gap-[28px] md:grid-cols-2">
         <FacilitiesPanel orgId={orgId} facilities={facilities} />
         <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
@@ -151,8 +156,11 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
   const router = useRouter();
   const [name, setName] = useState(profile.name);
   const [industry, setIndustry] = useState(profile.industry);
-  const [hqCountry, setHqCountry] = useState(profile.hqCountry);
+  // Older organisations may hold a free-text country; show it as unset until a country is chosen.
+  const initialCountry = countryOf(profile.hqCountry)?.code ?? "";
+  const [hqCountry, setHqCountry] = useState(initialCountry);
   const [currency, setCurrency] = useState(profile.reportingCurrency);
+  const [startMonth, setStartMonth] = useState(profile.fiscalYearStartMonth);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -160,7 +168,8 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
   const changed =
     name !== profile.name ||
     industry !== profile.industry ||
-    hqCountry !== profile.hqCountry ||
+    hqCountry !== initialCountry ||
+    startMonth !== profile.fiscalYearStartMonth ||
     currency !== profile.reportingCurrency;
 
   function save() {
@@ -171,8 +180,9 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
         await requestJson(`/api/orgs/${orgId}`, "PATCH", {
           name: name.trim() || undefined,
           industry: industry || null,
-          hqCountry: hqCountry.trim() || null,
+          hqCountry: hqCountry || null,
           reportingCurrency: currency || undefined,
+          fiscalYearStartMonth: startMonth,
         });
         setSuccess("Organisation profile saved.");
         router.refresh();
@@ -188,7 +198,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
         title="Organisation profile"
         description="Industry classification drives sector-specific dashboard widgets and report defaults."
       />
-      <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Organisation name">
           <Input value={name} disabled={isPending} onChange={(e) => setName(e.target.value)} maxLength={200} />
         </Field>
@@ -207,13 +217,17 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
           </select>
         </Field>
         <Field label="HQ country">
-          <Input
+          <select
             value={hqCountry}
             disabled={isPending}
             onChange={(e) => setHqCountry(e.target.value)}
-            maxLength={100}
-            placeholder="e.g. United Kingdom"
-          />
+            className={selectClass}
+          >
+            <option value="">Not set</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.name}</option>
+            ))}
+          </select>
         </Field>
         <Field label="Reporting currency">
           <select
@@ -224,6 +238,18 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
           >
             {CURRENCY_OPTIONS.map((c) => (
               <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Financial year starts">
+          <select
+            value={startMonth}
+            disabled={isPending}
+            onChange={(e) => setStartMonth(Number(e.target.value))}
+            className={selectClass}
+          >
+            {MONTH_NAMES.map((m, i) => (
+              <option key={m} value={i + 1}>{m}</option>
             ))}
           </select>
         </Field>
@@ -430,13 +456,35 @@ function MaterialImportPanel({
 function ReportingPeriodsPanel({
   orgId,
   periods,
+  fiscalYearStartMonth,
 }: {
   orgId: string;
   periods: ReportingPeriod[];
+  fiscalYearStartMonth: number;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // Fills the form with the financial year after the latest period (or the current one).
+  function suggestYear(form: HTMLFormElement | null) {
+    if (!form) return;
+    const latestEnd = periods.reduce<string | null>((m, p) => {
+      const e = toDateInput(p.endDate);
+      return m == null || e > m ? e : m;
+    }, null);
+    const from = latestEnd ? new Date(`${latestEnd}T00:00:00Z`) : new Date();
+    if (latestEnd) from.setUTCDate(from.getUTCDate() + 1);
+    const fy = fiscalYearOf(from, fiscalYearStartMonth);
+    const set = (name: string, value: string) => {
+      const el = form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null;
+      if (el) el.value = value;
+    };
+    set("label", fy.label);
+    set("type", "year");
+    set("startDate", fy.startDate);
+    set("endDate", fy.endDate);
+  }
 
   function createPeriod(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -487,6 +535,9 @@ function ReportingPeriodsPanel({
             <Input name="endDate" type="date" required disabled={isPending} />
           </Field>
           <div className="flex items-end">
+            <Button type="button" variant="outline" disabled={isPending} onClick={(e) => suggestYear(e.currentTarget.form)} className="mr-2">
+              Next financial year
+            </Button>
             <Button type="submit" disabled={isPending}>
               <Plus className="h-4 w-4" />
               Add

@@ -47,6 +47,7 @@ const UpdateOrgSchema = z.object({
   industry: z.string().max(100).nullable().optional(),
   hqCountry: z.string().max(100).nullable().optional(),
   reportingCurrency: z.string().length(3).optional(),
+  fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
 });
 
 export async function PATCH(
@@ -64,8 +65,8 @@ export async function PATCH(
       return apiError("VALIDATION_ERROR", "Invalid request body", 400, parsed.error.flatten());
     }
 
-    const { name, industry, hqCountry, reportingCurrency } = parsed.data;
-    if (name === undefined && industry === undefined && hqCountry === undefined && reportingCurrency === undefined) {
+    const { name, industry, hqCountry, reportingCurrency, fiscalYearStartMonth } = parsed.data;
+    if (name === undefined && industry === undefined && hqCountry === undefined && reportingCurrency === undefined && fiscalYearStartMonth === undefined) {
       return apiError("NO_FIELDS", "No updatable fields provided", 400);
     }
 
@@ -76,6 +77,7 @@ export async function PATCH(
         ...(industry !== undefined ? { industry } : {}),
         ...(hqCountry !== undefined ? { hqCountry } : {}),
         ...(reportingCurrency !== undefined ? { reportingCurrency } : {}),
+        ...(fiscalYearStartMonth !== undefined ? { fiscalYearStartMonth } : {}),
       },
     });
 

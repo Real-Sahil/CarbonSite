@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
           hqCountry: body.hqCountry ?? null,
           // Their own currency, else the country's, else the schema default (GBP).
           ...(currency ? { reportingCurrency: currency } : {}),
+          ...(body.fiscalYearStartMonth ? { fiscalYearStartMonth: body.fiscalYearStartMonth } : {}),
           acquisitionSource: body.acquisition?.source ?? null,
           acquisitionMedium: body.acquisition?.medium ?? null,
           acquisitionCampaign: body.acquisition?.campaign ?? null,

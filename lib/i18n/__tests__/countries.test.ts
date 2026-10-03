@@ -36,3 +36,11 @@ describe("createOrgSchema country and currency", async () => {
     expect(r.reportingCurrency).toBeUndefined();
   });
 });
+
+describe("createOrgSchema fiscal year start month", async () => {
+  const { createOrgSchema } = await import("@/lib/validation/org");
+  it("keeps 1 to 12 and drops anything else", () => {
+    expect(createOrgSchema.parse({ name: "Acme", fiscalYearStartMonth: 4 }).fiscalYearStartMonth).toBe(4);
+    expect(createOrgSchema.parse({ name: "Acme", fiscalYearStartMonth: 13 }).fiscalYearStartMonth).toBeUndefined();
+  });
+});

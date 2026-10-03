@@ -30,6 +30,8 @@ function mapSignUpError(err: { code?: string; message?: string } | null | undefi
   }
 }
 
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 const INPUT_CLS =
   "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
 
@@ -44,6 +46,7 @@ export default function SignUpPage() {
   const [industry, setIndustry] = useState("");
   const [hqCountry, setHqCountry] = useState("");
   const [currency, setCurrency] = useState("");
+  const [startMonth, setStartMonth] = useState(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -80,6 +83,7 @@ export default function SignUpPage() {
           industry: industry.trim() || undefined,
           hqCountry,
           reportingCurrency: currency || undefined,
+          fiscalYearStartMonth: startMonth,
           acquisition:
             acquisitionFromParams(
               new URLSearchParams(window.location.search),
@@ -164,6 +168,15 @@ export default function SignUpPage() {
               ))}
             </select>
             <p className="text-[11px] text-white/60">Used for spend, revenue and how money prints in your reports. You can change it later in settings.</p>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="fiscalYearStartMonth" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Financial year starts</label>
+            <select id="fiscalYearStartMonth" value={startMonth} onChange={(e) => setStartMonth(Number(e.target.value))} disabled={loading} className={INPUT_CLS}>
+              {MONTHS.map((m, i) => (
+                <option key={m} value={i + 1} className="bg-zinc-900">{m}</option>
+              ))}
+            </select>
+            <p className="text-[11px] text-white/60">Suggests the dates and label when you add a reporting period.</p>
           </div>
           {error && (
             <div className="flex items-start gap-2 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-2.5" role="alert">

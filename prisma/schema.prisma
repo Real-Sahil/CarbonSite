@@ -192,6 +192,8 @@ model Organization {
   industry                     String?
   hqCountry                    String?               @map("hq_country")
   reportingCurrency            String                @default("GBP") @map("reporting_currency")
+  /// Month (1-12) the organisation's financial year starts. Suggests period dates and labels; periods themselves stay free-form.
+  fiscalYearStartMonth         Int                   @default(1) @map("fiscal_year_start_month")
   defaultUnits                 Json?                 @map("default_units")
   /// GHG Protocol Chapter 3 consolidation approach. Determines which legal
   /// entities are consolidated and at what share. Changing it is a structural

@@ -16,12 +16,15 @@ import {
 } from "@/components/ui/card";
 import { COUNTRIES, CURRENCIES, currencyForCountry } from "@/lib/i18n/countries";
 
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 export default function NewOrgPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [industry, setIndustry] = useState("");
   const [hqCountry, setHqCountry] = useState("");
   const [currency, setCurrency] = useState("");
+  const [startMonth, setStartMonth] = useState(1);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -55,6 +58,7 @@ export default function NewOrgPage() {
           industry: industry.trim() || undefined,
           hqCountry,
           reportingCurrency: currency || undefined,
+          fiscalYearStartMonth: startMonth,
         }),
       });
 
@@ -157,6 +161,20 @@ export default function NewOrgPage() {
                   {!currency && <option value="">Choose a country first</option>}
                   {CURRENCIES.map((c) => (
                     <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="fiscalYearStartMonth">Financial year starts</Label>
+                <select
+                  id="fiscalYearStartMonth"
+                  value={startMonth}
+                  onChange={(e) => setStartMonth(Number(e.target.value))}
+                  disabled={loading}
+                  className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                >
+                  {MONTHS.map((m, i) => (
+                    <option key={m} value={i + 1}>{m}</option>
                   ))}
                 </select>
               </div>
