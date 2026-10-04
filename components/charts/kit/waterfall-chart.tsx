@@ -15,7 +15,10 @@ const M = { top: 20, right: 12, bottom: 64, left: 56 };
 const t = (kg: number, locale: string, signed = false) =>
   `${signed && kg > 0 ? "+" : ""}${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })}`;
 
-function Plot({ steps, width, height, locale }: { steps: WaterfallStep[]; width: number; height: number; locale: string }) {
+/** Only a real category step can filter; totals and the grouped remainder cannot. */
+export const stepCategory = (s: { id: string; kind: string }) => (s.kind === "change" && s.id !== "other" ? s.id : null);
+
+function Plot({ steps, width, height, locale, onSelect, selected }: { steps: WaterfallStep[]; width: number; height: number; locale: string; onSelect?: (categoryId: string) => void; selected?: string }) {
   const [focus, setFocus] = useState<string | null>(null);
   const innerW = Math.max(0, width - M.left - M.right);
   const innerH = Math.max(0, height - M.top - M.bottom);
@@ -39,12 +42,17 @@ function Plot({ steps, width, height, locale }: { steps: WaterfallStep[]; width:
           const fill = s.kind === "total" ? NEUTRAL_SERIES_COLOR : s.value >= 0 ? UP : DOWN;
           const label = s.kind === "total" ? t(s.value, locale) : `${s.value >= 0 ? "▲" : "▼"} ${t(s.value, locale, true)}`;
           const next = steps[i + 1];
+          const cat = onSelect ? stepCategory(s) : null;
           return (
             <g
               key={s.id}
               tabIndex={0}
-              role="img"
-              aria-label={`${s.label}: ${s.kind === "total" ? `${t(s.value, locale)} tonnes` : `${s.value >= 0 ? "up" : "down"} ${t(Math.abs(s.value), locale)} tonnes`}`}
+              role={cat ? "button" : "img"}
+              aria-pressed={cat ? selected === cat : undefined}
+              style={cat ? { cursor: "pointer" } : undefined}
+              onClick={cat ? () => onSelect!(cat) : undefined}
+              onKeyDown={cat ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect!(cat); } } : undefined}
+              aria-label={`${s.label}: ${s.kind === "total" ? `${t(s.value, locale)} tonnes` : `${s.value >= 0 ? "up" : "down"} ${t(Math.abs(s.value), locale)} tonnes`}${cat ? ". Press Enter to filter the dashboard to this category" : ""}`}
               className="outline-none [&:focus-visible_rect]:stroke-[#111827] [&:focus-visible_rect]:stroke-2"
               opacity={focus && focus !== s.id ? 0.6 : 1}
               onMouseEnter={() => setFocus(s.id)}
@@ -67,7 +75,7 @@ function Plot({ steps, width, height, locale }: { steps: WaterfallStep[]; width:
   );
 }
 
-export function WaterfallChart({ steps, locale = "en-GB" }: { steps: WaterfallStep[]; locale?: string }) {
+export function WaterfallChart({ steps, locale = "en-GB", onSelect, selected }: { steps: WaterfallStep[]; locale?: string; onSelect?: (categoryId: string) => void; selected?: string }) {
   const start = steps[0];
   const end = steps[steps.length - 1];
   if (!start || !end || steps.length < 2) return null;
@@ -82,7 +90,7 @@ export function WaterfallChart({ steps, locale = "en-GB" }: { steps: WaterfallSt
       footnote="Live figures for both periods. Increases are ember, decreases teal, totals slate; every bar is also labelled with its sign."
     >
       <div className="h-80">
-        <ParentSize debounceTime={10}>{({ width, height }) => (width > 0 ? <Plot steps={steps} width={width} height={height} locale={locale} /> : null)}</ParentSize>
+        <ParentSize debounceTime={10}>{({ width, height }) => (width > 0 ? <Plot steps={steps} width={width} height={height} locale={locale} onSelect={onSelect} selected={selected} /> : null)}</ParentSize>
       </div>
     </ChartFrame>
   );

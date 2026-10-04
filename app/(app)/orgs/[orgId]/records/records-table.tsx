@@ -1,5 +1,6 @@
 "use client";
 
+import { RecordPanel } from "./record-panel";
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -262,6 +263,17 @@ export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableP
         >
           {row.original.sourceDescription ?? row.original.supplierName ?? "Activity record"}
         </Link>
+      ),
+    },
+    {
+      id: "details",
+      header: "Details",
+      cell: ({ row }) => (
+        <RecordPanel
+          orgId={orgId}
+          recordId={row.original.id}
+          label={row.original.sourceDescription ?? row.original.supplierName ?? "Activity record"}
+        />
       ),
     },
     {

@@ -33,6 +33,14 @@ describe("sliceWhere", () => {
   });
 });
 
+describe("sliceWhere for the trend", () => {
+  it("reads every period of the organisation when no period is named, still live and never beyond the organisation", () => {
+    const w = sliceWhere("org1", null, { scope: 2 }, null);
+    expect(w).toMatchObject({ organizationId: "org1", snapshotId: null, scope: 2 });
+    expect(w).not.toHaveProperty("reportingPeriodId");
+  });
+});
+
 describe("summariseSlices", () => {
   it("sums each calculation once per scope, category and facility", () => {
     const { scopes, categories, facilities } = summariseSlices([

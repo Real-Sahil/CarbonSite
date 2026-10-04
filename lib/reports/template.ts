@@ -2,6 +2,7 @@
 // and testable without Puppeteer. All emission values stored in kg CO2e;
 // displayed in tonnes (tCO2e) per GHG Protocol reporting convention.
 
+import { narrativeLabel } from "./narrative-label";
 import type { AuditLog } from "@prisma/client";
 import { brandStyles, brandLogoHtml } from "./templates/shared";
 import { buildAuditTrailHtml } from "./audit-trail-section";
@@ -187,6 +188,7 @@ export function renderReportHtml(data: ReportData): string {
   </div>
 
   ${data.narrative ? `<h2>Executive Summary</h2>
+  <p style="font-size:9px;font-style:italic;color:#64748b;margin:-4px 0 8px">${escapeHtml(narrativeLabel(data.narrative))}</p>
   <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:16px;margin-bottom:28px;line-height:1.6;font-size:11px;color:#334155">
     ${escapeHtml(data.narrative.executive_summary).replace(/\n/g, "<br>")}
   </div>

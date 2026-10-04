@@ -6,6 +6,8 @@
 
 import { brandStyles, esc } from "./shared";
 import { loc } from "./locale";
+import { narrativeLabel } from "../narrative-label";
+import type { AuditNarrative } from "../narrative-generator";
 
 export interface GhgProtocolCategoryRow {
   code: string;
@@ -49,6 +51,8 @@ export interface GhgProtocolData {
   recordCount: number;
   /** Share of the headline total by evidence tier (percent of kg CO2e). */
   evidenceTiers?: { verified: number; partial: number; estimated: number };
+  /** The reporting team's own summary for this period, when one has been saved. */
+  narrative?: AuditNarrative;
 }
 
 function fmt(d: Date) {
@@ -95,6 +99,16 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
   const logoHtml = data.logoDataUri
     ? `<img src="${esc(data.logoDataUri)}" alt="${esc(data.orgName)} logo" style="height:48px;max-width:200px;object-fit:contain;">`
     : `<span style="font-size:1.1rem;font-weight:700;color:#fff;">${esc(data.orgName)}</span>`;
+
+  const paragraphs = (t: string) => t.split(/\n+/).filter((l) => l.trim()).map((l) => `<p style="font-size:0.84rem;line-height:1.55;margin:0 0 8px;color:#374151;">${esc(l)}</p>`).join("");
+  const n = data.narrative;
+  const summaryHtml = n
+    ? `<p class="section-title">Summary</p>
+  <p style="font-size:0.72rem;font-style:italic;color:#6b7280;margin:-6px 0 10px;">${esc(narrativeLabel(n))}</p>
+  ${paragraphs(n.executive_summary)}
+  ${n.key_findings.length > 0 ? `<p style="font-size:0.8rem;font-weight:700;margin:10px 0 4px;">Key findings</p><ul style="margin:0 0 8px 18px;padding:0;font-size:0.82rem;line-height:1.5;color:#374151;">${n.key_findings.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
+  ${n.recommendations.trim() ? `<p style="font-size:0.8rem;font-weight:700;margin:10px 0 4px;">Recommendations</p>${paragraphs(n.recommendations)}` : ""}`
+    : "";
 
   const scope1Pct  = pct(data.scope1Kg, data.totalKg);
   const scope2LPct = pct(data.scope2LocationKg, data.totalKg);
@@ -244,6 +258,9 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
 <div class="content">
   <!-- Progress vs baseline -->
   ${progressHtml}
+
+  <!-- Summary written by the reporting team (only when one has been saved) -->
+  ${summaryHtml}
 
   <!-- Scope bar chart -->
   <p class="section-title">Scope Proportions</p>

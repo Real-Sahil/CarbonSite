@@ -1,3 +1,5 @@
+import { loadTeamNarrative } from "./narrative-store";
+import { NO_NARRATIVE_TYPES } from "./narrative-types";
 import { createHash } from "crypto";
 import { factorAttribution, withAttribution } from "./attribution";
 import { runFactorAttribution } from "./attribution-load";
@@ -471,14 +473,18 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
   // Ecology report types carry no GHG emission calculations — basePdfData has
   // all-zero values, so an LLM narrative would reference "0.00 tCO2e" and be
   // meaningless. Skip narrative for those types.
-  const noNarrativeTypes = new Set(["bid_carbon_pack", "sustainability_report", "tcfd_statement", "site_noticeboard", "transition_plan", "national_toms", "cbam", "ecology_scan", "ecology_survey", "csrd_esrs_e3", "csrd_esrs_e5"]);
-  if (!noNarrativeTypes.has(report.type) && (await aiAssistEnabled(report.organizationId))) {
+  const noNarrativeTypes = NO_NARRATIVE_TYPES;
+  // The team's own words, when a person has written them, replace generated wording.
+  const teamNarrative = noNarrativeTypes.has(report.type) ? null : await loadTeamNarrative(report.organizationId, report.reportingPeriodId).catch(() => null);
+  if (teamNarrative) {
+    basePdfData.narrative = teamNarrative;
+  } else if (!noNarrativeTypes.has(report.type) && (await aiAssistEnabled(report.organizationId))) {
     reportLogger.info("LLM configured, generating audit narrative", {
       reportId: report.id,
       reportType: report.type,
     });
     try {
-      basePdfData.narrative = await generateAuditNarrative(basePdfData);
+      basePdfData.narrative = { ...(await generateAuditNarrative(basePdfData)), source: "ai" };
       reportLogger.info("Narrative generation completed", {
         reportId: report.id,
         hasSummary: !!basePdfData.narrative?.executive_summary,

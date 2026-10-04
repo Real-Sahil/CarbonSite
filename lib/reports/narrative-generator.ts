@@ -7,6 +7,10 @@ export interface AuditNarrative {
   executive_summary: string;
   key_findings: string[];
   recommendations: string;
+  /** Who wrote it, so the report can say so: the team's own words, or AI-assisted wording. */
+  source?: "ai" | "team";
+  /** The team's text began as an AI draft that a person reviewed and saved. */
+  aiDrafted?: boolean;
 }
 
 function tonnes(kg: number): string {
@@ -119,7 +123,7 @@ Use professional language, avoid jargon, and focus on insights a CFO or board me
   }
 }
 
-function parseNarrativeResponse(text: string): AuditNarrative {
+export function parseNarrativeResponse(text: string): AuditNarrative {
   const sections = {
     executive_summary: "",
     key_findings: [] as string[],

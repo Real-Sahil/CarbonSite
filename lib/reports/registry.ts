@@ -596,6 +596,8 @@ const handlers: Record<string, ReportHandler> = {
       baselineYear: opts.baselineYear as string | undefined,
       baselineTonnes,
       reductionPct,
+      // Only the team's own words: this layout has never printed generated wording.
+      narrative: basePdfData.narrative?.source === "team" ? basePdfData.narrative : undefined,
     };
     return { html: withLocale(ctx.report.organization.hqCountry, () => renderGhgProtocolHtml(data)), pdfkitData: basePdfData };
   },

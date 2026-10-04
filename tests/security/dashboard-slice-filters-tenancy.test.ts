@@ -4,14 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const db = vi.hoisted(() => ({
   site: { findMany: vi.fn() },
   svCommitment: { findMany: vi.fn() },
+  dashboardSlice: { groupBy: vi.fn() },
+  reportingPeriod: { findMany: vi.fn() },
 }));
 vi.mock("@/lib/db", () => ({ prisma: db }));
 
-import { parseSliceFilter, resolveSliceRefs, sliceWhere, socialValueBeside } from "@/lib/dashboard/slice-filter";
+import { loadSliceScopes, loadSliceTrend, parseSliceFilter, resolveSliceRefs, sliceWhere, socialValueBeside } from "@/lib/dashboard/slice-filter";
 
 beforeEach(() => {
   db.site.findMany.mockReset();
   db.svCommitment.findMany.mockReset();
+  db.dashboardSlice.groupBy.mockReset();
+  db.reportingPeriod.findMany.mockReset();
 });
 
 describe("dashboard project and social value filters stay inside the organisation", () => {
@@ -49,5 +53,21 @@ describe("dashboard project and social value filters stay inside the organisatio
   it("drops a project id that is not a plain id and an sv value other than 1", () => {
     expect(parseSliceFilter({ projectId: "a b;--", sv: "yes" })).toBeNull();
     expect(parseSliceFilter({ projectId: "cm123", sv: "1" })).toEqual({ projectId: "cm123", socialValue: true });
+  });
+
+  it("the trend and the year-on-year scopes read slices and periods inside the organisation", async () => {
+    db.site.findMany.mockResolvedValue([{ id: "s1" }]);
+    db.dashboardSlice.groupBy.mockResolvedValue([{ reportingPeriodId: "p1", scope: 1, _sum: { totalCo2e: "10" } }, { reportingPeriodId: "pForeign", scope: 1, _sum: { totalCo2e: "99" } }]);
+    db.reportingPeriod.findMany.mockResolvedValue([{ id: "p1", label: "FY2025", startDate: new Date("2025-01-01") }]);
+    const trend = await loadSliceTrend("org1", { projectId: "x" }, null);
+    expect(db.dashboardSlice.groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ organizationId: "org1", snapshotId: null, siteId: { in: ["s1"] } }) }));
+    expect(db.reportingPeriod.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ organizationId: "org1" }) }));
+    // a period that is not the organisation's never reaches the chart
+    expect(trend.map((t) => t.reportingPeriod.id)).toEqual(["p1"]);
+
+    db.dashboardSlice.groupBy.mockResolvedValue([{ scope: 2, _sum: { totalCo2e: "5.5", recordCount: 2 } }]);
+    const scopes = await loadSliceScopes("org1", "p0", { scope: 2 }, ["f1"]);
+    expect(db.dashboardSlice.groupBy).toHaveBeenLastCalledWith(expect.objectContaining({ where: expect.objectContaining({ organizationId: "org1", reportingPeriodId: "p0", facilityId: { in: ["f1"] } }) }));
+    expect(scopes).toEqual([{ scope: 2, _sum: { totalCo2e: "5.5", recordCount: 2 } }]);
   });
 });

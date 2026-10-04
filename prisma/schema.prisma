@@ -29,6 +29,8 @@ model User {
 
   memberships                       OrganizationMembership[]
   savedViews                        SavedView[]                     @relation("SavedViewOwner")
+  dashboardLayouts                  DashboardLayout[]               @relation("DashboardLayoutOwner")
+  reportNarratives                  ReportNarrative[]               @relation("ReportNarrativeAuthor")
   createdRecords                    ActivityRecord[]                @relation("CreatedByUser")
   createdImports                    ImportBatch[]
   reviewTasks                       ReviewTask[]                    @relation("AssignedTo")
@@ -236,6 +238,8 @@ model Organization {
   aggregates                     DashboardAggregate[]
   dashboardSlices                DashboardSlice[]
   savedViews                     SavedView[]
+  dashboardLayouts               DashboardLayout[]
+  reportNarratives               ReportNarrative[]
   scenarioRuns                   ScenarioRun[]
   routeDistances                 RouteDistance[]
   reports                        Report[]
@@ -731,6 +735,7 @@ model ReportingPeriod {
   activityRecords               ActivityRecord[]
   calculationRuns               CalculationRun[]
   snapshots                     PublishedSnapshot[]
+  reportNarratives              ReportNarrative[]
   aggregates                    DashboardAggregate[]
   dashboardSlices               DashboardSlice[]
   reports                       Report[]
@@ -1950,6 +1955,53 @@ model SavedView {
   @@unique([organizationId, ownerUserId, surface, name])
   @@index([organizationId, surface, shared])
   @@map("saved_views")
+}
+
+/// How a dashboard's widgets are arranged: one row per person, plus one row
+/// (`userKey` "org") that is the organisation's default. `layout` holds only
+/// widget ids, order, width and hidden ids (lib/dashboard/widgets); it never
+/// holds data, so opening a layout reads current figures under the viewer's role.
+model DashboardLayout {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  /// "org" for the organisation default, else the owner's user id.
+  userKey        String   @map("user_key")
+  surface        String   @default("dashboard")
+  ownerUserId    String?  @map("owner_user_id")
+  layout         Json
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner        User?        @relation("DashboardLayoutOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, surface, userKey])
+  @@map("dashboard_layouts")
+}
+
+/// The organisation's own words for the summary page of its inventory reports,
+/// one per reporting period, written or edited by a person (optionally started
+/// from a grounded AI draft). When one exists the report uses it instead of
+/// generating wording; the report says who wrote it.
+model ReportNarrative {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  executiveSummary  String   @default("") @map("executive_summary")
+  keyFindings       Json     @default("[]") @map("key_findings")
+  recommendations   String   @default("")
+  /// True when the text began as an AI draft; a person has since reviewed and saved it.
+  aiDrafted         Boolean  @default(false) @map("ai_drafted")
+  updatedByUserId   String?  @map("updated_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id], onDelete: Cascade)
+  updatedBy       User?           @relation("ReportNarrativeAuthor", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, reportingPeriodId])
+  @@map("report_narratives")
 }
 
 // ─── Targets & Initiatives ────────────────────────────────────────────────────

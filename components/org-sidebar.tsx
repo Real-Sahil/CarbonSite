@@ -75,6 +75,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Imports",          href: `/orgs/${orgId}/imports`,           icon: Upload,        roles: CORE_ROLES },
         { label: "Records",          href: `/orgs/${orgId}/records`,           icon: FileText,      roles: CORE_ROLES },
         { label: "Commuting",        href: `/orgs/${orgId}/commuting`,         icon: Bus,           roles: CORE_ROLES },
+        { label: "Site map",         href: `/orgs/${orgId}/map`,               icon: MapPin,        roles: CORE_ROLES },
         { label: "Submissions",      href: `/orgs/${orgId}/submissions`,       icon: Inbox,         roles: ["admin", "editor", "reviewer"] },
         { label: "Supplier reports", href: `/orgs/${orgId}/supplier-reports`,  icon: PackageSearch, roles: ["admin", "editor", "reviewer", "auditor"] },
         { label: "Tasks",            href: `/orgs/${orgId}/tasks`,             icon: ListChecks },
@@ -340,6 +341,15 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
               <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
             </div>
+            <button
+              type="button"
+              aria-label="Quick find (Ctrl or Cmd+K)"
+              title="Quick find (Ctrl or Cmd+K)"
+              onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
+              className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-500 hover:bg-slate-50"
+            >
+              ⌘K
+            </button>
             <NotificationBell orgId={orgId} />
           </div>
         )}
