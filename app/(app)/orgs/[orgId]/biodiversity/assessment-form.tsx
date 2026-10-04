@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { FormField as Field } from "@/components/forms/form-kit";
 
 export function CreateAssessmentForm({
   orgId,
@@ -187,25 +188,6 @@ export function CreateAssessmentForm({
           Cancel
         </Button>
       </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-zinc-700">
-        {label}
-      </label>
-      {children}
     </div>
   );
 }
