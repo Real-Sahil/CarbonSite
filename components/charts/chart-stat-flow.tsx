@@ -38,11 +38,9 @@ function formatStatValue(
 }
 
 function useNumberFlowElementReady(): boolean {
-  const [ready, setReady] = useState(
-    () =>
-      typeof customElements !== "undefined" &&
-      Boolean(customElements.get("number-flow-react"))
-  );
+  // Always start false: the server cannot know whether the element is defined,
+  // so a first client render that says true would not match its HTML.
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (ready) {
