@@ -45,6 +45,8 @@ interface RecordRow {
 interface RecordsTableProps {
   orgId: string;
   canManageRecords: boolean;
+  /** Active filters from the page URL (keys as the records list API reads them). */
+  filters: Record<string, string>;
 }
 
 // Checkbox that renders the native indeterminate state for "select all" headers.
@@ -152,7 +154,7 @@ function BulkActionBar({
   );
 }
 
-export function RecordsTable({ orgId, canManageRecords }: RecordsTableProps) {
+export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableProps) {
   const router = useRouter();
   const [data, setData] = React.useState<RecordRow[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -163,11 +165,13 @@ export function RecordsTable({ orgId, canManageRecords }: RecordsTableProps) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
   const selectedIds = Object.keys(rowSelection).filter((id) => rowSelection[id]);
+  // A stable key for the filter set, so an unchanged filter never refetches.
+  const filterKey = new URLSearchParams(filters).toString();
 
   const fetchPage = React.useCallback(
     async (cursor: string | null) => {
       try {
-        const params = new URLSearchParams();
+        const params = new URLSearchParams(filterKey);
         if (cursor) params.set("cursor", cursor);
         const res = await fetch(`/api/orgs/${orgId}/activity-records?${params}`);
         if (!res.ok) throw new Error("fetch failed");
@@ -181,10 +185,15 @@ export function RecordsTable({ orgId, canManageRecords }: RecordsTableProps) {
         setIsLoading(false);
       }
     },
-    [orgId],
+    [orgId, filterKey],
   );
 
+  // New filters start the list again from the first page.
   React.useEffect(() => {
+    setCursors([null]);
+    setCurrentPage(0);
+    setRowSelection({});
+    setIsLoading(true);
     fetchPage(null);
   }, [fetchPage]);
 

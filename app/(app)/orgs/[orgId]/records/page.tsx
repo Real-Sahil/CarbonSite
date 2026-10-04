@@ -17,13 +17,21 @@ import { AddFromBill } from "./add-from-bill";
 import { MatchBills } from "./match-bills";
 import { BulkRecordActions } from "./bulk-record-actions";
 import { RecordsTable } from "./records-table";
+import { RecordsFilters } from "./records-filters";
+import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
+import { SURFACES, activeFilters } from "@/lib/saved-views";
+import { mayShare, viewRoles } from "@/lib/saved-views/roles";
 
 interface RecordsPageProps {
   params: Promise<{ orgId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function RecordsPage({ params }: RecordsPageProps) {
+export default async function RecordsPage({ params, searchParams }: RecordsPageProps) {
   const { orgId } = await params;
+  const query = await searchParams;
+  const one = (key: string) => (typeof query[key] === "string" ? (query[key] as string) : undefined);
+  const filters = activeFilters("records", Object.fromEntries(SURFACES.records.filters.map((k) => [k, one(k)])));
 
   let role: OrgRole;
   try {
@@ -75,6 +83,11 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
     prisma.activityRecord.count({ where: { organizationId: orgId } }),
     prisma.activityRecord.count({ where: { organizationId: orgId, reviewStatus: "approved" } }),
     prisma.activityRecord.count({ where: { organizationId: orgId, reviewStatus: "draft" } }),
+    prisma.contract.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]).catch(() => null);
 
   if (!dbResult) {
@@ -82,7 +95,7 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
       <div className="p-8"><p className="text-red-600 text-sm">Failed to load records. The database may be updating — try refreshing in a moment.</p></div>
     );
   }
-  const [periods, categories, facilities, businessUnits, draftGroups, totalCount, approvedCount, draftCount] = dbResult;
+  const [periods, categories, facilities, businessUnits, draftGroups, totalCount, approvedCount, draftCount, contracts] = dbResult;
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (
@@ -211,7 +224,25 @@ export default async function RecordsPage({ params }: RecordsPageProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <RecordsTable orgId={orgId} canManageRecords={canManageRecords} />
+            {viewRoles().includes(role) && (
+              <div className="px-6 pt-4">
+                <SavedViewsMenu
+                  orgId={orgId}
+                  surface="records"
+                  filters={filters}
+                  canShare={mayShare(role)}
+                  isAdmin={role === "admin"}
+                />
+              </div>
+            )}
+            <RecordsFilters
+              filters={filters}
+              periods={periods.map((p) => ({ id: p.id, label: p.label }))}
+              categories={categories.map((c) => ({ id: c.id, label: `Scope ${c.scope}: ${c.name}` }))}
+              facilities={facilities.map((f) => ({ id: f.id, label: f.name }))}
+              contracts={contracts.map((c) => ({ id: c.id, label: c.name }))}
+            />
+            <RecordsTable orgId={orgId} canManageRecords={canManageRecords} filters={filters} />
           </CardContent>
         </Card>
       </div>

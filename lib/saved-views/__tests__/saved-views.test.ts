@@ -94,3 +94,52 @@ describe("activeFilters and sameFilters", () => {
     expect(sameFilters({}, {})).toBe(true);
   });
 });
+
+describe("the records surface", () => {
+  it("reads period, category, status, facility, contract and supplier", () => {
+    const f = { periodId: "p1", categoryId: "c1", reviewStatus: "approved", facilityId: "f1", contractId: "k1", supplier: "acme" };
+    expect(checkFilters("records", f)).toEqual({ filters: f });
+    expect(checkFilters("records", { entityId: "e1" })).toHaveProperty("error");
+    expect(checkFilters("dashboard", { periodId: "p1" })).toHaveProperty("error");
+  });
+  it("refuses a review status we do not use", () => {
+    expect(checkFilters("records", { reviewStatus: "deleted" })).toEqual({ error: '"deleted" is not a value the reviewStatus filter uses.' });
+    expect(checkFilters("records", { reviewStatus: "pending_info" })).toHaveProperty("filters");
+  });
+  it("checks the period and contract ids against the organisation", () => {
+    expect(filterRefs({ periodId: "p1", contractId: "k1", facilityId: "f1" })).toEqual({
+      facilityId: "f1",
+      contractId: "k1",
+      legalEntityId: undefined,
+      reportingPeriodId: "p1",
+    });
+  });
+});
+
+describe("the suppliers surface", () => {
+  it("reads a name search, a health band and a trend", () => {
+    expect(checkFilters("suppliers", { q: "acme", health: "at_risk", trend: "declining" })).toHaveProperty("filters");
+    expect(checkFilters("suppliers", { health: "fine" })).toHaveProperty("error");
+    expect(checkFilters("suppliers", { trend: "up" })).toHaveProperty("error");
+    expect(checkFilters("suppliers", { periodId: "p1" })).toHaveProperty("error");
+  });
+});
+
+describe("the submissions surface", () => {
+  it("reads status, document type, facility, contract and period", () => {
+    const f = { status: "needs_info", documentType: "delivery_note", facilityId: "f1", contractId: "k1", periodId: "p1" };
+    expect(checkFilters("submissions", f)).toEqual({ filters: f });
+    expect(checkFilters("submissions", { status: "pending" })).toHaveProperty("error");
+    expect(checkFilters("submissions", { documentType: "invoice" })).toHaveProperty("error");
+    expect(checkFilters("submissions", { q: "x" })).toHaveProperty("error");
+  });
+});
+
+describe("the calculations surface", () => {
+  it("reads status, period and factor library, with its own status list", () => {
+    expect(checkFilters("calculations", { status: "failed", periodId: "p1", factorLibraryId: "lib1" })).toHaveProperty("filters");
+    expect(checkFilters("calculations", { status: "approved" })).toHaveProperty("error");
+    expect(checkFilters("submissions", { status: "failed" })).toHaveProperty("error");
+    expect(checkFilters("calculations", { facilityId: "f1" })).toHaveProperty("error");
+  });
+});

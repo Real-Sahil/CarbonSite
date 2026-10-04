@@ -28,9 +28,14 @@ import { CancelRunButton } from "./cancel-run-button";
 import { CalculationRunContinuation } from "./calculation-run-continuation";
 import { CalculationControls } from "@/app/(app)/orgs/[orgId]/dashboard/calculation-controls";
 import { getOrgLocale } from "@/lib/i18n/org-basics";
+import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
+import { mayShare, viewRoles } from "@/lib/saved-views/roles";
+import { parseRunFilters, runWhere } from "@/lib/calculation/run-list-filters";
+import { CalculationsFilters } from "./calculations-filters";
 
 interface CalculationsPageProps {
   params: Promise<{ orgId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 function statusConfig(status: string) {
@@ -84,9 +89,10 @@ function formatDuration(start: Date | null, end: Date | null): string {
   return `${Math.round(ms / 60_000)}m`;
 }
 
-export default async function CalculationsPage({ params }: CalculationsPageProps) {
+export default async function CalculationsPage({ params, searchParams }: CalculationsPageProps) {
   const { orgId } = await params;
   const L = await getOrgLocale(orgId);
+  const filters = parseRunFilters(await searchParams);
 
   let role = "viewer";
   try {
@@ -114,7 +120,7 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
 
   const [runs, reportingPeriods, methodologies, factorLibraries, approvedCountsByPeriod] = await Promise.all([
     prisma.calculationRun.findMany({
-      where: { organizationId: orgId },
+      where: runWhere(orgId, filters),
       include: {
         reportingPeriod: { select: { label: true } },
         factorLibrary: { select: { id: true, name: true, version: true } },
@@ -237,8 +243,28 @@ export default async function CalculationsPage({ params }: CalculationsPageProps
           </Card>
         )}
 
+        {/* Saved views and filters for the runs list */}
+        <div className="space-y-4">
+          {viewRoles().includes(role as never) && (
+            <SavedViewsMenu
+              orgId={orgId}
+              surface="calculations"
+              filters={filters}
+              canShare={mayShare(role)}
+              isAdmin={role === "admin"}
+            />
+          )}
+          <CalculationsFilters
+            filters={filters}
+            periods={reportingPeriods.map((p) => ({ id: p.id, label: p.label }))}
+            libraries={factorLibraries.map((l) => ({ id: l.id, label: `${l.name} ${l.version}` }))}
+          />
+        </div>
+
         {/* Runs table */}
-        {runs.length === 0 ? (
+        {runs.length === 0 && Object.keys(filters).length > 0 ? (
+          <p className="py-8 text-center text-sm text-[#6B7280]">No calculation runs match these filters.</p>
+        ) : runs.length === 0 ? (
           !canRunCalculations ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-5">

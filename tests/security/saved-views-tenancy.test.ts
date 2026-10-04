@@ -13,6 +13,7 @@ const db = vi.hoisted(() => ({
     facility: { findFirst: vi.fn() },
     contract: { findFirst: vi.fn() },
     legalEntity: { findFirst: vi.fn() },
+    reportingPeriod: { findFirst: vi.fn() },
     savedView: {
       findMany: vi.fn(), findFirst: vi.fn(), count: vi.fn(), create: vi.fn(),
       updateMany: vi.fn(), deleteMany: vi.fn(),
@@ -87,6 +88,14 @@ describe("creating", () => {
     db.prisma.legalEntity.findFirst.mockResolvedValue(null);
     expect((await POST(req("POST", { ...create, filters: { entityId: "entity-of-org-b" } }), orgCtx)).status).toBe(404);
     expect(db.prisma.legalEntity.findFirst.mock.calls[0][0].where).toEqual({ id: "entity-of-org-b", organizationId: "org-a" });
+  });
+
+  it("checks a records view's period and facility against the org too", async () => {
+    db.prisma.reportingPeriod.findFirst.mockResolvedValue(null);
+    const res = await POST(req("POST", { surface: "records", name: "FY", filters: { periodId: "period-of-org-b" } }), orgCtx);
+    expect(res.status).toBe(404);
+    expect(db.prisma.reportingPeriod.findFirst.mock.calls[0][0].where).toEqual({ id: "period-of-org-b", organizationId: "org-a" });
+    expect(db.prisma.savedView.create).not.toHaveBeenCalled();
   });
 
   it("refuses filters the page does not read", async () => {

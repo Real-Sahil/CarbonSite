@@ -6,13 +6,17 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import type { FieldSubmissionStatus } from "@prisma/client";
 import { SubmissionsTable } from "./submissions-table";
+import { SubmissionsFilters } from "./submissions-filters";
+import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
+import { mayShare, viewRoles } from "@/lib/saved-views/roles";
+import { parseSubmissionFilters, submissionWhere } from "@/lib/field-submissions/list-filters";
 import { ocrFieldChecks } from "@/lib/field-submissions/ocr-confidence";
 import { ClipboardList } from "lucide-react";
 import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface SubmissionsPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ status?: string; limit?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 const STATUS_FILTERS: { value: FieldSubmissionStatus | "all"; label: string }[] = [
@@ -33,11 +37,10 @@ export default async function SubmissionsPage({
 }: SubmissionsPageProps) {
   const { orgId } = await params;
   const L = await getOrgLocale(orgId);
-  const { status: rawStatus, limit: rawLimit } = await searchParams;
-
-  const statusFilter = STATUS_FILTERS.some((f) => f.value === rawStatus)
-    ? (rawStatus as FieldSubmissionStatus | "all")
-    : "all";
+  const query = await searchParams;
+  const filters = parseSubmissionFilters(query);
+  const statusFilter = (filters.status ?? "all") as FieldSubmissionStatus | "all";
+  const rawLimit = typeof query.limit === "string" ? query.limit : undefined;
   const limit = Math.min(
     Math.max(Number(rawLimit) || PAGE_SIZE, PAGE_SIZE),
     MAX_LIMIT,
@@ -59,19 +62,20 @@ export default async function SubmissionsPage({
   let hasMore = false;
   let total = 0;
   let slaOverdueCount = 0;
+  let role = "";
+  let periods: { id: string; label: string }[] = [];
+  let facilities: { id: string; label: string }[] = [];
+  let contracts: { id: string; label: string }[] = [];
 
   try {
-    await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
+    role = (await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors)).membership.role;
 
-    const where = {
-      organizationId: orgId,
-      ...(statusFilter !== "all" ? { status: statusFilter } : {}),
-    };
+    const where = submissionWhere(orgId, filters);
 
     const SLA_HOURS = 48;
     const slaCutoff = new Date(Date.now() - SLA_HOURS * 3_600_000);
 
-    const [memberships, submissions, countRows, overdueCount] = await Promise.all([
+    const [memberships, submissions, countRows, overdueCount, periodRows, facilityRows, contractRows] = await Promise.all([
       prisma.organizationMembership.findMany({
         where: { organizationId: orgId, role: { in: ["admin", "editor", "reviewer"] } },
         include: { user: { select: { id: true, name: true, email: true } } },
@@ -89,7 +93,8 @@ export default async function SubmissionsPage({
       }),
       prisma.fieldSubmission.groupBy({
         by: ["status"],
-        where: { organizationId: orgId },
+        // Each tab counts its status under the other filters.
+        where: submissionWhere(orgId, filters, false),
         _count: { _all: true },
         orderBy: { status: "asc" },
       }),
@@ -100,7 +105,26 @@ export default async function SubmissionsPage({
           submittedAt: { lt: slaCutoff },
         },
       }),
+      prisma.reportingPeriod.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, label: true },
+        orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
+      }),
+      prisma.facility.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
+      prisma.contract.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
     ]);
+
+    periods = periodRows;
+    facilities = facilityRows.map((f) => ({ id: f.id, label: f.name }));
+    contracts = contractRows.map((c) => ({ id: c.id, label: c.name }));
 
     statusCounts = new Map(countRows.map((row) => [row.status, row._count._all]));
     total = countRows.reduce((sum, row) => sum + row._count._all, 0);
@@ -146,11 +170,15 @@ export default async function SubmissionsPage({
     );
   }
 
-  const filterHref = (value: string, nextLimit = PAGE_SIZE) =>
-    `/orgs/${orgId}/submissions?${new URLSearchParams({
-      ...(value !== "all" ? { status: value } : {}),
-      ...(nextLimit !== PAGE_SIZE ? { limit: String(nextLimit) } : {}),
-    }).toString()}`.replace(/\?$/, "");
+  // A link to this page with one filter changed and the rest kept.
+  const filterHref = (value: string, nextLimit = PAGE_SIZE) => {
+    const next = new URLSearchParams(filters);
+    if (value === "all") next.delete("status");
+    else next.set("status", value);
+    if (nextLimit !== PAGE_SIZE) next.set("limit", String(nextLimit));
+    const q = next.toString();
+    return `/orgs/${orgId}/submissions${q ? `?${q}` : ""}`;
+  };
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
@@ -171,6 +199,18 @@ export default async function SubmissionsPage({
           <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
             Review incoming submissions from field workers before approving them as activity records.
           </p>
+
+          {viewRoles().includes(role as never) && (
+            <div className="mt-6">
+              <SavedViewsMenu
+                orgId={orgId}
+                surface="submissions"
+                filters={filters}
+                canShare={mayShare(role)}
+                isAdmin={role === "admin"}
+              />
+            </div>
+          )}
 
           {/* Status filter tabs */}
           <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -195,6 +235,10 @@ export default async function SubmissionsPage({
                 </Link>
               );
             })}
+          </div>
+
+          <div className="mt-4">
+            <SubmissionsFilters filters={filters} periods={periods} facilities={facilities} contracts={contracts} />
           </div>
         </div>
       </div>
