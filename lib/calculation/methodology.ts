@@ -12,7 +12,8 @@
 //   - the Scope 2 market-based allocation order or residual mix rules;
 //   - how spend is converted or inflation-adjusted;
 //   - fuel, blend or unit conversion rules (HVO, calorific values);
-//   - what counts toward headline totals.
+//   - what counts toward headline totals;
+//   - which library prices a record when the run's own library has no factor.
 // Do not bump for a new or corrected factor library (each run pins its
 // library, and supersedingLibrary() flags replaced sets), for UI or report
 // layout changes, or for bug fixes that restore the documented behaviour.
@@ -26,6 +27,14 @@ export type MethodologyChange = { name: string; effective: string; gwp: string; 
 
 /** Newest first. The first entry must match the newest methodology_versions row. */
 export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
+  {
+    name: "ghg-protocol-v2026-04",
+    effective: "2026-10-05",
+    gwp: "AR6",
+    changes: [
+      "A record on an EPA run that the EPA library has no factor for (and that is not grid electricity or purchased heat) is priced from the DEFRA set for the period, then ADEME, when that library has a factor whose unit takes the record's unit. Before this it was saved at 0 kg CO2e. The calculation's selection reason starts \"fallback library\", names the library and warns when the factor is another country's. Grid electricity and heat never fall back: a national grid factor on another country's site would be wrong.",
+    ],
+  },
   {
     name: "ghg-protocol-v2026-03",
     effective: "2026-10-05",

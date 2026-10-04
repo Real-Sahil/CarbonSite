@@ -19,6 +19,8 @@ import {
 import { selectFactor, selectHvoFactor, buildFactorCache, type FactorCache, type FactorSelection } from "./factor-selector";
 import { hvoShare } from "./fuels";
 import { loadOrgCustomFactors, pickCustomFactor, customFactorAsLibraryFactor } from "./custom-factors";
+import { newFallbackState, selectFallbackFactor } from "./library-fallback";
+import { selectionCaveats } from "./selection-caveats";
 import { groupDashboardSlices } from "./dashboard-slices";
 import { groupDashboardAggregates } from "./dashboard-groups";
 import { loadMarketAllocations } from "./scope2-allocation-loader";
@@ -214,6 +216,8 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
   // The org's own factors take precedence over the shared library.
   const customFactors = await loadOrgCustomFactors(orgId);
   const spendSupplementCaches = new Map<string, FactorCache | null>();
+  const fallbackState = newFallbackState();
+  const periodEnd = (await prisma.reportingPeriod.findUnique({ where: { id: run.reportingPeriodId }, select: { endDate: true } }))?.endDate ?? new Date();
   const orgCountry = (await prisma.organization.findUnique({ where: { id: orgId }, select: { hqCountry: true } }))?.hqCountry;
 
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
@@ -322,6 +326,20 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         factorSelection = (await selectSpendSupplement(record.unit, run.factorLibraryId, libraryQuery, spendSupplementCaches)) ?? factorSelection;
       }
 
+      // The pinned library has nothing for this record: try the next library
+      // (EPA runs only; never for grid electricity or heat), and say so.
+      if (!factorSelection && !custom) {
+        factorSelection = await selectFallbackFactor(
+          { id: run.factorLibraryId, name: run.factorLibrary.name },
+          record.emissionCategory.code,
+          libraryQuery,
+          normalized.unit,
+          periodEnd,
+          fallbackState,
+          country,
+        );
+      }
+
       if (!factorSelection) {
         // No factor found — include the record with zero CO2e and a warning
         // instead of failing. (A fake "no-factor" FK value here used to
@@ -371,6 +389,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
 
       const { factor, selectionReason, warnings: selectionWarnings = [] } = factorSelection;
       if (!custom && isUnverifiedFactor(factor)) unitWarnings.push(UNVERIFIED_FACTOR_WARNING);
+      if (!custom) {
+        unitWarnings.push(...selectionCaveats({ categoryCode: record.emissionCategory.code, matchHint, refrigerantType: record.refrigerantType, factor }));
+      }
       // An org factor's id belongs in its own column; emissionFactorId is a
       // foreign key to the shared library only.
       const factorRef = custom

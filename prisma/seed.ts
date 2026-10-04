@@ -25,6 +25,16 @@ async function main() {
   });
 
   await prisma.methodologyVersion.upsert({
+    where: { name: "ghg-protocol-v2026-04" },
+    update: {},
+    create: {
+      name: "ghg-protocol-v2026-04",
+      gwpVersion: "AR6",
+      notes: "A record the EPA library has no factor for is priced from DEFRA, then ADEME, with a warning; grid electricity and heat never fall back",
+    },
+  });
+
+  await prisma.methodologyVersion.upsert({
     where: { name: "ghg-protocol-v2026-03" },
     update: {},
     create: {

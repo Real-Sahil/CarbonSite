@@ -17,7 +17,10 @@ export function factorAttribution(lib: LibraryLicence | null | undefined): strin
     return `Emission factors: ${lib.name} ${lib.version} (source: ADEME, Base Carbone, updated ${lib.version}), reused under the Licence Ouverte v2.0 (Etalab).`;
   }
   if (/public domain/i.test(licence)) {
-    return `Emission factors: ${lib.name} ${lib.version}, a US Government work in the public domain.`;
+    // EPA publishes CH4 and N2O at the IPCC AR5 values; this platform's own gas-by-gas
+    // calculations use AR6 (CH4 27.9, N2O 273), so say which basis the figures carry.
+    const basis = /^EPA\b/i.test(lib.name) ? " Gases are combined at IPCC AR5 GWPs (CH4 28, N2O 265), EPA's published basis." : "";
+    return `Emission factors: ${lib.name} ${lib.version}, a US Government work in the public domain.${basis}`;
   }
   return licence ? `Emission factors: ${lib.name} ${lib.version}, used under ${licence}.` : null;
 }
