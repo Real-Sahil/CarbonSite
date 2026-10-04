@@ -10,7 +10,7 @@ import { RUN_STATUSES } from "@/lib/calculation/run-list-filters";
  * its URL; nothing else about a view changes.
  */
 export const SURFACES = {
-  dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country", "supplier", "from", "to", "scope"] },
+  dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country", "supplier", "from", "to", "scope", "projectId", "sv"] },
   records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
   submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },
@@ -22,7 +22,7 @@ export const REVIEW_STATUSES = ["draft", "in_review", "approved", "rejected", "p
 
 /** Filters whose value must come from a fixed list, per page (a key may mean different things on different pages). */
 export const ENUM_FILTERS: Record<Surface, Record<string, readonly string[]>> = {
-  dashboard: { scope: ["1", "2", "3"] },
+  dashboard: { scope: ["1", "2", "3"], sv: ["1"] },
   records: { reviewStatus: REVIEW_STATUSES },
   suppliers: { health: ["healthy", "at_risk", "critical"], trend: ["improving", "stable", "declining"] },
   submissions: { status: SUBMISSION_STATUSES, documentType: DOCUMENT_TYPES },
@@ -88,6 +88,7 @@ export function filterRefs(filters: Record<string, string>): OrgRefs {
   return {
     facilityId: filters.facilityId,
     contractId: filters.contractId,
+    projectId: filters.projectId,
     legalEntityId: filters.entityId,
     reportingPeriodId: filters.periodId,
   };

@@ -65,7 +65,10 @@ import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType }
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
-import { loadSliceView, parseSliceFilter } from "@/lib/dashboard/slice-filter";
+import { loadPeriodCategoryTotals, loadSliceView, parseSliceFilter, resolveSliceRefs, socialValueBeside, type SliceRefs } from "@/lib/dashboard/slice-filter";
+import { SankeyChart } from "@/components/charts/kit/sankey-chart";
+import { WaterfallChart } from "@/components/charts/kit/waterfall-chart";
+import { buildWaterfall } from "@/lib/charts/waterfall";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
@@ -75,7 +78,7 @@ import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from 
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string }>;
 }
 
 function formatKgCo2e(locale: string, value: unknown): string {
@@ -103,8 +106,8 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope } = await searchParams;
-  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope });
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv } = await searchParams;
+  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv });
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
   let dashAuthErr: AuthError | null = null;
@@ -230,7 +233,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const scoped = scopeFacilityIds !== null || sliceFilter !== null;
   const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
     const q = new URLSearchParams();
-    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope })) if (v) q.set(k, v);
+    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv })) if (v) q.set(k, v);
     if (p.contractId) q.set("contractId", p.contractId);
     if (p.entityId) q.set("entityId", p.entityId);
     if (p.country) q.set("country", p.country);
@@ -238,7 +241,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
   };
 
-  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope });
+  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv });
   const currentPeriod = reportingPeriods[0] ?? null;
   const priorPeriod = reportingPeriods[1] ?? null;
 
@@ -662,15 +665,41 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     socialValueStats,
   ] = batchB;
 
-  // Supplier, month and scope filters read the slice table; the rest of the
-  // page keeps its aggregate reads.
-  const sliceView =
-    currentPeriod && sliceFilter
-      ? await loadSliceView(orgId, currentPeriod.id, sliceFilter, scopeFacilityIds).catch(onLoadFailure(() => null))
+  // The slice table answers the supplier, month, scope, project and social value
+  // filters and feeds the flow diagram; the rest of the page keeps its
+  // aggregate reads. With no filter set the aggregates still own the headline.
+  const sliceView = currentPeriod
+    ? await loadSliceView(orgId, currentPeriod.id, sliceFilter ?? {}, scopeFacilityIds).catch(onLoadFailure(() => null))
+    : null;
+  const periodCategoryTotals =
+    currentPeriod && priorPeriod && !scoped
+      ? await loadPeriodCategoryTotals(orgId, currentPeriod.id, priorPeriod.id).catch(onLoadFailure(() => null))
       : null;
-  const scopeAggregates = sliceView?.scopeAggregates ?? liveScopeAggregates;
-  const topCategoryAggregates = sliceView?.topCategoryAggregates ?? liveTopCategoryAggregates;
-  const facilityAggregates = sliceView?.facilityAggregates ?? liveFacilityAggregates;
+  const changeSteps =
+    periodCategoryTotals && (periodCategoryTotals.previous.length > 0 || periodCategoryTotals.current.length > 0)
+      ? buildWaterfall(periodCategoryTotals.previous, periodCategoryTotals.current, { previous: priorPeriod!.label, current: currentPeriod!.label })
+      : [];
+  const projectOptions = (
+    await prisma.project
+      .findMany({ where: { organizationId: orgId }, select: { id: true, name: true, contract: { select: { name: true } } }, orderBy: { name: "asc" }, take: 200 })
+      .catch(onLoadFailure(() => [] as { id: string; name: string; contract: { name: string } }[]))
+  ).map((p) => ({ id: p.id, label: `${p.name} (${p.contract.name})` }));
+  const socialValueRefs = sliceFilter?.socialValue ? await resolveSliceRefs(orgId, { socialValue: true }).catch(onLoadFailure(() => ({} as SliceRefs))) : null;
+  const socialValueSummary = socialValueRefs?.contractIds
+    ? await socialValueBeside(orgId, socialValueRefs.contractIds).catch(onLoadFailure(() => null))
+    : null;
+  const socialValueNote = socialValueSummary
+    ? {
+        contracts: socialValueSummary.contracts,
+        commitments: socialValueSummary.commitments,
+        gbpValue: socialValueSummary.gbpValue > 0 ? new Intl.NumberFormat(L, { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(socialValueSummary.gbpValue) : "",
+        otherCurrency: socialValueSummary.otherCurrency,
+      }
+    : null;
+  const sliced = sliceFilter ? sliceView : null;
+  const scopeAggregates = sliced?.scopeAggregates ?? liveScopeAggregates;
+  const topCategoryAggregates = sliced?.topCategoryAggregates ?? liveTopCategoryAggregates;
+  const facilityAggregates = sliced?.facilityAggregates ?? liveFacilityAggregates;
 
   const recordCount = counts?.records ?? 0;
   const approvedRecordCount = counts?.approvedRecords ?? 0;
@@ -1128,7 +1157,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
-      <DashboardFilterBar filters={dashboardFilters} />
+      <DashboardFilterBar filters={dashboardFilters} projects={projectOptions} socialValue={socialValueNote} />
 
       {/* Saved views: personal and shared sets of the filters below */}
       {viewRoles().includes(role) && (
@@ -1590,6 +1619,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           )}
         </div>
       )}
+
+      {(sliceView && sliceView.flows.totalKg > 0) || changeSteps.length > 1 ? (
+        <div className="mt-6 grid gap-6 xl:grid-cols-2">
+          {sliceView && sliceView.flows.totalKg > 0 ? <SankeyChart flows={sliceView.flows} locale={L} period={currentPeriod?.label} /> : null}
+          {changeSteps.length > 1 ? <WaterfallChart steps={changeSteps} locale={L} /> : null}
+        </div>
+      ) : null}
 
       {facilityRows.length > 0 && (
         <Card className="mt-6">

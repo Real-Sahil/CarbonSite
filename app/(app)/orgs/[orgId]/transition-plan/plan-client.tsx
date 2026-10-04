@@ -2,35 +2,13 @@
 
 import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, Scatter } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { PathwayPoint, PlanFields } from "@/lib/transition-plan";
+import type { PlanFields } from "@/lib/transition-plan";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
-const fmt = (v: unknown) => (v == null ? "-" : `${Number(v).toLocaleString("en-GB", { maximumFractionDigits: 0 })} tCO₂e`);
-
-export function PathwayChart({ points }: { points: PathwayPoint[] }) {
-  return (
-    <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={points} margin={{ top: 8, right: 16, bottom: 0, left: 8 }}>
-          <CartesianGrid stroke="#F3F4F6" vertical={false} />
-          <XAxis dataKey="year" tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={{ stroke: "#E5E7EB" }} minTickGap={12} />
-          <YAxis tick={{ fontSize: 11, fill: "#6B7280" }} tickLine={false} axisLine={false} width={56} />
-          <Tooltip formatter={(v, name) => [fmt(v), String(name)]} contentStyle={{ fontSize: 12, borderRadius: 8, borderColor: "#E5E7EB" }} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-          <Line type="linear" dataKey="reference" name="1.5°C benchmark" stroke="#16A34A" strokeDasharray="4 4" dot={false} />
-          <Line type="linear" dataKey="target" name="Your target" stroke="#111827" dot={false} connectNulls />
-          <Line type="stepAfter" dataKey="planned" name="Planned (scheduled initiatives)" stroke="#f97316" strokeWidth={2} dot={false} />
-          <Scatter dataKey="actual" name="Published actual" fill="#2563EB" />
-        </ComposedChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
 
 const FIELDS: { key: keyof PlanFields; label: string; help: string }[] = [
   { key: "ambition", label: "Ambition", help: "What the organisation commits to, in its own words, and the scope it covers." },

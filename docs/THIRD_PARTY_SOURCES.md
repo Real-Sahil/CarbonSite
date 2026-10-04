@@ -13,6 +13,7 @@ Checked on 3 October 2026 from the publishers' own pages and the files they dist
 | Abu Dhabi MRV Technical Guidance v8 (27 Feb 2026) | The cover is marked "Classification: Confidential". | Read for design only. Do not redistribute or quote. |
 | Abu Dhabi EAD facility template (Deliverable C v8) | One facility, one calendar year, Scope 1 only; mandatory fields marked. No licence statement found. | Possible export format. Ask the Environment Agency about reuse before building. Needs facility permit numbers first. |
 | UAE Federal Decree-Law 11/2024, Cabinet Resolution 67/2024 | Official legal texts. | Reference by article number with our own summary. |
+| d3-sankey (npm, Mike Bostock) | ISC licence (permissive, commercial use allowed, keep the notice). Checked in `node_modules/d3-sankey/LICENSE`, 4 October 2026. | Used by the dashboard flow diagram (`components/charts/kit/sankey-chart.tsx`) for layout only; loaded in the client chart. |
 | Defra / DESNZ, EPA, ADEME | OGL v3, US Government work, Licence Ouverte v2.0. | Loaded, with attribution (see CLAUDE.md). |
 
 Rules for new sources: read the licence or terms first; a tool that redistributes data needs permission that covers commercial redistribution; text of standards is never copied.
