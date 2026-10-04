@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertCircle, Plus } from "lucide-react";
+import { FormField } from "@/components/forms/form-kit";
 
 // Enum values must match prisma schema exactly: absolute | intensity
 const TARGET_TYPES = [
@@ -98,42 +99,38 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Type</label>
+      <FormField label="Type" htmlFor="f-type" optional>
         <Select value={targetType} onValueChange={setTargetType}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger id="f-type" className="w-44">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {TARGET_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Baseline period</label>
+      </FormField>
+      <FormField label="Baseline period" htmlFor="f-baseline-period" optional>
         <Select value={baselinePeriodId} onValueChange={setBaselinePeriodId}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger id="f-baseline-period" className="w-40">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
             {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Target period</label>
+      </FormField>
+      <FormField label="Target period" htmlFor="f-target-period" optional>
         <Select value={targetPeriodId} onValueChange={setTargetPeriodId}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger id="f-target-period" className="w-40">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
             {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Reduction (kgCO2e)</label>
-        <Input
+      </FormField>
+      <FormField label="Reduction (kgCO2e)" htmlFor="f-reduction-kgco2e" optional>
+        <Input id="f-reduction-kgco2e"
           type="number"
           min="0"
           step="any"
@@ -142,7 +139,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
           placeholder="e.g. 10000"
           className="w-32"
         />
-      </div>
+      </FormField>
       <div className="flex gap-2">
         <Button type="submit" disabled={loading} size="sm">
           {loading ? "Saving…" : "Save"}
@@ -238,46 +235,40 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Name</label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-52" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Status</label>
+      <FormField label="Name" htmlFor="f-name" optional>
+        <Input id="f-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-52" />
+      </FormField>
+      <FormField label="Status" htmlFor="f-status" optional>
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger id="f-status" className="w-36">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {INITIATIVE_STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
       {members.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Owner</label>
+        <FormField label="Owner" htmlFor="f-owner" optional>
           <Select value={ownerId} onValueChange={setOwnerId}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger id="f-owner" className="w-40">
               <SelectValue placeholder="Optional" />
             </SelectTrigger>
             <SelectContent>
               {members.map((m) => <SelectItem key={m.userId} value={m.userId}>{m.label}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       )}
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Expected impact (kgCO2e)</label>
-        <Input type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="initiative-start" className="text-xs text-[#374151] tracking-[-0.36px]">Starts</label>
+      <FormField label="Expected impact (kgCO2e)" htmlFor="f-expected-impact-kgco2e" optional>
+        <Input id="f-expected-impact-kgco2e" type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
+      </FormField>
+      <FormField label="Starts" htmlFor="initiative-start" optional>
         <Input id="initiative-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-40" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="initiative-currency" className="text-xs text-[#374151] tracking-[-0.36px]">Currency</label>
+      </FormField>
+      <FormField label="Currency" htmlFor="initiative-currency" optional>
         <Input id="initiative-currency" value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value)} className="w-20 uppercase" />
-      </div>
+      </FormField>
       <div className="flex flex-col gap-1">
         <label className="text-xs text-[#374151] tracking-[-0.36px]">Capital cost ({currency.toUpperCase() || defaultCurrency})</label>
         <Input type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="Optional" className="w-28" />
@@ -286,15 +277,13 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
         <label className="text-xs text-[#374151] tracking-[-0.36px]">Annual opex change ({currency.toUpperCase() || defaultCurrency})</label>
         <Input type="number" step="any" value={opexDeltaAnnual} onChange={(e) => setOpexDeltaAnnual(e.target.value)} placeholder="Negative = saves money" className="w-40" />
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Lifetime (years)</label>
-        <Input type="number" min="1" step="1" value={lifetimeYears} onChange={(e) => setLifetimeYears(e.target.value)} placeholder="Optional" className="w-24" />
-      </div>
+      <FormField label="Lifetime (years)" htmlFor="f-lifetime-years" optional>
+        <Input id="f-lifetime-years" type="number" min="1" step="1" value={lifetimeYears} onChange={(e) => setLifetimeYears(e.target.value)} placeholder="Optional" className="w-24" />
+      </FormField>
       {facilities.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility</label>
+        <FormField label="Facility" htmlFor="f-facility" optional>
           <Select value={facilityId || NONE} onValueChange={(v) => setFacilityId(v === NONE ? "" : v)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger id="f-facility" className="w-40">
               <SelectValue placeholder="Org-wide" />
             </SelectTrigger>
             <SelectContent>
@@ -302,13 +291,12 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
               {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       )}
       {categories.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Category</label>
+        <FormField label="Category" htmlFor="f-category" optional>
           <Select value={emissionCategoryId || NONE} onValueChange={(v) => setEmissionCategoryId(v === NONE ? "" : v)}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger id="f-category" className="w-44">
               <SelectValue placeholder="Not specified" />
             </SelectTrigger>
             <SelectContent>
@@ -316,13 +304,12 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
               {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       )}
       {targets.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Counts toward</label>
+        <FormField label="Counts toward" htmlFor="f-counts-toward" optional>
           <Select value={reductionTargetId || NONE} onValueChange={(v) => setReductionTargetId(v === NONE ? "" : v)}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger id="f-counts-toward" className="w-44">
               <SelectValue placeholder="No target" />
             </SelectTrigger>
             <SelectContent>
@@ -330,7 +317,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
               {targets.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       )}
       <div className="flex gap-2">
         <Button type="submit" disabled={loading} size="sm">

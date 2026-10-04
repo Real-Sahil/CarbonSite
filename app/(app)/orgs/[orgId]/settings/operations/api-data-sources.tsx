@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/forms/form-kit";
 
 type AuthMethod = "none" | "api_key" | "bearer" | "basic";
 type DataFormat = "json" | "csv";
@@ -116,43 +116,37 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
       {showForm && (
         <form onSubmit={createSource} className="border-t border-slate-100 p-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Name</Label>
-              <Input name="name" required maxLength={100} disabled={isPending} placeholder="e.g. Energy Provider API" />
-            </div>
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Data format</Label>
-              <select name="dataFormat" className={selectClass} disabled={isPending} defaultValue="json">
+            <FormField label="Name" htmlFor="f-name">
+              <Input id="f-name" name="name" required maxLength={100} disabled={isPending} placeholder="e.g. Energy Provider API" />
+            </FormField>
+            <FormField label="Data format" htmlFor="f-dataFormat" optional>
+              <select id="f-dataFormat" name="dataFormat" className={selectClass} disabled={isPending} defaultValue="json">
                 <option value="json">JSON</option>
                 <option value="csv">CSV</option>
               </select>
-            </div>
+            </FormField>
           </div>
 
-          <div>
-            <Label className="text-xs font-medium text-slate-600">Description</Label>
-            <Textarea name="description" maxLength={500} disabled={isPending} placeholder="Optional description..." className="resize-none h-16" />
-          </div>
+          <FormField label="Description" htmlFor="f-description" optional>
+            <Textarea id="f-description" name="description" maxLength={500} disabled={isPending} placeholder="Optional description..." className="resize-none h-16" />
+          </FormField>
 
-          <div>
-            <Label className="text-xs font-medium text-slate-600">API endpoint</Label>
-            <Input name="endpoint" type="url" required disabled={isPending} placeholder="https://api.example.com/emissions" />
-          </div>
+          <FormField label="API endpoint" htmlFor="f-endpoint">
+            <Input id="f-endpoint" name="endpoint" type="url" required disabled={isPending} placeholder="https://api.example.com/emissions" />
+          </FormField>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Authentication</Label>
-              <select name="authMethod" className={selectClass} disabled={isPending} defaultValue="none">
+            <FormField label="Authentication" htmlFor="f-authMethod" optional>
+              <select id="f-authMethod" name="authMethod" className={selectClass} disabled={isPending} defaultValue="none">
                 <option value="none">None</option>
                 <option value="api_key">API Key</option>
                 <option value="bearer">Bearer token</option>
                 <option value="basic">Basic auth</option>
               </select>
-            </div>
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Sync interval (minutes)</Label>
-              <Input name="syncIntervalMins" type="number" min="5" max="1440" defaultValue="60" disabled={isPending} />
-            </div>
+            </FormField>
+            <FormField label="Sync interval (minutes)" htmlFor="f-syncIntervalMins" optional>
+              <Input id="f-syncIntervalMins" name="syncIntervalMins" type="number" min="5" max="1440" defaultValue="60" disabled={isPending} />
+            </FormField>
           </div>
 
           <AuthFieldsById />
@@ -195,33 +189,29 @@ function AuthFieldsById() {
 
   if (authMethod === "api_key") {
     return (
-      <div>
-        <Label className="text-xs font-medium text-slate-600">API Key</Label>
-        <Input name="apiKey" required type="password" placeholder="Enter your API key" />
-      </div>
+      <FormField label="API Key" htmlFor="f-apiKey">
+        <Input id="f-apiKey" name="apiKey" required type="password" placeholder="Enter your API key" />
+      </FormField>
     );
   }
 
   if (authMethod === "bearer") {
     return (
-      <div>
-        <Label className="text-xs font-medium text-slate-600">Bearer token</Label>
-        <Input name="bearerToken" required type="password" placeholder="Enter your bearer token" />
-      </div>
+      <FormField label="Bearer token" htmlFor="f-bearerToken">
+        <Input id="f-bearerToken" name="bearerToken" required type="password" placeholder="Enter your bearer token" />
+      </FormField>
     );
   }
 
   if (authMethod === "basic") {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <Label className="text-xs font-medium text-slate-600">Username</Label>
-          <Input name="basicUsername" required placeholder="Username" />
-        </div>
-        <div>
-          <Label className="text-xs font-medium text-slate-600">Password</Label>
-          <Input name="basicPassword" required type="password" placeholder="Password" />
-        </div>
+        <FormField label="Username" htmlFor="f-basicUsername">
+          <Input id="f-basicUsername" name="basicUsername" required placeholder="Username" />
+        </FormField>
+        <FormField label="Password" htmlFor="f-basicPassword">
+          <Input id="f-basicPassword" name="basicPassword" required type="password" placeholder="Password" />
+        </FormField>
       </div>
     );
   }

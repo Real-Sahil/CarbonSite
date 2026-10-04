@@ -14,6 +14,7 @@ import {
 import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
 import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { AlertCircle, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface EnvIncidentSection {
   incidentType?: string;
@@ -230,24 +231,22 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Incident Details</h2>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Report Title</label>
-                    <Input
+                  <FormField label="Report Title" htmlFor="f-report-title" optional>
+                    <Input id="f-report-title"
                       disabled={disabled}
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       placeholder="Incident title"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Project</label>
+                  </FormField>
+                  <FormSection cols={2}>
+                    <FormField label="Project" htmlFor="f-project" optional>
                       <Select
                         disabled={disabled}
                         value={projectId}
                         onValueChange={setProjectId}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger id="f-project">
                           <SelectValue placeholder="Select project" />
                         </SelectTrigger>
                         <SelectContent>
@@ -258,11 +257,10 @@ export function EnvironmentalIncidentEditor({
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Site</label>
+                    </FormField>
+                    <FormField label="Site" htmlFor="f-site" optional>
                       <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
-                        <SelectTrigger>
+                        <SelectTrigger id="f-site">
                           <SelectValue placeholder="Select site" />
                         </SelectTrigger>
                         <SelectContent>
@@ -273,21 +271,19 @@ export function EnvironmentalIncidentEditor({
                           ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Incident Date</label>
-                      <Input
+                    </FormField>
+                  </FormSection>
+                  <FormSection cols={2}>
+                    <FormField label="Incident Date" htmlFor="f-incident-date" optional>
+                      <Input id="f-incident-date"
                         disabled={disabled}
                         type="date"
                         value={incidentDate}
                         onChange={(e) => setIncidentDate(e.target.value)}
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Incident Type</label>
-                      <Input
+                    </FormField>
+                    <FormField label="Incident Type" htmlFor="f-incident-type" optional>
+                      <Input id="f-incident-type"
                         disabled={disabled}
                         value={sections.incidentType || ""}
                         onChange={(e) =>
@@ -295,11 +291,10 @@ export function EnvironmentalIncidentEditor({
                         }
                         placeholder="e.g., Chemical Spill, Noise Complaint"
                       />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Description</label>
-                    <Textarea
+                    </FormField>
+                  </FormSection>
+                  <FormField label="Description" htmlFor="f-description" optional>
+                    <Textarea id="f-description"
                       disabled={disabled}
                       value={sections.description || ""}
                       onChange={(e) =>
@@ -308,24 +303,22 @@ export function EnvironmentalIncidentEditor({
                       placeholder="Describe the environmental incident"
                       rows={4}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Location</label>
-                    <Input
+                  </FormField>
+                  <FormField label="Location" htmlFor="f-location" optional>
+                    <Input id="f-location"
                       disabled={disabled}
                       value={sections.location || ""}
                       onChange={(e) => setSections({ ...sections, location: e.target.value })}
                       placeholder="Specific location of incident"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Severity</label>
+                  </FormField>
+                  <FormField label="Severity" htmlFor="f-severity" optional>
                     <Select
                       disabled={disabled}
                       value={sections.severity || ""}
                       onValueChange={(v) => setSections({ ...sections, severity: v })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="f-severity">
                         <SelectValue placeholder="Select severity" />
                       </SelectTrigger>
                       <SelectContent>
@@ -335,7 +328,7 @@ export function EnvironmentalIncidentEditor({
                         <SelectItem value="critical">Critical</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -345,9 +338,8 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Environmental Impact</h2>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Impact Type</label>
-                    <Input
+                  <FormField label="Impact Type" htmlFor="f-impact-type" optional>
+                    <Input id="f-impact-type"
                       disabled={disabled}
                       value={sections.environmentalImpact?.impactType || ""}
                       onChange={(e) =>
@@ -361,10 +353,9 @@ export function EnvironmentalIncidentEditor({
                       }
                       placeholder="e.g., Water pollution, Air emissions"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Affected Areas</label>
-                    <Textarea
+                  </FormField>
+                  <FormField label="Affected Areas" htmlFor="f-affected-areas" optional>
+                    <Textarea id="f-affected-areas"
                       disabled={disabled}
                       value={sections.environmentalImpact?.affectedAreas || ""}
                       onChange={(e) =>
@@ -379,10 +370,9 @@ export function EnvironmentalIncidentEditor({
                       placeholder="Describe affected areas"
                       rows={3}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Estimated Damage</label>
-                    <Input
+                  </FormField>
+                  <FormField label="Estimated Damage" htmlFor="f-estimated-damage" optional>
+                    <Input id="f-estimated-damage"
                       disabled={disabled}
                       value={sections.environmentalImpact?.estimatedDamage || ""}
                       onChange={(e) =>
@@ -396,7 +386,7 @@ export function EnvironmentalIncidentEditor({
                       }
                       placeholder="e.g., Estimated cost, extent"
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -406,9 +396,8 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Response Actions</h2>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Immediate Actions Taken</label>
-                    <Textarea
+                  <FormField label="Immediate Actions Taken" htmlFor="f-immediate-actions-taken" optional>
+                    <Textarea id="f-immediate-actions-taken"
                       disabled={disabled}
                       value={sections.responseActions?.immediateActions || ""}
                       onChange={(e) =>
@@ -423,10 +412,9 @@ export function EnvironmentalIncidentEditor({
                       placeholder="What immediate steps were taken?"
                       rows={3}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Notifications Required</label>
-                    <Input
+                  </FormField>
+                  <FormField label="Notifications Required" htmlFor="f-notifications-required">
+                    <Input id="f-notifications-required"
                       disabled={disabled}
                       value={sections.responseActions?.notificationsRequired || ""}
                       onChange={(e) =>
@@ -440,10 +428,9 @@ export function EnvironmentalIncidentEditor({
                       }
                       placeholder="e.g., Environment Agency, Local Council"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Containment Measures</label>
-                    <Textarea
+                  </FormField>
+                  <FormField label="Containment Measures" htmlFor="f-containment-measures" optional>
+                    <Textarea id="f-containment-measures"
                       disabled={disabled}
                       value={sections.responseActions?.containmentMeasures || ""}
                       onChange={(e) =>
@@ -458,7 +445,7 @@ export function EnvironmentalIncidentEditor({
                       placeholder="Describe containment/prevention measures"
                       rows={3}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -468,9 +455,8 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Investigation</h2>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Investigation Date</label>
-                    <Input
+                  <FormField label="Investigation Date" htmlFor="f-investigation-date" optional>
+                    <Input id="f-investigation-date"
                       disabled={disabled}
                       type="date"
                       value={sections.investigation?.investigationDate || ""}
@@ -484,10 +470,9 @@ export function EnvironmentalIncidentEditor({
                         })
                       }
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Root Cause</label>
-                    <Textarea
+                  </FormField>
+                  <FormField label="Root Cause" htmlFor="f-root-cause" optional>
+                    <Textarea id="f-root-cause"
                       disabled={disabled}
                       value={sections.investigation?.rootCause || ""}
                       onChange={(e) =>
@@ -502,10 +487,9 @@ export function EnvironmentalIncidentEditor({
                       placeholder="Identified root cause"
                       rows={3}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Contributing Factors</label>
-                    <Textarea
+                  </FormField>
+                  <FormField label="Contributing Factors" htmlFor="f-contributing-factors" optional>
+                    <Textarea id="f-contributing-factors"
                       disabled={disabled}
                       value={sections.investigation?.contributingFactors || ""}
                       onChange={(e) =>
@@ -520,7 +504,7 @@ export function EnvironmentalIncidentEditor({
                       placeholder="List contributing factors"
                       rows={3}
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -530,9 +514,8 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Remediation</h2>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Remediation Plan</label>
-                    <Textarea
+                  <FormField label="Remediation Plan" htmlFor="f-remediation-plan" optional>
+                    <Textarea id="f-remediation-plan"
                       disabled={disabled}
                       value={sections.remediation?.remediationPlan || ""}
                       onChange={(e) =>
@@ -547,10 +530,9 @@ export function EnvironmentalIncidentEditor({
                       placeholder="Detailed remediation plan"
                       rows={4}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Estimated Cost</label>
-                    <Input
+                  </FormField>
+                  <FormField label="Estimated Cost" htmlFor="f-estimated-cost" optional>
+                    <Input id="f-estimated-cost"
                       disabled={disabled}
                       type="number"
                       value={sections.remediation?.estimatedCost || ""}
@@ -565,11 +547,10 @@ export function EnvironmentalIncidentEditor({
                       }
                       placeholder="Cost in GBP"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Target Completion</label>
-                      <Input
+                  </FormField>
+                  <FormSection cols={2}>
+                    <FormField label="Target Completion" htmlFor="f-target-completion" optional>
+                      <Input id="f-target-completion"
                         disabled={disabled}
                         type="date"
                         value={sections.remediation?.targetCompletionDate || ""}
@@ -583,10 +564,9 @@ export function EnvironmentalIncidentEditor({
                           })
                         }
                       />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Responsible Party</label>
-                      <Input
+                    </FormField>
+                    <FormField label="Responsible Party" htmlFor="f-responsible-party" optional>
+                      <Input id="f-responsible-party"
                         disabled={disabled}
                         value={sections.remediation?.responsibleParty || ""}
                         onChange={(e) =>
@@ -600,8 +580,8 @@ export function EnvironmentalIncidentEditor({
                         }
                         placeholder="Name/Department"
                       />
-                    </div>
-                  </div>
+                    </FormField>
+                  </FormSection>
                 </div>
               </div>
             )}

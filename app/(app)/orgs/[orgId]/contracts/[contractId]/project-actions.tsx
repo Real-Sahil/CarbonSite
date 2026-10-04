@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 export function CreateProjectForm({
   orgId,
@@ -51,18 +51,13 @@ export function CreateProjectForm({
     <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
       <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">New project</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-name" className="text-xs text-[#374151] tracking-[-0.36px]">
-            Name <span aria-hidden="true" className="text-red-500">*</span>
-          </Label>
+        <FormField label="Name" htmlFor="project-name">
           <Input id="project-name" name="name" required placeholder="Project name" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-code" className="text-xs text-[#374151] tracking-[-0.36px]">Project code</Label>
+        </FormField>
+        <FormField label="Project code" htmlFor="project-code" optional>
           <Input id="project-code" name="projectCode" placeholder="PRJ-001" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-status" className="text-xs text-[#374151] tracking-[-0.36px]">Status</Label>
+        </FormField>
+        <FormField label="Status" htmlFor="project-status" optional>
           <select
             id="project-status"
             name="status"
@@ -74,19 +69,16 @@ export function CreateProjectForm({
             <option value="on_hold">On hold</option>
             <option value="cancelled">Cancelled</option>
           </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-postcode" className="text-xs text-[#374151] tracking-[-0.36px]">Postcode</Label>
+        </FormField>
+        <FormField label="Postcode" htmlFor="project-postcode" optional>
           <Input id="project-postcode" name="postcode" placeholder="e.g. SW1A 2AA" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-start" className="text-xs text-[#374151] tracking-[-0.36px]">Start date</Label>
+        </FormField>
+        <FormField label="Start date" htmlFor="project-start" optional>
           <Input id="project-start" name="startDate" type="date" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="project-end" className="text-xs text-[#374151] tracking-[-0.36px]">End date</Label>
+        </FormField>
+        <FormField label="End date" htmlFor="project-end" optional>
           <Input id="project-end" name="endDate" type="date" className="h-9 text-sm" />
-        </div>
+        </FormField>
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div>

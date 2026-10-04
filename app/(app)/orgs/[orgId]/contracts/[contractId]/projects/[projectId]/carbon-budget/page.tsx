@@ -8,6 +8,7 @@ import { Target, Plus, AlertTriangle, CheckCircle, TrendingUp, X, Pencil, Gauge 
 import { computeCarbonEvm } from "@/lib/project-carbon/evm";
 import type { Burndown } from "@/lib/project-carbon/burndown";
 import { BurndownCard } from "./burndown-card";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface Phase {
   id: string;
@@ -127,25 +128,20 @@ function SetBudgetModal({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              Total carbon budget (tCO₂e) <span className="text-red-500">*</span>
-            </label>
-            <input type="number" required min="0.01" step="0.01" value={totalBudget}
+          <FormField label="Total carbon budget (tCO₂e)" htmlFor="f-total-carbon-budget-tco-e">
+            <input id="f-total-carbon-budget-tco-e" type="number" required min="0.01" step="0.01" value={totalBudget}
               onChange={(e) => setTotalBudget(e.target.value)} className={inputCls} placeholder="500.00" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Floor area (m2) <span className="text-gray-500">(optional)</span></label>
-              <input type="number" min="0" step="0.1" value={floorArea}
+          </FormField>
+          <FormSection cols={2}>
+            <FormField label="Floor area (m2)" htmlFor="f-floor-area-m2" optional>
+              <input id="f-floor-area-m2" type="number" min="0" step="0.1" value={floorArea}
                 onChange={(e) => setFloorArea(e.target.value)} className={inputCls} placeholder="5000" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Contract value (GBP) <span className="text-gray-500">(optional)</span></label>
-              <input type="number" min="0" step="1000" value={contractValue}
+            </FormField>
+            <FormField label="Contract value (GBP)" htmlFor="f-contract-value-gbp" optional>
+              <input id="f-contract-value-gbp" type="number" min="0" step="1000" value={contractValue}
                 onChange={(e) => setContractValue(e.target.value)} className={inputCls} placeholder="2000000" />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
 
           <div>
             <div className="flex items-center justify-between mb-2">
@@ -171,11 +167,10 @@ function SetBudgetModal({
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-            <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)}
+          <FormField label="Notes" htmlFor="f-notes" optional>
+            <textarea id="f-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)}
               className={`${inputCls} resize-none`} placeholder="Budget basis, assumptions..." />
-          </div>
+          </FormField>
 
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 
@@ -277,30 +272,27 @@ function PhaseRow({
 
       {editing && (
         <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Actual (tCO₂e)</label>
-            <input
+          <FormField label="Actual (tCO₂e)" htmlFor="f-actual-tco-e" optional>
+            <input id="f-actual-tco-e"
               type="number" min="0" step="0.01" value={actual}
               onChange={(e) => setActual(e.target.value)}
               className="w-28 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
             />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Percent complete</label>
-            <input
+          </FormField>
+          <FormField label="Percent complete" htmlFor="f-percent-complete" optional>
+            <input id="f-percent-complete"
               type="number" min="0" max="100" step="1" value={percent}
               onChange={(e) => setPercent(e.target.value)}
               className="w-24 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
             />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Planned completion</label>
-            <input
+          </FormField>
+          <FormField label="Planned completion" htmlFor="f-planned-completion" optional>
+            <input id="f-planned-completion"
               type="date" value={plannedDate}
               onChange={(e) => setPlannedDate(e.target.value)}
               className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
             />
-          </div>
+          </FormField>
           <button
             onClick={handleSave}
             disabled={saving}

@@ -8,6 +8,7 @@ import { Plus, Trash2, Copy, Check, Eye, ToggleLeft, ToggleRight, Zap } from "lu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { FormField } from "@/components/forms/form-kit";
 
 const ALL_EVENTS = [
   "calculation_run.completed",
@@ -198,16 +199,15 @@ export default function WebhooksPage() {
       >
         <p className="text-sm font-medium text-zinc-800">Add endpoint</p>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-zinc-500">Endpoint URL (must be HTTPS)</label>
-          <Input
+        <FormField label="Endpoint URL (must be HTTPS)" htmlFor="f-endpoint-url-must-be-https" optional>
+          <Input id="f-endpoint-url-must-be-https"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://your-server.example.com/webhooks/metricora"
             className="h-8 text-sm font-mono"
             type="url"
           />
-        </div>
+        </FormField>
 
         <div className="flex flex-col gap-1.5">
           <p className="text-xs text-zinc-500">Events to subscribe to</p>

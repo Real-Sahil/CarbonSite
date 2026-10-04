@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface RequestData {
   id: string;
@@ -239,9 +239,8 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
                   </Alert>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2 md:col-span-1">
-                    <Label htmlFor="quantity">Quantity</Label>
+                <FormSection cols={2}>
+                  <FormField label="Quantity" htmlFor="quantity" span={2}>
                     <Input
                       id="quantity"
                       type="number"
@@ -252,9 +251,8 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
                       required
                       disabled={submitting || isApproved}
                     />
-                  </div>
-                  <div className="col-span-2 md:col-span-1">
-                    <Label htmlFor="unit">Unit</Label>
+                  </FormField>
+                  <FormField label="Unit" htmlFor="unit" span={2}>
                     <Input
                       id="unit"
                       value={unit}
@@ -263,11 +261,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
                       required
                       disabled={submitting || isApproved}
                     />
-                  </div>
-                </div>
+                  </FormField>
+                </FormSection>
 
-                <div>
-                  <Label htmlFor="description">Notes (optional)</Label>
+                <FormField label="Notes (optional)" htmlFor="description" optional>
                   <Textarea
                     id="description"
                     value={description}
@@ -276,7 +273,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
                     rows={3}
                     disabled={submitting || isApproved}
                   />
-                </div>
+                </FormField>
 
                 <div className="flex gap-2">
                   <Button type="submit" disabled={submitting || isApproved}>

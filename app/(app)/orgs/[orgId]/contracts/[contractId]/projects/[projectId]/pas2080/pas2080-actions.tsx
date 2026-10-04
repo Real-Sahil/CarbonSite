@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HIERARCHY, LIFECYCLE_MODULES, ROLE_LABELS, STATUS_LABELS } from "@/lib/pas2080";
+import { FormField } from "@/components/forms/form-kit";
 
 type Role = keyof typeof ROLE_LABELS;
 type Status = keyof typeof STATUS_LABELS;
@@ -94,28 +95,23 @@ export function PlanForm({
   return (
     <form onSubmit={save} className="flex flex-col gap-4">
       <fieldset disabled={!canEdit || busy} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <label htmlFor="pas-role" className={labelCls}>Your role on this project</label>
+        <FormField label="Your role on this project" htmlFor="pas-role" optional>
           <select id="pas-role" className={input} value={form.valueChainRole} onChange={(e) => setForm({ ...form, valueChainRole: e.target.value as Role })}>
             {Object.entries(ROLE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
-        </div>
-        <div>
-          <label htmlFor="pas-lead" className={labelCls}>Carbon lead</label>
+        </FormField>
+        <FormField label="Carbon lead" htmlFor="pas-lead" optional>
           <input id="pas-lead" className={input} maxLength={120} value={form.carbonLeadName} onChange={(e) => setForm({ ...form, carbonLeadName: e.target.value })} placeholder="Name of the accountable person" />
-        </div>
-        <div>
-          <label htmlFor="pas-baseline" className={labelCls}>Baseline (tCO₂e)</label>
+        </FormField>
+        <FormField label="Baseline (tCO₂e)" htmlFor="pas-baseline" optional>
           <input id="pas-baseline" type="number" min={0} step="any" className={input} value={form.baselineTco2e} onChange={(e) => setForm({ ...form, baselineTco2e: e.target.value })} />
-        </div>
-        <div>
-          <label htmlFor="pas-target" className={labelCls}>Target (tCO₂e)</label>
+        </FormField>
+        <FormField label="Target (tCO₂e)" htmlFor="pas-target" optional>
           <input id="pas-target" type="number" min={0} step="any" className={input} value={form.targetTco2e} onChange={(e) => setForm({ ...form, targetTco2e: e.target.value })} />
-        </div>
-        <div className="sm:col-span-2 lg:col-span-4">
-          <label htmlFor="pas-basis" className={labelCls}>How the baseline was set</label>
+        </FormField>
+        <FormField label="How the baseline was set" htmlFor="pas-basis" span={4} optional>
           <textarea id="pas-basis" rows={2} className={area} maxLength={2000} value={form.baselineBasis} onChange={(e) => setForm({ ...form, baselineBasis: e.target.value })} placeholder="e.g. Stage 2 reference design quantified with ICE v3 and DEFRA factors; excludes B6 as the asset has no operational energy" />
-        </div>
+        </FormField>
         <fieldset className="sm:col-span-2 lg:col-span-4">
           <legend className={labelCls}>Life cycle modules in scope</legend>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -285,38 +281,31 @@ export function OpportunityLog({
 
       {canEdit && adding && (
         <form onSubmit={add} className="grid gap-4 rounded-[10px] border border-[#E5E7EB] p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="sm:col-span-2">
-            <label htmlFor="opp-title" className={labelCls}>Opportunity</label>
+          <FormField label="Opportunity" htmlFor="opp-title" span={2}>
             <input id="opp-title" required maxLength={200} className={input} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="e.g. Retain and strengthen the existing culvert" />
-          </div>
-          <div>
-            <label htmlFor="opp-level" className={labelCls}>Hierarchy level</label>
+          </FormField>
+          <FormField label="Hierarchy level" htmlFor="opp-level" optional>
             <select id="opp-level" className={input} value={draft.hierarchyLevel} onChange={(e) => setDraft({ ...draft, hierarchyLevel: e.target.value as Level })}>
               {HIERARCHY.map((h) => <option key={h.level} value={h.level}>{h.label}</option>)}
             </select>
-          </div>
-          <div>
-            <label htmlFor="opp-stage" className={labelCls}>Work stage</label>
+          </FormField>
+          <FormField label="Work stage" htmlFor="opp-stage" optional>
             <input id="opp-stage" maxLength={80} className={input} value={draft.workStage} onChange={(e) => setDraft({ ...draft, workStage: e.target.value })} placeholder="e.g. RIBA 2 / Options" />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="opp-desc" className={labelCls}>Description</label>
+          </FormField>
+          <FormField label="Description" htmlFor="opp-desc" span={2} optional>
             <input id="opp-desc" maxLength={4000} className={input} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
-          </div>
-          <div>
-            <label htmlFor="opp-saving" className={labelCls}>Estimated saving (tCO₂e)</label>
+          </FormField>
+          <FormField label="Estimated saving (tCO₂e)" htmlFor="opp-saving" optional>
             <input id="opp-saving" type="number" min={0} step="any" className={input} value={draft.estimatedSavingTco2e} onChange={(e) => setDraft({ ...draft, estimatedSavingTco2e: e.target.value })} />
-          </div>
-          <div>
-            <label htmlFor="opp-owner" className={labelCls}>Owner</label>
+          </FormField>
+          <FormField label="Owner" htmlFor="opp-owner" optional>
             <input id="opp-owner" maxLength={120} className={input} value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />
-          </div>
-          <div>
-            <label htmlFor="opp-status" className={labelCls}>Status</label>
+          </FormField>
+          <FormField label="Status" htmlFor="opp-status" optional>
             <select id="opp-status" className={input} value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as Status })}>
               {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
-          </div>
+          </FormField>
           <div className="sm:col-span-2 lg:col-span-3">
             <label htmlFor="opp-rationale" className={labelCls}>Decision reason{draft.status === "rejected" ? " (required)" : ""}</label>
             <input id="opp-rationale" maxLength={4000} required={draft.status === "rejected"} className={input} value={draft.decisionRationale} onChange={(e) => setDraft({ ...draft, decisionRationale: e.target.value })} />

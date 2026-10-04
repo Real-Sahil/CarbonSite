@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -13,6 +12,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { CheckCircle, Plus } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 export function ResolveAlertButton({ orgId, alertId, title }: { orgId: string; alertId: string; title: string }) {
   const [loading, setLoading] = useState(false);
@@ -120,21 +120,18 @@ export function CreateAlertButton({ orgId }: { orgId: string }) {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="title" className="text-xs font-medium">Title *</Label>
-              <Input id="title" name="title" required placeholder="e.g. Scope 1 emissions above threshold" className="h-8 text-sm" />
-            </div>
+            <FormField label="Title" htmlFor="title">
+              <Input id="title" name="title" required placeholder="e.g. Scope 1 emissions above threshold" />
+            </FormField>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="alertType" className="text-xs font-medium">Alert type *</Label>
+            <FormSection cols={2}>
+              <FormField label="Alert type" htmlFor="alertType">
                 <Input id="alertType" name="alertType" required placeholder="e.g. scope1_threshold" className="h-8 text-sm font-mono" />
-              </div>
+              </FormField>
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="severity" className="text-xs font-medium">Severity</Label>
+              <FormField label="Severity" htmlFor="severity" optional>
                 <Select name="severity" defaultValue="medium">
-                  <SelectTrigger id="severity" className="h-8 text-sm">
+                  <SelectTrigger id="severity">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -144,13 +141,12 @@ export function CreateAlertButton({ orgId }: { orgId: string }) {
                     <SelectItem value="critical">Critical</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="message" className="text-xs font-medium">Message *</Label>
+            <FormField label="Message" htmlFor="message">
               <Textarea id="message" name="message" required rows={3} placeholder="Describe what triggered this alert..." className="text-sm resize-none" />
-            </div>
+            </FormField>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 

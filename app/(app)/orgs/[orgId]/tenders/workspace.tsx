@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 export type WatchView = {
   enabled: boolean;
@@ -178,16 +178,13 @@ export function TendersWorkspace({
                   </label>
                 ))}
               </div>
-              <div className="flex max-w-md flex-col gap-1.5">
-                <Label htmlFor="tw-cpv" className="text-xs text-[#374151]">Other CPV codes or prefixes</Label>
+              <FormField label="Other CPV codes or prefixes" htmlFor="tw-cpv" optional>
                 <Input id="tw-cpv" value={customCpv} onChange={(e) => setCustomCpv(e.target.value)} placeholder="e.g. 45453, 4526" className="h-9 text-sm" />
-              </div>
+              </FormField>
             </fieldset>
-            <div className="flex max-w-md flex-col gap-1.5">
-              <Label htmlFor="tw-keywords" className="text-sm font-medium text-[#111827]">Title keywords</Label>
+            <FormField label="Title keywords" htmlFor="tw-keywords" hint="A notice with one of these words in its title matches whatever its CPV code." optional>
               <Input id="tw-keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. resurfacing, drainage, bridge" className="h-9 text-sm" />
-              <p className="text-xs text-[#6B7280]">A notice with one of these words in its title matches whatever its CPV code.</p>
-            </div>
+            </FormField>
             <fieldset>
               <legend className="mb-2 text-sm font-medium text-[#111827]">Regions (none ticked: anywhere)</legend>
               <div className="grid gap-2 sm:grid-cols-3">
@@ -200,10 +197,9 @@ export function TendersWorkspace({
               </div>
             </fieldset>
             <div className="flex flex-wrap items-end gap-6">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="tw-min" className="text-sm font-medium text-[#111827]">Minimum value (£)</Label>
+              <FormField label="Minimum value (£)" htmlFor="tw-min" optional>
                 <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" className="h-9 w-44 text-sm" />
-              </div>
+              </FormField>
               <label className="flex items-center gap-2 text-sm text-[#374151]">
                 <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4" />
                 Check every morning

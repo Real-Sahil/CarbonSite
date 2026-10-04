@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Upload, X } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface Facility { id: string; name: string }
 interface Period { id: string; label: string }
@@ -82,65 +83,58 @@ function AddRecordModal({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Facility</label>
-              <select required value={form.facilityId}
+          <FormSection cols={2}>
+            <FormField label="Facility" htmlFor="f-facility">
+              <select id="f-facility" required value={form.facilityId}
                 onChange={(e) => setForm((f) => ({ ...f, facilityId: e.target.value }))} className={inputCls}>
                 <option value="" disabled>Select a facility</option>
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Reporting period</label>
-              <select required value={form.reportingPeriodId}
+            </FormField>
+            <FormField label="Reporting period" htmlFor="f-reporting-period">
+              <select id="f-reporting-period" required value={form.reportingPeriodId}
                 onChange={(e) => setForm((f) => ({ ...f, reportingPeriodId: e.target.value }))} className={inputCls}>
                 <option value="" disabled>Select a period</option>
                 {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Metric</label>
-              <select value={form.metricType}
+            </FormField>
+          </FormSection>
+          <FormSection cols={2}>
+            <FormField label="Metric" htmlFor="f-metric" optional>
+              <select id="f-metric" value={form.metricType}
                 onChange={(e) => setForm((f) => ({ ...f, metricType: e.target.value as typeof form.metricType }))}
                 className={inputCls}>
                 <option value="withdrawal">Withdrawal</option>
                 <option value="discharge">Discharge</option>
                 <option value="consumption">Consumption</option>
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Source</label>
-              <select value={form.source}
+            </FormField>
+            <FormField label="Source" htmlFor="f-source" optional>
+              <select id="f-source" value={form.source}
                 onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} className={inputCls}>
                 {SOURCE_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
               </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Volume (m3)</label>
-              <input type="number" required min="0.001" step="0.001" value={form.volumeM3}
+            </FormField>
+          </FormSection>
+          <FormSection cols={2}>
+            <FormField label="Volume (m3)" htmlFor="f-volume-m3">
+              <input id="f-volume-m3" type="number" required min="0.001" step="0.001" value={form.volumeM3}
                 onChange={(e) => setForm((f) => ({ ...f, volumeM3: e.target.value }))}
                 className={inputCls} placeholder="1250.000" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
-              <input type="date" required value={form.recordedAt}
+            </FormField>
+            <FormField label="Date" htmlFor="f-date">
+              <input id="f-date" type="date" required value={form.recordedAt}
                 onChange={(e) => setForm((f) => ({ ...f, recordedAt: e.target.value }))} className={inputCls} />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
           <p className="text-xs text-gray-500">
             Water has no GHG Protocol scope: this is a physical-quantity disclosure (CSRD ESRS E3), not a CO2e calculation.
           </p>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-            <textarea rows={2} value={form.notes}
+          <FormField label="Notes" htmlFor="f-notes" optional>
+            <textarea id="f-notes" rows={2} value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className={`${inputCls} resize-none`} />
-          </div>
+          </FormField>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading || !form.facilityId || !form.reportingPeriodId}
             className="w-full rounded-lg bg-[#0ea5e9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284c7] disabled:opacity-60 transition-colors">

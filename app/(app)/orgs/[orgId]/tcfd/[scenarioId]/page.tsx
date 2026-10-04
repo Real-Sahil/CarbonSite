@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface Risk {
   id: string;
@@ -114,8 +115,7 @@ function RiskForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <Label htmlFor="riskCategory">Risk category</Label>
+      <FormField label="Risk category" htmlFor="riskCategory">
         <Input
           id="riskCategory"
           value={form.riskCategory}
@@ -123,9 +123,8 @@ function RiskForm({
           required
           placeholder="e.g. Policy and legal, Market, Technology"
         />
-      </div>
-      <div className="space-y-1">
-        <Label htmlFor="description">Description</Label>
+      </FormField>
+      <FormField label="Description" htmlFor="description">
         <Textarea
           id="description"
           value={form.description}
@@ -133,14 +132,13 @@ function RiskForm({
           required
           rows={3}
         />
-      </div>
+      </FormField>
       <div className="grid grid-cols-2 gap-4">
         {scaleInput("likelihood", "Likelihood", "likelihood", true)}
         {scaleInput("impact", "Impact", "impact", true)}
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label htmlFor="fimpLow">Financial impact low (£)</Label>
+      <FormSection cols={2}>
+        <FormField label="Financial impact low (£)" htmlFor="fimpLow" optional>
           <Input
             id="fimpLow"
             type="number"
@@ -148,9 +146,8 @@ function RiskForm({
             value={form.financialImpactLow}
             onChange={(e) => setForm((f) => ({ ...f, financialImpactLow: e.target.value }))}
           />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="fimpHigh">Financial impact high (£)</Label>
+        </FormField>
+        <FormField label="Financial impact high (£)" htmlFor="fimpHigh" optional>
           <Input
             id="fimpHigh"
             type="number"
@@ -158,10 +155,9 @@ function RiskForm({
             value={form.financialImpactHigh}
             onChange={(e) => setForm((f) => ({ ...f, financialImpactHigh: e.target.value }))}
           />
-        </div>
-      </div>
-      <div className="space-y-1">
-        <Label htmlFor="adaptationActions">Adaptation actions</Label>
+        </FormField>
+      </FormSection>
+      <FormField label="Adaptation actions" htmlFor="adaptationActions" optional>
         <Textarea
           id="adaptationActions"
           value={form.adaptationActions}
@@ -169,7 +165,7 @@ function RiskForm({
           rows={2}
           placeholder="What actions reduce this risk?"
         />
-      </div>
+      </FormField>
       <div className="grid grid-cols-2 gap-4">
         {scaleInput("residualLikelihood", "Residual likelihood", "residualLikelihood")}
         {scaleInput("residualImpact", "Residual impact", "residualImpact")}

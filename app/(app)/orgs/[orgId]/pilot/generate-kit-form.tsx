@@ -17,6 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 interface FormData {
   organizationName: string;
@@ -241,8 +242,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
               <CardDescription>Basic information about your organization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="organizationName">Organization Name</Label>
+              <FormField label="Organization Name" htmlFor="organizationName" optional>
                 <Input
                   id="organizationName"
                   name="organizationName"
@@ -250,10 +250,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   onChange={handleChange}
                   placeholder="Your Company Inc."
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
+              <FormField label="Industry" htmlFor="industry" optional>
                 <Select value={formData.industry} onValueChange={(value) => handleChange({ target: { name: "industry", value } })}>
                   <SelectTrigger id="industry">
                     <SelectValue placeholder="Select industry" />
@@ -269,10 +268,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="facilityCount">Number of Facilities</Label>
+              <FormField label="Number of Facilities" htmlFor="facilityCount" optional>
                 <Input
                   id="facilityCount"
                   name="facilityCount"
@@ -282,10 +280,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   onChange={handleChange}
                   placeholder="1"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="facilityNames">Facility Names (comma-separated)</Label>
+              <FormField label="Facility Names (comma-separated)" htmlFor="facilityNames" hint="Enter facility names separated by commas" optional>
                 <Input
                   id="facilityNames"
                   name="facilityNames"
@@ -293,11 +290,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   onChange={handleChange}
                   placeholder="London Warehouse, Manchester Distribution Center"
                 />
-                <p className="text-xs text-gray-500">Enter facility names separated by commas</p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="accountingSystem">Accounting System (Optional)</Label>
+              <FormField label="Accounting System (Optional)" htmlFor="accountingSystem" optional>
                 <Select value={formData.accountingSystem || "none"} onValueChange={(value) => handleChange({ target: { name: "accountingSystem", value: value === "none" ? "" : value } })}>
                   <SelectTrigger id="accountingSystem">
                     <SelectValue placeholder="Select or leave blank" />
@@ -311,7 +306,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
             </CardContent>
           </Card>
 
@@ -325,8 +320,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
               {/* Sustainability Lead */}
               <div className="space-y-4 pb-4 border-b">
                 <h3 className="font-semibold">Sustainability Lead</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="sustainabilityLeadName">Name</Label>
+                <FormField label="Name" htmlFor="sustainabilityLeadName" optional>
                   <Input
                     id="sustainabilityLeadName"
                     name="sustainabilityLeadName"
@@ -334,9 +328,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="Jane Smith"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sustainabilityLeadEmail">Email</Label>
+                </FormField>
+                <FormField label="Email" htmlFor="sustainabilityLeadEmail" optional>
                   <Input
                     id="sustainabilityLeadEmail"
                     name="sustainabilityLeadEmail"
@@ -345,9 +338,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="jane@company.com"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sustainabilityLeadRole">Job Title</Label>
+                </FormField>
+                <FormField label="Job Title" htmlFor="sustainabilityLeadRole" optional>
                   <Input
                     id="sustainabilityLeadRole"
                     name="sustainabilityLeadRole"
@@ -355,14 +347,13 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="Head of Sustainability"
                   />
-                </div>
+                </FormField>
               </div>
 
               {/* Finance Lead */}
               <div className="space-y-4 pb-4 border-b">
                 <h3 className="font-semibold">Finance Lead</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="financeLeadName">Name</Label>
+                <FormField label="Name" htmlFor="financeLeadName" optional>
                   <Input
                     id="financeLeadName"
                     name="financeLeadName"
@@ -370,9 +361,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="John Doe"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="financeLeadEmail">Email</Label>
+                </FormField>
+                <FormField label="Email" htmlFor="financeLeadEmail" optional>
                   <Input
                     id="financeLeadEmail"
                     name="financeLeadEmail"
@@ -381,9 +371,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="john@company.com"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="financeLeadRole">Job Title</Label>
+                </FormField>
+                <FormField label="Job Title" htmlFor="financeLeadRole" optional>
                   <Input
                     id="financeLeadRole"
                     name="financeLeadRole"
@@ -391,14 +380,13 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="CFO"
                   />
-                </div>
+                </FormField>
               </div>
 
               {/* IT Admin */}
               <div className="space-y-4 pb-4 border-b">
                 <h3 className="font-semibold">IT Administrator</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="itAdminName">Name</Label>
+                <FormField label="Name" htmlFor="itAdminName" optional>
                   <Input
                     id="itAdminName"
                     name="itAdminName"
@@ -406,9 +394,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="Alice Johnson"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="itAdminEmail">Email</Label>
+                </FormField>
+                <FormField label="Email" htmlFor="itAdminEmail" optional>
                   <Input
                     id="itAdminEmail"
                     name="itAdminEmail"
@@ -417,14 +404,13 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="alice@company.com"
                   />
-                </div>
+                </FormField>
               </div>
 
               {/* External Auditor (Optional) */}
               <div className="space-y-4">
                 <h3 className="font-semibold">External Auditor (Optional)</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="externalAuditorName">Name</Label>
+                <FormField label="Name" htmlFor="externalAuditorName" optional>
                   <Input
                     id="externalAuditorName"
                     name="externalAuditorName"
@@ -432,9 +418,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="Robert Williams"
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="externalAuditorFirm">Firm</Label>
+                </FormField>
+                <FormField label="Firm" htmlFor="externalAuditorFirm" optional>
                   <Input
                     id="externalAuditorFirm"
                     name="externalAuditorFirm"
@@ -442,9 +427,8 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="Audit & Compliance Ltd."
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="externalAuditorEmail">Email</Label>
+                </FormField>
+                <FormField label="Email" htmlFor="externalAuditorEmail" optional>
                   <Input
                     id="externalAuditorEmail"
                     name="externalAuditorEmail"
@@ -453,7 +437,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     onChange={handleChange}
                     placeholder="robert@auditfirm.com"
                   />
-                </div>
+                </FormField>
               </div>
             </CardContent>
           </Card>
@@ -515,8 +499,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
               <CardDescription>Pilot program details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="timelineDays">Pilot Duration (Days)</Label>
+              <FormField label="Pilot Duration (Days)" htmlFor="timelineDays" hint="Typically 30-365 days" optional>
                 <Input
                   id="timelineDays"
                   name="timelineDays"
@@ -527,11 +510,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   onChange={handleChange}
                   placeholder="90"
                 />
-                <p className="text-xs text-gray-500">Typically 30-365 days</p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="pilotStartDate">Pilot Start Date</Label>
+              <FormField label="Pilot Start Date" htmlFor="pilotStartDate" optional>
                 <Input
                   id="pilotStartDate"
                   name="pilotStartDate"
@@ -539,10 +520,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   value={formData.pilotStartDate}
                   onChange={handleChange}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="supplierCount">Number of Suppliers</Label>
+              <FormField label="Number of Suppliers" htmlFor="supplierCount" hint="For Scope 3 collaboration" optional>
                 <Input
                   id="supplierCount"
                   name="supplierCount"
@@ -552,11 +532,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   onChange={handleChange}
                   placeholder="0"
                 />
-                <p className="text-xs text-gray-500">For Scope 3 collaboration</p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="fieldWorkerCount">Number of Field Workers</Label>
+              <FormField label="Number of Field Workers" htmlFor="fieldWorkerCount" hint="Using mobile app for data capture" optional>
                 <Input
                   id="fieldWorkerCount"
                   name="fieldWorkerCount"
@@ -566,11 +544,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                   onChange={handleChange}
                   placeholder="0"
                 />
-                <p className="text-xs text-gray-500">Using mobile app for data capture</p>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="reportingCurrency">Reporting Currency</Label>
+              <FormField label="Reporting Currency" htmlFor="reportingCurrency" optional>
                 <Select value={formData.reportingCurrency} onValueChange={(value) => handleChange({ target: { name: "reportingCurrency", value } })}>
                   <SelectTrigger id="reportingCurrency">
                     <SelectValue />
@@ -582,10 +558,9 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     <SelectItem value="AUD">AUD (Australian Dollar)</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
+              <FormField label="Timezone" htmlFor="timezone" optional>
                 <Select value={formData.timezone} onValueChange={(value) => handleChange({ target: { name: "timezone", value } })}>
                   <SelectTrigger id="timezone">
                     <SelectValue placeholder="Select timezone" />
@@ -603,7 +578,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     <SelectItem value="Asia/Singapore">Asia/Singapore (SGT)</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
             </CardContent>
           </Card>
 

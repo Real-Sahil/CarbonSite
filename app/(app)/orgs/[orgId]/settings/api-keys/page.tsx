@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { Plus, Trash2, Copy, Check, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/forms/form-kit";
 
 interface ApiKey {
   id: string;
@@ -139,15 +140,14 @@ export default function ApiKeysPage() {
       )}
 
       <form onSubmit={handleCreate} className="flex items-end gap-2">
-        <div className="flex flex-col gap-1 flex-1 max-w-[320px]">
-          <label className="text-xs text-zinc-500">Key name</label>
-          <Input
+        <FormField label="Key name" htmlFor="f-key-name" optional>
+          <Input id="f-key-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Power BI integration"
-            className="h-8 text-sm"
+           
           />
-        </div>
+        </FormField>
         <Button type="submit" disabled={creating || !name.trim()} size="sm" className="gap-1.5">
           <Plus aria-hidden className="h-4 w-4" />
           Create key

@@ -15,6 +15,7 @@ import {
 import { Upload, Loader2, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { ColumnMapper } from "@/components/import/column-mapper";
 import type { CanonicalField, MappedColumn } from "@/lib/imports/column-mapper";
+import { FormField } from "@/components/forms/form-kit";
 
 const COLUMNS_VALUE = "__columns__";
 
@@ -219,10 +220,9 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
 
   return (
     <form onSubmit={handleUploadClick} className="flex flex-wrap items-end gap-3">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Reporting period</label>
+      <FormField label="Reporting period" htmlFor="f-reporting-period" optional>
         <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger id="f-reporting-period" className="w-44">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
           <SelectContent>
@@ -231,7 +231,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between gap-3">
           <label className="text-xs text-[#374151] tracking-[-0.36px]">Read with</label>
@@ -251,10 +251,9 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
           </SelectContent>
         </Select>
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Template</label>
+      <FormField label="Template" htmlFor="f-template" optional>
         <Select value={templateKey} onValueChange={setTemplateKey} disabled={busy}>
-          <SelectTrigger className="w-52">
+          <SelectTrigger id="f-template" className="w-52">
             <SelectValue placeholder="Select template" />
           </SelectTrigger>
           <SelectContent>
@@ -263,7 +262,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
       <div className="flex flex-col gap-1">
         <div className="flex items-center justify-between">
           <label className="text-xs text-[#374151] tracking-[-0.36px]">CSV / XLSX file</label>

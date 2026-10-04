@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Layers, Settings2, X, AlertCircle } from "lucide-react";
+import { FormField } from "@/components/forms/form-kit";
 
 interface WholeLifeResult {
   aStagesKgCo2e: number;
@@ -94,24 +95,19 @@ function SettingsModal({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Study period (years)</label>
-            <input type="number" required min="1" max="120" value={years} onChange={(e) => setYears(e.target.value)} className={inputCls} />
-            <p className="text-xs text-gray-500 mt-1">RICS default for buildings is 60 years.</p>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Operational start date <span className="text-gray-500">(optional)</span></label>
-            <input type="date" value={operationalStartDate} onChange={(e) => setOperationalStartDate(e.target.value)} className={inputCls} />
-            <p className="text-xs text-gray-500 mt-1">Only activity on or after this date counts toward B6.</p>
-          </div>
+          <FormField label="Study period (years)" htmlFor="f-study-period-years" hint="RICS default for buildings is 60 years.">
+            <input id="f-study-period-years" type="number" required min="1" max="120" value={years} onChange={(e) => setYears(e.target.value)} className={inputCls} />
+          </FormField>
+          <FormField label="Operational start date" htmlFor="f-operational-start-date" hint="Only activity on or after this date counts toward B6." optional>
+            <input id="f-operational-start-date" type="date" value={operationalStartDate} onChange={(e) => setOperationalStartDate(e.target.value)} className={inputCls} />
+          </FormField>
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">B7 operational water (kgCO2e) <span className="text-gray-500">(optional, manual)</span></label>
             <input type="number" min="0" step="0.01" value={water} onChange={(e) => setWater(e.target.value)} className={inputCls} placeholder="No automated water tracking yet" />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-            <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputCls} resize-none`} />
-          </div>
+          <FormField label="Notes" htmlFor="f-notes" optional>
+            <textarea id="f-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputCls} resize-none`} />
+          </FormField>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : "Save settings"}

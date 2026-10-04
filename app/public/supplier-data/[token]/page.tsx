@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { FormField } from "@/components/forms/form-kit";
 
 interface DataRequest {
   id: string;
@@ -288,10 +289,7 @@ export default function SupplierDataSubmissionPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Calculation Method
-                </label>
+              <FormField label="Calculation Method" htmlFor="f-calculation-method" optional>
                 <Select
                   value={formData.calculationMethod}
                   onValueChange={(value) =>
@@ -299,7 +297,7 @@ export default function SupplierDataSubmissionPage() {
                   }
                   disabled={submitting}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="f-calculation-method">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,20 +307,17 @@ export default function SupplierDataSubmissionPage() {
                     <SelectItem value="model">Calculation Model</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notes / Assumptions
-                </label>
-                <Textarea
+              <FormField label="Notes / Assumptions" htmlFor="f-notes-assumptions" optional>
+                <Textarea id="f-notes-assumptions"
                   placeholder="Explain your calculation method, assumptions, or any relevant context..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   disabled={submitting}
                   className="min-h-24"
                 />
-              </div>
+              </FormField>
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-900">

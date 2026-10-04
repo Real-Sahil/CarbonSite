@@ -13,6 +13,7 @@ import {
 import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
 import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface AssessmentSection {
   habitatType?: string;
@@ -158,24 +159,22 @@ export function BiodiversityAssessmentEditor({
           <div className="bg-white p-6 rounded-lg border">
             <h2 className="text-lg font-semibold mb-4">Biodiversity Assessment Details</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Assessment Title</label>
-                <Input
+              <FormField label="Assessment Title" htmlFor="f-assessment-title" optional>
+                <Input id="f-assessment-title"
                   disabled={disabled}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Biodiversity assessment title"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Project</label>
+              </FormField>
+              <FormSection cols={2}>
+                <FormField label="Project" htmlFor="f-project" optional>
                   <Select
                     disabled={disabled}
                     value={projectId}
                     onValueChange={setProjectId}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="f-project">
                       <SelectValue placeholder="Select project" />
                     </SelectTrigger>
                     <SelectContent>
@@ -186,11 +185,10 @@ export function BiodiversityAssessmentEditor({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Site</label>
+                </FormField>
+                <FormField label="Site" htmlFor="f-site" optional>
                   <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
-                    <SelectTrigger>
+                    <SelectTrigger id="f-site">
                       <SelectValue placeholder="Select site" />
                     </SelectTrigger>
                     <SelectContent>
@@ -201,96 +199,87 @@ export function BiodiversityAssessmentEditor({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Assessment Date</label>
-                <Input
+                </FormField>
+              </FormSection>
+              <FormField label="Assessment Date" htmlFor="f-assessment-date" optional>
+                <Input id="f-assessment-date"
                   disabled={disabled}
                   type="date"
                   value={assessmentDate}
                   onChange={(e) => setAssessmentDate(e.target.value)}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Habitat Type</label>
-                <Input
+              </FormField>
+              <FormField label="Habitat Type" htmlFor="f-habitat-type" optional>
+                <Input id="f-habitat-type"
                   disabled={disabled}
                   value={sections.habitatType || ""}
                   onChange={(e) => setSections({ ...sections, habitatType: e.target.value })}
                   placeholder="e.g., Woodland, Grassland, Wetland"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Site Boundary & Area</label>
-                <Textarea
+              </FormField>
+              <FormField label="Site Boundary & Area" htmlFor="f-site-boundary-area" optional>
+                <Textarea id="f-site-boundary-area"
                   disabled={disabled}
                   value={sections.siteBoundary || ""}
                   onChange={(e) => setSections({ ...sections, siteBoundary: e.target.value })}
                   placeholder="Define site boundary, area (hectares), coordinates"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Baseline Condition</label>
-                <Textarea
+              </FormField>
+              <FormField label="Baseline Condition" htmlFor="f-baseline-condition" optional>
+                <Textarea id="f-baseline-condition"
                   disabled={disabled}
                   value={sections.baselineCondition || ""}
                   onChange={(e) => setSections({ ...sections, baselineCondition: e.target.value })}
                   placeholder="Current ecological condition and habitats present"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Species Identified</label>
-                <Textarea
+              </FormField>
+              <FormField label="Species Identified" htmlFor="f-species-identified" optional>
+                <Textarea id="f-species-identified"
                   disabled={disabled}
                   value={sections.speciesIdentified || ""}
                   onChange={(e) => setSections({ ...sections, speciesIdentified: e.target.value })}
                   placeholder="Flora and fauna species found on site"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Protected Species & Habitats</label>
-                <Textarea
+              </FormField>
+              <FormField label="Protected Species & Habitats" htmlFor="f-protected-species-habitats" optional>
+                <Textarea id="f-protected-species-habitats"
                   disabled={disabled}
                   value={sections.protectedSpecies || ""}
                   onChange={(e) => setSections({ ...sections, protectedSpecies: e.target.value })}
                   placeholder="List any protected species or designated habitats"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Risk Assessment</label>
-                <Textarea
+              </FormField>
+              <FormField label="Risk Assessment" htmlFor="f-risk-assessment" optional>
+                <Textarea id="f-risk-assessment"
                   disabled={disabled}
                   value={sections.riskAssessment || ""}
                   onChange={(e) => setSections({ ...sections, riskAssessment: e.target.value })}
                   placeholder="Potential impacts on biodiversity from activities"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Mitigation Measures</label>
-                <Textarea
+              </FormField>
+              <FormField label="Mitigation Measures" htmlFor="f-mitigation-measures" optional>
+                <Textarea id="f-mitigation-measures"
                   disabled={disabled}
                   value={sections.mitigationMeasures || ""}
                   onChange={(e) => setSections({ ...sections, mitigationMeasures: e.target.value })}
                   placeholder="Proposed mitigation and enhancement measures"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Monitoring Plan</label>
-                <Textarea
+              </FormField>
+              <FormField label="Monitoring Plan" htmlFor="f-monitoring-plan" optional>
+                <Textarea id="f-monitoring-plan"
                   disabled={disabled}
                   value={sections.monitoringPlan || ""}
                   onChange={(e) => setSections({ ...sections, monitoringPlan: e.target.value })}
                   placeholder="Long-term monitoring and management strategy"
                   rows={3}
                 />
-              </div>
+              </FormField>
             </div>
           </div>
 

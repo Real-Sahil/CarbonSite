@@ -5,8 +5,8 @@ import { useState, useTransition } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { FormField } from "@/components/forms/form-kit";
 
 interface Submission {
   id: string;
@@ -82,28 +82,18 @@ export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; co
     <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
       <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">Request subcontractor carbon data</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sub-name" className="text-xs text-[#374151] tracking-[-0.36px]">
-            Subcontractor <span aria-hidden="true" className="text-red-500">*</span>
-          </Label>
+        <FormField label="Subcontractor" htmlFor="sub-name">
           <Input id="sub-name" name="subcontractorName" required placeholder="Subcontractor name" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sub-email" className="text-xs text-[#374151] tracking-[-0.36px]">Contact email</Label>
+        </FormField>
+        <FormField label="Contact email" htmlFor="sub-email" optional>
           <Input id="sub-email" name="contactEmail" type="email" placeholder="contact@example.com" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sub-period" className="text-xs text-[#374151] tracking-[-0.36px]">
-            Reporting period <span aria-hidden="true" className="text-red-500">*</span>
-          </Label>
+        </FormField>
+        <FormField label="Reporting period" htmlFor="sub-period">
           <Input id="sub-period" name="reportingPeriodLabel" required placeholder="Q3 2026" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="sub-due" className="text-xs text-[#374151] tracking-[-0.36px]">
-            Due date <span aria-hidden="true" className="text-red-500">*</span>
-          </Label>
+        </FormField>
+        <FormField label="Due date" htmlFor="sub-due">
           <Input id="sub-due" name="dueDate" type="date" required className="h-9 text-sm" />
-        </div>
+        </FormField>
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div>

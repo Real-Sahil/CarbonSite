@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface SimpleItem {
   id: string;
@@ -121,16 +121,14 @@ export function CreateCommitmentButton({ orgId, contracts, periods, frameworks }
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="title" className="text-xs font-medium">Title *</Label>
-              <Input id="title" name="title" required placeholder="e.g. Employ 5 local apprentices" className="h-8 text-sm" />
-            </div>
+            <FormField label="Title" htmlFor="title">
+              <Input id="title" name="title" required placeholder="e.g. Employ 5 local apprentices" />
+            </FormField>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="contractId" className="text-xs font-medium">Contract</Label>
+            <FormSection cols={2}>
+              <FormField label="Contract" htmlFor="contractId" optional>
                 <Select name="contractId">
-                  <SelectTrigger id="contractId" className="h-8 text-sm">
+                  <SelectTrigger id="contractId">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -139,12 +137,11 @@ export function CreateCommitmentButton({ orgId, contracts, periods, frameworks }
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="frameworkId" className="text-xs font-medium">Framework</Label>
+              <FormField label="Framework" htmlFor="frameworkId" optional>
                 <Select name="frameworkId">
-                  <SelectTrigger id="frameworkId" className="h-8 text-sm">
+                  <SelectTrigger id="frameworkId">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -153,14 +150,13 @@ export function CreateCommitmentButton({ orgId, contracts, periods, frameworks }
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="reportingPeriodId" className="text-xs font-medium">Reporting period</Label>
+            <FormSection cols={2}>
+              <FormField label="Reporting period" htmlFor="reportingPeriodId" optional>
                 <Select name="reportingPeriodId">
-                  <SelectTrigger id="reportingPeriodId" className="h-8 text-sm">
+                  <SelectTrigger id="reportingPeriodId">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -169,28 +165,24 @@ export function CreateCommitmentButton({ orgId, contracts, periods, frameworks }
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="targetDate" className="text-xs font-medium">Target date</Label>
-                <Input id="targetDate" name="targetDate" type="date" className="h-8 text-sm" />
-              </div>
-            </div>
+              <FormField label="Target date" htmlFor="targetDate" optional>
+                <Input id="targetDate" name="targetDate" type="date" />
+              </FormField>
+            </FormSection>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="monetisedValue" className="text-xs font-medium">Monetised target (£)</Label>
-                <Input id="monetisedValue" name="monetisedValue" type="number" min="0" step="0.01" placeholder="0.00" className="h-8 text-sm" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="targetValue" className="text-xs font-medium">Qty target</Label>
-                <Input id="targetValue" name="targetValue" type="number" min="0" step="any" placeholder="0" className="h-8 text-sm" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="targetUnit" className="text-xs font-medium">Unit</Label>
-                <Input id="targetUnit" name="targetUnit" placeholder="e.g. jobs" className="h-8 text-sm" />
-              </div>
-            </div>
+            <FormSection cols={3}>
+              <FormField label="Monetised target (£)" htmlFor="monetisedValue" optional>
+                <Input id="monetisedValue" name="monetisedValue" type="number" min="0" step="0.01" placeholder="0.00" />
+              </FormField>
+              <FormField label="Qty target" htmlFor="targetValue" optional>
+                <Input id="targetValue" name="targetValue" type="number" min="0" step="any" placeholder="0" />
+              </FormField>
+              <FormField label="Unit" htmlFor="targetUnit" optional>
+                <Input id="targetUnit" name="targetUnit" placeholder="e.g. jobs" />
+              </FormField>
+            </FormSection>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 

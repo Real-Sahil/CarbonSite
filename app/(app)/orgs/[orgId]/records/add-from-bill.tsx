@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FileUp, Loader2 } from "lucide-react";
 import { inputCls, labelCls } from "@/components/structured-forms/ms-fields";
 import type { BillExtraction } from "@/lib/evidence/bill-extractor";
+import { FormField } from "@/components/forms/form-kit";
 
 type Option = { id: string; label: string };
 type Category = Option & { code: string; scope: number };
@@ -144,13 +145,12 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
             </ul>
           ) : null}
           <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <label htmlFor="bill-cat" className={labelCls}>Category</label>
+            <FormField label="Category" htmlFor="bill-cat">
               <select id="bill-cat" required className={inputCls} value={form.categoryId} onChange={set("categoryId")}>
                 <option value="">Choose a category</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>Scope {c.scope}: {c.label}</option>)}
               </select>
-            </div>
+            </FormField>
             <div>
               <label htmlFor="bill-amount" className={labelCls}>Amount<Confidence value={read.amount?.confidence} /></label>
               <input id="bill-amount" type="number" step="any" min="0" required className={inputCls} value={form.amount} onChange={set("amount")} />
@@ -166,27 +166,24 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
                 </p>
               ) : null}
             </div>
-            <div>
-              <label htmlFor="bill-unit" className={labelCls}>Unit</label>
+            <FormField label="Unit" htmlFor="bill-unit">
               <input id="bill-unit" required className={inputCls} value={form.unit} onChange={set("unit")} />
-            </div>
-            <div>
-              <label htmlFor="bill-period" className={labelCls}>Reporting period</label>
+            </FormField>
+            <FormField label="Reporting period" htmlFor="bill-period">
               <select id="bill-period" required className={inputCls} value={form.periodId} onChange={set("periodId")}>
                 {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
-            </div>
+            </FormField>
             <div>
               <label htmlFor="bill-date" className={labelCls}>Activity date<Confidence value={(read.periodEnd ?? read.issueDate)?.confidence} /></label>
               <input id="bill-date" type="date" className={inputCls} value={form.date} onChange={set("date")} />
             </div>
-            <div>
-              <label htmlFor="bill-site" className={labelCls}>Site</label>
+            <FormField label="Site" htmlFor="bill-site" optional>
               <select id="bill-site" className={inputCls} value={form.facilityId} onChange={set("facilityId")}>
                 <option value="">No site</option>
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
               </select>
-            </div>
+            </FormField>
             <div>
               <label htmlFor="bill-supplier" className={labelCls}>Supplier<Confidence value={read.supplier?.confidence} /></label>
               <input id="bill-supplier" className={inputCls} value={form.supplier} onChange={set("supplier")} />

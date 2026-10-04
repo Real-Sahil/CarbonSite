@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -15,6 +14,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface FrameworkSummary {
   id: string;
@@ -278,21 +278,19 @@ function FrameworkForm({
 }) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4 pt-1">
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="name" className="text-xs font-medium">Name *</Label>
+      <FormField label="Name" htmlFor="name">
         <Input
           id="name"
           name="name"
           required
           defaultValue={defaultValues?.name}
           placeholder="e.g. National TOMs 2024"
-          className="h-8 text-sm"
+         
         />
-      </div>
+      </FormField>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="slug" className="text-xs font-medium">Slug *</Label>
+      <FormSection cols={2}>
+        <FormField label="Slug" htmlFor="slug">
           <Input
             id="slug"
             name="slug"
@@ -302,21 +300,19 @@ function FrameworkForm({
             pattern="^[a-z0-9-]+$"
             className="h-8 text-sm font-mono"
           />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="version" className="text-xs font-medium">Version</Label>
+        </FormField>
+        <FormField label="Version" htmlFor="version" optional>
           <Input
             id="version"
             name="version"
             defaultValue={defaultValues?.version ?? ""}
             placeholder="e.g. 2024.1"
-            className="h-8 text-sm"
+           
           />
-        </div>
-      </div>
+        </FormField>
+      </FormSection>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="description" className="text-xs font-medium">Description</Label>
+      <FormField label="Description" htmlFor="description" optional>
         <Textarea
           id="description"
           name="description"
@@ -325,7 +321,7 @@ function FrameworkForm({
           placeholder="Brief description of this framework..."
           className="text-sm resize-none"
         />
-      </div>
+      </FormField>
 
       <label className="flex items-center gap-2 cursor-pointer">
         <input

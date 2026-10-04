@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, X } from "lucide-react";
+import { FormField } from "@/components/forms/form-kit";
 
 const formSchema = z.object({
   question: z.string().min(10, "Question must be at least 10 characters").max(500),
@@ -96,45 +97,33 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
       )}
 
       {/* Question */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Research Question</label>
-        <Textarea
+      <FormField label="Research Question" htmlFor="f-research-question" hint="A clear question about what you want to understand (10-500 characters)" optional>
+        <Textarea id="f-research-question"
           placeholder="e.g., What is the causal effect of fleet electrification on our Scope 1 emissions?"
           className="resize-none"
           rows={3}
           value={formData.question}
           onChange={(e) => setFormData({ ...formData, question: e.target.value })}
         />
-        <p className="text-xs text-muted-foreground">
-          A clear question about what you want to understand (10-500 characters)
-        </p>
-      </div>
+      </FormField>
 
       {/* Treatment Variable */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Treatment Variable</label>
-        <Input
+      <FormField label="Treatment Variable" htmlFor="f-treatment-variable" hint="The intervention or change you&apos;re studying" optional>
+        <Input id="f-treatment-variable"
           placeholder="e.g., vehicle_electrification_percent"
           value={formData.treatmentVariable}
           onChange={(e) => setFormData({ ...formData, treatmentVariable: e.target.value })}
         />
-        <p className="text-xs text-muted-foreground">
-          The intervention or change you&apos;re studying
-        </p>
-      </div>
+      </FormField>
 
       {/* Outcome Variable */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Outcome Variable</label>
-        <Input
+      <FormField label="Outcome Variable" htmlFor="f-outcome-variable" hint="What you&apos;re trying to measure or predict" optional>
+        <Input id="f-outcome-variable"
           placeholder="e.g., scope1_emissions_kg"
           value={formData.outcomeVariable}
           onChange={(e) => setFormData({ ...formData, outcomeVariable: e.target.value })}
         />
-        <p className="text-xs text-muted-foreground">
-          What you&apos;re trying to measure or predict
-        </p>
-      </div>
+      </FormField>
 
       {/* Confounders */}
       <div className="space-y-3">

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, CheckCircle, XCircle } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface CommitmentItem {
   id: string;
@@ -101,16 +101,14 @@ export function CreateActivityButton({ orgId, commitments }: { orgId: string; co
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="title" className="text-xs font-medium">Title *</Label>
-              <Input id="title" name="title" required placeholder="e.g. Apprentice hired - John Smith" className="h-8 text-sm" />
-            </div>
+            <FormField label="Title" htmlFor="title">
+              <Input id="title" name="title" required placeholder="e.g. Apprentice hired - John Smith" />
+            </FormField>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="commitmentId" className="text-xs font-medium">Commitment</Label>
+            <FormSection cols={2}>
+              <FormField label="Commitment" htmlFor="commitmentId" optional>
                 <Select name="commitmentId">
-                  <SelectTrigger id="commitmentId" className="h-8 text-sm">
+                  <SelectTrigger id="commitmentId">
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -119,33 +117,28 @@ export function CreateActivityButton({ orgId, commitments }: { orgId: string; co
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="activityDate" className="text-xs font-medium">Activity date *</Label>
-                <Input id="activityDate" name="activityDate" type="date" required className="h-8 text-sm" />
-              </div>
-            </div>
+              <FormField label="Activity date" htmlFor="activityDate">
+                <Input id="activityDate" name="activityDate" type="date" required />
+              </FormField>
+            </FormSection>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="monetisedValue" className="text-xs font-medium">Monetised value (£)</Label>
-                <Input id="monetisedValue" name="monetisedValue" type="number" min="0" step="0.01" placeholder="0.00" className="h-8 text-sm" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="quantityValue" className="text-xs font-medium">Quantity</Label>
-                <Input id="quantityValue" name="quantityValue" type="number" min="0" step="any" placeholder="0" className="h-8 text-sm" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="quantityUnit" className="text-xs font-medium">Unit</Label>
-                <Input id="quantityUnit" name="quantityUnit" placeholder="e.g. hours" className="h-8 text-sm" />
-              </div>
-            </div>
+            <FormSection cols={3}>
+              <FormField label="Monetised value (£)" htmlFor="monetisedValue" optional>
+                <Input id="monetisedValue" name="monetisedValue" type="number" min="0" step="0.01" placeholder="0.00" />
+              </FormField>
+              <FormField label="Quantity" htmlFor="quantityValue" optional>
+                <Input id="quantityValue" name="quantityValue" type="number" min="0" step="any" placeholder="0" />
+              </FormField>
+              <FormField label="Unit" htmlFor="quantityUnit" optional>
+                <Input id="quantityUnit" name="quantityUnit" placeholder="e.g. hours" />
+              </FormField>
+            </FormSection>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="notes" className="text-xs font-medium">Notes</Label>
+            <FormField label="Notes" htmlFor="notes" optional>
               <Textarea id="notes" name="notes" rows={2} placeholder="Any additional context..." className="text-sm resize-none" />
-            </div>
+            </FormField>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 
@@ -244,16 +237,15 @@ function ReviewForm({
 
   return (
     <div className="flex flex-col gap-4 pt-1">
-      <div className="flex flex-col gap-1.5">
-        <Label className="text-xs font-medium">Review notes (optional)</Label>
-        <Textarea
+      <FormField label="Review notes (optional)" htmlFor="f-review-notes-optional" optional>
+        <Textarea id="f-review-notes-optional"
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Add any notes for the submitter..."
           className="text-sm resize-none"
         />
-      </div>
+      </FormField>
 
       {error && <p className="text-xs text-red-600">{error}</p>}
 

@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/forms/form-kit";
 
 type InviteMethod = "magic-link" | "credentials";
 
@@ -162,10 +163,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
           </div>
 
           {/* Email Input */}
-          <div>
-            <label htmlFor="supplier-email" className="block text-sm font-medium text-slate-900 mb-2">
-              Supplier Email Address
-            </label>
+          <FormField label="Supplier Email Address" htmlFor="supplier-email">
             <input
               id="supplier-email"
               type="email"
@@ -175,13 +173,10 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               required
               className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#c2410c]"
             />
-          </div>
+          </FormField>
 
           {/* Company Name Input */}
-          <div>
-            <label htmlFor="supplier-companyName" className="block text-sm font-medium text-slate-900 mb-2">
-              Supplier Company Name
-            </label>
+          <FormField label="Supplier Company Name" htmlFor="supplier-companyName" optional>
             <input
               id="supplier-companyName"
               type="text"
@@ -190,13 +185,10 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               onChange={handleInputChange}
               className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#c2410c]"
             />
-          </div>
+          </FormField>
 
           {/* Category Select */}
-          <div>
-            <label htmlFor="supplier-category" className="block text-sm font-medium text-slate-900 mb-2">
-              Category (Optional)
-            </label>
+          <FormField label="Category (Optional)" htmlFor="supplier-category" optional>
             <select
               id="supplier-category"
               value={formData.category}
@@ -212,7 +204,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               <option value="facilities">Facilities & Utilities</option>
               <option value="other">Other</option>
             </select>
-          </div>
+          </FormField>
 
           {/* Credentials Method Password Info */}
           {inviteMethod === "credentials" && (

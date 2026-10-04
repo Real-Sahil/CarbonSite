@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 export function SupplierForm({ orgId }: { orgId: string }) {
   const router = useRouter();
@@ -38,30 +38,31 @@ export function SupplierForm({ orgId }: { orgId: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-[1fr_9rem_9rem_auto] sm:items-end">
-      <div className="grid gap-1.5">
-        <Label htmlFor="sv-supplier-name">Supplier name, as it appears on your records</Label>
-        <Input id="sv-supplier-name" name="name" required maxLength={200} />
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="sv-supplier-postcode">Postcode</Label>
-        <Input id="sv-supplier-postcode" name="postcode" required maxLength={10} />
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="sv-supplier-sme">SME</Label>
-        <select
-          id="sv-supplier-sme"
-          name="sme"
-          defaultValue="unknown"
-          className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-        >
-          <option value="unknown">Not known</option>
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
-        </select>
-      </div>
-      <Button type="submit" disabled={busy}>{busy ? "Saving" : "Save supplier"}</Button>
-      {error && <p role="alert" className="text-sm text-red-700 sm:col-span-4">{error}</p>}
+    <form onSubmit={submit} className="space-y-4">
+      <FormSection title="Add a supplier" description="Where a supplier is based decides whether its spend counts as local.">
+        <FormField label="Supplier name" htmlFor="sv-supplier-name" span={2} hint="As it appears on your records">
+          <Input id="sv-supplier-name" name="name" required maxLength={200} />
+        </FormField>
+        <FormField label="Postcode" htmlFor="sv-supplier-postcode">
+          <Input id="sv-supplier-postcode" name="postcode" required maxLength={10} />
+        </FormField>
+        <FormField label="SME" htmlFor="sv-supplier-sme">
+          <select
+            id="sv-supplier-sme"
+            name="sme"
+            defaultValue="unknown"
+            className="h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50"
+          >
+            <option value="unknown">Not known</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </FormField>
+      </FormSection>
+      <FormError>{error}</FormError>
+      <FormActions>
+        <Button type="submit" size="sm" disabled={busy}>{busy ? "Saving" : "Save supplier"}</Button>
+      </FormActions>
     </form>
   );
 }

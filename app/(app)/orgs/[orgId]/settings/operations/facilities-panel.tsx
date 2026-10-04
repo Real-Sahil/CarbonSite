@@ -249,7 +249,7 @@ function FacilityForm({
           <Input id={`${id}-postcode`} value={postcode} onChange={(e) => setPostcode(e.target.value)} maxLength={20} disabled={isPending} />
         </FormField>
         {position && (
-          <p className="text-xs text-slate-500 sm:col-span-2 lg:col-span-4">
+          <p className="text-xs text-slate-500 @md:col-span-full">
             Position {position.latitude.toFixed(5)}, {position.longitude.toFixed(5)} (Plus Code {plusCode(position.latitude, position.longitude)}).
           </p>
         )}

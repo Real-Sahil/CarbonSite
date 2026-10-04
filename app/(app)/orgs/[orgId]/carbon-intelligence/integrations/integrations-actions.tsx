@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface Credential {
   id: string;
@@ -80,26 +80,22 @@ export function AddCredentialButton({ orgId }: { orgId: string }) {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="provider" className="text-xs font-medium">Provider *</Label>
+            <FormSection cols={2}>
+              <FormField label="Provider" htmlFor="provider">
                 <Input id="provider" name="provider" required placeholder="e.g. electricitymaps" className="h-8 text-sm font-mono" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="label" className="text-xs font-medium">Label</Label>
-                <Input id="label" name="label" placeholder="e.g. Production key" className="h-8 text-sm" />
-              </div>
-            </div>
+              </FormField>
+              <FormField label="Label" htmlFor="label" optional>
+                <Input id="label" name="label" placeholder="e.g. Production key" />
+              </FormField>
+            </FormSection>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="apiKey" className="text-xs font-medium">API key *</Label>
+            <FormField label="API key" htmlFor="apiKey">
               <Input id="apiKey" name="apiKey" type="password" required placeholder="sk-..." className="h-8 text-sm font-mono" />
-            </div>
+            </FormField>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="scopes" className="text-xs font-medium">Scopes</Label>
-              <Input id="scopes" name="scopes" placeholder="read,signals (comma-separated)" className="h-8 text-sm" />
-            </div>
+            <FormField label="Scopes" htmlFor="scopes" optional>
+              <Input id="scopes" name="scopes" placeholder="read,signals (comma-separated)" />
+            </FormField>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 
@@ -174,28 +170,24 @@ export function EditCredentialButton({ orgId, credential }: { orgId: string; cre
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-label" className="text-xs font-medium">Label</Label>
-              <Input id="edit-label" name="label" defaultValue={credential.label ?? ""} placeholder="e.g. Production key" className="h-8 text-sm" />
-            </div>
+            <FormField label="Label" htmlFor="edit-label" optional>
+              <Input id="edit-label" name="label" defaultValue={credential.label ?? ""} placeholder="e.g. Production key" />
+            </FormField>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-apiKey" className="text-xs font-medium">New API key</Label>
+            <FormField label="New API key" htmlFor="edit-apiKey" optional>
               <Input id="edit-apiKey" name="apiKey" type="password" placeholder="Leave blank to keep current" className="h-8 text-sm font-mono" />
-            </div>
+            </FormField>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-scopes" className="text-xs font-medium">Scopes</Label>
-              <Input id="edit-scopes" name="scopes" defaultValue={credential.scopes.join(", ")} placeholder="read,signals" className="h-8 text-sm" />
-            </div>
+            <FormField label="Scopes" htmlFor="edit-scopes" optional>
+              <Input id="edit-scopes" name="scopes" defaultValue={credential.scopes.join(", ")} placeholder="read,signals" />
+            </FormField>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-isActive" className="text-xs font-medium">Status</Label>
+            <FormField label="Status" htmlFor="edit-isActive" optional>
               <select id="edit-isActive" name="isActive" defaultValue={String(credential.isActive)} className="h-8 text-sm rounded-md border border-input bg-background px-3">
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
-            </div>
+            </FormField>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 

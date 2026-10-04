@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { FormField } from "@/components/forms/form-kit";
 
 const PAGE_SIZE = 10;
 
@@ -183,8 +184,7 @@ export function FieldWorkerAssignments({
           </div>
 
           <div className="mt-4 grid gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="field-worker-user">Mobile user</Label>
+            <FormField label="Mobile user" htmlFor="field-worker-user" optional>
               <select
                 id="field-worker-user"
                 value={workerId}
@@ -202,10 +202,9 @@ export function FieldWorkerAssignments({
                   ))
                 )}
               </select>
-            </div>
+            </FormField>
 
-            <div className="grid gap-1.5">
-              <Label htmlFor="field-worker-site">Site</Label>
+            <FormField label="Site" htmlFor="field-worker-site" optional>
               <select
                 id="field-worker-site"
                 value={siteId}
@@ -224,7 +223,7 @@ export function FieldWorkerAssignments({
                   ))
                 )}
               </select>
-            </div>
+            </FormField>
 
             <Button type="submit" disabled={isPending || !canAssign}>
               {isPending ? "Saving..." : "Grant site access"}
@@ -293,10 +292,7 @@ export function FieldWorkerAssignments({
             <div className="p-4 flex flex-col gap-3">
               {/* Site filter dropdown */}
               {uniqueAssignSites.length > 1 && (
-                <div className="flex items-center gap-2">
-                  <label htmlFor="assign-site-filter" className="text-xs text-slate-500 shrink-0">
-                    Filter by site
-                  </label>
+                <FormField label="Filter by site" htmlFor="assign-site-filter" optional>
                   <select
                     id="assign-site-filter"
                     value={siteFilter}
@@ -310,7 +306,7 @@ export function FieldWorkerAssignments({
                       </option>
                     ))}
                   </select>
-                </div>
+                </FormField>
               )}
 
               {/* Assignment cards */}

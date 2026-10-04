@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Upload, Trash2, X } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface Facility { id: string; name: string }
 interface Period { id: string; label: string }
@@ -96,109 +97,96 @@ function AddRecordModal({
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Facility</label>
-              <select required value={form.facilityId}
+          <FormSection cols={2}>
+            <FormField label="Facility" htmlFor="f-facility">
+              <select id="f-facility" required value={form.facilityId}
                 onChange={(e) => setForm((f) => ({ ...f, facilityId: e.target.value }))} className={inputCls}>
                 <option value="" disabled>Select a facility</option>
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Reporting period</label>
-              <select required value={form.reportingPeriodId}
+            </FormField>
+            <FormField label="Reporting period" htmlFor="f-reporting-period">
+              <select id="f-reporting-period" required value={form.reportingPeriodId}
                 onChange={(e) => setForm((f) => ({ ...f, reportingPeriodId: e.target.value }))} className={inputCls}>
                 <option value="" disabled>Select a period</option>
                 {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Waste type / description</label>
-            <input type="text" required value={form.wasteType}
+            </FormField>
+          </FormSection>
+          <FormField label="Waste type / description" htmlFor="f-waste-type-description">
+            <input id="f-waste-type-description" type="text" required value={form.wasteType}
               onChange={(e) => setForm((f) => ({ ...f, wasteType: e.target.value }))}
               className={inputCls} placeholder="Mixed construction waste, concrete, timber..." />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Disposal route</label>
-            <select value={form.disposalRoute}
+          </FormField>
+          <FormField label="Disposal route" htmlFor="f-disposal-route" optional>
+            <select id="f-disposal-route" value={form.disposalRoute}
               onChange={(e) => setForm((f) => ({ ...f, disposalRoute: e.target.value }))} className={inputCls}>
               {DISPOSAL_ROUTES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
-          </div>
+          </FormField>
           <label className="flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.hazardous}
               onChange={(e) => setForm((f) => ({ ...f, hazardous: e.target.checked }))}
               className="h-4 w-4 rounded border-gray-300 text-[#c2410c] focus:ring-[#c2410c]/30" />
             Hazardous waste (ESRS E5 disclosure)
           </label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Weight (tonnes)</label>
-              <input type="number" required min="0.001" step="0.001" value={form.weightTonnes}
+          <FormSection cols={2}>
+            <FormField label="Weight (tonnes)" htmlFor="f-weight-tonnes">
+              <input id="f-weight-tonnes" type="number" required min="0.001" step="0.001" value={form.weightTonnes}
                 onChange={(e) => setForm((f) => ({ ...f, weightTonnes: e.target.value }))}
                 className={inputCls} placeholder="12.500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
-              <input type="date" required value={form.recordedAt}
+            </FormField>
+            <FormField label="Date" htmlFor="f-date">
+              <input id="f-date" type="date" required value={form.recordedAt}
                 onChange={(e) => setForm((f) => ({ ...f, recordedAt: e.target.value }))} className={inputCls} />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
           <p className="text-xs text-gray-500">
             CO2e is calculated automatically from your organisation&apos;s emission factor library once saved.
           </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">EWC code <span className="text-gray-500">(optional)</span></label>
-              <input type="text" value={form.ewcCode} maxLength={10}
+          <FormSection cols={2}>
+            <FormField label="EWC code" htmlFor="f-ewc-code" optional>
+              <input id="f-ewc-code" type="text" value={form.ewcCode} maxLength={10}
                 onChange={(e) => setForm((f) => ({ ...f, ewcCode: e.target.value }))}
                 className={inputCls} placeholder="17 09 04" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Carrier name <span className="text-gray-500">(optional)</span></label>
-              <input type="text" value={form.carrierName}
+            </FormField>
+            <FormField label="Carrier name" htmlFor="f-carrier-name" optional>
+              <input id="f-carrier-name" type="text" value={form.carrierName}
                 onChange={(e) => setForm((f) => ({ ...f, carrierName: e.target.value }))}
                 className={inputCls} placeholder="Biffa, Veolia..." />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
           <p className="text-xs text-gray-500">
             Duty of care: record the carrier&apos;s registration and the transfer note (or consignment note for
             hazardous waste). Transfers without them show as gaps on the duty of care register.
           </p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Carrier registration</label>
-              <input type="text" value={form.carrierRegistration} maxLength={40}
+          <FormSection cols={2}>
+            <FormField label="Carrier registration" htmlFor="f-carrier-registration" optional>
+              <input id="f-carrier-registration" type="text" value={form.carrierRegistration} maxLength={40}
                 onChange={(e) => setForm((f) => ({ ...f, carrierRegistration: e.target.value }))}
                 className={inputCls} placeholder="CBDU123456" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Transfer or consignment note</label>
-              <input type="text" value={form.transferNoteReference} maxLength={100}
+            </FormField>
+            <FormField label="Transfer or consignment note" htmlFor="f-transfer-or-consignment-note" optional>
+              <input id="f-transfer-or-consignment-note" type="text" value={form.transferNoteReference} maxLength={100}
                 onChange={(e) => setForm((f) => ({ ...f, transferNoteReference: e.target.value }))}
                 className={inputCls} placeholder="WTN-0001" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Receiving site or permit</label>
-              <input type="text" value={form.destination} maxLength={200}
+            </FormField>
+            <FormField label="Receiving site or permit" htmlFor="f-receiving-site-or-permit" optional>
+              <input id="f-receiving-site-or-permit" type="text" value={form.destination} maxLength={200}
                 onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
                 className={inputCls} placeholder="Permit EPR/AB1234CD" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Vehicle registration</label>
-              <input type="text" value={form.vehicleRegistration} maxLength={20}
+            </FormField>
+            <FormField label="Vehicle registration" htmlFor="f-vehicle-registration" optional>
+              <input id="f-vehicle-registration" type="text" value={form.vehicleRegistration} maxLength={20}
                 onChange={(e) => setForm((f) => ({ ...f, vehicleRegistration: e.target.value }))}
                 className={inputCls} placeholder="AB12 CDE" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-            <textarea rows={2} value={form.notes}
+            </FormField>
+          </FormSection>
+          <FormField label="Notes" htmlFor="f-notes" optional>
+            <textarea id="f-notes" rows={2} value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className={`${inputCls} resize-none`} />
-          </div>
+          </FormField>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading || !form.facilityId || !form.reportingPeriodId}
             className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">

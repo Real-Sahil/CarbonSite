@@ -13,6 +13,7 @@ import {
 import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
 import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface EngagementSection {
   assuranceType?: string;
@@ -159,24 +160,22 @@ export function AssuranceEngagementEditor({
           <div className="bg-white p-6 rounded-lg border">
             <h2 className="text-lg font-semibold mb-4">Assurance Engagement Details</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Engagement Title</label>
-                <Input
+              <FormField label="Engagement Title" htmlFor="f-engagement-title" optional>
+                <Input id="f-engagement-title"
                   disabled={disabled}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Assurance engagement title"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Project</label>
+              </FormField>
+              <FormSection cols={2}>
+                <FormField label="Project" htmlFor="f-project" optional>
                   <Select
                     disabled={disabled}
                     value={projectId}
                     onValueChange={setProjectId}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="f-project">
                       <SelectValue placeholder="Select project" />
                     </SelectTrigger>
                     <SelectContent>
@@ -187,11 +186,10 @@ export function AssuranceEngagementEditor({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Site</label>
+                </FormField>
+                <FormField label="Site" htmlFor="f-site" optional>
                   <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
-                    <SelectTrigger>
+                    <SelectTrigger id="f-site">
                       <SelectValue placeholder="Select site" />
                     </SelectTrigger>
                     <SelectContent>
@@ -202,26 +200,24 @@ export function AssuranceEngagementEditor({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Engagement Date</label>
-                  <Input
+                </FormField>
+              </FormSection>
+              <FormSection cols={2}>
+                <FormField label="Engagement Date" htmlFor="f-engagement-date" optional>
+                  <Input id="f-engagement-date"
                     disabled={disabled}
                     type="date"
                     value={engagementDate}
                     onChange={(e) => setEngagementDate(e.target.value)}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Assurance Type</label>
+                </FormField>
+                <FormField label="Assurance Type" htmlFor="f-assurance-type" optional>
                   <Select
                     disabled={disabled}
                     value={sections.assuranceType || ""}
                     onValueChange={(v) => setSections({ ...sections, assuranceType: v })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="f-assurance-type">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -230,12 +226,11 @@ export function AssuranceEngagementEditor({
                       <SelectItem value="agreed-upon-procedures">Agreed-Upon Procedures</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Assurance Level</label>
-                  <Input
+                </FormField>
+              </FormSection>
+              <FormSection cols={2}>
+                <FormField label="Assurance Level" htmlFor="f-assurance-level" optional>
+                  <Input id="f-assurance-level"
                     disabled={disabled}
                     value={sections.assuranceLevel || ""}
                     onChange={(e) =>
@@ -243,77 +238,70 @@ export function AssuranceEngagementEditor({
                     }
                     placeholder="e.g., ISAE 3000, AA1000"
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Assurer</label>
-                  <Input
+                </FormField>
+                <FormField label="Assurer" htmlFor="f-assurer" optional>
+                  <Input id="f-assurer"
                     disabled={disabled}
                     value={sections.assurer || ""}
                     onChange={(e) => setSections({ ...sections, assurer: e.target.value })}
                     placeholder="Assurance provider name"
                   />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Scope</label>
-                <Textarea
+                </FormField>
+              </FormSection>
+              <FormField label="Scope" htmlFor="f-scope" optional>
+                <Textarea id="f-scope"
                   disabled={disabled}
                   value={sections.scope || ""}
                   onChange={(e) => setSections({ ...sections, scope: e.target.value })}
                   placeholder="Scope of the assurance engagement"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Methodology</label>
-                <Textarea
+              </FormField>
+              <FormField label="Methodology" htmlFor="f-methodology" optional>
+                <Textarea id="f-methodology"
                   disabled={disabled}
                   value={sections.methodology || ""}
                   onChange={(e) => setSections({ ...sections, methodology: e.target.value })}
                   placeholder="Assurance methodology and standards applied"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Data Reviewed</label>
-                <Textarea
+              </FormField>
+              <FormField label="Data Reviewed" htmlFor="f-data-reviewed" optional>
+                <Textarea id="f-data-reviewed"
                   disabled={disabled}
                   value={sections.dataReviewed || ""}
                   onChange={(e) => setSections({ ...sections, dataReviewed: e.target.value })}
                   placeholder="Description of data and systems reviewed"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Key Findings</label>
-                <Textarea
+              </FormField>
+              <FormField label="Key Findings" htmlFor="f-key-findings" optional>
+                <Textarea id="f-key-findings"
                   disabled={disabled}
                   value={sections.keyFindings || ""}
                   onChange={(e) => setSections({ ...sections, keyFindings: e.target.value })}
                   placeholder="Key findings from the assurance engagement"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Conclusions</label>
-                <Textarea
+              </FormField>
+              <FormField label="Conclusions" htmlFor="f-conclusions" optional>
+                <Textarea id="f-conclusions"
                   disabled={disabled}
                   value={sections.conclusions || ""}
                   onChange={(e) => setSections({ ...sections, conclusions: e.target.value })}
                   placeholder="Overall conclusions and opinions"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Recommendations</label>
-                <Textarea
+              </FormField>
+              <FormField label="Recommendations" htmlFor="f-recommendations" optional>
+                <Textarea id="f-recommendations"
                   disabled={disabled}
                   value={sections.recommendations || ""}
                   onChange={(e) => setSections({ ...sections, recommendations: e.target.value })}
                   placeholder="Recommendations for improvement"
                   rows={3}
                 />
-              </div>
+              </FormField>
             </div>
           </div>
 

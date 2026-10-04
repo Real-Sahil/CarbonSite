@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 export function CreateContractForm({ orgId }: { orgId: string }) {
   const router = useRouter();
@@ -48,20 +48,16 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
     <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
       <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">New contract</p>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-name" className="text-xs text-[#374151] tracking-[-0.36px]">Name <span aria-hidden="true" className="text-red-500">*</span></Label>
+        <FormField label="Name" htmlFor="contract-name">
           <Input id="contract-name" name="name" required placeholder="Contract name" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-client" className="text-xs text-[#374151] tracking-[-0.36px]">Client name</Label>
+        </FormField>
+        <FormField label="Client name" htmlFor="contract-client" optional>
           <Input id="contract-client" name="clientName" placeholder="Client organisation" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-ref" className="text-xs text-[#374151] tracking-[-0.36px]">Contract reference</Label>
+        </FormField>
+        <FormField label="Contract reference" htmlFor="contract-ref" optional>
           <Input id="contract-ref" name="contractReference" placeholder="REF-001" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-status" className="text-xs text-[#374151] tracking-[-0.36px]">Status</Label>
+        </FormField>
+        <FormField label="Status" htmlFor="contract-status" optional>
           <select
             id="contract-status"
             name="status"
@@ -73,15 +69,13 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
             <option value="suspended">Suspended</option>
             <option value="cancelled">Cancelled</option>
           </select>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-start" className="text-xs text-[#374151] tracking-[-0.36px]">Start date</Label>
+        </FormField>
+        <FormField label="Start date" htmlFor="contract-start" optional>
           <Input id="contract-start" name="startDate" type="date" className="h-9 text-sm" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="contract-end" className="text-xs text-[#374151] tracking-[-0.36px]">End date</Label>
+        </FormField>
+        <FormField label="End date" htmlFor="contract-end" optional>
           <Input id="contract-end" name="endDate" type="date" className="h-9 text-sm" />
-        </div>
+        </FormField>
       </div>
       <div className="flex flex-wrap gap-5">
         <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">

@@ -13,6 +13,7 @@ import {
 import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
 import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface PermitSection {
   permitNumber?: string;
@@ -158,24 +159,22 @@ export function EnvironmentalPermitEditor({
           <div className="bg-white p-6 rounded-lg border">
             <h2 className="text-lg font-semibold mb-4">Permit Information</h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Permit Title</label>
-                <Input
+              <FormField label="Permit Title" htmlFor="f-permit-title" optional>
+                <Input id="f-permit-title"
                   disabled={disabled}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Permit title"
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Project</label>
+              </FormField>
+              <FormSection cols={2}>
+                <FormField label="Project" htmlFor="f-project" optional>
                   <Select
                     disabled={disabled}
                     value={projectId}
                     onValueChange={setProjectId}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="f-project">
                       <SelectValue placeholder="Select project" />
                     </SelectTrigger>
                     <SelectContent>
@@ -186,11 +185,10 @@ export function EnvironmentalPermitEditor({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Site</label>
+                </FormField>
+                <FormField label="Site" htmlFor="f-site" optional>
                   <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
-                    <SelectTrigger>
+                    <SelectTrigger id="f-site">
                       <SelectValue placeholder="Select site" />
                     </SelectTrigger>
                     <SelectContent>
@@ -201,31 +199,28 @@ export function EnvironmentalPermitEditor({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Permit Date</label>
-                  <Input
+                </FormField>
+              </FormSection>
+              <FormSection cols={2}>
+                <FormField label="Permit Date" htmlFor="f-permit-date" optional>
+                  <Input id="f-permit-date"
                     disabled={disabled}
                     type="date"
                     value={permitDate}
                     onChange={(e) => setPermitDate(e.target.value)}
                   />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Expiry Date</label>
-                  <Input
+                </FormField>
+                <FormField label="Expiry Date" htmlFor="f-expiry-date" optional>
+                  <Input id="f-expiry-date"
                     disabled={disabled}
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
                   />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Permit Number</label>
-                <Input
+                </FormField>
+              </FormSection>
+              <FormField label="Permit Number" htmlFor="f-permit-number" optional>
+                <Input id="f-permit-number"
                   disabled={disabled}
                   value={sections.permitNumber || ""}
                   onChange={(e) =>
@@ -233,10 +228,9 @@ export function EnvironmentalPermitEditor({
                   }
                   placeholder="Permit reference number"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Permit Type</label>
-                <Input
+              </FormField>
+              <FormField label="Permit Type" htmlFor="f-permit-type" optional>
+                <Input id="f-permit-type"
                   disabled={disabled}
                   value={sections.permitType || ""}
                   onChange={(e) =>
@@ -244,10 +238,9 @@ export function EnvironmentalPermitEditor({
                   }
                   placeholder="e.g., Environmental Permit, Waste Management"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Regulatory Body</label>
-                <Input
+              </FormField>
+              <FormField label="Regulatory Body" htmlFor="f-regulatory-body" optional>
+                <Input id="f-regulatory-body"
                   disabled={disabled}
                   value={sections.regulatoryBody || ""}
                   onChange={(e) =>
@@ -255,37 +248,34 @@ export function EnvironmentalPermitEditor({
                   }
                   placeholder="e.g., Environment Agency"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Permitted Activities</label>
-                <Textarea
+              </FormField>
+              <FormField label="Permitted Activities" htmlFor="f-permitted-activities" optional>
+                <Textarea id="f-permitted-activities"
                   disabled={disabled}
                   value={sections.activities || ""}
                   onChange={(e) => setSections({ ...sections, activities: e.target.value })}
                   placeholder="List all permitted activities"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Conditions & Limits</label>
-                <Textarea
+              </FormField>
+              <FormField label="Conditions & Limits" htmlFor="f-conditions-limits" optional>
+                <Textarea id="f-conditions-limits"
                   disabled={disabled}
                   value={sections.conditions || ""}
                   onChange={(e) => setSections({ ...sections, conditions: e.target.value })}
                   placeholder="Specify conditions and limits"
                   rows={3}
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Renewal Process</label>
-                <Textarea
+              </FormField>
+              <FormField label="Renewal Process" htmlFor="f-renewal-process" optional>
+                <Textarea id="f-renewal-process"
                   disabled={disabled}
                   value={sections.renewalProcess || ""}
                   onChange={(e) => setSections({ ...sections, renewalProcess: e.target.value })}
                   placeholder="Describe renewal timeline and process"
                   rows={3}
                 />
-              </div>
+              </FormField>
             </div>
           </div>
 

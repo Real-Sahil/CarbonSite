@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { ShieldCheck, Plus, ChevronDown, ChevronUp, ExternalLink, User, ListChecks, FileText } from "lucide-react";
+import { FormField } from "@/components/forms/form-kit";
 
 interface ComplianceRecord {
   id: string;
@@ -138,52 +139,45 @@ export default function CompliancePage() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Track a compliance obligation</h2>
           <form onSubmit={handleSave} className="grid grid-cols-2 gap-4">
-            <div className="col-span-2 md:col-span-1">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Framework</label>
-              <select value={form.framework} onChange={(e) => setForm((f) => ({ ...f, framework: e.target.value }))} className={inputCls}>
+            <FormField label="Framework" htmlFor="f-framework" span={2} optional>
+              <select id="f-framework" value={form.framework} onChange={(e) => setForm((f) => ({ ...f, framework: e.target.value }))} className={inputCls}>
                 {FRAMEWORKS.map((fw) => <option key={fw.value} value={fw.value}>{fw.label}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Reporting year</label>
-              <input type="number" required min={2000} max={2100} value={form.reportingYear}
+            </FormField>
+            <FormField label="Reporting year" htmlFor="f-reporting-year">
+              <input id="f-reporting-year" type="number" required min={2000} max={2100} value={form.reportingYear}
                 onChange={(e) => setForm((f) => ({ ...f, reportingYear: Number(e.target.value) }))} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
-              <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
+            </FormField>
+            <FormField label="Status" htmlFor="f-status" optional>
+              <select id="f-status" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
                 {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Due date <span className="text-gray-500">(optional)</span></label>
-              <input type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-500">(optional)</span></label>
-              <input
+            </FormField>
+            <FormField label="Due date" htmlFor="f-due-date" optional>
+              <input id="f-due-date" type="date" value={form.dueDate} onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))} className={inputCls} />
+            </FormField>
+            <FormField label="Owner" htmlFor="f-owner" optional>
+              <input id="f-owner"
                 type="text"
                 placeholder="e.g. Jane Smith / Finance team"
                 value={form.owner}
                 onChange={(e) => setForm((f) => ({ ...f, owner: e.target.value }))}
                 className={inputCls}
               />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Guidance link <span className="text-gray-500">(optional)</span></label>
-              <input
+            </FormField>
+            <FormField label="Guidance link" htmlFor="f-guidance-link" optional>
+              <input id="f-guidance-link"
                 type="url"
                 placeholder="https://..."
                 value={form.externalLink}
                 onChange={(e) => setForm((f) => ({ ...f, externalLink: e.target.value }))}
                 className={inputCls}
               />
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-              <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+            </FormField>
+            <FormField label="Notes" htmlFor="f-notes" span={2} optional>
+              <textarea id="f-notes" rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
-            </div>
+            </FormField>
             <div className="col-span-2">
               <label className="block text-xs font-medium text-gray-600 mb-1">Action steps <span className="text-gray-500">(optional - what needs to happen next)</span></label>
               <textarea

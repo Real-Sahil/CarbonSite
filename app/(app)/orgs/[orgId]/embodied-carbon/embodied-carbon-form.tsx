@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { FormField } from "@/components/forms/form-kit";
 
 type Material = {
   id: string;
@@ -131,9 +132,8 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
         </div>
 
         {/* Quantity + unit */}
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-zinc-700">Quantity</Label>
-          <Input
+        <FormField label="Quantity" htmlFor="f-quantity" optional>
+          <Input id="f-quantity"
             type="number"
             min="0"
             step="any"
@@ -142,11 +142,10 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
             onChange={(e) => setQuantity(e.target.value)}
             className="h-9 text-sm"
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-zinc-700">Unit</Label>
+        </FormField>
+        <FormField label="Unit" htmlFor="f-unit" optional>
           <Select value={unit} onValueChange={(v) => setUnit(v as typeof unit)}>
-            <SelectTrigger className="h-9 text-sm">
+            <SelectTrigger id="f-unit" className="h-9 text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -156,14 +155,13 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
               <SelectItem value="m2">m2</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
 
         {/* Project */}
         {projects.length > 0 && (
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-zinc-700">Project (optional)</Label>
+          <FormField label="Project (optional)" htmlFor="f-project-optional" optional>
             <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger className="h-9 text-sm">
+              <SelectTrigger id="f-project-optional" className="h-9 text-sm">
                 <SelectValue placeholder="No project" />
               </SelectTrigger>
               <SelectContent>
@@ -173,15 +171,14 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
         )}
 
         {/* Period */}
         {reportingPeriods.length > 0 && (
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-zinc-700">Reporting period (optional)</Label>
+          <FormField label="Reporting period (optional)" htmlFor="f-reporting-period-optional" optional>
             <Select value={periodId} onValueChange={setPeriodId}>
-              <SelectTrigger className="h-9 text-sm">
+              <SelectTrigger id="f-reporting-period-optional" className="h-9 text-sm">
                 <SelectValue placeholder="No period" />
               </SelectTrigger>
               <SelectContent>
@@ -191,7 +188,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
         )}
       </div>
 
@@ -221,15 +218,14 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
       </div>
 
       {/* Notes */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium text-zinc-700">Notes (optional)</Label>
-        <Input
+      <FormField label="Notes (optional)" htmlFor="f-notes-optional" optional>
+        <Input id="f-notes-optional"
           placeholder="Delivery note reference, supplier, etc."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className="h-9 text-sm"
         />
-      </div>
+      </FormField>
 
       <Button
         type="submit"

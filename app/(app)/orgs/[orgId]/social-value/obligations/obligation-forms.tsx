@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 const KINDS: [string, string][] = [
   ["employment_skills", "Employment and skills"],
@@ -14,7 +14,7 @@ const KINDS: [string, string][] = [
   ["other", "Other"],
 ];
 
-const SELECT = "h-9 rounded-md border border-input bg-background px-2 text-sm";
+const SELECT = "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50";
 
 export function ObligationForm({ orgId, sites }: { orgId: string; sites: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -53,39 +53,45 @@ export function ObligationForm({ orgId, sites }: { orgId: string; sites: { id: s
     router.refresh();
   }
 
-  const field = (id: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
-    <div className="grid gap-1.5">
-      <Label htmlFor={`ob-${id}`}>{label}</Label>
+  const text = (id: string, label: string, props: React.ComponentProps<typeof Input> = {}, opts: { span?: 1 | 2 | 3 | 4; optional?: boolean; hint?: string } = {}) => (
+    <FormField label={label} htmlFor={`ob-${id}`} span={opts.span} optional={opts.optional} hint={opts.hint}>
       <Input id={`ob-${id}`} name={id} {...props} />
-    </div>
+    </FormField>
   );
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-3">
-      {field("title", "What must be delivered", { required: true, maxLength: 200 })}
-      {field("reference", "Planning reference", { maxLength: 100 })}
-      {field("authority", "Local authority", { maxLength: 200 })}
-      {field("clause", "Clause", { maxLength: 200, placeholder: "Schedule 4, para 2" })}
-      <div className="grid gap-1.5">
-        <Label htmlFor="ob-kind">Type</Label>
-        <select id="ob-kind" name="kind" defaultValue="other" className={SELECT}>
-          {KINDS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
-      </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="ob-siteId">Site</Label>
-        <select id="ob-siteId" name="siteId" defaultValue="" className={SELECT}>
-          <option value="">Not site-specific</option>
-          {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-      </div>
-      {field("targetValue", "Target", { type: "number", min: 0, step: "any" })}
-      {field("targetUnit", "Unit", { maxLength: 50, placeholder: "apprentices, £, hours" })}
-      {field("dueDate", "Due", { type: "date" })}
-      <div className="sm:col-span-3">
-        <Button type="submit" disabled={busy}>{busy ? "Saving" : "Add obligation"}</Button>
-        {error && <p role="alert" className="mt-2 text-sm text-red-700">{error}</p>}
-      </div>
+    <form onSubmit={submit} className="space-y-6">
+      <FormSection title="The obligation" description="What the agreement or planning condition requires of the site.">
+        {text("title", "What must be delivered", { required: true, maxLength: 200 }, { span: 2 })}
+        <FormField label="Type" htmlFor="ob-kind">
+          <select id="ob-kind" name="kind" defaultValue="other" className={SELECT}>
+            {KINDS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+        </FormField>
+        <FormField label="Site" htmlFor="ob-siteId" optional>
+          <select id="ob-siteId" name="siteId" defaultValue="" className={SELECT}>
+            <option value="">Not site-specific</option>
+            {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </FormField>
+      </FormSection>
+
+      <FormSection title="Where it comes from">
+        {text("reference", "Planning reference", { maxLength: 100 }, { optional: true })}
+        {text("authority", "Local authority", { maxLength: 200 }, { span: 2, optional: true })}
+        {text("clause", "Clause", { maxLength: 200, placeholder: "Schedule 4, para 2" }, { optional: true })}
+      </FormSection>
+
+      <FormSection title="Target and date">
+        {text("targetValue", "Target", { type: "number", min: 0, step: "any" }, { optional: true })}
+        {text("targetUnit", "Unit", { maxLength: 50 }, { optional: true, hint: "Apprentices, £, hours" })}
+        {text("dueDate", "Due", { type: "date" }, { optional: true })}
+      </FormSection>
+
+      <FormError>{error}</FormError>
+      <FormActions>
+        <Button type="submit" size="sm" disabled={busy}>{busy ? "Saving" : "Add obligation"}</Button>
+      </FormActions>
     </form>
   );
 }

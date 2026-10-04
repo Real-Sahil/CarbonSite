@@ -9,6 +9,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 export function IngestSignalButton({ orgId, signalTypes }: { orgId: string; signalTypes: string[] }) {
   const [open, setOpen] = useState(false);
@@ -75,7 +76,7 @@ export function IngestSignalButton({ orgId, signalTypes }: { orgId: string; sign
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
-            <div className="grid grid-cols-2 gap-3">
+            <FormSection cols={2}>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="signalType" className="text-xs font-medium">Signal type *</Label>
                 <Input
@@ -95,33 +96,28 @@ export function IngestSignalButton({ orgId, signalTypes }: { orgId: string; sign
                 </datalist>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="source" className="text-xs font-medium">Source *</Label>
-                <Input id="source" name="source" required placeholder="e.g. National Grid ESO" className="h-8 text-sm" />
-              </div>
-            </div>
+              <FormField label="Source" htmlFor="source">
+                <Input id="source" name="source" required placeholder="e.g. National Grid ESO" />
+              </FormField>
+            </FormSection>
 
-            <div className="grid grid-cols-3 gap-3">
-              <div className="flex flex-col gap-1.5 col-span-2">
-                <Label htmlFor="value" className="text-xs font-medium">Value *</Label>
-                <Input id="value" name="value" type="number" required step="any" placeholder="0.0" className="h-8 text-sm" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="unit" className="text-xs font-medium">Unit *</Label>
-                <Input id="unit" name="unit" required placeholder="gCO2/kWh" className="h-8 text-sm" />
-              </div>
-            </div>
+            <FormSection cols={3}>
+              <FormField label="Value" htmlFor="value" span={2}>
+                <Input id="value" name="value" type="number" required step="any" placeholder="0.0" />
+              </FormField>
+              <FormField label="Unit" htmlFor="unit">
+                <Input id="unit" name="unit" required placeholder="gCO2/kWh" />
+              </FormField>
+            </FormSection>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="region" className="text-xs font-medium">Region</Label>
-                <Input id="region" name="region" placeholder="e.g. GB" className="h-8 text-sm" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="recordedAt" className="text-xs font-medium">Recorded at *</Label>
-                <Input id="recordedAt" name="recordedAt" type="datetime-local" required defaultValue={today} className="h-8 text-sm" />
-              </div>
-            </div>
+            <FormSection cols={2}>
+              <FormField label="Region" htmlFor="region" optional>
+                <Input id="region" name="region" placeholder="e.g. GB" />
+              </FormField>
+              <FormField label="Recorded at" htmlFor="recordedAt">
+                <Input id="recordedAt" name="recordedAt" type="datetime-local" required defaultValue={today} />
+              </FormField>
+            </FormSection>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 

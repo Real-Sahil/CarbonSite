@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/forms/form-kit";
 
 const input = "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm disabled:opacity-60";
 const labelCls = "mb-1.5 block text-xs text-[#374151]";
@@ -66,18 +67,15 @@ export function AddMachineForm({ orgId, sites }: { orgId: string; sites: { id: s
 
   return (
     <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
-      <div className="sm:col-span-2">
-        <label htmlFor="plant-name" className={labelCls}>Name</label>
+      <FormField label="Name" htmlFor="plant-name" span={2}>
         <input id="plant-name" required maxLength={200} className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. CAT 320 excavator (EX-04)" />
-      </div>
-      <div>
-        <label htmlFor="plant-category" className={labelCls}>Type</label>
+      </FormField>
+      <FormField label="Type" htmlFor="plant-category" optional>
         <input id="plant-category" maxLength={60} className={input} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Excavator, dumper, generator" />
-      </div>
-      <div>
-        <label htmlFor="plant-serial" className={labelCls}>Serial number / PIN</label>
+      </FormField>
+      <FormField label="Serial number / PIN" htmlFor="plant-serial" optional>
         <input id="plant-serial" maxLength={100} className={input} value={form.serialNumber} onChange={(e) => setForm({ ...form, serialNumber: e.target.value })} />
-      </div>
+      </FormField>
       <div>
         <label htmlFor="plant-fuel" className={labelCls}>Fuel</label>
         <input id="plant-fuel" list="plant-fuels" required maxLength={40} className={input} value={form.fuelType} onChange={(e) => setForm({ ...form, fuelType: e.target.value })} />
@@ -88,24 +86,21 @@ export function AddMachineForm({ orgId, sites }: { orgId: string; sites: { id: s
           <option value="electric" />
         </datalist>
       </div>
-      <div>
-        <label htmlFor="plant-ownership" className={labelCls}>Owned or hired</label>
+      <FormField label="Owned or hired" htmlFor="plant-ownership" optional>
         <select id="plant-ownership" className={input} value={form.ownership} onChange={(e) => setForm({ ...form, ownership: e.target.value })}>
           <option value="owned">Owned</option>
           <option value="hired">Hired</option>
         </select>
-      </div>
-      <div>
-        <label htmlFor="plant-site" className={labelCls}>Site</label>
+      </FormField>
+      <FormField label="Site" htmlFor="plant-site" optional>
         <select id="plant-site" className={input} value={form.siteId} onChange={(e) => setForm({ ...form, siteId: e.target.value })}>
           <option value="">Unassigned</option>
           {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
-      </div>
-      <div>
-        <label htmlFor="plant-supplier" className={labelCls}>Hire company</label>
+      </FormField>
+      <FormField label="Hire company" htmlFor="plant-supplier" optional>
         <input id="plant-supplier" maxLength={200} className={input} value={form.supplierName} onChange={(e) => setForm({ ...form, supplierName: e.target.value })} />
-      </div>
+      </FormField>
       <div className="flex items-center gap-3 sm:col-span-2">
         <Button type="submit" size="sm" disabled={busy}>{busy ? "Adding…" : "Add machine"}</Button>
         {msg && <p className={`text-sm ${msg.ok ? "text-green-700" : "text-red-600"}`}>{msg.text}</p>}

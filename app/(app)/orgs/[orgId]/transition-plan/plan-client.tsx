@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PlanFields } from "@/lib/transition-plan";
+import { FormField } from "@/components/forms/form-kit";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
@@ -75,27 +76,21 @@ export function PlanForm({ orgId, canEdit, plan, currency }: { orgId: string; ca
           <p className="mt-1 text-xs text-[#6B7280]">{field.help}</p>
         </div>
       ))}
-      <div>
-        <Label htmlFor="tp-netZeroYear" className={labelClass}>Net zero year</Label>
+      <FormField label="Net zero year" htmlFor="tp-netZeroYear" optional>
         <Input id="tp-netZeroYear" name="netZeroYear" type="number" min={2025} max={2070} disabled={!canEdit} defaultValue={plan?.netZeroYear ?? ""} />
-      </div>
-      <div>
-        <Label htmlFor="tp-currency" className={labelClass}>Currency</Label>
+      </FormField>
+      <FormField label="Currency" htmlFor="tp-currency" optional>
         <Input id="tp-currency" name="currency" maxLength={3} disabled={!canEdit} defaultValue={currency} />
-      </div>
-      <div>
-        <Label htmlFor="tp-capex" className={labelClass}>Planned capital spend</Label>
+      </FormField>
+      <FormField label="Planned capital spend" htmlFor="tp-capex" optional>
         <Input id="tp-capex" name="capexPlanned" type="number" min={0} step="any" disabled={!canEdit} defaultValue={plan?.capexPlanned ?? ""} />
-      </div>
-      <div>
-        <Label htmlFor="tp-opex" className={labelClass}>Planned operating spend</Label>
+      </FormField>
+      <FormField label="Planned operating spend" htmlFor="tp-opex" optional>
         <Input id="tp-opex" name="opexPlanned" type="number" min={0} step="any" disabled={!canEdit} defaultValue={plan?.opexPlanned ?? ""} />
-      </div>
-      <div>
-        <Label htmlFor="tp-taxonomy" className={labelClass}>EU Taxonomy-aligned capex (%)</Label>
+      </FormField>
+      <FormField label="EU Taxonomy-aligned capex (%)" htmlFor="tp-taxonomy" hint="Leave blank if the Taxonomy does not apply to you." optional>
         <Input id="tp-taxonomy" name="taxonomyAlignedCapexPct" type="number" min={0} max={100} step="any" disabled={!canEdit} defaultValue={plan?.taxonomyAlignedCapexPct ?? ""} />
-        <p className="mt-1 text-xs text-[#6B7280]">Leave blank if the Taxonomy does not apply to you.</p>
-      </div>
+      </FormField>
       {canEdit && (
         <div className="flex items-center gap-3 md:col-span-2">
           <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save plan"}</Button>
@@ -133,14 +128,12 @@ export function ApproveForm({ orgId, defaultBody }: { orgId: string; defaultBody
 
   return (
     <form onSubmit={approve} className="grid grid-cols-1 gap-4 p-5 md:grid-cols-3">
-      <div className="md:col-span-2">
-        <Label htmlFor="tp-approval-body" className={labelClass}>Approved by</Label>
+      <FormField label="Approved by" htmlFor="tp-approval-body" span={2}>
         <Input id="tp-approval-body" name="approvalBody" required minLength={2} maxLength={200} defaultValue={defaultBody ?? "Board of directors"} />
-      </div>
-      <div>
-        <Label htmlFor="tp-approved-on" className={labelClass}>Date approved</Label>
+      </FormField>
+      <FormField label="Date approved" htmlFor="tp-approved-on">
         <Input id="tp-approved-on" name="approvedOn" type="date" required />
-      </div>
+      </FormField>
       <div className="flex items-center gap-3 md:col-span-3">
         <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Recording…" : "Record approval"}</Button>
         {msg && <p className={`text-sm ${msg.ok ? "text-green-700" : "text-red-600"}`}>{msg.text}</p>}

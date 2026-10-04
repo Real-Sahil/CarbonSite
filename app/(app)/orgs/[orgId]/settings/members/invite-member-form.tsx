@@ -6,6 +6,7 @@ import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 import {
   Select,
   SelectContent,
@@ -100,8 +101,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="invite-email">Email address</Label>
+        <FormField label="Email address" htmlFor="invite-email">
           <Input
             id="invite-email"
             type="email"
@@ -110,9 +110,8 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
             disabled={loading}
             required
           />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="invite-role">Role</Label>
+        </FormField>
+        <FormField label="Role" htmlFor="invite-role" optional>
           <Select value={role} onValueChange={setRole} disabled={loading}>
             <SelectTrigger id="invite-role" className="w-36">
               <SelectValue />
@@ -125,7 +124,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
         <Button type="submit" disabled={loading} className="self-end">
           {loading ? "Sending..." : "Send invite"}
         </Button>

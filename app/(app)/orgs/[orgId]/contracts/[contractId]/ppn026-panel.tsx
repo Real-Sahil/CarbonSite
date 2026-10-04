@@ -6,6 +6,7 @@ import Link from "next/link";
 import { CheckCircle2, Circle, Loader2, Plus } from "lucide-react";
 import { inputCls, labelCls } from "@/components/structured-forms/ms-fields";
 import type { CriterionSummary, Ppn026Check } from "@/lib/social-value/ppn026";
+import { FormField } from "@/components/forms/form-kit";
 
 type Props = {
   orgId: string;
@@ -215,10 +216,9 @@ export function Ppn026Panel(p: Props) {
           }}
         >
           <p className="sm:col-span-4 text-sm font-medium text-[#111827]">Log delivery: {p.criteria.flatMap((c) => c.kpis).find((x) => x.id === logFor)?.title}</p>
-          <div>
-            <label htmlFor="ppn026-date" className={labelCls}>Date</label>
+          <FormField label="Date" htmlFor="ppn026-date">
             <input id="ppn026-date" type="date" required className={inputCls} value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
-          </div>
+          </FormField>
           <div>
             <label htmlFor="ppn026-qty" className={labelCls}>Quantity{unitFor(logFor) ? ` (${unitFor(logFor)})` : ""}</label>
             <input id="ppn026-qty" type="number" min="0" step="any" required className={inputCls} value={entry.quantity} onChange={(e) => setEntry({ ...entry, quantity: e.target.value })} />
@@ -228,10 +228,9 @@ export function Ppn026Panel(p: Props) {
             <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#374151] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             <input id="ppn026-evidence" type="url" aria-label="Or a link to the evidence" placeholder="Or a link to the payroll extract, training record or timesheet" className={`${inputCls} mt-2`} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
           </div>
-          <div className="sm:col-span-3">
-            <label htmlFor="ppn026-note" className={labelCls}>Note</label>
+          <FormField label="Note" htmlFor="ppn026-note" span={4} optional>
             <input id="ppn026-note" className={inputCls} value={entry.note} onChange={(e) => setEntry({ ...entry, note: e.target.value })} />
-          </div>
+          </FormField>
           <div className="flex items-end gap-2">
             <button type="submit" disabled={!!busy} className="rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
               {busy === "log" ? "Saving..." : "Submit for review"}
@@ -266,8 +265,7 @@ export function Ppn026Panel(p: Props) {
               );
             }}
           >
-            <div className="sm:col-span-2">
-              <label htmlFor="ppn026-criterion" className={labelCls}>Award criterion</label>
+            <FormField label="Award criterion" htmlFor="ppn026-criterion" span={2} optional>
               <select id="ppn026-criterion" className={inputCls} value={kpi.criterion} onChange={(e) => setKpi({ ...kpi, criterion: e.target.value })}>
                 {p.criteria.map((c) => (
                   <option key={c.code} value={c.code}>
@@ -275,19 +273,16 @@ export function Ppn026Panel(p: Props) {
                   </option>
                 ))}
               </select>
-            </div>
-            <div className="sm:col-span-2">
-              <label htmlFor="ppn026-title" className={labelCls}>KPI, as committed in the bid</label>
+            </FormField>
+            <FormField label="KPI, as committed in the bid" htmlFor="ppn026-title" span={2}>
               <input id="ppn026-title" required maxLength={300} placeholder="For example: apprenticeship starts on the contract" className={inputCls} value={kpi.title} onChange={(e) => setKpi({ ...kpi, title: e.target.value })} />
-            </div>
-            <div>
-              <label htmlFor="ppn026-target" className={labelCls}>Target</label>
+            </FormField>
+            <FormField label="Target" htmlFor="ppn026-target" optional>
               <input id="ppn026-target" type="number" min="0" step="any" className={inputCls} value={kpi.target} onChange={(e) => setKpi({ ...kpi, target: e.target.value })} />
-            </div>
-            <div>
-              <label htmlFor="ppn026-unit" className={labelCls}>Unit</label>
+            </FormField>
+            <FormField label="Unit" htmlFor="ppn026-unit" optional>
               <input id="ppn026-unit" maxLength={50} placeholder="starts, hours, people" className={inputCls} value={kpi.unit} onChange={(e) => setKpi({ ...kpi, unit: e.target.value })} />
-            </div>
+            </FormField>
             <div className="sm:col-span-2 flex items-end gap-2">
               <button type="submit" disabled={!!busy} className="rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
                 {busy === "kpi" ? "Saving..." : "Add KPI"}

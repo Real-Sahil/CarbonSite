@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 const UNITS = [
   { value: "kg",     label: "kg — kilograms" },
@@ -226,8 +227,7 @@ export function SupplierDataForm({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="supplier-name">Your name or company (optional)</Label>
+            <FormField label="Your name or company (optional)" htmlFor="supplier-name" optional>
               <Input
                 id="supplier-name"
                 placeholder="Acme Logistics Ltd"
@@ -235,11 +235,10 @@ export function SupplierDataForm({
                 onChange={(e) => setSupplierName(e.target.value)}
                 disabled={loading}
               />
-            </div>
+            </FormField>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="quantity">Quantity *</Label>
+            <FormSection cols={2}>
+              <FormField label="Quantity" htmlFor="quantity">
                 <Input
                   id="quantity"
                   type="number"
@@ -252,10 +251,9 @@ export function SupplierDataForm({
                   disabled={loading}
                   required
                 />
-              </div>
+              </FormField>
 
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="unit">Unit *</Label>
+              <FormField label="Unit" htmlFor="unit">
                 <Select value={unit} onValueChange={setUnit} disabled={loading}>
                   <SelectTrigger id="unit">
                     <SelectValue />
@@ -268,8 +266,8 @@ export function SupplierDataForm({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+              </FormField>
+            </FormSection>
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="description">

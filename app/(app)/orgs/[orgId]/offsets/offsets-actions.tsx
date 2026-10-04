@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, ShieldCheck, Loader2, X } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 export const PROJECT_TYPES = [
   { value: "forestry",           label: "Forestry / REDD+" },
@@ -84,56 +85,45 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className={labelCls}>Project name</label>
-              <input type="text" required value={form.projectName} onChange={(e) => set("projectName", e.target.value)} className={inputCls} placeholder="Acre Amazon REDD+ Project" />
-            </div>
-            <div>
-              <label className={labelCls}>Provider / registry</label>
-              <input type="text" required value={form.provider} onChange={(e) => set("provider", e.target.value)} className={inputCls} placeholder="South Pole, ClimateCare..." />
-            </div>
-            <div>
-              <label className={labelCls}>Standard</label>
-              <select value={form.standard} onChange={(e) => set("standard", e.target.value)} className={inputCls}>
+          <FormSection cols={2}>
+            <FormField label="Project name" htmlFor="f-project-name" span={2}>
+              <input id="f-project-name" type="text" required value={form.projectName} onChange={(e) => set("projectName", e.target.value)} className={inputCls} placeholder="Acre Amazon REDD+ Project" />
+            </FormField>
+            <FormField label="Provider / registry" htmlFor="f-provider-registry">
+              <input id="f-provider-registry" type="text" required value={form.provider} onChange={(e) => set("provider", e.target.value)} className={inputCls} placeholder="South Pole, ClimateCare..." />
+            </FormField>
+            <FormField label="Standard" htmlFor="f-standard" optional>
+              <select id="f-standard" value={form.standard} onChange={(e) => set("standard", e.target.value)} className={inputCls}>
                 {STANDARDS.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
               </select>
-            </div>
-            <div>
-              <label className={labelCls}>Project type</label>
-              <select value={form.projectType} onChange={(e) => set("projectType", e.target.value)} className={inputCls}>
+            </FormField>
+            <FormField label="Project type" htmlFor="f-project-type" optional>
+              <select id="f-project-type" value={form.projectType} onChange={(e) => set("projectType", e.target.value)} className={inputCls}>
                 {PROJECT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
-            </div>
-            <div>
-              <label className={labelCls}>Vintage year</label>
-              <input type="number" required min={2000} max={2050} value={form.vintage} onChange={(e) => set("vintage", e.target.value)} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Quantity (tCO₂e)</label>
-              <input type="number" required min="0.0001" step="0.0001" value={form.quantityTonnes} onChange={(e) => set("quantityTonnes", e.target.value)} className={inputCls} placeholder="100.0000" />
-            </div>
-            <div>
-              <label className={labelCls}>Price / tonne <span className="text-gray-500">(optional)</span></label>
-              <input type="number" min="0" step="0.01" value={form.pricePerTonne} onChange={(e) => set("pricePerTonne", e.target.value)} className={inputCls} placeholder="15.00" />
-            </div>
-            <div>
-              <label className={labelCls}>Currency</label>
-              <input type="text" maxLength={3} value={form.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Purchase date</label>
-              <input type="date" required value={form.purchasedAt} onChange={(e) => set("purchasedAt", e.target.value)} className={inputCls} />
-            </div>
-            <div className="col-span-2">
-              <label className={labelCls}>Retirement ref <span className="text-gray-500">(optional)</span></label>
-              <input type="text" value={form.retirementRef} onChange={(e) => set("retirementRef", e.target.value)} className={inputCls} placeholder="Gold Standard retirement certificate #..." />
-            </div>
-            <div className="col-span-2">
-              <label className={labelCls}>Notes <span className="text-gray-500">(optional)</span></label>
-              <textarea rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} className={`${inputCls} resize-none`} />
-            </div>
-          </div>
+            </FormField>
+            <FormField label="Vintage year" htmlFor="f-vintage-year">
+              <input id="f-vintage-year" type="number" required min={2000} max={2050} value={form.vintage} onChange={(e) => set("vintage", e.target.value)} className={inputCls} />
+            </FormField>
+            <FormField label="Quantity (tCO₂e)" htmlFor="f-quantity-tco-e">
+              <input id="f-quantity-tco-e" type="number" required min="0.0001" step="0.0001" value={form.quantityTonnes} onChange={(e) => set("quantityTonnes", e.target.value)} className={inputCls} placeholder="100.0000" />
+            </FormField>
+            <FormField label="Price / tonne" htmlFor="f-price-tonne" optional>
+              <input id="f-price-tonne" type="number" min="0" step="0.01" value={form.pricePerTonne} onChange={(e) => set("pricePerTonne", e.target.value)} className={inputCls} placeholder="15.00" />
+            </FormField>
+            <FormField label="Currency" htmlFor="f-currency" optional>
+              <input id="f-currency" type="text" maxLength={3} value={form.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} className={inputCls} />
+            </FormField>
+            <FormField label="Purchase date" htmlFor="f-purchase-date">
+              <input id="f-purchase-date" type="date" required value={form.purchasedAt} onChange={(e) => set("purchasedAt", e.target.value)} className={inputCls} />
+            </FormField>
+            <FormField label="Retirement ref" htmlFor="f-retirement-ref" span={2} optional>
+              <input id="f-retirement-ref" type="text" value={form.retirementRef} onChange={(e) => set("retirementRef", e.target.value)} className={inputCls} placeholder="Gold Standard retirement certificate #..." />
+            </FormField>
+            <FormField label="Notes" htmlFor="f-notes" span={2} optional>
+              <textarea id="f-notes" rows={2} value={form.notes} onChange={(e) => set("notes", e.target.value)} className={`${inputCls} resize-none`} />
+            </FormField>
+          </FormSection>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
           <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
             {loading ? "Saving..." : "Save offset"}

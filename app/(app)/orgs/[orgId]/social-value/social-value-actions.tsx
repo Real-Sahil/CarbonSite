@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/forms/form-kit";
 import {
   Table,
   TableBody,
@@ -178,10 +179,9 @@ export function CreateSocialValueRecordForm({
     >
       <div className="flex flex-wrap items-end gap-3">
         {/* Contract */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Contract</label>
+        <FormField label="Contract" htmlFor="f-contract" optional>
           <Select value={contractId} onValueChange={setContractId}>
-            <SelectTrigger className="w-52">
+            <SelectTrigger id="f-contract" className="w-52">
               <SelectValue placeholder="Select contract" />
             </SelectTrigger>
             <SelectContent>
@@ -192,13 +192,12 @@ export function CreateSocialValueRecordForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
 
         {/* Reporting period */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Period</label>
+        <FormField label="Period" htmlFor="f-period" optional>
           <Select value={reportingPeriodId} onValueChange={setReportingPeriodId}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger id="f-period" className="w-44">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -209,13 +208,12 @@ export function CreateSocialValueRecordForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
 
         {/* Theme picker (local state only) */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Theme</label>
+        <FormField label="Theme" htmlFor="f-theme" optional>
           <Select value={selectedThemeCode} onValueChange={handleThemeChange}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger id="f-theme" className="w-44">
               <SelectValue placeholder="Select theme" />
             </SelectTrigger>
             <SelectContent>
@@ -226,7 +224,7 @@ export function CreateSocialValueRecordForm({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
 
         {/* Measure picker */}
         <div className="flex flex-col gap-1">
@@ -271,15 +269,14 @@ export function CreateSocialValueRecordForm({
       </div>
 
       {/* Notes */}
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Notes (optional)</label>
-        <Textarea
+      <FormField label="Notes (optional)" htmlFor="f-notes-optional" optional>
+        <Textarea id="f-notes-optional"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Supporting notes or evidence references"
           className="h-20 resize-none"
         />
-      </div>
+      </FormField>
 
       <div className="flex gap-2 items-center">
         <Button type="submit" disabled={loading} size="sm">
@@ -514,14 +511,13 @@ export function SocialValueTargetsSection({
               className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] p-4"
             >
               <div className="flex flex-wrap items-end gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Contract</label>
+                <FormField label="Contract" htmlFor="f-contract" optional>
                   <Select
                     value={form.contractId}
                     onValueChange={(v) => setForm((f) => ({ ...f, contractId: v }))}
                     disabled={editingId !== null}
                   >
-                    <SelectTrigger className="w-52">
+                    <SelectTrigger id="f-contract" className="w-52">
                       <SelectValue placeholder="Select contract" />
                     </SelectTrigger>
                     <SelectContent>
@@ -532,16 +528,15 @@ export function SocialValueTargetsSection({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Period</label>
+                <FormField label="Period" htmlFor="f-period" optional>
                   <Select
                     value={form.reportingPeriodId}
                     onValueChange={(v) => setForm((f) => ({ ...f, reportingPeriodId: v }))}
                     disabled={editingId !== null}
                   >
-                    <SelectTrigger className="w-44">
+                    <SelectTrigger id="f-period" className="w-44">
                       <SelectValue placeholder="Select period" />
                     </SelectTrigger>
                     <SelectContent>
@@ -552,11 +547,10 @@ export function SocialValueTargetsSection({
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Target (£)</label>
-                  <Input
+                <FormField label="Target (£)" htmlFor="f-target" optional>
+                  <Input id="f-target"
                     type="number"
                     min="0.01"
                     step="any"
@@ -565,11 +559,10 @@ export function SocialValueTargetsSection({
                     placeholder="e.g. 50000"
                     className="w-32"
                   />
-                </div>
+                </FormField>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-[#374151] tracking-[-0.36px]">Baseline (£, optional)</label>
-                  <Input
+                <FormField label="Baseline (£, optional)" htmlFor="f-baseline-optional" optional>
+                  <Input id="f-baseline-optional"
                     type="number"
                     min="0"
                     step="any"
@@ -578,18 +571,17 @@ export function SocialValueTargetsSection({
                     placeholder="e.g. 30000"
                     className="w-32"
                   />
-                </div>
+                </FormField>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#374151] tracking-[-0.36px]">Notes (optional)</label>
-                <Textarea
+              <FormField label="Notes (optional)" htmlFor="f-notes-optional" optional>
+                <Textarea id="f-notes-optional"
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   placeholder="Basis for this target, e.g. contract commitment reference"
                   className="h-20 resize-none"
                 />
-              </div>
+              </FormField>
 
               <div className="flex gap-2 items-center">
                 <Button type="submit" disabled={loading} size="sm">

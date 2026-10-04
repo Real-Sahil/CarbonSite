@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 type InstrumentType = "rego" | "guarantee_of_origin" | "ppa" | "green_tariff" | "supplier_specific" | "residual_mix";
 
@@ -155,27 +156,23 @@ export function EnergyInstruments({
             <p className="mt-1 text-sm text-slate-500">{info.help}</p>
           </div>
           <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2">
-            <div>
-              <Label htmlFor="ei-type" className="mb-1.5 block text-xs font-medium text-slate-600">Type</Label>
+            <FormField label="Type" htmlFor="ei-type" optional>
               <select id="ei-type" value={type} onChange={(e) => setType(e.target.value as InstrumentType)} className={selectClass}>
                 {TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
-            </div>
-            <div>
-              <Label htmlFor="ei-facility" className="mb-1.5 block text-xs font-medium text-slate-600">Site</Label>
+            </FormField>
+            <FormField label="Site" htmlFor="ei-facility" optional>
               <select id="ei-facility" name="facilityId" className={selectClass} defaultValue="">
                 <option value="">All sites</option>
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
-            </div>
-            <div>
-              <Label htmlFor="ei-supplier" className="mb-1.5 block text-xs font-medium text-slate-600">Supplier or generator</Label>
+            </FormField>
+            <FormField label="Supplier or generator" htmlFor="ei-supplier" optional>
               <Input id="ei-supplier" name="supplierName" maxLength={200} />
-            </div>
-            <div>
-              <Label htmlFor="ei-ref" className="mb-1.5 block text-xs font-medium text-slate-600">Certificate or contract reference</Label>
+            </FormField>
+            <FormField label="Certificate or contract reference" htmlFor="ei-ref" optional>
               <Input id="ei-ref" name="reference" maxLength={200} />
-            </div>
+            </FormField>
             {info.volume !== "none" && (
               <div>
                 <Label htmlFor="ei-kwh" className="mb-1.5 block text-xs font-medium text-slate-600">
@@ -184,18 +181,15 @@ export function EnergyInstruments({
                 <Input id="ei-kwh" name="coveredKwh" type="number" min="1" step="any" required={info.volume === "required"} />
               </div>
             )}
-            <div>
-              <Label htmlFor="ei-factor" className="mb-1.5 block text-xs font-medium text-slate-600">Emission rate (kg CO2e per kWh)</Label>
+            <FormField label="Emission rate (kg CO2e per kWh)" htmlFor="ei-factor">
               <Input id="ei-factor" key={type} name="factor" type="number" min="0" max="2" step="any" required defaultValue={info.defaultFactor} />
-            </div>
-            <div>
-              <Label htmlFor="ei-from" className="mb-1.5 block text-xs font-medium text-slate-600">Valid from</Label>
+            </FormField>
+            <FormField label="Valid from" htmlFor="ei-from">
               <Input id="ei-from" name="validFrom" type="date" required />
-            </div>
-            <div>
-              <Label htmlFor="ei-to" className="mb-1.5 block text-xs font-medium text-slate-600">Valid to</Label>
+            </FormField>
+            <FormField label="Valid to" htmlFor="ei-to">
               <Input id="ei-to" name="validTo" type="date" required />
-            </div>
+            </FormField>
             {error && <p className="text-sm text-red-600 md:col-span-2">{error}</p>}
             <div className="md:col-span-2">
               <Button type="submit" disabled={isPending}>

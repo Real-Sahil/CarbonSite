@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MAX_KPIS, caseStudyChecks, type Kpi } from "@/lib/case-studies";
+import { FormField } from "@/components/forms/form-kit";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm";
@@ -89,17 +90,15 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
 
       {editing && canEdit && (
         <form onSubmit={save} className="grid grid-cols-1 gap-4 rounded-[10px] border border-[#E5E7EB] bg-white p-5 md:grid-cols-2">
-          <div>
-            <Label htmlFor="cs-title" className={labelClass}>Title</Label>
+          <FormField label="Title" htmlFor="cs-title">
             <Input id="cs-title" required minLength={2} maxLength={200} value={editing.title} onChange={(e) => set({ title: e.target.value })} />
-          </div>
-          <div>
-            <Label htmlFor="cs-contract" className={labelClass}>Contract</Label>
+          </FormField>
+          <FormField label="Contract" htmlFor="cs-contract" optional>
             <select id="cs-contract" className={selectClass} value={editing.contractId ?? ""} onChange={(e) => set({ contractId: e.target.value || null })}>
               <option value="">Company-wide</option>
               {contracts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-          </div>
+          </FormField>
           {(["problem", "solution", "baseline", "results", "assumptions"] as const).map((k) => (
             <div key={k} className="md:col-span-2">
               <Label htmlFor={`cs-${k}`} className={labelClass}>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 import {
   Select,
   SelectContent,
@@ -222,10 +223,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       </div>
 
       {/* Primary colour */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="primaryHex" className="text-sm text-slate-900 tracking-[-0.42px]">
-          Primary colour
-        </Label>
+      <FormField label="Primary colour" htmlFor="primaryHex" optional>
         <div className="flex items-center gap-3">
           <div
             className="h-9 w-9 rounded-[7px] border border-slate-200 shrink-0"
@@ -248,13 +246,10 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             maxLength={7}
           />
         </div>
-      </div>
+      </FormField>
 
       {/* Accent colour */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="accentHex" className="text-sm text-slate-900 tracking-[-0.42px]">
-          Accent colour
-        </Label>
+      <FormField label="Accent colour" htmlFor="accentHex" optional>
         <div className="flex items-center gap-3">
           <div
             className="h-9 w-9 rounded-[7px] border border-slate-200 shrink-0"
@@ -277,7 +272,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             maxLength={7}
           />
         </div>
-      </div>
+      </FormField>
 
       {/* Email from name */}
       <div className="flex flex-col gap-2">
@@ -299,10 +294,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       </div>
 
       {/* Font family */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="fontFamily" className="text-sm text-slate-900 tracking-[-0.42px]">
-          Font family
-        </Label>
+      <FormField label="Font family" htmlFor="fontFamily" optional>
         <Select
           value={fontFamily}
           onValueChange={(value) => {
@@ -322,7 +314,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       {/* Advanced (custom domain) */}
       <div className="flex flex-col gap-3">

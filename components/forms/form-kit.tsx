@@ -8,32 +8,46 @@ import { cn } from "@/lib/utils";
  * column on a phone, so no form needs its own grid template.
  */
 
+// Columns follow the width of the container, not the screen, so the same form
+// reads well on a full page, in a half-width panel and inside a dialog.
+const GRID = "grid grid-cols-1 gap-x-4 gap-y-4";
+const COLS: Record<2 | 3 | 4, string> = {
+  2: "@md:grid-cols-2",
+  3: "@md:grid-cols-3",
+  4: "@md:grid-cols-2 @2xl:grid-cols-4",
+};
 const SPAN: Record<1 | 2 | 3 | 4, string> = {
-  1: "sm:col-span-1",
-  2: "sm:col-span-2",
-  3: "sm:col-span-2 lg:col-span-3",
-  4: "sm:col-span-2 lg:col-span-4",
+  1: "",
+  2: "@md:col-span-2",
+  3: "@md:col-span-2 @2xl:col-span-3",
+  4: "@md:col-span-full",
 };
 
 export function FormSection({
   title,
   description,
+  cols = 4,
   children,
   className,
 }: {
-  title: string;
+  /** Leave out only for a short group inside a dialog, where the dialog title already says what this is. */
+  title?: string;
   description?: string;
+  /** Columns on a wide container: 2, 3 or 4 (the default, which is two on a medium container). */
+  cols?: 2 | 3 | 4;
   children: React.ReactNode;
   className?: string;
 }) {
   const id = React.useId();
   return (
-    <section aria-labelledby={id} className={cn("space-y-3", className)}>
-      <header>
-        <h3 id={id} className="text-sm font-semibold text-zinc-900">{title}</h3>
-        {description && <p className="mt-0.5 text-xs text-zinc-500">{description}</p>}
-      </header>
-      <div className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
+    <section aria-labelledby={title ? id : undefined} className={cn("@container space-y-3", className)}>
+      {title && (
+        <header>
+          <h3 id={id} className="text-sm font-semibold text-zinc-900">{title}</h3>
+          {description && <p className="mt-0.5 text-xs text-zinc-500">{description}</p>}
+        </header>
+      )}
+      <div className={cn(GRID, COLS[cols])}>{children}</div>
     </section>
   );
 }
@@ -75,12 +89,12 @@ export function FormField({
 /** Fields the person rarely needs, folded under a native disclosure (keyboard and screen reader friendly). */
 export function FormDisclosure({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <details className="group rounded-md border border-zinc-200 bg-zinc-50/60 open:bg-white">
+    <details className="group @container rounded-md border border-zinc-200 bg-zinc-50/60 open:bg-white">
       <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-zinc-700 marker:content-none [&::-webkit-details-marker]:hidden">
         <span className="mr-2 inline-block text-zinc-400 transition-transform group-open:rotate-90" aria-hidden="true">›</span>
         {title}
       </summary>
-      <div className="grid grid-cols-1 gap-x-4 gap-y-4 border-t border-zinc-200 p-3 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
+      <div className={cn(GRID, COLS[4], "border-t border-zinc-200 p-3")}>{children}</div>
     </details>
   );
 }

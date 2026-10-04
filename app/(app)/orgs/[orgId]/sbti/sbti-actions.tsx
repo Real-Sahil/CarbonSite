@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Target, X } from "lucide-react";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 export interface SbtiTarget {
   pathway: string;
@@ -145,20 +146,18 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Pathway</label>
-              <select value={form.pathway} onChange={(e) => setForm((f) => ({ ...f, pathway: e.target.value }))} className={inputCls}>
+          <FormSection cols={2}>
+            <FormField label="Pathway" htmlFor="f-pathway" optional>
+              <select id="f-pathway" value={form.pathway} onChange={(e) => setForm((f) => ({ ...f, pathway: e.target.value }))} className={inputCls}>
                 <option value="1.5C">1.5°C pathway</option>
                 <option value="WB2C">Well-below 2°C</option>
               </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Base year</label>
-              <input type="number" required min={2000} max={2030} value={form.baseYear}
+            </FormField>
+            <FormField label="Base year" htmlFor="f-base-year">
+              <input id="f-base-year" type="number" required min={2000} max={2030} value={form.baseYear}
                 onChange={(e) => setForm((f) => ({ ...f, baseYear: e.target.value }))} className={inputCls} />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
 
           <div className="rounded-lg bg-[#FFF7ED] border border-[#FED7AA] px-4 py-3">
             <p className="text-xs font-medium text-[#c2410c] mb-2">Baseline emissions (tCO₂e)</p>
@@ -186,15 +185,14 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
               Not sure what reduction % to commit to? Calculate what a pathway requires.
             </p>
             <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="block text-xs text-gray-500 mb-1">Pathway to model</label>
-                <select value={calcPathway} onChange={(e) => setCalcPathway(e.target.value as typeof calcPathway)}
+              <FormField label="Pathway to model" htmlFor="f-pathway-to-model" optional>
+                <select id="f-pathway-to-model" value={calcPathway} onChange={(e) => setCalcPathway(e.target.value as typeof calcPathway)}
                   className="w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c]/20">
                   <option value="1.5C">1.5°C (4.2%/year)</option>
                   <option value="2C">2°C (3.0%/year)</option>
                   <option value="2.5C">2.5°C (2.0%/year)</option>
                 </select>
-              </div>
+              </FormField>
               <button type="button" onClick={calculateSuggestion} disabled={calculating}
                 className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50">
                 {calculating ? "Calculating..." : "Calculate"}
@@ -222,46 +220,40 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Near-term target year</label>
-              <input type="number" required min={2025} max={2040} value={form.nearTermYear}
+          <FormSection cols={2}>
+            <FormField label="Near-term target year" htmlFor="f-near-term-target-year">
+              <input id="f-near-term-target-year" type="number" required min={2025} max={2040} value={form.nearTermYear}
                 onChange={(e) => setForm((f) => ({ ...f, nearTermYear: e.target.value }))} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Near-term reduction (%)</label>
-              <input type="number" required min={0} max={100} step="0.1" value={form.nearTermReductionPct}
+            </FormField>
+            <FormField label="Near-term reduction (%)" htmlFor="f-near-term-reduction">
+              <input id="f-near-term-reduction" type="number" required min={0} max={100} step="0.1" value={form.nearTermReductionPct}
                 onChange={(e) => setForm((f) => ({ ...f, nearTermReductionPct: e.target.value }))} className={inputCls} placeholder="50" />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Net-zero target year</label>
-              <input type="number" required min={2040} max={2100} value={form.netZeroYear}
+          <FormSection cols={2}>
+            <FormField label="Net-zero target year" htmlFor="f-net-zero-target-year">
+              <input id="f-net-zero-target-year" type="number" required min={2040} max={2100} value={form.netZeroYear}
                 onChange={(e) => setForm((f) => ({ ...f, netZeroYear: e.target.value }))} className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Net-zero reduction (%)</label>
-              <input type="number" required min={0} max={100} step="0.1" value={form.netZeroReductionPct}
+            </FormField>
+            <FormField label="Net-zero reduction (%)" htmlFor="f-net-zero-reduction">
+              <input id="f-net-zero-reduction" type="number" required min={0} max={100} step="0.1" value={form.netZeroReductionPct}
                 onChange={(e) => setForm((f) => ({ ...f, netZeroReductionPct: e.target.value }))} className={inputCls} placeholder="90" />
-            </div>
-          </div>
+            </FormField>
+          </FormSection>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
-            <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
+          <FormField label="Status" htmlFor="f-status" optional>
+            <select id="f-status" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
               <option value="draft">Draft</option>
               <option value="committed">Committed</option>
               <option value="validated">Validated (SBTi approved)</option>
             </select>
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
-            <textarea rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+          <FormField label="Notes" htmlFor="f-notes" optional>
+            <textarea id="f-notes" rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className={`${inputCls} resize-none`} placeholder="SBTi submission date, validation notes..." />
-          </div>
+          </FormField>
 
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
 

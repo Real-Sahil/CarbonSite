@@ -6,9 +6,9 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 interface TcfdScenario {
   id: string;
@@ -57,51 +57,44 @@ function ScenarioForm({ initial, onSubmit, onCancel }: ScenarioFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label>Type</Label>
+      <FormSection cols={2}>
+        <FormField label="Type" htmlFor="f-type" optional>
           <Select value={form.scenarioType} onValueChange={(v) => setForm((f) => ({ ...f, scenarioType: v as "physical" | "transition" }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="f-type"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="physical">Physical</SelectItem>
               <SelectItem value="transition">Transition</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-        <div className="space-y-1">
-          <Label>Time horizon</Label>
+        </FormField>
+        <FormField label="Time horizon" htmlFor="f-time-horizon" optional>
           <Select value={form.timeHorizon} onValueChange={(v) => setForm((f) => ({ ...f, timeHorizon: v }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger id="f-time-horizon"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="short">Short (0-3y)</SelectItem>
               <SelectItem value="medium">Medium (3-10y)</SelectItem>
               <SelectItem value="long">Long (10y+)</SelectItem>
             </SelectContent>
           </Select>
-        </div>
-      </div>
-      <div className="space-y-1">
-        <Label>Scenario name *</Label>
-        <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required placeholder="e.g. 2°C orderly transition" />
-      </div>
-      <div className="space-y-1">
-        <Label>Temperature pathway</Label>
-        <Input value={form.temperaturePathway} onChange={(e) => setForm((f) => ({ ...f, temperaturePathway: e.target.value }))} placeholder="e.g. 1.5°C, 2°C, 4°C" />
-      </div>
-      <div className="space-y-1">
-        <Label>Description</Label>
-        <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} placeholder="Describe the scenario and key assumptions" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <Label>Gross VaR low (£)</Label>
-          <Input type="number" min="0" value={form.grossValueAtRiskLow} onChange={(e) => setForm((f) => ({ ...f, grossValueAtRiskLow: e.target.value }))} placeholder="0" />
-        </div>
-        <div className="space-y-1">
-          <Label>Gross VaR high (£)</Label>
-          <Input type="number" min="0" value={form.grossValueAtRiskHigh} onChange={(e) => setForm((f) => ({ ...f, grossValueAtRiskHigh: e.target.value }))} placeholder="0" />
-        </div>
-      </div>
+        </FormField>
+      </FormSection>
+      <FormField label="Scenario name" htmlFor="f-scenario-name">
+        <Input id="f-scenario-name" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required placeholder="e.g. 2°C orderly transition" />
+      </FormField>
+      <FormField label="Temperature pathway" htmlFor="f-temperature-pathway" optional>
+        <Input id="f-temperature-pathway" value={form.temperaturePathway} onChange={(e) => setForm((f) => ({ ...f, temperaturePathway: e.target.value }))} placeholder="e.g. 1.5°C, 2°C, 4°C" />
+      </FormField>
+      <FormField label="Description" htmlFor="f-description" optional>
+        <Textarea id="f-description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} placeholder="Describe the scenario and key assumptions" />
+      </FormField>
+      <FormSection cols={2}>
+        <FormField label="Gross VaR low (£)" htmlFor="f-gross-var-low" optional>
+          <Input id="f-gross-var-low" type="number" min="0" value={form.grossValueAtRiskLow} onChange={(e) => setForm((f) => ({ ...f, grossValueAtRiskLow: e.target.value }))} placeholder="0" />
+        </FormField>
+        <FormField label="Gross VaR high (£)" htmlFor="f-gross-var-high" optional>
+          <Input id="f-gross-var-high" type="number" min="0" value={form.grossValueAtRiskHigh} onChange={(e) => setForm((f) => ({ ...f, grossValueAtRiskHigh: e.target.value }))} placeholder="0" />
+        </FormField>
+      </FormSection>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
         <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save scenario"}</Button>

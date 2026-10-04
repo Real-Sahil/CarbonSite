@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { formatMoney, PRICE_TYPES, PRICE_USES, type PriceType, type PriceUse } from "@/lib/carbon-price";
+import { FormField } from "@/components/forms/form-kit";
 
 type Row = {
   id: string;
@@ -194,32 +194,26 @@ export function CarbonPrices({
             <p className="mt-1 text-sm text-slate-500">{PRICE_TYPES[priceType].help}</p>
           </div>
           <div className="grid grid-cols-1 gap-3 border-t border-slate-100 p-4 md:grid-cols-2">
-            <div>
-              <Label htmlFor="cp-name" className={labelClass}>Name</Label>
+            <FormField label="Name" htmlFor="cp-name">
               <Input id="cp-name" name="name" required maxLength={200} placeholder="e.g. Capital appraisal shadow price 2026" />
-            </div>
-            <div>
-              <Label htmlFor="cp-type" className={labelClass}>Type</Label>
+            </FormField>
+            <FormField label="Type" htmlFor="cp-type" optional>
               <select id="cp-type" value={priceType} onChange={(e) => setPriceType(e.target.value as PriceType)} className={selectClass}>
                 {Object.entries(PRICE_TYPES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
-            </div>
-            <div>
-              <Label htmlFor="cp-price" className={labelClass}>Price per tonne CO2e</Label>
+            </FormField>
+            <FormField label="Price per tonne CO2e" htmlFor="cp-price">
               <Input id="cp-price" name="pricePerTonne" type="number" min="0.01" step="0.01" required />
-            </div>
-            <div>
-              <Label htmlFor="cp-currency" className={labelClass}>Currency</Label>
+            </FormField>
+            <FormField label="Currency" htmlFor="cp-currency">
               <Input id="cp-currency" name="currency" maxLength={3} defaultValue={defaultCurrency} required />
-            </div>
-            <div>
-              <Label htmlFor="cp-from" className={labelClass}>In force from</Label>
+            </FormField>
+            <FormField label="In force from" htmlFor="cp-from">
               <Input id="cp-from" name="effectiveFrom" type="date" required />
-            </div>
-            <div>
-              <Label htmlFor="cp-to" className={labelClass}>Until (blank if open)</Label>
+            </FormField>
+            <FormField label="Until (blank if open)" htmlFor="cp-to" optional>
               <Input id="cp-to" name="effectiveTo" type="date" />
-            </div>
+            </FormField>
             <fieldset>
               <legend className={labelClass}>Scopes covered</legend>
               <div className="flex gap-4 text-sm text-slate-700">
@@ -242,8 +236,7 @@ export function CarbonPrices({
                 ))}
               </div>
             </fieldset>
-            <div className="md:col-span-2">
-              <Label htmlFor="cp-basis" className={labelClass}>Basis and critical assumptions</Label>
+            <FormField label="Basis and critical assumptions" htmlFor="cp-basis" span={2} optional>
               <textarea
                 id="cp-basis"
                 name="basis"
@@ -252,7 +245,7 @@ export function CarbonPrices({
                 className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm"
                 placeholder="Where the figure comes from (e.g. UK ETS forward price, DESNZ appraisal values) and how often it is reviewed."
               />
-            </div>
+            </FormField>
             {error && <p className="text-sm text-red-600 md:col-span-2">{error}</p>}
             <div className="md:col-span-2">
               <Button type="submit" size="sm" disabled={isPending}>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 type Framework = { slug: string; name: string };
 type LinkRow = { id: string; name: string; email: string | null; company: string | null; frameworks: string[]; expiresAt: string; revokedAt: string | null; lastUsedAt: string | null; createdAt: string };
@@ -74,22 +74,18 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
         <section className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
           <h2 className="text-sm font-semibold text-[#111827]">Auditor links</h2>
           <form onSubmit={create} className="grid gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="aa-name">Auditor&apos;s name (required)</Label>
+            <FormField label="Auditor&apos;s name (required)" htmlFor="aa-name">
               <Input id="aa-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="h-9" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="aa-company">Certification body</Label>
+            </FormField>
+            <FormField label="Certification body" htmlFor="aa-company" optional>
               <Input id="aa-company" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="h-9" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="aa-email">Email</Label>
+            </FormField>
+            <FormField label="Email" htmlFor="aa-email" optional>
               <Input id="aa-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="h-9" />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="aa-days">Days the link works</Label>
+            </FormField>
+            <FormField label="Days the link works" htmlFor="aa-days" optional>
               <Input id="aa-days" type="number" min={1} max={90} value={form.days} onChange={(e) => setForm({ ...form, days: e.target.value })} className="h-9" />
-            </div>
+            </FormField>
             <div className="flex flex-wrap gap-x-4 gap-y-2 sm:col-span-2" role="group" aria-label="Frameworks shared">
               {frameworks.map((f) => (
                 <label key={f.slug} className="flex items-center gap-1.5 text-sm text-[#374151]">

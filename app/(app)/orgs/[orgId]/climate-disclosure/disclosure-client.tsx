@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { DisclosureSections } from "@/lib/climate-disclosure";
+import { FormField } from "@/components/forms/form-kit";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
@@ -150,14 +151,12 @@ export function ApproveForm({ orgId, defaultBody }: { orgId: string; defaultBody
 
   return (
     <form onSubmit={approve} className="grid grid-cols-1 gap-4 p-5 md:grid-cols-3">
-      <div className="md:col-span-2">
-        <Label htmlFor="cd-approval-body" className={labelClass}>Approved by</Label>
+      <FormField label="Approved by" htmlFor="cd-approval-body" span={2}>
         <Input id="cd-approval-body" name="approvalBody" required minLength={2} maxLength={200} defaultValue={defaultBody ?? "Board of directors"} />
-      </div>
-      <div>
-        <Label htmlFor="cd-approved-on" className={labelClass}>Date approved</Label>
+      </FormField>
+      <FormField label="Date approved" htmlFor="cd-approved-on">
         <Input id="cd-approved-on" name="approvedOn" type="date" required />
-      </div>
+      </FormField>
       <div className="flex items-center gap-3 md:col-span-3">
         <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Recording…" : "Record approval"}</Button>
         {msg && <p className={`text-sm ${msg.ok ? "text-green-700" : "text-red-600"}`}>{msg.text}</p>}

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/forms/form-kit";
 
 type Draft = {
   name: string;
@@ -101,10 +102,9 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
         </p>
       </div>
       <form onSubmit={lookUp} className="flex flex-wrap items-end gap-3">
-        <div className="flex min-w-[240px] flex-1 flex-col gap-1.5">
-          <Label htmlFor="fts-notice" className={label}>Notice number or link</Label>
+        <FormField label="Notice number or link" htmlFor="fts-notice">
           <Input id="fts-notice" value={notice} onChange={(e) => setNotice(e.target.value)} placeholder="091200-2026" className={field} required />
-        </div>
+        </FormField>
         <Button type="submit" size="sm" variant="outline" disabled={isPending || !notice.trim()}>
           {isPending && !preview ? "Reading notice…" : "Look up"}
         </Button>
@@ -131,14 +131,12 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                 </ul>
               )}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="flex flex-col gap-1.5 sm:col-span-2">
-                  <Label htmlFor="fts-name" className={label}>Name</Label>
+                <FormField label="Name" htmlFor="fts-name" span={2} optional>
                   <Input id="fts-name" value={draft.name} maxLength={200} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fts-client" className={label}>Client (buyer)</Label>
+                </FormField>
+                <FormField label="Client (buyer)" htmlFor="fts-client" optional>
                   <Input id="fts-client" value={draft.clientName ?? ""} maxLength={200} onChange={(e) => setDraft({ ...draft, clientName: e.target.value || null })} className={field} />
-                </div>
+                </FormField>
                 <div className="flex flex-col gap-1.5">
                   <Label htmlFor="fts-value" className={label}>Value ({draft.currency})</Label>
                   <Input
@@ -150,14 +148,12 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                     className={field}
                   />
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fts-start" className={label}>Start date</Label>
+                <FormField label="Start date" htmlFor="fts-start" optional>
                   <Input id="fts-start" type="date" value={draft.startDate ?? ""} onChange={(e) => setDraft({ ...draft, startDate: e.target.value || null })} className={field} />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fts-end" className={label}>End date</Label>
+                </FormField>
+                <FormField label="End date" htmlFor="fts-end" optional>
                   <Input id="fts-end" type="date" value={draft.endDate ?? ""} onChange={(e) => setDraft({ ...draft, endDate: e.target.value || null })} className={field} />
-                </div>
+                </FormField>
               </div>
               <p className="text-xs text-[#6B7280]">
                 Reference: {draft.ftsNoticeId}
