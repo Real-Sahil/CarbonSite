@@ -18,6 +18,13 @@ describe("factor library attribution", () => {
     expect(factorAttribution(null)).toBeNull();
   });
 
+  it("credits the national libraries under their own terms", () => {
+    expect(factorAttribution({ name: "ECCC", version: "2024", license: "Open Government Licence - Canada" })).toMatch(/Open Government Licence - Canada/);
+    expect(factorAttribution({ name: "NGA Factors", version: "2025", license: "Creative Commons Attribution (Commonwealth of Australia, DCCEEW)" })).toMatch(/Creative Commons Attribution.*AR5/);
+    expect(factorAttribution({ name: "UBA", version: "2.1", license: "CC0 1.0 (Umweltbundesamt)" })).toMatch(/Umweltbundesamt.*CC0 1\.0.*values unchanged/);
+    expect(factorAttribution({ name: "SEAI", version: "2025", license: "no licence stated" })).toMatch(/SEAI.*CO2 only/);
+  });
+
   it("adds the line to the end of an HTML report, escaped", () => {
     expect(withAttribution("<html><body><p>x</p></body></html>", "A & B")).toBe(
       '<html><body><p>x</p><p style="font-size:8pt;color:#64748b;margin:12px 40px 16px;font-family:inherit">A &amp; B</p></body></html>',

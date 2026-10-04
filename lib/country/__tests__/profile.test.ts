@@ -17,8 +17,13 @@ describe("countryProfile", () => {
     expect(p.region).toBe("eu");
     expect(p.recommendedReports).toContain("csrd_esrs_e1");
     expect(p.recommendedReports).not.toContain("ppn_006_crp");
-    expect(p.nationalLibraryCountry).toBeNull();
+    expect(p.nationalLibraryCountry).toBe("DE");
     expect(countryProfile("FR").nationalLibraryCountry).toBe("FR");
+    expect(countryProfile("IT").nationalLibraryCountry).toBeNull();
+  });
+
+  it("has a national library for Australia, Canada and Ireland", () => {
+    for (const c of ["AU", "CA", "IE"]) expect(countryProfile(c).nationalLibraryCountry).toBe(c);
   });
 
   it("says what the UAE and US actually have loaded, and nothing more", () => {

@@ -25,6 +25,16 @@ async function main() {
   });
 
   await prisma.methodologyVersion.upsert({
+    where: { name: "ghg-protocol-v2026-05" },
+    update: {},
+    create: {
+      name: "ghg-protocol-v2026-05",
+      gwpVersion: "AR6",
+      notes: "Library fallback also covers the NGA, ECCC, UBA and SEAI national libraries; Australian and Canadian state and province grid factors are used when the record or its facility names the region",
+    },
+  });
+
+  await prisma.methodologyVersion.upsert({
     where: { name: "ghg-protocol-v2026-04" },
     update: {},
     create: {

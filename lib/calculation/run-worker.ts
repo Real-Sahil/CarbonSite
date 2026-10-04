@@ -227,7 +227,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       where: { ...activityRecordWhere, calculations: { none: { calculationRunId } } },
       include: {
         emissionCategory: { select: { id: true, code: true, activityType: true, scope: true } },
-        facility: { select: { country: true, egridSubregion: true } },
+        facility: { select: { country: true, region: true, egridSubregion: true } },
       },
       orderBy: { id: "asc" },
       take: BATCH_LOAD_SIZE,
@@ -309,6 +309,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         matchHint,
         industryCode: record.industryCode,
         egridSubregion: record.facility?.egridSubregion,
+        facilityRegion: record.facility?.region,
       };
       // HVO is only fuel-combustion Scope 1; a Scope 3 record mentioning it
       // (e.g. HVO deliveries by a haulier) keeps its own category's factor.

@@ -10,11 +10,23 @@ export type LibraryLicence = { name: string; version: string; license?: string |
 export function factorAttribution(lib: LibraryLicence | null | undefined): string | null {
   if (!lib) return null;
   const licence = (lib.license ?? "").trim();
+  if (/open government licen[cs]e\s*[-–]\s*canada/i.test(licence)) {
+    return `Emission factors: ${lib.name} ${lib.version} (Environment and Climate Change Canada, National Inventory Report). Contains information licensed under the Open Government Licence - Canada.`;
+  }
   if (/open government licen[cs]e/i.test(licence)) {
     return `Emission factors: ${lib.name} ${lib.version}. Contains public sector information licensed under the Open Government Licence v3.0.`;
   }
   if (/licence ouverte/i.test(licence)) {
     return `Emission factors: ${lib.name} ${lib.version} (source: ADEME, Base Carbone, updated ${lib.version}), reused under the Licence Ouverte v2.0 (Etalab).`;
+  }
+  if (/^NGA\b/i.test(lib.name) && /creative commons/i.test(licence)) {
+    return `Emission factors: ${lib.name} ${lib.version}, Australian National Greenhouse Accounts Factors, Commonwealth of Australia (Department of Climate Change, Energy, the Environment and Water), licensed under Creative Commons Attribution. Gases are combined at IPCC AR5 GWPs (CH4 28, N2O 265), NGA's published basis.`;
+  }
+  if (/^UBA\b/i.test(lib.name) && /^CC0/i.test(licence)) {
+    return `Emission factors: ${lib.name} ${lib.version}, Umweltbundesamt (UBA), Liste mit Emissionsfaktoren fuer die Treibhausgasbilanzierung von Organisationen, CC0 1.0. Restructured into MetricOra's categories and units; values unchanged.`;
+  }
+  if (/^SEAI\b/i.test(lib.name)) {
+    return `Emission factors: ${lib.name} ${lib.version}, Sustainable Energy Authority of Ireland (SEAI), conversion and emission factors. CO2 only: SEAI gives no CH4 or N2O.`;
   }
   if (/public domain/i.test(licence)) {
     // EPA publishes CH4 and N2O at the IPCC AR5 values; this platform's own gas-by-gas

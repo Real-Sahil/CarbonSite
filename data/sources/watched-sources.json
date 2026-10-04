@@ -44,5 +44,12 @@
   "cas-question-set": {
     "version": 5,
     "url": "https://builduk.org/information/common-assessment-standard/"
+  },
+  "national-libraries": {
+    "_comment": "Editions loaded for AU, CA, DE, IE (lib/factors/national-libraries.ts). Not yet watched automatically; recheck each year.",
+    "nga": 2025,
+    "eccc": 2024,
+    "uba": "2.1",
+    "seai": 2025
   }
 }

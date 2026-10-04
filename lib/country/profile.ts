@@ -23,7 +23,7 @@ export type CountryProfile = {
 };
 
 // National activity libraries loaded in the repo (see libraryCountry()).
-const NATIONAL_LIBRARY = new Set(["GB", "US", "FR"]);
+const NATIONAL_LIBRARY = new Set(["GB", "US", "FR", "AU", "CA", "DE", "IE"]);
 
 const UK = ["ghg_protocol", "ppn_006_crp", "secr", "bid_carbon_pack"];
 const EU = ["ghg_protocol", "csrd_esrs_e1", "csrd_esrs_e3", "csrd_esrs_e5", "sustainability_report"];
@@ -48,7 +48,11 @@ export function countryProfile(country: string | null | undefined): CountryProfi
     notes.push(
       iso2 === "FR"
         ? "ADEME Base Carbone is loaded for France."
-        : "ADEME electricity factors cover your country's grid; other national factors fall back to the DEFRA set.",
+        : iso2 === "DE"
+          ? "The UBA emission factor list (version 2.1, CC0) is loaded for Germany: fuels, German electricity mix, travel, freight and refrigerants."
+          : iso2 === "IE"
+            ? "SEAI's Irish emission factors (2025) are loaded: fuels and electricity by year. They are CO2 only, and other records fall back to the DEFRA set."
+            : "ADEME electricity factors cover your country's grid; other national factors fall back to the DEFRA set.",
     );
   } else if (region === "uae") {
     notes.push("The Abu Dhabi MRV facility workbook is under Compliance. Other emirates and federal reporting are not loaded.");
@@ -58,6 +62,11 @@ export function countryProfile(country: string | null | undefined): CountryProfi
     notes.push("The SEC climate disclosure rules are stayed and the SEC proposed in May 2026 to rescind them, so no SEC report is built. EPA's Greenhouse Gas Reporting Program is facility-level reporting to EPA and is under reconsideration, so it is not built either.");
   } else if (iso2) {
     notes.push("No national regulatory rules are loaded for this country. GHG Protocol, CDP and TCFD-structure reports work anywhere.");
+    if (iso2 === "AU") {
+      notes.push("The NGA Factors 2025 are loaded: state and grid electricity (set each facility's state in Settings, otherwise the national average is used), fuels, landfill waste and refrigerants.");
+    } else if (iso2 === "CA") {
+      notes.push("Environment and Climate Change Canada's electricity intensity by province is loaded (set each facility's province in Settings, otherwise the national figure is used); other records fall back to the DEFRA set.");
+    }
   }
   if (iso2 && !nationalLibraryCountry && region !== "eu") {
     notes.push("No national factor library is loaded, so records use the DEFRA set unless you add your own factors.");

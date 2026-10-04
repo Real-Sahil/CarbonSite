@@ -28,6 +28,16 @@ export type MethodologyChange = { name: string; effective: string; gwp: string; 
 /** Newest first. The first entry must match the newest methodology_versions row. */
 export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   {
+    name: "ghg-protocol-v2026-05",
+    effective: "2026-10-05",
+    gwp: "AR6",
+    changes: [
+      "Library fallback now also applies to runs on the national libraries NGA Factors (Australia), ECCC (Canada, electricity only), UBA (Germany) and SEAI (Ireland): a record the run's library has no factor for is priced from DEFRA, then ADEME, with a warning. Grid electricity and heat still never fall back.",
+      "Australian and Canadian electricity: a state or province grid factor is used when the record's fuel/detail text or its facility's region names it; every other record in that country takes the national factor. Before this, no state or province rows existed. Western Australia is read as the South West Interconnected System unless the North West one is named.",
+      "A fuel word in a record's detail text must now start a word in the factor's text: \"diesel\" no longer matches \"biodiesel\". Before this, a record naming diesel could be priced with a biodiesel factor when a library listed both.",
+    ],
+  },
+  {
     name: "ghg-protocol-v2026-04",
     effective: "2026-10-05",
     gwp: "AR6",

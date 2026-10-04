@@ -1,8 +1,9 @@
 // A run is pinned to one factor library. When that library has no factor at
-// all for a record, the record used to be saved at 0 kg CO2e. For a US run on
-// EPA, whose activity tables are narrower than DEFRA's, the record is instead
-// priced from the next library that has one, and says so:
-//   EPA -> the DEFRA set for the period (chooseFactorLibrary), then ADEME
+// all for a record, the record used to be saved at 0 kg CO2e. For a run on a
+// national library with narrower tables than DEFRA's (EPA, NGA, UBA, SEAI, and
+// ECCC, which is electricity only), the record is instead priced from the next
+// library that has one, and says so:
+//   national library -> the DEFRA set for the period (chooseFactorLibrary), then ADEME
 // Never for grid electricity or purchased heat: those are national, and a UK
 // or French grid factor on a US site would be wrong, not approximate. Never
 // when the record already has an organisation factor. Only a factor whose unit
@@ -23,8 +24,11 @@ const NATIONAL_CATEGORIES = new Set(["s2-electricity-lb", "s2-electricity-mb", "
 type Lib = { id: string; name: string; version: string };
 
 /** Libraries to try, in order, for a run pinned to `runLibrary`. */
+/** National libraries that do not cover every record (EPA's activity tables, or electricity only for Canada): they fall back. DEFRA and ADEME runs do not. */
+export const FALLS_BACK = /^(EPA|NGA|ECCC|UBA|SEAI)\b/i;
+
 export function fallbackOrder(runLibrary: { name: string }, all: Lib[], periodEnd: Date): Lib[] {
-  if (runLibrary.name !== "EPA") return [];
+  if (!FALLS_BACK.test(runLibrary.name)) return [];
   const defra = chooseFactorLibrary(all.filter((l) => l.name === "DEFRA"), periodEnd);
   const ademe = all
     .filter((l) => l.name === "ADEME Base Carbone")
@@ -44,7 +48,7 @@ export async function selectFallbackFactor(
   state: FallbackState,
   recordCountry: string | null,
 ): Promise<FactorSelection | null> {
-  if (runLibrary.name !== "EPA" || NATIONAL_CATEGORIES.has(categoryCode)) return null;
+  if (!FALLS_BACK.test(runLibrary.name) || NATIONAL_CATEGORIES.has(categoryCode)) return null;
   state.libraries ??= await prisma.factorLibrary.findMany({ select: { id: true, name: true, version: true } });
   for (const lib of fallbackOrder(runLibrary, state.libraries, periodEnd)) {
     let cache = state.caches.get(lib.id);

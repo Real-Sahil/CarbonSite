@@ -11,6 +11,7 @@ import { areUnitsCompatible } from "./units";
 import { industryMissingWarning, pickIndustry } from "./industry-code";
 import { pickHeatNetwork } from "./heat-network";
 import { pickEgridSubregion } from "./egrid-subregion";
+import { pickRegionalGrid } from "./regional-grid";
 
 // Pre-loaded factor table keyed by "factorLibraryId:emissionCategoryId".
 // Build once at the start of a calculation run and pass to selectFactor.
@@ -51,6 +52,8 @@ export type FactorQuery = {
   industryCode?: string | null;
   /** The record's facility's eGRID subregion, for US electricity (egrid-subregion.ts). */
   egridSubregion?: string | null;
+  /** The record's facility's state or province, for Australian and Canadian grids (regional-grid.ts). */
+  facilityRegion?: string | null;
 };
 
 export type FactorSelection = {
@@ -78,8 +81,9 @@ function scoreCandidate(
     }
   }
 
-  // Fuel / transport / refrigerant detail: substring match against the
-  // factor's identifying text.
+  // Fuel / transport / refrigerant detail: match against the factor's
+  // identifying text. A word must start where the factor's word starts, so
+  // "diesel" does not match "biodiesel" (a national library names both).
   if (query.matchHint) {
     const haystack = [f.externalId, f.activityType, f.usageNotes]
       .filter(Boolean)
@@ -89,7 +93,7 @@ function scoreCandidate(
       .toLowerCase()
       .split(/[^a-z0-9]+/)
       .filter((token) => token.length >= 3);
-    const matched = hints.filter((token) => haystack.includes(token));
+    const matched = hints.filter((token) => new RegExp(`(^|[^a-z0-9])${token}`).test(haystack));
     if (matched.length > 0) {
       score += 4;
       reasons.push(`detail matched "${matched.join(", ")}"`);
@@ -190,6 +194,18 @@ export async function selectFactor(
     return { factor: subregion.factor, selectionReason: `eGRID subregion named (${subregion.factor.externalId})`, warnings: [] };
   }
   candidates = subregion.candidates;
+  if (candidates.length === 0) return null;
+
+  // State and province grids (NGA, ECCC): only the one the record or its facility names.
+  const regional = pickRegionalGrid(candidates, query.geographyCountry, query.matchHint, query.facilityRegion);
+  if (regional.kind === "matched") {
+    return {
+      factor: regional.factor,
+      selectionReason: `regional grid named (${regional.factor.externalId})`,
+      warnings: regional.assumed ? [regional.assumed] : [],
+    };
+  }
+  candidates = regional.candidates;
   if (candidates.length === 0) return null;
 
   // When market-based Scope 2 is requested, prefer factors with "market" in

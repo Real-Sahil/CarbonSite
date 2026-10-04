@@ -6,6 +6,8 @@ const libs = [
   { id: "d25", name: "DEFRA", version: "2025.2" },
   { id: "d26", name: "DEFRA", version: "2026.1" },
   { id: "ad", name: "ADEME Base Carbone", version: "2025.04" },
+  { id: "nga", name: "NGA Factors", version: "2025" },
+  { id: "eccc", name: "ECCC", version: "2024" },
 ];
 const factor = (id: string, libId: string, cat: string, unit: string, extra: object = {}) => ({
   id, externalId: id, factorLibraryId: libId, emissionCategoryId: cat, activityType: null, geographyCountry: "GB",
@@ -36,6 +38,13 @@ describe("library fallback", () => {
     expect(fallbackOrder({ name: "DEFRA" }, libs, new Date("2026-12-31"))).toEqual([]);
   });
 
+  it("applies to the national libraries too, but not to DEFRA or ADEME runs", () => {
+    for (const name of ["NGA Factors", "ECCC", "UBA", "SEAI", "EPA"]) {
+      expect(fallbackOrder({ name }, libs, new Date("2026-12-31")).map((l) => l.id)).toEqual(["d26", "ad"]);
+    }
+    expect(fallbackOrder({ name: "ADEME Base Carbone" }, libs, new Date("2026-12-31"))).toEqual([]);
+  });
+
   it("prices a record from DEFRA and says so, naming the proxy country", async () => {
     const r = await run("s3-business-travel", "travel", "pkm");
     expect(r?.factor.externalId).toBe("defra-26-flight");
@@ -46,6 +55,12 @@ describe("library fallback", () => {
   it("moves on to ADEME when DEFRA has nothing, and skips a factor whose unit cannot take the record", async () => {
     expect((await run("s3-upstream-transport", "freight", "tonne.km"))?.factor.externalId).toBe("ademe-ship");
     expect(await run("s3-business-travel", "travel", "kWh")).toBeNull();
+  });
+
+  it("an ECCC run prices non-electricity records from DEFRA", async () => {
+    const r = await run("s3-business-travel", "travel", "pkm", { id: "eccc", name: "ECCC" }, "CA");
+    expect(r?.factor.externalId).toBe("defra-26-flight");
+    expect(await run("s2-electricity-lb", "grid", "kWh", { id: "eccc", name: "ECCC" }, "CA")).toBeNull();
   });
 
   it("never falls back for grid electricity or heat, or on a non-EPA run", async () => {

@@ -11,6 +11,10 @@ const LIBRARY_COUNTRY: Array<[RegExp, string]> = [
   [/^Defra UK spend/i, "GB"],
   [/^EPA\b/i, "US"],
   [/^ADEME\b/i, "FR"],
+  [/^NGA\b/i, "AU"],
+  [/^ECCC\b/i, "CA"],
+  [/^UBA\b/i, "DE"],
+  [/^SEAI\b/i, "IE"],
 ];
 
 export function libraryCountry(libraryName: string): string | null {
