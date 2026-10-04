@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiDataSourcesPanel } from "./api-data-sources";
 import { PilotKitPanel } from "./pilot-kit-panel";
+import { countryProfile } from "@/lib/country/profile";
 import { COUNTRIES, countryOf } from "@/lib/i18n/countries";
 import { fiscalYearOf } from "@/lib/i18n/fiscal-year";
 import { FacilitiesPanel, type Facility } from "./facilities-panel";
@@ -203,6 +204,13 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
               ))}
             </select>
           </FormField>
+          <div className="@md:col-span-full rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600" aria-live="polite">
+            <p className="font-medium text-zinc-800">What this changes for {countryOf(hqCountry)?.name ?? "an unset country"}</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+              {countryProfile(hqCountry).notes.map((n) => <li key={n}>{n}</li>)}
+              <li>Reports led in the picker: {countryProfile(hqCountry).recommendedReports.slice(0, 3).map(reportLabel).join(", ")}. Every report stays available.</li>
+            </ul>
+          </div>
           <FormField label="Reporting currency" htmlFor="org-currency">
             <select id="org-currency" value={currency} disabled={isPending} onChange={(e) => setCurrency(e.target.value)} className={selectClass}>
               {CURRENCY_OPTIONS.map((c) => (
@@ -803,6 +811,20 @@ function EmptyRow({ text }: { text: string }) {
     </div>
   );
 }
+
+const REPORT_NAMES: Record<string, string> = {
+  ghg_protocol: "GHG Protocol",
+  ppn_006_crp: "Carbon Reduction Plan (PPN 006)",
+  secr: "SECR",
+  bid_carbon_pack: "Bid carbon pack",
+  csrd_esrs_e1: "ESRS E1",
+  csrd_esrs_e3: "ESRS E3",
+  csrd_esrs_e5: "ESRS E5",
+  sustainability_report: "Sustainability report",
+  tcfd_statement: "TCFD statement",
+  cdp: "CDP",
+};
+const reportLabel = (id: string) => REPORT_NAMES[id] ?? id;
 
 function labelise(value: string) {
   return value.replaceAll("_", " ").replace(/^\w/, (match) => match.toUpperCase());

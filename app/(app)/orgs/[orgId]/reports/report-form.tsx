@@ -133,8 +133,10 @@ const REPORT_TYPE_OPTIONS = [
 ];
 
 /** Core types this organisation's plan can generate, in display order. */
-export function coreReportTypes(bidPackIncluded: boolean): string[] {
-  return CORE_REPORT_TYPES.filter((t) => t !== "bid_carbon_pack" || bidPackIncluded);
+export function coreReportTypes(bidPackIncluded: boolean, recommended?: readonly string[]): string[] {
+  const known = new Set(REPORT_TYPE_OPTIONS.map((o) => o.value));
+  const list = recommended?.length ? recommended.filter((t) => known.has(t)) : CORE_REPORT_TYPES;
+  return list.filter((t) => t !== "bid_carbon_pack" || bidPackIncluded);
 }
 
 export function CreateReportForm({
@@ -143,6 +145,8 @@ export function CreateReportForm({
   contracts = [],
   bidPackIncluded = true,
   initialBid,
+  recommended,
+  recommendedFor,
 }: {
   orgId: string;
   snapshots: SnapshotOption[];
@@ -151,8 +155,12 @@ export function CreateReportForm({
   bidPackIncluded?: boolean;
   /** Prefill for a bid pack, e.g. from a tender on the Tenders page. */
   initialBid?: { bidTitle?: string; buyerName?: string; tenderReference?: string };
+  /** Report types that lead the picker for this organisation's country (lib/country/profile.ts). A nudge only: every type stays available. */
+  recommended?: readonly string[];
+  /** The country name shown in the group label, e.g. "Germany". */
+  recommendedFor?: string;
 }) {
-  const core = coreReportTypes(bidPackIncluded);
+  const core = coreReportTypes(bidPackIncluded, recommended);
   const [showAll, setShowAll] = useState(false);
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -320,7 +328,7 @@ export function CreateReportForm({
             >
               {showAll || !core.includes(reportType) ? (
                 <>
-                  <optgroup label="Recommended">
+                  <optgroup label={recommendedFor ? `Recommended for ${recommendedFor}` : "Recommended"}>
                     {REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}

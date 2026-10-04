@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/table";
 import { FileText, Layers, Clock, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { CreateReportForm } from "./report-form";
+import { countryProfile } from "@/lib/country/profile";
+import { countryOf } from "@/lib/i18n/countries";
 import { hasFeature } from "@/lib/billing/limits";
 import { ReportDownloadActions } from "./report-download-actions";
 import { StatusPoller } from "@/components/ui/status-poller";
@@ -160,7 +162,8 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
     );
   }
   const [snapshots, reports, contracts] = dbResult;
-  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
+  const org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true, hqCountry: true } });
+  const profile = countryProfile(org?.hqCountry);
   const bidPackIncluded = !!org?.isPilot || hasFeature(org?.plan ?? "trial", "bidCarbonPack");
   const hasInFlight = reports.some((r) => r.status === "queued" || r.status === "generating");
   const stats = {
@@ -326,6 +329,8 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                 }))}
                 contracts={contracts}
                 bidPackIncluded={bidPackIncluded}
+                recommended={profile.recommendedReports}
+                recommendedFor={profile.iso2 ? countryOf(profile.iso2)?.name : undefined}
                 initialBid={initialBid}
               />
             </div>
