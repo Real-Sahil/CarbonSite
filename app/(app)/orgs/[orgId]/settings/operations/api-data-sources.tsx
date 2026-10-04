@@ -119,7 +119,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
             <FormField label="Name" htmlFor="f-name">
               <Input id="f-name" name="name" required maxLength={100} disabled={isPending} placeholder="e.g. Energy Provider API" />
             </FormField>
-            <FormField label="Data format" htmlFor="f-dataFormat" optional>
+            <FormField label="Data format" htmlFor="f-dataFormat">
               <select id="f-dataFormat" name="dataFormat" className={selectClass} disabled={isPending} defaultValue="json">
                 <option value="json">JSON</option>
                 <option value="csv">CSV</option>
@@ -136,7 +136,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
           </FormField>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Authentication" htmlFor="f-authMethod" optional>
+            <FormField label="Authentication" htmlFor="f-authMethod">
               <select id="f-authMethod" name="authMethod" className={selectClass} disabled={isPending} defaultValue="none">
                 <option value="none">None</option>
                 <option value="api_key">API Key</option>
@@ -144,7 +144,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
                 <option value="basic">Basic auth</option>
               </select>
             </FormField>
-            <FormField label="Sync interval (minutes)" htmlFor="f-syncIntervalMins" optional>
+            <FormField label="Sync interval (minutes)" htmlFor="f-syncIntervalMins">
               <Input id="f-syncIntervalMins" name="syncIntervalMins" type="number" min="5" max="1440" defaultValue="60" disabled={isPending} />
             </FormField>
           </div>

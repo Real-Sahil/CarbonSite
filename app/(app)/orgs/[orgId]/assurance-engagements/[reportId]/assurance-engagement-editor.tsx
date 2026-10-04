@@ -160,7 +160,7 @@ export function AssuranceEngagementEditor({
           <div className="bg-white p-6 rounded-lg border">
             <h2 className="text-lg font-semibold mb-4">Assurance Engagement Details</h2>
             <div className="space-y-4">
-              <FormField label="Engagement Title" htmlFor="f-engagement-title" optional>
+              <FormField label="Engagement Title" htmlFor="f-engagement-title">
                 <Input id="f-engagement-title"
                   disabled={disabled}
                   value={title}
@@ -169,7 +169,7 @@ export function AssuranceEngagementEditor({
                 />
               </FormField>
               <FormSection cols={2}>
-                <FormField label="Project" htmlFor="f-project" optional>
+                <FormField label="Project" htmlFor="f-project">
                   <Select
                     disabled={disabled}
                     value={projectId}
@@ -187,7 +187,7 @@ export function AssuranceEngagementEditor({
                     </SelectContent>
                   </Select>
                 </FormField>
-                <FormField label="Site" htmlFor="f-site" optional>
+                <FormField label="Site" htmlFor="f-site">
                   <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
                     <SelectTrigger id="f-site">
                       <SelectValue placeholder="Select site" />
@@ -203,7 +203,7 @@ export function AssuranceEngagementEditor({
                 </FormField>
               </FormSection>
               <FormSection cols={2}>
-                <FormField label="Engagement Date" htmlFor="f-engagement-date" optional>
+                <FormField label="Engagement Date" htmlFor="f-engagement-date">
                   <Input id="f-engagement-date"
                     disabled={disabled}
                     type="date"
@@ -211,7 +211,7 @@ export function AssuranceEngagementEditor({
                     onChange={(e) => setEngagementDate(e.target.value)}
                   />
                 </FormField>
-                <FormField label="Assurance Type" htmlFor="f-assurance-type" optional>
+                <FormField label="Assurance Type" htmlFor="f-assurance-type">
                   <Select
                     disabled={disabled}
                     value={sections.assuranceType || ""}
@@ -229,7 +229,7 @@ export function AssuranceEngagementEditor({
                 </FormField>
               </FormSection>
               <FormSection cols={2}>
-                <FormField label="Assurance Level" htmlFor="f-assurance-level" optional>
+                <FormField label="Assurance Level" htmlFor="f-assurance-level">
                   <Input id="f-assurance-level"
                     disabled={disabled}
                     value={sections.assuranceLevel || ""}
@@ -239,7 +239,7 @@ export function AssuranceEngagementEditor({
                     placeholder="e.g., ISAE 3000, AA1000"
                   />
                 </FormField>
-                <FormField label="Assurer" htmlFor="f-assurer" optional>
+                <FormField label="Assurer" htmlFor="f-assurer">
                   <Input id="f-assurer"
                     disabled={disabled}
                     value={sections.assurer || ""}
@@ -248,7 +248,7 @@ export function AssuranceEngagementEditor({
                   />
                 </FormField>
               </FormSection>
-              <FormField label="Scope" htmlFor="f-scope" optional>
+              <FormField label="Scope" htmlFor="f-scope">
                 <Textarea id="f-scope"
                   disabled={disabled}
                   value={sections.scope || ""}
@@ -257,7 +257,7 @@ export function AssuranceEngagementEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Methodology" htmlFor="f-methodology" optional>
+              <FormField label="Methodology" htmlFor="f-methodology">
                 <Textarea id="f-methodology"
                   disabled={disabled}
                   value={sections.methodology || ""}
@@ -266,7 +266,7 @@ export function AssuranceEngagementEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Data Reviewed" htmlFor="f-data-reviewed" optional>
+              <FormField label="Data Reviewed" htmlFor="f-data-reviewed">
                 <Textarea id="f-data-reviewed"
                   disabled={disabled}
                   value={sections.dataReviewed || ""}
@@ -275,7 +275,7 @@ export function AssuranceEngagementEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Key Findings" htmlFor="f-key-findings" optional>
+              <FormField label="Key Findings" htmlFor="f-key-findings">
                 <Textarea id="f-key-findings"
                   disabled={disabled}
                   value={sections.keyFindings || ""}
@@ -284,7 +284,7 @@ export function AssuranceEngagementEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Conclusions" htmlFor="f-conclusions" optional>
+              <FormField label="Conclusions" htmlFor="f-conclusions">
                 <Textarea id="f-conclusions"
                   disabled={disabled}
                   value={sections.conclusions || ""}
@@ -293,7 +293,7 @@ export function AssuranceEngagementEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Recommendations" htmlFor="f-recommendations" optional>
+              <FormField label="Recommendations" htmlFor="f-recommendations">
                 <Textarea id="f-recommendations"
                   disabled={disabled}
                   value={sections.recommendations || ""}

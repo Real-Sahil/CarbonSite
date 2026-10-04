@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, fieldClass } from "@/components/forms/form-kit";
 
 type InviteMethod = "magic-link" | "credentials";
 
@@ -171,29 +171,29 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               value={formData.email}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#c2410c]"
+              className={fieldClass}
             />
           </FormField>
 
           {/* Company Name Input */}
-          <FormField label="Supplier Company Name" htmlFor="supplier-companyName" optional>
+          <FormField label="Supplier Company Name" htmlFor="supplier-companyName">
             <input
               id="supplier-companyName"
               type="text"
               placeholder="e.g., Acme Supply Co."
               value={formData.companyName}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#c2410c]"
+              className={fieldClass}
             />
           </FormField>
 
           {/* Category Select */}
-          <FormField label="Category (Optional)" htmlFor="supplier-category" optional>
+          <FormField label="Category" htmlFor="supplier-category" optional>
             <select
               id="supplier-category"
               value={formData.category}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 bg-white border border-[#E5E7EB] rounded-lg text-slate-900 focus:outline-none focus:border-[#c2410c]"
+              className={fieldClass}
             >
               <option value="">Select category</option>
               <option value="logistics">Logistics & Transport</option>

@@ -68,7 +68,7 @@ export function ObligationForm({ orgId, sites }: { orgId: string; sites: { id: s
             {KINDS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </FormField>
-        <FormField label="Site" htmlFor="ob-siteId" optional>
+        <FormField label="Site" htmlFor="ob-siteId">
           <select id="ob-siteId" name="siteId" defaultValue="" className={SELECT}>
             <option value="">Not site-specific</option>
             {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}

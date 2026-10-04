@@ -118,7 +118,7 @@ function AddRecordModal({
               onChange={(e) => setForm((f) => ({ ...f, wasteType: e.target.value }))}
               className={inputCls} placeholder="Mixed construction waste, concrete, timber..." />
           </FormField>
-          <FormField label="Disposal route" htmlFor="f-disposal-route" optional>
+          <FormField label="Disposal route" htmlFor="f-disposal-route">
             <select id="f-disposal-route" value={form.disposalRoute}
               onChange={(e) => setForm((f) => ({ ...f, disposalRoute: e.target.value }))} className={inputCls}>
               {DISPOSAL_ROUTES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
@@ -154,22 +154,22 @@ function AddRecordModal({
                 onChange={(e) => setForm((f) => ({ ...f, carrierName: e.target.value }))}
                 className={inputCls} placeholder="Biffa, Veolia..." />
             </FormField>
-          <FormField label="Carrier registration" htmlFor="f-carrier-registration" optional>
+          <FormField label="Carrier registration" htmlFor="f-carrier-registration">
               <input id="f-carrier-registration" type="text" value={form.carrierRegistration} maxLength={40}
                 onChange={(e) => setForm((f) => ({ ...f, carrierRegistration: e.target.value }))}
                 className={inputCls} placeholder="CBDU123456" />
             </FormField>
-            <FormField label="Transfer or consignment note" htmlFor="f-transfer-or-consignment-note" optional>
+            <FormField label="Transfer or consignment note" htmlFor="f-transfer-or-consignment-note">
               <input id="f-transfer-or-consignment-note" type="text" value={form.transferNoteReference} maxLength={100}
                 onChange={(e) => setForm((f) => ({ ...f, transferNoteReference: e.target.value }))}
                 className={inputCls} placeholder="WTN-0001" />
             </FormField>
-            <FormField label="Receiving site or permit" htmlFor="f-receiving-site-or-permit" optional>
+            <FormField label="Receiving site or permit" htmlFor="f-receiving-site-or-permit">
               <input id="f-receiving-site-or-permit" type="text" value={form.destination} maxLength={200}
                 onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
                 className={inputCls} placeholder="Permit EPR/AB1234CD" />
             </FormField>
-            <FormField label="Vehicle registration" htmlFor="f-vehicle-registration" optional>
+            <FormField label="Vehicle registration" htmlFor="f-vehicle-registration">
               <input id="f-vehicle-registration" type="text" value={form.vehicleRegistration} maxLength={20}
                 onChange={(e) => setForm((f) => ({ ...f, vehicleRegistration: e.target.value }))}
                 className={inputCls} placeholder="AB12 CDE" />

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, fieldClass } from "@/components/forms/form-kit";
 import {
   Select,
   SelectContent,
@@ -223,7 +223,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       </div>
 
       {/* Primary colour */}
-      <FormField label="Primary colour" htmlFor="primaryHex" optional>
+      <FormField label="Primary colour" htmlFor="primaryHex">
         <div className="flex items-center gap-3">
           <div
             className="h-9 w-9 rounded-[7px] border border-slate-200 shrink-0"
@@ -234,7 +234,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={primaryHex}
             onChange={(e) => handlePrimaryHexChange(e.target.value)}
-            className="h-9 w-full cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
+            className={fieldClass}
             aria-label="Primary colour picker"
           />
           <Input
@@ -249,7 +249,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       </FormField>
 
       {/* Accent colour */}
-      <FormField label="Accent colour" htmlFor="accentHex" optional>
+      <FormField label="Accent colour" htmlFor="accentHex">
         <div className="flex items-center gap-3">
           <div
             className="h-9 w-9 rounded-[7px] border border-slate-200 shrink-0"
@@ -260,7 +260,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={accentHex}
             onChange={(e) => handleAccentHexChange(e.target.value)}
-            className="h-9 w-full cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
+            className={fieldClass}
             aria-label="Accent colour picker"
           />
           <Input
@@ -294,7 +294,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       </div>
 
       {/* Font family */}
-      <FormField label="Font family" htmlFor="fontFamily" optional>
+      <FormField label="Font family" htmlFor="fontFamily">
         <Select
           value={fontFamily}
           onValueChange={(value) => {

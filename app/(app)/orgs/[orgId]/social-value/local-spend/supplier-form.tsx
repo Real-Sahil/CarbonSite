@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 export function SupplierForm({ orgId }: { orgId: string }) {
   const router = useRouter();
@@ -51,7 +51,7 @@ export function SupplierForm({ orgId }: { orgId: string }) {
             id="sv-supplier-sme"
             name="sme"
             defaultValue="unknown"
-            className="h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50"
+            className={fieldClass}
           >
             <option value="unknown">Not known</option>
             <option value="yes">Yes</option>

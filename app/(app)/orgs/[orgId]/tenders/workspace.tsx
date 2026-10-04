@@ -178,12 +178,12 @@ export function TendersWorkspace({
                   </label>
                 ))}
               </div>
-              <FormField label="Other CPV codes or prefixes" htmlFor="tw-cpv" optional>
-                <Input id="tw-cpv" value={customCpv} onChange={(e) => setCustomCpv(e.target.value)} placeholder="e.g. 45453, 4526" className="h-9 text-sm" />
+              <FormField label="Other CPV codes or prefixes" htmlFor="tw-cpv">
+                <Input id="tw-cpv" value={customCpv} onChange={(e) => setCustomCpv(e.target.value)} placeholder="e.g. 45453, 4526" />
               </FormField>
             </fieldset>
-            <FormField label="Title keywords" htmlFor="tw-keywords" hint="A notice with one of these words in its title matches whatever its CPV code." optional>
-              <Input id="tw-keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. resurfacing, drainage, bridge" className="h-9 text-sm" />
+            <FormField label="Title keywords" htmlFor="tw-keywords" hint="A notice with one of these words in its title matches whatever its CPV code.">
+              <Input id="tw-keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. resurfacing, drainage, bridge" />
             </FormField>
             <fieldset>
               <legend className="mb-2 text-sm font-medium text-[#111827]">Regions (none ticked: anywhere)</legend>
@@ -197,7 +197,7 @@ export function TendersWorkspace({
               </div>
             </fieldset>
             <div className="flex flex-wrap items-end gap-6">
-              <FormField label="Minimum value (£)" htmlFor="tw-min" optional>
+              <FormField label="Minimum value (£)" htmlFor="tw-min">
                 <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" className="h-9 w-full text-sm" />
               </FormField>
               <label className="flex items-center gap-2 text-sm text-[#374151]">

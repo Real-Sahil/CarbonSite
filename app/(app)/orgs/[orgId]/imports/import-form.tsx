@@ -15,7 +15,7 @@ import {
 import { Upload, Loader2, CheckCircle2, AlertCircle, Download } from "lucide-react";
 import { ColumnMapper } from "@/components/import/column-mapper";
 import type { CanonicalField, MappedColumn } from "@/lib/imports/column-mapper";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 const COLUMNS_VALUE = "__columns__";
 
@@ -219,85 +219,87 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
       : "Next: review columns";
 
   return (
-    <form onSubmit={handleUploadClick} className="flex flex-wrap items-end gap-3">
-      <FormField label="Reporting period" htmlFor="f-reporting-period" optional>
-        <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
-          <SelectTrigger id="f-reporting-period" className="w-full">
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            {periods.map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </FormField>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between gap-3">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Read with</label>
-          <Link href={`/orgs/${orgId}/imports/profiles`} className="text-xs text-[#c2410c] hover:text-[#9a3412] transition-colors">
-            ERP profiles
-          </Link>
-        </div>
-        <Select value={profileId} onValueChange={setProfileId} disabled={busy}>
-          <SelectTrigger className="w-56">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={COLUMNS_VALUE}>MetricOra columns</SelectItem>
-            {profiles.map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <FormField label="Template" htmlFor="f-template" optional>
-        <Select value={templateKey} onValueChange={setTemplateKey} disabled={busy}>
-          <SelectTrigger id="f-template" className="w-full">
-            <SelectValue placeholder="Select template" />
-          </SelectTrigger>
-          <SelectContent>
-            {TEMPLATE_KEYS.map((t) => (
-              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </FormField>
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">CSV / XLSX file</label>
-          <a
-            href={`/api/orgs/${orgId}/imports/template`}
-            download="metricora-import-template.xlsx"
-            className="flex items-center gap-1 text-xs text-[#c2410c] hover:text-[#9a3412] transition-colors"
-            tabIndex={busy ? -1 : 0}
-          >
-            <Download aria-hidden="true" className="h-3 w-3" />
-            Template
-          </a>
-        </div>
-        <Input
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          onChange={handleFileSelect}
-          className="w-56 text-sm"
-          disabled={busy}
-        />
-      </div>
-      <Button type="submit" disabled={busy || !file} size="sm" className="gap-1.5">
-        {busy ? (
-          <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
-        ) : (
-          <Upload aria-hidden="true" className="h-3.5 w-3.5" />
-        )}
-        {buttonLabel}
-      </Button>
-      {phase === "error" && error && (
-        <div className="w-full flex items-start gap-1.5">
-          <AlertCircle className="h-4 w-4 mt-0.5 text-red-500 shrink-0" />
-          <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>
-        </div>
-      )}
+    <form onSubmit={handleUploadClick} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="What are you importing?" description="The period and template tell the importer how to read each row." cols={3}>
+        <FormField label="Reporting period" htmlFor="f-reporting-period">
+          <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
+            <SelectTrigger id="f-reporting-period" className="w-full">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              {periods.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField label="Template" htmlFor="f-template">
+          <Select value={templateKey} onValueChange={setTemplateKey} disabled={busy}>
+            <SelectTrigger id="f-template" className="w-full">
+              <SelectValue placeholder="Select template" />
+            </SelectTrigger>
+            <SelectContent>
+              {TEMPLATE_KEYS.map((t) => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField
+          label="Read with"
+          htmlFor="f-profile"
+          aside={
+            <Link href={`/orgs/${orgId}/imports/profiles`} className="text-xs font-normal text-[#c2410c] hover:text-[#9a3412]">
+              ERP profiles
+            </Link>
+          }
+        >
+          <Select value={profileId} onValueChange={setProfileId} disabled={busy}>
+            <SelectTrigger id="f-profile" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={COLUMNS_VALUE}>MetricOra columns</SelectItem>
+              {profiles.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </FormField>
+      </FormSection>
+
+      <FormSection title="The file" cols={3}>
+        <FormField
+          label="CSV or Excel file"
+          htmlFor="f-file"
+          span={2}
+          aside={
+            <a
+              href={`/api/orgs/${orgId}/imports/template`}
+              download="metricora-import-template.xlsx"
+              className="flex items-center gap-1 text-xs font-normal text-[#c2410c] hover:text-[#9a3412]"
+              tabIndex={busy ? -1 : 0}
+            >
+              <Download aria-hidden="true" className="h-3 w-3" />
+              Download template
+            </a>
+          }
+        >
+          <Input id="f-file" type="file" accept=".csv,.xlsx,.xls" onChange={handleFileSelect} disabled={busy} />
+        </FormField>
+      </FormSection>
+
+      {phase === "error" && error && <FormError>{error}</FormError>}
+      <FormActions>
+        <Button type="submit" disabled={busy || !file} size="sm" className="gap-1.5">
+          {busy ? (
+            <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Upload aria-hidden="true" className="h-3.5 w-3.5" />
+          )}
+          {buttonLabel}
+        </Button>
+      </FormActions>
     </form>
   );
 }

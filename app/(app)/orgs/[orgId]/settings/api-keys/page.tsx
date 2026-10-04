@@ -140,7 +140,7 @@ export default function ApiKeysPage() {
       )}
 
       <form onSubmit={handleCreate} className="flex items-end gap-2">
-        <FormField label="Key name" htmlFor="f-key-name" optional>
+        <FormField label="Key name" htmlFor="f-key-name">
           <Input id="f-key-name"
             value={name}
             onChange={(e) => setName(e.target.value)}

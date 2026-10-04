@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, fieldClass } from "@/components/forms/form-kit";
 
 const PAGE_SIZE = 10;
 
@@ -184,13 +184,13 @@ export function FieldWorkerAssignments({
           </div>
 
           <div className="mt-4 grid gap-3">
-            <FormField label="Mobile user" htmlFor="field-worker-user" optional>
+            <FormField label="Mobile user" htmlFor="field-worker-user">
               <select
                 id="field-worker-user"
                 value={workerId}
                 onChange={(event) => setWorkerId(event.target.value)}
                 disabled={isPending || !assignmentsAvailable || workers.length === 0}
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
+                className={fieldClass}
               >
                 {workers.length === 0 ? (
                   <option value="">No field workers yet</option>
@@ -204,13 +204,13 @@ export function FieldWorkerAssignments({
               </select>
             </FormField>
 
-            <FormField label="Site" htmlFor="field-worker-site" optional>
+            <FormField label="Site" htmlFor="field-worker-site">
               <select
                 id="field-worker-site"
                 value={siteId}
                 onChange={(event) => setSiteId(event.target.value)}
                 disabled={isPending || !assignmentsAvailable || sites.length === 0}
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm shadow-sm"
+                className={fieldClass}
               >
                 {sites.length === 0 ? (
                   <option value="">No sites yet — create one below</option>
@@ -292,12 +292,12 @@ export function FieldWorkerAssignments({
             <div className="p-4 flex flex-col gap-3">
               {/* Site filter dropdown */}
               {uniqueAssignSites.length > 1 && (
-                <FormField label="Filter by site" htmlFor="assign-site-filter" optional>
+                <FormField label="Filter by site" htmlFor="assign-site-filter">
                   <select
                     id="assign-site-filter"
                     value={siteFilter}
                     onChange={(e) => { setSiteFilter(e.target.value); setAssignPage(0); }}
-                    className="h-8 flex-1 max-w-xs rounded-md border border-slate-200 bg-white px-2 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
+                    className={fieldClass}
                   >
                     <option value="all">All sites ({assignments.length})</option>
                     {uniqueAssignSites.map(([id, label]) => (

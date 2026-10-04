@@ -242,7 +242,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
               <CardDescription>Basic information about your organization</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField label="Organization Name" htmlFor="organizationName" optional>
+              <FormField label="Organization Name" htmlFor="organizationName">
                 <Input
                   id="organizationName"
                   name="organizationName"
@@ -252,7 +252,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Industry" htmlFor="industry" optional>
+              <FormField label="Industry" htmlFor="industry">
                 <Select value={formData.industry} onValueChange={(value) => handleChange({ target: { name: "industry", value } })}>
                   <SelectTrigger id="industry">
                     <SelectValue placeholder="Select industry" />
@@ -270,7 +270,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 </Select>
               </FormField>
 
-              <FormField label="Number of Facilities" htmlFor="facilityCount" optional>
+              <FormField label="Number of Facilities" htmlFor="facilityCount">
                 <Input
                   id="facilityCount"
                   name="facilityCount"
@@ -282,7 +282,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Facility Names (comma-separated)" htmlFor="facilityNames" hint="Enter facility names separated by commas" optional>
+              <FormField label="Facility Names (comma-separated)" htmlFor="facilityNames" hint="Enter facility names separated by commas">
                 <Input
                   id="facilityNames"
                   name="facilityNames"
@@ -292,7 +292,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Accounting System (Optional)" htmlFor="accountingSystem" optional>
+              <FormField label="Accounting System" htmlFor="accountingSystem" optional>
                 <Select value={formData.accountingSystem || "none"} onValueChange={(value) => handleChange({ target: { name: "accountingSystem", value: value === "none" ? "" : value } })}>
                   <SelectTrigger id="accountingSystem">
                     <SelectValue placeholder="Select or leave blank" />
@@ -339,7 +339,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     placeholder="jane@company.com"
                   />
                 </FormField>
-                <FormField label="Job Title" htmlFor="sustainabilityLeadRole" optional>
+                <FormField label="Job Title" htmlFor="sustainabilityLeadRole">
                   <Input
                     id="sustainabilityLeadRole"
                     name="sustainabilityLeadRole"
@@ -372,7 +372,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     placeholder="john@company.com"
                   />
                 </FormField>
-                <FormField label="Job Title" htmlFor="financeLeadRole" optional>
+                <FormField label="Job Title" htmlFor="financeLeadRole">
                   <Input
                     id="financeLeadRole"
                     name="financeLeadRole"
@@ -419,7 +419,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                     placeholder="Robert Williams"
                   />
                 </FormField>
-                <FormField label="Firm" htmlFor="externalAuditorFirm" optional>
+                <FormField label="Firm" htmlFor="externalAuditorFirm">
                   <Input
                     id="externalAuditorFirm"
                     name="externalAuditorFirm"
@@ -499,7 +499,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
               <CardDescription>Pilot program details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField label="Pilot Duration (Days)" htmlFor="timelineDays" hint="Typically 30-365 days" optional>
+              <FormField label="Pilot Duration (Days)" htmlFor="timelineDays" hint="Typically 30-365 days">
                 <Input
                   id="timelineDays"
                   name="timelineDays"
@@ -512,7 +512,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Pilot Start Date" htmlFor="pilotStartDate" optional>
+              <FormField label="Pilot Start Date" htmlFor="pilotStartDate">
                 <Input
                   id="pilotStartDate"
                   name="pilotStartDate"
@@ -522,7 +522,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Number of Suppliers" htmlFor="supplierCount" hint="For Scope 3 collaboration" optional>
+              <FormField label="Number of Suppliers" htmlFor="supplierCount" hint="For Scope 3 collaboration">
                 <Input
                   id="supplierCount"
                   name="supplierCount"
@@ -534,7 +534,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Number of Field Workers" htmlFor="fieldWorkerCount" hint="Using mobile app for data capture" optional>
+              <FormField label="Number of Field Workers" htmlFor="fieldWorkerCount" hint="Using mobile app for data capture">
                 <Input
                   id="fieldWorkerCount"
                   name="fieldWorkerCount"
@@ -546,7 +546,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 />
               </FormField>
 
-              <FormField label="Reporting Currency" htmlFor="reportingCurrency" optional>
+              <FormField label="Reporting Currency" htmlFor="reportingCurrency">
                 <Select value={formData.reportingCurrency} onValueChange={(value) => handleChange({ target: { name: "reportingCurrency", value } })}>
                   <SelectTrigger id="reportingCurrency">
                     <SelectValue />
@@ -560,7 +560,7 @@ export function GenerateKitForm({ orgId, organizationName }: GenerateKitFormProp
                 </Select>
               </FormField>
 
-              <FormField label="Timezone" htmlFor="timezone" optional>
+              <FormField label="Timezone" htmlFor="timezone">
                 <Select value={formData.timezone} onValueChange={(value) => handleChange({ target: { name: "timezone", value } })}>
                   <SelectTrigger id="timezone">
                     <SelectValue placeholder="Select timezone" />

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SECTIONS, type SectionKey } from "@/lib/pqq/topics";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 
 type Topic = { key: string; title: string; section: SectionKey };
 type Q = { ref: string; text: string; topicKey: string; suggested?: boolean; own?: string };
@@ -54,18 +54,20 @@ export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: 
         answered; check the matches before saving. A question that matches nothing gets its own answer.
       </p>
       <form onSubmit={preview} className="grid gap-4 sm:grid-cols-3">
-        <FormField label="Name (required)" htmlFor="pq-name" optional>
-          <Input id="pq-name" value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} placeholder="e.g. Framework PQQ 2026" className="h-9" />
-        </FormField>
-        <FormField label="Client or scheme" htmlFor="pq-issuer" optional>
-          <Input id="pq-issuer" value={meta.issuer} onChange={(e) => setMeta({ ...meta, issuer: e.target.value })} className="h-9" />
-        </FormField>
-        <FormField label="Due" htmlFor="pq-due" optional>
-          <Input id="pq-due" type="date" value={meta.dueOn} onChange={(e) => setMeta({ ...meta, dueOn: e.target.value })} className="h-9" />
-        </FormField>
-        <FormField label="Questions" htmlFor="pq-text" span={4} optional>
-          <Textarea id="pq-text" value={text} onChange={(e) => setText(e.target.value)} rows={8} placeholder={"1.1 Do you hold ISO 14001?\n1.2 Provide your employer's liability insurance certificate"} />
-        </FormField>
+        <FormSection title="Paste a client questionnaire" cols={3}>
+          <FormField label="Name" htmlFor="pq-name">
+            <Input id="pq-name" value={meta.name} onChange={(e) => setMeta({ ...meta, name: e.target.value })} placeholder="e.g. Framework PQQ 2026" className="h-9" />
+          </FormField>
+          <FormField label="Client or scheme" htmlFor="pq-issuer">
+            <Input id="pq-issuer" value={meta.issuer} onChange={(e) => setMeta({ ...meta, issuer: e.target.value })} className="h-9" />
+          </FormField>
+          <FormField label="Due" htmlFor="pq-due">
+            <Input id="pq-due" type="date" value={meta.dueOn} onChange={(e) => setMeta({ ...meta, dueOn: e.target.value })} className="h-9" />
+          </FormField>
+          <FormField label="Questions" span={4} htmlFor="pq-text">
+            <Textarea id="pq-text" value={text} onChange={(e) => setText(e.target.value)} rows={8} placeholder={"1.1 Do you hold ISO 14001?\n1.2 Provide your employer's liability insurance certificate"} />
+          </FormField>
+        </FormSection>
         <Button type="submit" size="sm" disabled={isPending || !text.trim()} className="self-start">{isPending && !questions ? "Reading…" : "Match questions"}</Button>
       </form>
       {questions && (

@@ -76,16 +76,16 @@ export function PlanForm({ orgId, canEdit, plan, currency }: { orgId: string; ca
           <p className="mt-1 text-xs text-[#6B7280]">{field.help}</p>
         </div>
       ))}
-      <FormField label="Net zero year" htmlFor="tp-netZeroYear" optional>
+      <FormField label="Net zero year" htmlFor="tp-netZeroYear">
         <Input id="tp-netZeroYear" name="netZeroYear" type="number" min={2025} max={2070} disabled={!canEdit} defaultValue={plan?.netZeroYear ?? ""} />
       </FormField>
-      <FormField label="Currency" htmlFor="tp-currency" optional>
+      <FormField label="Currency" htmlFor="tp-currency">
         <Input id="tp-currency" name="currency" maxLength={3} disabled={!canEdit} defaultValue={currency} />
       </FormField>
-      <FormField label="Planned capital spend" htmlFor="tp-capex" optional>
+      <FormField label="Planned capital spend" htmlFor="tp-capex">
         <Input id="tp-capex" name="capexPlanned" type="number" min={0} step="any" disabled={!canEdit} defaultValue={plan?.capexPlanned ?? ""} />
       </FormField>
-      <FormField label="Planned operating spend" htmlFor="tp-opex" optional>
+      <FormField label="Planned operating spend" htmlFor="tp-opex">
         <Input id="tp-opex" name="opexPlanned" type="number" min={0} step="any" disabled={!canEdit} defaultValue={plan?.opexPlanned ?? ""} />
       </FormField>
       <FormField label="EU Taxonomy-aligned capex (%)" htmlFor="tp-taxonomy" hint="Leave blank if the Taxonomy does not apply to you." optional>

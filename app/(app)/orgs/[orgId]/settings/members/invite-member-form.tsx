@@ -6,7 +6,7 @@ import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormSection } from "@/components/forms/form-kit";
 import {
   Select,
   SelectContent,
@@ -101,30 +101,32 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
-        <FormField label="Email address" htmlFor="invite-email">
-          <Input
-            id="invite-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-            required
-          />
-        </FormField>
-        <FormField label="Role" htmlFor="invite-role" optional>
-          <Select value={role} onValueChange={setRole} disabled={loading}>
-            <SelectTrigger id="invite-role" className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ROLES.map((r) => (
-                <SelectItem key={r.value} value={r.value}>
-                  {r.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </FormField>
+        <FormSection title="Invite a colleague" cols={2}>
+          <FormField label="Email address" htmlFor="invite-email">
+            <Input
+              id="invite-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </FormField>
+          <FormField label="Role" htmlFor="invite-role">
+            <Select value={role} onValueChange={setRole} disabled={loading}>
+              <SelectTrigger id="invite-role" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ROLES.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </FormSection>
         <Button type="submit" disabled={loading} className="self-end">
           {loading ? "Sending..." : "Send invite"}
         </Button>

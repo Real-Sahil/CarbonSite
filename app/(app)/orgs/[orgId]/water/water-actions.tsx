@@ -101,7 +101,7 @@ function AddRecordModal({
               </FormField>
           </FormSection>
           <FormSection title="The measurement" cols={2}>
-            <FormField label="Metric" htmlFor="f-metric" optional>
+            <FormField label="Metric" htmlFor="f-metric">
                 <select id="f-metric" value={form.metricType}
                   onChange={(e) => setForm((f) => ({ ...f, metricType: e.target.value as typeof form.metricType }))}
                   className={inputCls}>
@@ -110,7 +110,7 @@ function AddRecordModal({
                   <option value="consumption">Consumption</option>
                 </select>
               </FormField>
-              <FormField label="Source" htmlFor="f-source" optional>
+              <FormField label="Source" htmlFor="f-source">
                 <select id="f-source" value={form.source}
                   onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} className={inputCls}>
                   {SOURCE_OPTIONS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}

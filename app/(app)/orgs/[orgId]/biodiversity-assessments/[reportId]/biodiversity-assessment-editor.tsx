@@ -159,7 +159,7 @@ export function BiodiversityAssessmentEditor({
           <div className="bg-white p-6 rounded-lg border">
             <h2 className="text-lg font-semibold mb-4">Biodiversity Assessment Details</h2>
             <div className="space-y-4">
-              <FormField label="Assessment Title" htmlFor="f-assessment-title" optional>
+              <FormField label="Assessment Title" htmlFor="f-assessment-title">
                 <Input id="f-assessment-title"
                   disabled={disabled}
                   value={title}
@@ -168,7 +168,7 @@ export function BiodiversityAssessmentEditor({
                 />
               </FormField>
               <FormSection cols={2}>
-                <FormField label="Project" htmlFor="f-project" optional>
+                <FormField label="Project" htmlFor="f-project">
                   <Select
                     disabled={disabled}
                     value={projectId}
@@ -186,7 +186,7 @@ export function BiodiversityAssessmentEditor({
                     </SelectContent>
                   </Select>
                 </FormField>
-                <FormField label="Site" htmlFor="f-site" optional>
+                <FormField label="Site" htmlFor="f-site">
                   <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
                     <SelectTrigger id="f-site">
                       <SelectValue placeholder="Select site" />
@@ -201,7 +201,7 @@ export function BiodiversityAssessmentEditor({
                   </Select>
                 </FormField>
               </FormSection>
-              <FormField label="Assessment Date" htmlFor="f-assessment-date" optional>
+              <FormField label="Assessment Date" htmlFor="f-assessment-date">
                 <Input id="f-assessment-date"
                   disabled={disabled}
                   type="date"
@@ -209,7 +209,7 @@ export function BiodiversityAssessmentEditor({
                   onChange={(e) => setAssessmentDate(e.target.value)}
                 />
               </FormField>
-              <FormField label="Habitat Type" htmlFor="f-habitat-type" optional>
+              <FormField label="Habitat Type" htmlFor="f-habitat-type">
                 <Input id="f-habitat-type"
                   disabled={disabled}
                   value={sections.habitatType || ""}
@@ -217,7 +217,7 @@ export function BiodiversityAssessmentEditor({
                   placeholder="e.g., Woodland, Grassland, Wetland"
                 />
               </FormField>
-              <FormField label="Site Boundary & Area" htmlFor="f-site-boundary-area" optional>
+              <FormField label="Site Boundary & Area" htmlFor="f-site-boundary-area">
                 <Textarea id="f-site-boundary-area"
                   disabled={disabled}
                   value={sections.siteBoundary || ""}
@@ -226,7 +226,7 @@ export function BiodiversityAssessmentEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Baseline Condition" htmlFor="f-baseline-condition" optional>
+              <FormField label="Baseline Condition" htmlFor="f-baseline-condition">
                 <Textarea id="f-baseline-condition"
                   disabled={disabled}
                   value={sections.baselineCondition || ""}
@@ -235,7 +235,7 @@ export function BiodiversityAssessmentEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Species Identified" htmlFor="f-species-identified" optional>
+              <FormField label="Species Identified" htmlFor="f-species-identified">
                 <Textarea id="f-species-identified"
                   disabled={disabled}
                   value={sections.speciesIdentified || ""}
@@ -244,7 +244,7 @@ export function BiodiversityAssessmentEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Protected Species & Habitats" htmlFor="f-protected-species-habitats" optional>
+              <FormField label="Protected Species & Habitats" htmlFor="f-protected-species-habitats">
                 <Textarea id="f-protected-species-habitats"
                   disabled={disabled}
                   value={sections.protectedSpecies || ""}
@@ -253,7 +253,7 @@ export function BiodiversityAssessmentEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Risk Assessment" htmlFor="f-risk-assessment" optional>
+              <FormField label="Risk Assessment" htmlFor="f-risk-assessment">
                 <Textarea id="f-risk-assessment"
                   disabled={disabled}
                   value={sections.riskAssessment || ""}
@@ -262,7 +262,7 @@ export function BiodiversityAssessmentEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Mitigation Measures" htmlFor="f-mitigation-measures" optional>
+              <FormField label="Mitigation Measures" htmlFor="f-mitigation-measures">
                 <Textarea id="f-mitigation-measures"
                   disabled={disabled}
                   value={sections.mitigationMeasures || ""}
@@ -271,7 +271,7 @@ export function BiodiversityAssessmentEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Monitoring Plan" htmlFor="f-monitoring-plan" optional>
+              <FormField label="Monitoring Plan" htmlFor="f-monitoring-plan">
                 <Textarea id="f-monitoring-plan"
                   disabled={disabled}
                   value={sections.monitoringPlan || ""}

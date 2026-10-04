@@ -227,7 +227,7 @@ export function SupplierDataForm({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <FormField label="Your name or company (optional)" htmlFor="supplier-name" optional>
+            <FormField label="Your name or company" htmlFor="supplier-name" optional>
               <Input
                 id="supplier-name"
                 placeholder="Acme Logistics Ltd"

@@ -199,7 +199,7 @@ export default function WebhooksPage() {
       >
         <p className="text-sm font-medium text-zinc-800">Add endpoint</p>
 
-        <FormField label="Endpoint URL (must be HTTPS)" htmlFor="f-endpoint-url-must-be-https" optional>
+        <FormField label="Endpoint URL (must be HTTPS)" htmlFor="f-endpoint-url-must-be-https">
           <Input id="f-endpoint-url-must-be-https"
             value={url}
             onChange={(e) => setUrl(e.target.value)}

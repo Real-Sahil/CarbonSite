@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 type Material = {
   id: string;
@@ -97,17 +96,13 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
-      )}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <FormError>{error}</FormError>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Material */}
-        <div className="sm:col-span-2 space-y-1.5">
-          <Label className="text-xs font-medium text-zinc-700">Material</Label>
+      <FormSection title="Material and quantity" cols={3}>
+        <FormField label="Material" htmlFor="f-material" span={3}>
           <Select value={materialId} onValueChange={setMaterialId}>
-            <SelectTrigger className="h-9 text-sm">
+            <SelectTrigger id="f-material" className="w-full">
               <SelectValue placeholder="Select from ICE library..." />
             </SelectTrigger>
             <SelectContent className="max-h-72">
@@ -125,27 +120,17 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
             </SelectContent>
           </Select>
           {selectedMaterial && (
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-zinc-500">
               A1-A3 factor: <span className="font-medium">{selectedMaterial.gwpA1A3} kgCO2e/{selectedMaterial.declaredUnit}</span>
             </p>
           )}
-        </div>
-
-        {/* Quantity + unit */}
-        <FormField label="Quantity" htmlFor="f-quantity" optional>
-          <Input id="f-quantity"
-            type="number"
-            min="0"
-            step="any"
-            placeholder="e.g. 5000"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            className="h-9 text-sm"
-          />
         </FormField>
-        <FormField label="Unit" htmlFor="f-unit" optional>
+        <FormField label="Quantity" htmlFor="f-quantity" span={2}>
+          <Input id="f-quantity" type="number" min="0" step="any" placeholder="e.g. 5000" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+        </FormField>
+        <FormField label="Unit" htmlFor="f-unit">
           <Select value={unit} onValueChange={(v) => setUnit(v as typeof unit)}>
-            <SelectTrigger id="f-unit" className="h-9 text-sm">
+            <SelectTrigger id="f-unit" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -156,45 +141,45 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
             </SelectContent>
           </Select>
         </FormField>
+      </FormSection>
 
-        {/* Project */}
-        {projects.length > 0 && (
-          <FormField label="Project (optional)" htmlFor="f-project-optional" optional>
-            <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger id="f-project-optional" className="h-9 text-sm">
-                <SelectValue placeholder="No project" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No project</SelectItem>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormField>
-        )}
+      {(projects.length > 0 || reportingPeriods.length > 0) && (
+        <FormSection title="Linked to" description="Link the record to a project and a reporting period so it appears in their totals." cols={2}>
+          {projects.length > 0 && (
+            <FormField label="Project" htmlFor="f-project" optional>
+              <Select value={projectId} onValueChange={setProjectId}>
+                <SelectTrigger id="f-project" className="w-full">
+                  <SelectValue placeholder="No project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No project</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          )}
+          {reportingPeriods.length > 0 && (
+            <FormField label="Reporting period" htmlFor="f-reporting-period" optional>
+              <Select value={periodId} onValueChange={setPeriodId}>
+                <SelectTrigger id="f-reporting-period" className="w-full">
+                  <SelectValue placeholder="No period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No period</SelectItem>
+                  {reportingPeriods.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          )}
+        </FormSection>
+      )}
 
-        {/* Period */}
-        {reportingPeriods.length > 0 && (
-          <FormField label="Reporting period (optional)" htmlFor="f-reporting-period-optional" optional>
-            <Select value={periodId} onValueChange={setPeriodId}>
-              <SelectTrigger id="f-reporting-period-optional" className="h-9 text-sm">
-                <SelectValue placeholder="No period" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No period</SelectItem>
-                {reportingPeriods.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormField>
-        )}
-      </div>
-
-      {/* Lifecycle stages */}
-      <div className="space-y-1.5">
-        <Label className="text-xs font-medium text-zinc-700">Lifecycle stages (BS EN 15978)</Label>
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-semibold text-zinc-900">Lifecycle stages (BS EN 15978)</legend>
         <div className="flex flex-wrap gap-2">
           {ALL_STAGES.map((stage) => {
             const active = stages.includes(stage);
@@ -202,6 +187,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
               <button
                 key={stage}
                 type="button"
+                aria-pressed={active}
                 onClick={() => toggleStage(stage)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   active
@@ -215,26 +201,20 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
           })}
         </div>
         <p className="text-xs text-zinc-500">A1-A3 is always available. A4/A5 require transport data in the ICE entry.</p>
-      </div>
+      </fieldset>
 
-      {/* Notes */}
-      <FormField label="Notes (optional)" htmlFor="f-notes-optional" optional>
-        <Input id="f-notes-optional"
-          placeholder="Delivery note reference, supplier, etc."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="h-9 text-sm"
-        />
-      </FormField>
+      <FormSection title="Reference" cols={2}>
+        <FormField label="Notes" htmlFor="f-notes" span={4} optional>
+          <Input id="f-notes" placeholder="Delivery note reference, supplier, etc." value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </FormField>
+      </FormSection>
 
-      <Button
-        type="submit"
-        disabled={isPending}
-        className="bg-[#228B22] hover:bg-[#1a6b1a] text-white h-9 px-4 text-sm"
-      >
-        {isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-        {isPending ? "Saving..." : "Add record"}
-      </Button>
+      <FormActions>
+        <Button type="submit" size="sm" disabled={isPending}>
+          {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          {isPending ? "Saving..." : "Add record"}
+        </Button>
+      </FormActions>
     </form>
   );
 }

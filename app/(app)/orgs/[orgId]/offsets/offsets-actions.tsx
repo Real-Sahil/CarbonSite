@@ -97,7 +97,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
                   {STANDARDS.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
                 </select>
               </FormField>
-              <FormField label="Project type" htmlFor="f-project-type" optional>
+              <FormField label="Project type" htmlFor="f-project-type">
                 <select id="f-project-type" value={form.projectType} onChange={(e) => set("projectType", e.target.value)} className={inputCls}>
                   {PROJECT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
@@ -113,7 +113,7 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
               <FormField label="Price / tonne" htmlFor="f-price-tonne" optional>
                 <input id="f-price-tonne" type="number" min="0" step="0.01" value={form.pricePerTonne} onChange={(e) => set("pricePerTonne", e.target.value)} className={inputCls} placeholder="15.00" />
               </FormField>
-              <FormField label="Currency" htmlFor="f-currency" optional>
+              <FormField label="Currency" htmlFor="f-currency">
                 <input id="f-currency" type="text" maxLength={3} value={form.currency} onChange={(e) => set("currency", e.target.value.toUpperCase())} className={inputCls} />
               </FormField>
               <FormField label="Purchase date" htmlFor="f-purchase-date">

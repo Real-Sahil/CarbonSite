@@ -139,7 +139,7 @@ export default function CompliancePage() {
         <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Track a compliance obligation</h2>
           <form onSubmit={handleSave} className="grid grid-cols-2 gap-4">
-            <FormField label="Framework" htmlFor="f-framework" span={2} optional>
+            <FormField label="Framework" htmlFor="f-framework" span={2}>
               <select id="f-framework" value={form.framework} onChange={(e) => setForm((f) => ({ ...f, framework: e.target.value }))} className={inputCls}>
                 {FRAMEWORKS.map((fw) => <option key={fw.value} value={fw.value}>{fw.label}</option>)}
               </select>
@@ -148,7 +148,7 @@ export default function CompliancePage() {
               <input id="f-reporting-year" type="number" required min={2000} max={2100} value={form.reportingYear}
                 onChange={(e) => setForm((f) => ({ ...f, reportingYear: Number(e.target.value) }))} className={inputCls} />
             </FormField>
-            <FormField label="Status" htmlFor="f-status" optional>
+            <FormField label="Status" htmlFor="f-status">
               <select id="f-status" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className={inputCls}>
                 {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
@@ -178,16 +178,15 @@ export default function CompliancePage() {
               <textarea id="f-notes" rows={2} value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 className={`${inputCls} resize-none`} />
             </FormField>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-600 mb-1">Action steps <span className="text-gray-500">(optional - what needs to happen next)</span></label>
-              <textarea
+            <FormField label="Action steps" htmlFor="f-action-steps" span={2} optional>
+              <textarea id="f-action-steps"
                 rows={3}
                 placeholder="e.g. 1. Gather scope 1 data&#10;2. Request scope 2 invoices&#10;3. Submit to HMRC portal by deadline"
                 value={form.actionSteps}
                 onChange={(e) => setForm((f) => ({ ...f, actionSteps: e.target.value }))}
                 className={`${inputCls} resize-none`}
               />
-            </div>
+            </FormField>
             {error && <p className="col-span-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
             <div className="col-span-2 flex gap-3">
               <button type="submit" disabled={saving}

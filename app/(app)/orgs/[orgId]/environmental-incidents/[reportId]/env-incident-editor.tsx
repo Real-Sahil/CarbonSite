@@ -231,7 +231,7 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Incident Details</h2>
                 <div className="space-y-4">
-                  <FormField label="Report Title" htmlFor="f-report-title" optional>
+                  <FormField label="Report Title" htmlFor="f-report-title">
                     <Input id="f-report-title"
                       disabled={disabled}
                       value={title}
@@ -240,7 +240,7 @@ export function EnvironmentalIncidentEditor({
                     />
                   </FormField>
                   <FormSection cols={2}>
-                    <FormField label="Project" htmlFor="f-project" optional>
+                    <FormField label="Project" htmlFor="f-project">
                       <Select
                         disabled={disabled}
                         value={projectId}
@@ -258,7 +258,7 @@ export function EnvironmentalIncidentEditor({
                         </SelectContent>
                       </Select>
                     </FormField>
-                    <FormField label="Site" htmlFor="f-site" optional>
+                    <FormField label="Site" htmlFor="f-site">
                       <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
                         <SelectTrigger id="f-site">
                           <SelectValue placeholder="Select site" />
@@ -274,7 +274,7 @@ export function EnvironmentalIncidentEditor({
                     </FormField>
                   </FormSection>
                   <FormSection cols={2}>
-                    <FormField label="Incident Date" htmlFor="f-incident-date" optional>
+                    <FormField label="Incident Date" htmlFor="f-incident-date">
                       <Input id="f-incident-date"
                         disabled={disabled}
                         type="date"
@@ -282,7 +282,7 @@ export function EnvironmentalIncidentEditor({
                         onChange={(e) => setIncidentDate(e.target.value)}
                       />
                     </FormField>
-                    <FormField label="Incident Type" htmlFor="f-incident-type" optional>
+                    <FormField label="Incident Type" htmlFor="f-incident-type">
                       <Input id="f-incident-type"
                         disabled={disabled}
                         value={sections.incidentType || ""}
@@ -293,7 +293,7 @@ export function EnvironmentalIncidentEditor({
                       />
                     </FormField>
                   </FormSection>
-                  <FormField label="Description" htmlFor="f-description" optional>
+                  <FormField label="Description" htmlFor="f-description">
                     <Textarea id="f-description"
                       disabled={disabled}
                       value={sections.description || ""}
@@ -304,7 +304,7 @@ export function EnvironmentalIncidentEditor({
                       rows={4}
                     />
                   </FormField>
-                  <FormField label="Location" htmlFor="f-location" optional>
+                  <FormField label="Location" htmlFor="f-location">
                     <Input id="f-location"
                       disabled={disabled}
                       value={sections.location || ""}
@@ -312,7 +312,7 @@ export function EnvironmentalIncidentEditor({
                       placeholder="Specific location of incident"
                     />
                   </FormField>
-                  <FormField label="Severity" htmlFor="f-severity" optional>
+                  <FormField label="Severity" htmlFor="f-severity">
                     <Select
                       disabled={disabled}
                       value={sections.severity || ""}
@@ -338,7 +338,7 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Environmental Impact</h2>
                 <div className="space-y-4">
-                  <FormField label="Impact Type" htmlFor="f-impact-type" optional>
+                  <FormField label="Impact Type" htmlFor="f-impact-type">
                     <Input id="f-impact-type"
                       disabled={disabled}
                       value={sections.environmentalImpact?.impactType || ""}
@@ -354,7 +354,7 @@ export function EnvironmentalIncidentEditor({
                       placeholder="e.g., Water pollution, Air emissions"
                     />
                   </FormField>
-                  <FormField label="Affected Areas" htmlFor="f-affected-areas" optional>
+                  <FormField label="Affected Areas" htmlFor="f-affected-areas">
                     <Textarea id="f-affected-areas"
                       disabled={disabled}
                       value={sections.environmentalImpact?.affectedAreas || ""}
@@ -371,7 +371,7 @@ export function EnvironmentalIncidentEditor({
                       rows={3}
                     />
                   </FormField>
-                  <FormField label="Estimated Damage" htmlFor="f-estimated-damage" optional>
+                  <FormField label="Estimated Damage" htmlFor="f-estimated-damage">
                     <Input id="f-estimated-damage"
                       disabled={disabled}
                       value={sections.environmentalImpact?.estimatedDamage || ""}
@@ -396,7 +396,7 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Response Actions</h2>
                 <div className="space-y-4">
-                  <FormField label="Immediate Actions Taken" htmlFor="f-immediate-actions-taken" optional>
+                  <FormField label="Immediate Actions Taken" htmlFor="f-immediate-actions-taken">
                     <Textarea id="f-immediate-actions-taken"
                       disabled={disabled}
                       value={sections.responseActions?.immediateActions || ""}
@@ -429,7 +429,7 @@ export function EnvironmentalIncidentEditor({
                       placeholder="e.g., Environment Agency, Local Council"
                     />
                   </FormField>
-                  <FormField label="Containment Measures" htmlFor="f-containment-measures" optional>
+                  <FormField label="Containment Measures" htmlFor="f-containment-measures">
                     <Textarea id="f-containment-measures"
                       disabled={disabled}
                       value={sections.responseActions?.containmentMeasures || ""}
@@ -455,7 +455,7 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Investigation</h2>
                 <div className="space-y-4">
-                  <FormField label="Investigation Date" htmlFor="f-investigation-date" optional>
+                  <FormField label="Investigation Date" htmlFor="f-investigation-date">
                     <Input id="f-investigation-date"
                       disabled={disabled}
                       type="date"
@@ -471,7 +471,7 @@ export function EnvironmentalIncidentEditor({
                       }
                     />
                   </FormField>
-                  <FormField label="Root Cause" htmlFor="f-root-cause" optional>
+                  <FormField label="Root Cause" htmlFor="f-root-cause">
                     <Textarea id="f-root-cause"
                       disabled={disabled}
                       value={sections.investigation?.rootCause || ""}
@@ -488,7 +488,7 @@ export function EnvironmentalIncidentEditor({
                       rows={3}
                     />
                   </FormField>
-                  <FormField label="Contributing Factors" htmlFor="f-contributing-factors" optional>
+                  <FormField label="Contributing Factors" htmlFor="f-contributing-factors">
                     <Textarea id="f-contributing-factors"
                       disabled={disabled}
                       value={sections.investigation?.contributingFactors || ""}
@@ -514,7 +514,7 @@ export function EnvironmentalIncidentEditor({
               <div className="bg-white p-6 rounded-lg border">
                 <h2 className="text-lg font-semibold mb-4">Remediation</h2>
                 <div className="space-y-4">
-                  <FormField label="Remediation Plan" htmlFor="f-remediation-plan" optional>
+                  <FormField label="Remediation Plan" htmlFor="f-remediation-plan">
                     <Textarea id="f-remediation-plan"
                       disabled={disabled}
                       value={sections.remediation?.remediationPlan || ""}
@@ -531,7 +531,7 @@ export function EnvironmentalIncidentEditor({
                       rows={4}
                     />
                   </FormField>
-                  <FormField label="Estimated Cost" htmlFor="f-estimated-cost" optional>
+                  <FormField label="Estimated Cost" htmlFor="f-estimated-cost">
                     <Input id="f-estimated-cost"
                       disabled={disabled}
                       type="number"
@@ -549,7 +549,7 @@ export function EnvironmentalIncidentEditor({
                     />
                   </FormField>
                   <FormSection cols={2}>
-                    <FormField label="Target Completion" htmlFor="f-target-completion" optional>
+                    <FormField label="Target Completion" htmlFor="f-target-completion">
                       <Input id="f-target-completion"
                         disabled={disabled}
                         type="date"
@@ -565,7 +565,7 @@ export function EnvironmentalIncidentEditor({
                         }
                       />
                     </FormField>
-                    <FormField label="Responsible Party" htmlFor="f-responsible-party" optional>
+                    <FormField label="Responsible Party" htmlFor="f-responsible-party">
                       <Input id="f-responsible-party"
                         disabled={disabled}
                         value={sections.remediation?.responsibleParty || ""}

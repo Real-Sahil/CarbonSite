@@ -100,7 +100,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
       <FormSection title="The target" description="What you want to cut, measured from a baseline period to a target period." cols={2}>
-        <FormField label="Type" htmlFor="f-type" optional>
+        <FormField label="Type" htmlFor="f-type">
           <Select value={targetType} onValueChange={setTargetType}>
             <SelectTrigger id="f-type" className="w-full">
               <SelectValue />
@@ -110,7 +110,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label="Baseline period" htmlFor="f-baseline-period" optional>
+        <FormField label="Baseline period" htmlFor="f-baseline-period">
           <Select value={baselinePeriodId} onValueChange={setBaselinePeriodId}>
             <SelectTrigger id="f-baseline-period" className="w-full">
               <SelectValue placeholder="Select" />
@@ -120,7 +120,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label="Target period" htmlFor="f-target-period" optional>
+        <FormField label="Target period" htmlFor="f-target-period">
           <Select value={targetPeriodId} onValueChange={setTargetPeriodId}>
             <SelectTrigger id="f-target-period" className="w-full">
               <SelectValue placeholder="Select" />
@@ -130,7 +130,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label="Reduction (kgCO2e)" htmlFor="f-reduction-kgco2e" optional>
+        <FormField label="Reduction (kgCO2e)" htmlFor="f-reduction-kgco2e">
           <Input id="f-reduction-kgco2e"
             type="number"
             min="0"
@@ -241,7 +241,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
         <FormField label="Name" span={4} htmlFor="f-name" optional>
           <Input id="f-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-full" />
         </FormField>
-        <FormField label="Status" htmlFor="f-status" optional>
+        <FormField label="Status" htmlFor="f-status">
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger id="f-status" className="w-full">
               <SelectValue />
@@ -268,7 +268,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
         <FormField label="Expected impact (kgCO2e)" htmlFor="f-expected-impact-kgco2e" optional>
           <Input id="f-expected-impact-kgco2e" type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} className="w-full" />
         </FormField>
-        <FormField label="Starts" htmlFor="initiative-start" optional>
+        <FormField label="Starts" htmlFor="initiative-start">
           <Input id="initiative-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full" />
         </FormField>
         <FormField label="Currency" htmlFor="initiative-currency" optional>
@@ -286,7 +286,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
       </FormSection>
       <FormSection title="Where it applies" description="Link the initiative to a site, an emission category and the target it counts toward." cols={3}>
         {facilities.length > 0 && (
-          <FormField label="Facility" htmlFor="f-facility" optional>
+          <FormField label="Facility" htmlFor="f-facility">
             <Select value={facilityId || NONE} onValueChange={(v) => setFacilityId(v === NONE ? "" : v)}>
               <SelectTrigger id="f-facility" className="w-full">
                 <SelectValue placeholder="Org-wide" />
@@ -299,7 +299,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
           </FormField>
         )}
         {categories.length > 0 && (
-          <FormField label="Category" htmlFor="f-category" optional>
+          <FormField label="Category" htmlFor="f-category">
             <Select value={emissionCategoryId || NONE} onValueChange={(v) => setEmissionCategoryId(v === NONE ? "" : v)}>
               <SelectTrigger id="f-category" className="w-full">
                 <SelectValue placeholder="Not specified" />
@@ -312,7 +312,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
           </FormField>
         )}
         {targets.length > 0 && (
-          <FormField label="Counts toward" htmlFor="f-counts-toward" optional>
+          <FormField label="Counts toward" htmlFor="f-counts-toward">
             <Select value={reductionTargetId || NONE} onValueChange={(v) => setReductionTargetId(v === NONE ? "" : v)}>
               <SelectTrigger id="f-counts-toward" className="w-full">
                 <SelectValue placeholder="No target" />

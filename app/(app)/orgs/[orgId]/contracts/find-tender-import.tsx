@@ -101,7 +101,7 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
           Paste the notice number (for example 091200-2026) or its web address. An award notice gives the buyer, awarded value and dates.
         </p>
       </div>
-      <form onSubmit={lookUp} className="flex flex-wrap items-end gap-3">
+      <form onSubmit={lookUp} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
         <FormField label="Notice number or link" htmlFor="fts-notice">
           <Input id="fts-notice" value={notice} onChange={(e) => setNotice(e.target.value)} placeholder="091200-2026" className={field} required />
         </FormField>
@@ -131,10 +131,10 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                 </ul>
               )}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <FormField label="Name" htmlFor="fts-name" span={2} optional>
+                <FormField label="Name" htmlFor="fts-name" span={2}>
                   <Input id="fts-name" value={draft.name} maxLength={200} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className={field} />
                 </FormField>
-                <FormField label="Client (buyer)" htmlFor="fts-client" optional>
+                <FormField label="Client (buyer)" htmlFor="fts-client">
                   <Input id="fts-client" value={draft.clientName ?? ""} maxLength={200} onChange={(e) => setDraft({ ...draft, clientName: e.target.value || null })} className={field} />
                 </FormField>
                 <FormField label={`Value (${draft.currency})`} htmlFor="fts-value" optional>
@@ -147,10 +147,10 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                     className={field}
                   />
                 </FormField>
-                <FormField label="Start date" htmlFor="fts-start" optional>
+                <FormField label="Start date" htmlFor="fts-start">
                   <Input id="fts-start" type="date" value={draft.startDate ?? ""} onChange={(e) => setDraft({ ...draft, startDate: e.target.value || null })} className={field} />
                 </FormField>
-                <FormField label="End date" htmlFor="fts-end" optional>
+                <FormField label="End date" htmlFor="fts-end">
                   <Input id="fts-end" type="date" value={draft.endDate ?? ""} onChange={(e) => setDraft({ ...draft, endDate: e.target.value || null })} className={field} />
                 </FormField>
               </div>

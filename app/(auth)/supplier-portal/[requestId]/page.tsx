@@ -264,7 +264,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
                   </FormField>
                 </FormSection>
 
-                <FormField label="Notes (optional)" htmlFor="description" optional>
+                <FormField label="Notes" htmlFor="description" optional>
                   <Textarea
                     id="description"
                     value={description}

@@ -93,7 +93,7 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
           <FormField label="Title" htmlFor="cs-title">
             <Input id="cs-title" required minLength={2} maxLength={200} value={editing.title} onChange={(e) => set({ title: e.target.value })} />
           </FormField>
-          <FormField label="Contract" htmlFor="cs-contract" optional>
+          <FormField label="Contract" htmlFor="cs-contract">
             <select id="cs-contract" className={selectClass} value={editing.contractId ?? ""} onChange={(e) => set({ contractId: e.target.value || null })}>
               <option value="">Company-wide</option>
               {contracts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}

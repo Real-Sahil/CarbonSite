@@ -95,21 +95,21 @@ export function PlanForm({
   return (
     <form onSubmit={save} className="flex flex-col gap-4">
       <fieldset disabled={!canEdit || busy} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <FormField label="Your role on this project" htmlFor="pas-role" optional>
+        <FormField label="Your role on this project" htmlFor="pas-role">
           <select id="pas-role" className={input} value={form.valueChainRole} onChange={(e) => setForm({ ...form, valueChainRole: e.target.value as Role })}>
             {Object.entries(ROLE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </FormField>
-        <FormField label="Carbon lead" htmlFor="pas-lead" optional>
+        <FormField label="Carbon lead" htmlFor="pas-lead">
           <input id="pas-lead" className={input} maxLength={120} value={form.carbonLeadName} onChange={(e) => setForm({ ...form, carbonLeadName: e.target.value })} placeholder="Name of the accountable person" />
         </FormField>
-        <FormField label="Baseline (tCO₂e)" htmlFor="pas-baseline" optional>
+        <FormField label="Baseline (tCO₂e)" htmlFor="pas-baseline">
           <input id="pas-baseline" type="number" min={0} step="any" className={input} value={form.baselineTco2e} onChange={(e) => setForm({ ...form, baselineTco2e: e.target.value })} />
         </FormField>
-        <FormField label="Target (tCO₂e)" htmlFor="pas-target" optional>
+        <FormField label="Target (tCO₂e)" htmlFor="pas-target">
           <input id="pas-target" type="number" min={0} step="any" className={input} value={form.targetTco2e} onChange={(e) => setForm({ ...form, targetTco2e: e.target.value })} />
         </FormField>
-        <FormField label="How the baseline was set" htmlFor="pas-basis" span={4} optional>
+        <FormField label="How the baseline was set" htmlFor="pas-basis" span={4}>
           <textarea id="pas-basis" rows={2} className={area} maxLength={2000} value={form.baselineBasis} onChange={(e) => setForm({ ...form, baselineBasis: e.target.value })} placeholder="e.g. Stage 2 reference design quantified with ICE v3 and DEFRA factors; excludes B6 as the asset has no operational energy" />
         </FormField>
         <fieldset className="sm:col-span-2 lg:col-span-4">
@@ -284,24 +284,24 @@ export function OpportunityLog({
           <FormField label="Opportunity" htmlFor="opp-title" span={2}>
             <input id="opp-title" required maxLength={200} className={input} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="e.g. Retain and strengthen the existing culvert" />
           </FormField>
-          <FormField label="Hierarchy level" htmlFor="opp-level" optional>
+          <FormField label="Hierarchy level" htmlFor="opp-level">
             <select id="opp-level" className={input} value={draft.hierarchyLevel} onChange={(e) => setDraft({ ...draft, hierarchyLevel: e.target.value as Level })}>
               {HIERARCHY.map((h) => <option key={h.level} value={h.level}>{h.label}</option>)}
             </select>
           </FormField>
-          <FormField label="Work stage" htmlFor="opp-stage" optional>
+          <FormField label="Work stage" htmlFor="opp-stage">
             <input id="opp-stage" maxLength={80} className={input} value={draft.workStage} onChange={(e) => setDraft({ ...draft, workStage: e.target.value })} placeholder="e.g. RIBA 2 / Options" />
           </FormField>
-          <FormField label="Description" htmlFor="opp-desc" span={2} optional>
+          <FormField label="Description" htmlFor="opp-desc" span={2}>
             <input id="opp-desc" maxLength={4000} className={input} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
           </FormField>
-          <FormField label="Estimated saving (tCO₂e)" htmlFor="opp-saving" optional>
+          <FormField label="Estimated saving (tCO₂e)" htmlFor="opp-saving">
             <input id="opp-saving" type="number" min={0} step="any" className={input} value={draft.estimatedSavingTco2e} onChange={(e) => setDraft({ ...draft, estimatedSavingTco2e: e.target.value })} />
           </FormField>
-          <FormField label="Owner" htmlFor="opp-owner" optional>
+          <FormField label="Owner" htmlFor="opp-owner">
             <input id="opp-owner" maxLength={120} className={input} value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />
           </FormField>
-          <FormField label="Status" htmlFor="opp-status" optional>
+          <FormField label="Status" htmlFor="opp-status">
             <select id="opp-status" className={input} value={draft.status} onChange={(e) => setDraft({ ...draft, status: e.target.value as Status })}>
               {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>

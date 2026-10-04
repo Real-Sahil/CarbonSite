@@ -138,7 +138,7 @@ function RiskForm({
         {scaleInput("impact", "Impact", "impact", true)}
       </div>
       <FormSection cols={2}>
-        <FormField label="Financial impact low (£)" htmlFor="fimpLow" optional>
+        <FormField label="Financial impact low (£)" htmlFor="fimpLow">
           <Input
             id="fimpLow"
             type="number"
@@ -147,7 +147,7 @@ function RiskForm({
             onChange={(e) => setForm((f) => ({ ...f, financialImpactLow: e.target.value }))}
           />
         </FormField>
-        <FormField label="Financial impact high (£)" htmlFor="fimpHigh" optional>
+        <FormField label="Financial impact high (£)" htmlFor="fimpHigh">
           <Input
             id="fimpHigh"
             type="number"
@@ -157,7 +157,7 @@ function RiskForm({
           />
         </FormField>
       </FormSection>
-      <FormField label="Adaptation actions" htmlFor="adaptationActions" optional>
+      <FormField label="Adaptation actions" htmlFor="adaptationActions">
         <Textarea
           id="adaptationActions"
           value={form.adaptationActions}

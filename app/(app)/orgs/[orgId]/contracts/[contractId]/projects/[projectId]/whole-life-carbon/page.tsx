@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Layers, Settings2, X, AlertCircle } from "lucide-react";
-import { FormField, fieldClass } from "@/components/forms/form-kit";
+import { Button } from "@/components/ui/button";
+import { FormField, fieldClass, FormActions, FormError } from "@/components/forms/form-kit";
 
 interface WholeLifeResult {
   aStagesKgCo2e: number;
@@ -101,17 +102,17 @@ function SettingsModal({
           <FormField label="Operational start date" htmlFor="f-operational-start-date" hint="Only activity on or after this date counts toward B6." optional>
             <input id="f-operational-start-date" type="date" value={operationalStartDate} onChange={(e) => setOperationalStartDate(e.target.value)} className={inputCls} />
           </FormField>
-          <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">B7 operational water (kgCO2e) <span className="text-gray-500">(optional, manual)</span></label>
-            <input type="number" min="0" step="0.01" value={water} onChange={(e) => setWater(e.target.value)} className={inputCls} placeholder="No automated water tracking yet" />
-          </div>
+          <FormField label="B7 operational water (kgCO2e)" htmlFor="f-b7-operational-water-kgco2e" optional>
+            <input id="f-b7-operational-water-kgco2e" type="number" min="0" step="0.01" value={water} onChange={(e) => setWater(e.target.value)} className={inputCls} placeholder="No automated water tracking yet" />
+          </FormField>
           <FormField label="Notes" htmlFor="f-notes" optional>
             <textarea id="f-notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputCls} resize-none`} />
           </FormField>
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-          <button type="submit" disabled={loading} className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
-            {loading ? "Saving..." : "Save settings"}
-          </button>
+          <FormError>{error}</FormError>
+          <FormActions>
+            <Button type="button" variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+            <Button type="submit" size="sm" disabled={loading}>{loading ? "Saving..." : "Save settings"}</Button>
+          </FormActions>
         </form>
       </div>
     </div>

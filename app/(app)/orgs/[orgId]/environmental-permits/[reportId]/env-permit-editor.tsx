@@ -159,7 +159,7 @@ export function EnvironmentalPermitEditor({
           <div className="bg-white p-6 rounded-lg border">
             <h2 className="text-lg font-semibold mb-4">Permit Information</h2>
             <div className="space-y-4">
-              <FormField label="Permit Title" htmlFor="f-permit-title" optional>
+              <FormField label="Permit Title" htmlFor="f-permit-title">
                 <Input id="f-permit-title"
                   disabled={disabled}
                   value={title}
@@ -168,7 +168,7 @@ export function EnvironmentalPermitEditor({
                 />
               </FormField>
               <FormSection cols={2}>
-                <FormField label="Project" htmlFor="f-project" optional>
+                <FormField label="Project" htmlFor="f-project">
                   <Select
                     disabled={disabled}
                     value={projectId}
@@ -186,7 +186,7 @@ export function EnvironmentalPermitEditor({
                     </SelectContent>
                   </Select>
                 </FormField>
-                <FormField label="Site" htmlFor="f-site" optional>
+                <FormField label="Site" htmlFor="f-site">
                   <Select disabled={disabled} value={siteId} onValueChange={setSiteId}>
                     <SelectTrigger id="f-site">
                       <SelectValue placeholder="Select site" />
@@ -202,7 +202,7 @@ export function EnvironmentalPermitEditor({
                 </FormField>
               </FormSection>
               <FormSection cols={2}>
-                <FormField label="Permit Date" htmlFor="f-permit-date" optional>
+                <FormField label="Permit Date" htmlFor="f-permit-date">
                   <Input id="f-permit-date"
                     disabled={disabled}
                     type="date"
@@ -210,7 +210,7 @@ export function EnvironmentalPermitEditor({
                     onChange={(e) => setPermitDate(e.target.value)}
                   />
                 </FormField>
-                <FormField label="Expiry Date" htmlFor="f-expiry-date" optional>
+                <FormField label="Expiry Date" htmlFor="f-expiry-date">
                   <Input id="f-expiry-date"
                     disabled={disabled}
                     type="date"
@@ -219,7 +219,7 @@ export function EnvironmentalPermitEditor({
                   />
                 </FormField>
               </FormSection>
-              <FormField label="Permit Number" htmlFor="f-permit-number" optional>
+              <FormField label="Permit Number" htmlFor="f-permit-number">
                 <Input id="f-permit-number"
                   disabled={disabled}
                   value={sections.permitNumber || ""}
@@ -229,7 +229,7 @@ export function EnvironmentalPermitEditor({
                   placeholder="Permit reference number"
                 />
               </FormField>
-              <FormField label="Permit Type" htmlFor="f-permit-type" optional>
+              <FormField label="Permit Type" htmlFor="f-permit-type">
                 <Input id="f-permit-type"
                   disabled={disabled}
                   value={sections.permitType || ""}
@@ -239,7 +239,7 @@ export function EnvironmentalPermitEditor({
                   placeholder="e.g., Environmental Permit, Waste Management"
                 />
               </FormField>
-              <FormField label="Regulatory Body" htmlFor="f-regulatory-body" optional>
+              <FormField label="Regulatory Body" htmlFor="f-regulatory-body">
                 <Input id="f-regulatory-body"
                   disabled={disabled}
                   value={sections.regulatoryBody || ""}
@@ -249,7 +249,7 @@ export function EnvironmentalPermitEditor({
                   placeholder="e.g., Environment Agency"
                 />
               </FormField>
-              <FormField label="Permitted Activities" htmlFor="f-permitted-activities" optional>
+              <FormField label="Permitted Activities" htmlFor="f-permitted-activities">
                 <Textarea id="f-permitted-activities"
                   disabled={disabled}
                   value={sections.activities || ""}
@@ -258,7 +258,7 @@ export function EnvironmentalPermitEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Conditions & Limits" htmlFor="f-conditions-limits" optional>
+              <FormField label="Conditions & Limits" htmlFor="f-conditions-limits">
                 <Textarea id="f-conditions-limits"
                   disabled={disabled}
                   value={sections.conditions || ""}
@@ -267,7 +267,7 @@ export function EnvironmentalPermitEditor({
                   rows={3}
                 />
               </FormField>
-              <FormField label="Renewal Process" htmlFor="f-renewal-process" optional>
+              <FormField label="Renewal Process" htmlFor="f-renewal-process">
                 <Textarea id="f-renewal-process"
                   disabled={disabled}
                   value={sections.renewalProcess || ""}

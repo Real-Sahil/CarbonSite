@@ -62,6 +62,7 @@ export function FormField({
   hint,
   error,
   optional,
+  aside,
   span = 1,
   children,
 }: {
@@ -71,6 +72,8 @@ export function FormField({
   error?: string | null;
   /** Mark a field the person may leave empty. Required is the default and is not labelled. */
   optional?: boolean;
+  /** A small link or action on the label row, such as a template download. Replaces the Optional tag. */
+  aside?: React.ReactNode;
   /** Columns taken on a wide screen (1 to 4); a phone always gets the full row. */
   span?: 1 | 2 | 3 | 4;
   children: React.ReactNode;
@@ -81,7 +84,7 @@ export function FormField({
     <div className={cn("min-w-0 space-y-1.5", SPAN[span])}>
       <label htmlFor={htmlFor} className="flex items-baseline justify-between gap-2 text-sm font-medium text-zinc-800">
         <span>{label}</span>
-        {optional && <span className="text-xs font-normal text-zinc-500">Optional</span>}
+        {aside ?? (optional && <span className="text-xs font-normal text-zinc-500">Optional</span>)}
       </label>
       {children}
       {hint && !error && <p id={hintId} className="text-xs text-zinc-500">{hint}</p>}

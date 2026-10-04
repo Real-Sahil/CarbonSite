@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 import {
   Table,
   TableBody,
@@ -173,12 +173,8 @@ export function CreateSocialValueRecordForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] p-4"
-    >
-      <div className="flex flex-wrap items-end gap-3">
-        {/* Contract */}
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="Where it counts" description="Link the record to a contract and a reporting period." cols={2}>
         <FormField label="Contract" htmlFor="f-contract" optional>
           <Select value={contractId} onValueChange={setContractId}>
             <SelectTrigger id="f-contract" className="w-full">
@@ -186,15 +182,11 @@ export function CreateSocialValueRecordForm({
             </SelectTrigger>
             <SelectContent>
               {contracts.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FormField>
-
-        {/* Reporting period */}
         <FormField label="Period" htmlFor="f-period" optional>
           <Select value={reportingPeriodId} onValueChange={setReportingPeriodId}>
             <SelectTrigger id="f-period" className="w-full">
@@ -202,15 +194,14 @@ export function CreateSocialValueRecordForm({
             </SelectTrigger>
             <SelectContent>
               {periods.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.label}
-                </SelectItem>
+                <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FormField>
+      </FormSection>
 
-        {/* Theme picker (local state only) */}
+      <FormSection title="What was delivered" description="Pick a National TOMs theme and measure. The value is the quantity times the measure's value per unit." cols={2}>
         <FormField label="Theme" htmlFor="f-theme" optional>
           <Select value={selectedThemeCode} onValueChange={handleThemeChange}>
             <SelectTrigger id="f-theme" className="w-full">
@@ -218,82 +209,48 @@ export function CreateSocialValueRecordForm({
             </SelectTrigger>
             <SelectContent>
               {themes.map((t) => (
-                <SelectItem key={t.code} value={t.code}>
-                  {t.code} — {t.name}
-                </SelectItem>
+                <SelectItem key={t.code} value={t.code}>{t.code}: {t.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </FormField>
-
-        {/* Measure picker */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Measure</label>
+        <FormField label="Measure" htmlFor="f-measure" optional>
           <Select value={measureId} onValueChange={setMeasureId} disabled={!selectedTheme}>
-            <SelectTrigger className="w-64">
+            <SelectTrigger id="f-measure" className="w-full">
               <SelectValue placeholder="Select measure" />
             </SelectTrigger>
             <SelectContent>
               {(selectedTheme?.measures ?? []).map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.tomsCode} — {m.name}
-                </SelectItem>
+                <SelectItem key={m.id} value={m.id}>{m.tomsCode}: {m.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           {selectedMeasure && (
-            <p className="text-xs text-[#555555] tracking-[-0.36px]">
+            <p className="text-xs text-zinc-500">
               Unit: {selectedMeasure.unit} · {formatGbp(selectedMeasure.valuePerUnit)} per unit
             </p>
           )}
-        </div>
-
-        {/* Quantity */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Quantity</label>
-          <Input
-            type="number"
-            min="0.0001"
-            step="any"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            placeholder="e.g. 5"
-            className="w-28"
-          />
+        </FormField>
+        <FormField label="Quantity" htmlFor="f-quantity" optional>
+          <Input id="f-quantity" type="number" min="0.0001" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 5" />
           {computedValue !== null && (
-            <p className="text-xs text-[#111827] tracking-[-0.36px] font-medium">
+            <p className="text-xs font-medium text-zinc-900">
               {"≈"} {formatGbp(computedValue)}
             </p>
           )}
-        </div>
-      </div>
+        </FormField>
+        <FormField label="Notes" htmlFor="f-notes" span={4} optional>
+          <Textarea id="f-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Supporting notes or evidence references" className="h-20 resize-none" />
+        </FormField>
+      </FormSection>
 
-      {/* Notes */}
-      <FormField label="Notes (optional)" htmlFor="f-notes-optional" optional>
-        <Textarea id="f-notes-optional"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Supporting notes or evidence references"
-          className="h-20 resize-none"
-        />
-      </FormField>
-
-      <div className="flex gap-2 items-center">
+      <FormError>{error}</FormError>
+      <FormActions>
+        <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
         <Button type="submit" disabled={loading} size="sm">
           {loading ? "Saving…" : "Save record"}
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          onClick={() => setOpen(false)}
-        >
-          Cancel
-        </Button>
-        {error && (
-          <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>
-        )}
-      </div>
+      </FormActions>
     </form>
   );
 }
@@ -506,12 +463,9 @@ export function SocialValueTargetsSection({
               Set target
             </Button>
           ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] p-4"
-            >
-              <div className="flex flex-wrap items-end gap-3">
-                <FormField label="Contract" htmlFor="f-contract" optional>
+            <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+              <FormSection title="Target" description="What you commit to deliver on a contract in a reporting period." cols={2}>
+                <FormField label="Contract" htmlFor="f-contract">
                   <Select
                     value={form.contractId}
                     onValueChange={(v) => setForm((f) => ({ ...f, contractId: v }))}
@@ -522,15 +476,12 @@ export function SocialValueTargetsSection({
                     </SelectTrigger>
                     <SelectContent>
                       {contracts.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </FormField>
-
-                <FormField label="Period" htmlFor="f-period" optional>
+                <FormField label="Period" htmlFor="f-period">
                   <Select
                     value={form.reportingPeriodId}
                     onValueChange={(v) => setForm((f) => ({ ...f, reportingPeriodId: v }))}
@@ -541,57 +492,32 @@ export function SocialValueTargetsSection({
                     </SelectTrigger>
                     <SelectContent>
                       {periods.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.label}
-                        </SelectItem>
+                        <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </FormField>
-
-                <FormField label="Target (£)" htmlFor="f-target" optional>
-                  <Input id="f-target"
-                    type="number"
-                    min="0.01"
-                    step="any"
-                    value={form.targetPounds}
-                    onChange={(e) => setForm((f) => ({ ...f, targetPounds: e.target.value }))}
-                    placeholder="e.g. 50000"
-                    className="w-full"
-                  />
+                <FormField label="Target (£)" htmlFor="f-target">
+                  <Input id="f-target" type="number" min="0.01" step="any" value={form.targetPounds}
+                    onChange={(e) => setForm((f) => ({ ...f, targetPounds: e.target.value }))} placeholder="e.g. 50000" />
                 </FormField>
-
-                <FormField label="Baseline (£, optional)" htmlFor="f-baseline-optional" optional>
-                  <Input id="f-baseline-optional"
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={form.baselinePounds}
-                    onChange={(e) => setForm((f) => ({ ...f, baselinePounds: e.target.value }))}
-                    placeholder="e.g. 30000"
-                    className="w-full"
-                  />
+                <FormField label="Baseline (£)" htmlFor="f-baseline" optional>
+                  <Input id="f-baseline" type="number" min="0" step="any" value={form.baselinePounds}
+                    onChange={(e) => setForm((f) => ({ ...f, baselinePounds: e.target.value }))} placeholder="e.g. 30000" />
                 </FormField>
-              </div>
-
-              <FormField label="Notes (optional)" htmlFor="f-notes-optional" optional>
-                <Textarea id="f-notes-optional"
-                  value={form.notes}
-                  onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                  placeholder="Basis for this target, e.g. contract commitment reference"
-                  className="h-20 resize-none"
-                />
-              </FormField>
-
-              <div className="flex gap-2 items-center">
+                <FormField label="Notes" htmlFor="f-notes" span={4} optional>
+                  <Textarea id="f-notes" value={form.notes}
+                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                    placeholder="Basis for this target, e.g. contract commitment reference" className="h-20 resize-none" />
+                </FormField>
+              </FormSection>
+              <FormError>{error}</FormError>
+              <FormActions>
+                <Button type="button" size="sm" variant="outline" onClick={closeForm}>Cancel</Button>
                 <Button type="submit" disabled={loading} size="sm">
                   {loading ? "Saving…" : editingId ? "Update target" : "Save target"}
                 </Button>
-                <Button type="button" size="sm" variant="ghost" onClick={closeForm}>
-                  Cancel
-                </Button>
-                {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
-              </div>
+              </FormActions>
             </form>
           )}
         </div>

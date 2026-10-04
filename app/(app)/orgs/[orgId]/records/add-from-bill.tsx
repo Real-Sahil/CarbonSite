@@ -178,7 +178,7 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
               <label htmlFor="bill-date" className={labelCls}>Activity date<Confidence value={(read.periodEnd ?? read.issueDate)?.confidence} /></label>
               <input id="bill-date" type="date" className={inputCls} value={form.date} onChange={set("date")} />
             </div>
-            <FormField label="Site" htmlFor="bill-site" optional>
+            <FormField label="Site" htmlFor="bill-site">
               <select id="bill-site" className={inputCls} value={form.facilityId} onChange={set("facilityId")}>
                 <option value="">No site</option>
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}

@@ -97,7 +97,7 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
       )}
 
       {/* Question */}
-      <FormField label="Research Question" htmlFor="f-research-question" hint="A clear question about what you want to understand (10-500 characters)" optional>
+      <FormField label="Research Question" htmlFor="f-research-question" hint="A clear question about what you want to understand (10-500 characters)">
         <Textarea id="f-research-question"
           placeholder="e.g., What is the causal effect of fleet electrification on our Scope 1 emissions?"
           className="resize-none"
@@ -108,7 +108,7 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
       </FormField>
 
       {/* Treatment Variable */}
-      <FormField label="Treatment Variable" htmlFor="f-treatment-variable" hint="The intervention or change you&apos;re studying" optional>
+      <FormField label="Treatment Variable" htmlFor="f-treatment-variable" hint="The intervention or change you&apos;re studying">
         <Input id="f-treatment-variable"
           placeholder="e.g., vehicle_electrification_percent"
           value={formData.treatmentVariable}
@@ -117,7 +117,7 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
       </FormField>
 
       {/* Outcome Variable */}
-      <FormField label="Outcome Variable" htmlFor="f-outcome-variable" hint="What you&apos;re trying to measure or predict" optional>
+      <FormField label="Outcome Variable" htmlFor="f-outcome-variable" hint="What you&apos;re trying to measure or predict">
         <Input id="f-outcome-variable"
           placeholder="e.g., scope1_emissions_kg"
           value={formData.outcomeVariable}

@@ -237,7 +237,7 @@ function ReviewForm({
 
   return (
     <div className="flex flex-col gap-4 pt-1">
-      <FormField label="Review notes (optional)" htmlFor="f-review-notes-optional" optional>
+      <FormField label="Review notes" htmlFor="f-review-notes-optional" optional>
         <Textarea id="f-review-notes-optional"
           rows={3}
           value={notes}

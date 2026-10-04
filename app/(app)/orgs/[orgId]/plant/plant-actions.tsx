@@ -70,10 +70,10 @@ export function AddMachineForm({ orgId, sites }: { orgId: string; sites: { id: s
       <FormField label="Name" htmlFor="plant-name" span={2}>
         <input id="plant-name" required maxLength={200} className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. CAT 320 excavator (EX-04)" />
       </FormField>
-      <FormField label="Type" htmlFor="plant-category" optional>
+      <FormField label="Type" htmlFor="plant-category">
         <input id="plant-category" maxLength={60} className={input} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Excavator, dumper, generator" />
       </FormField>
-      <FormField label="Serial number / PIN" htmlFor="plant-serial" optional>
+      <FormField label="Serial number / PIN" htmlFor="plant-serial">
         <input id="plant-serial" maxLength={100} className={input} value={form.serialNumber} onChange={(e) => setForm({ ...form, serialNumber: e.target.value })} />
       </FormField>
       <div>
@@ -86,19 +86,19 @@ export function AddMachineForm({ orgId, sites }: { orgId: string; sites: { id: s
           <option value="electric" />
         </datalist>
       </div>
-      <FormField label="Owned or hired" htmlFor="plant-ownership" optional>
+      <FormField label="Owned or hired" htmlFor="plant-ownership">
         <select id="plant-ownership" className={input} value={form.ownership} onChange={(e) => setForm({ ...form, ownership: e.target.value })}>
           <option value="owned">Owned</option>
           <option value="hired">Hired</option>
         </select>
       </FormField>
-      <FormField label="Site" htmlFor="plant-site" optional>
+      <FormField label="Site" htmlFor="plant-site">
         <select id="plant-site" className={input} value={form.siteId} onChange={(e) => setForm({ ...form, siteId: e.target.value })}>
           <option value="">Unassigned</option>
           {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </FormField>
-      <FormField label="Hire company" htmlFor="plant-supplier" optional>
+      <FormField label="Hire company" htmlFor="plant-supplier">
         <input id="plant-supplier" maxLength={200} className={input} value={form.supplierName} onChange={(e) => setForm({ ...form, supplierName: e.target.value })} />
       </FormField>
       <div className="flex items-center gap-3 sm:col-span-2">

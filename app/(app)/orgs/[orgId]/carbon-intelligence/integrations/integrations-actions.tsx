@@ -8,7 +8,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { FormField, FormSection } from "@/components/forms/form-kit";
+import { FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 interface Credential {
   id: string;
@@ -183,7 +183,7 @@ export function EditCredentialButton({ orgId, credential }: { orgId: string; cre
             </FormField>
 
             <FormField label="Status" htmlFor="edit-isActive" optional>
-              <select id="edit-isActive" name="isActive" defaultValue={String(credential.isActive)} className="h-8 text-sm rounded-md border border-input bg-background px-3">
+              <select id="edit-isActive" name="isActive" defaultValue={String(credential.isActive)} className={fieldClass}>
                 <option value="true">Active</option>
                 <option value="false">Inactive</option>
               </select>
