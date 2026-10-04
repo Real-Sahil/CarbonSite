@@ -29,6 +29,7 @@ model User {
 
   memberships                       OrganizationMembership[]
   savedViews                        SavedView[]                     @relation("SavedViewOwner")
+  dashboardLayouts                  DashboardLayout[]               @relation("DashboardLayoutOwner")
   createdRecords                    ActivityRecord[]                @relation("CreatedByUser")
   createdImports                    ImportBatch[]
   reviewTasks                       ReviewTask[]                    @relation("AssignedTo")
@@ -236,6 +237,7 @@ model Organization {
   aggregates                     DashboardAggregate[]
   dashboardSlices                DashboardSlice[]
   savedViews                     SavedView[]
+  dashboardLayouts               DashboardLayout[]
   scenarioRuns                   ScenarioRun[]
   routeDistances                 RouteDistance[]
   reports                        Report[]
@@ -1950,6 +1952,28 @@ model SavedView {
   @@unique([organizationId, ownerUserId, surface, name])
   @@index([organizationId, surface, shared])
   @@map("saved_views")
+}
+
+/// How a dashboard's widgets are arranged: one row per person, plus one row
+/// (`userKey` "org") that is the organisation's default. `layout` holds only
+/// widget ids, order, width and hidden ids (lib/dashboard/widgets); it never
+/// holds data, so opening a layout reads current figures under the viewer's role.
+model DashboardLayout {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  /// "org" for the organisation default, else the owner's user id.
+  userKey        String   @map("user_key")
+  surface        String   @default("dashboard")
+  ownerUserId    String?  @map("owner_user_id")
+  layout         Json
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner        User?        @relation("DashboardLayoutOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, surface, userKey])
+  @@map("dashboard_layouts")
 }
 
 // ─── Targets & Initiatives ────────────────────────────────────────────────────

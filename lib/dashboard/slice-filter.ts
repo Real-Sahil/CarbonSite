@@ -10,16 +10,18 @@ import { buildFlows } from "@/lib/charts/sankey";
 import { supplierKey } from "@/lib/social-value/local-spend";
 import { MONTH_PATTERN } from "@/lib/saved-views";
 
-export type SliceFilter = { supplierKey?: string; from?: Date; to?: Date; scope?: 1 | 2 | 3; projectId?: string; socialValue?: boolean };
+export type SliceFilter = { supplierKey?: string; from?: Date; to?: Date; scope?: 1 | 2 | 3; projectId?: string; socialValue?: boolean; categoryId?: string; facilityId?: string };
 
 /** Ids the filters resolve to inside the organisation: a project's sites, and the contracts that carry social value commitments. */
 export type SliceRefs = { siteIds?: string[]; contractIds?: string[] };
+
+const PLAIN_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
 const monthStart = (v: string | undefined) =>
   v && MONTH_PATTERN.test(v) ? new Date(Date.UTC(Number(v.slice(0, 4)), Number(v.slice(5, 7)) - 1, 1)) : undefined;
 
 /** The slice filters a request names; malformed values are dropped, none set gives null. */
-export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string }): SliceFilter | null {
+export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; facilityId?: string }): SliceFilter | null {
   const f: SliceFilter = {};
   const supplier = raw.supplier?.trim().slice(0, 64);
   const key = supplier ? supplierKey(supplier) : "";
@@ -31,6 +33,9 @@ export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: s
   if (raw.scope === "1" || raw.scope === "2" || raw.scope === "3") f.scope = Number(raw.scope) as 1 | 2 | 3;
   if (raw.projectId && /^[A-Za-z0-9_-]{1,64}$/.test(raw.projectId)) f.projectId = raw.projectId;
   if (raw.sv === "1") f.socialValue = true;
+  // Clicking a chart element sets these (cross-filtering): plain ids only.
+  if (raw.categoryId && PLAIN_ID.test(raw.categoryId)) f.categoryId = raw.categoryId;
+  if (raw.facilityId && PLAIN_ID.test(raw.facilityId)) f.facilityId = raw.facilityId;
   return Object.keys(f).length ? f : null;
 }
 
@@ -70,8 +75,14 @@ export function sliceWhere(
     reportingPeriodId,
     snapshotId: null,
     ...PRIMARY_SCOPE2_METHOD,
-    ...(facilityIds ? { facilityId: { in: facilityIds } } : {}),
+    // A chosen facility narrows inside any entity, country or contract scope, never beyond it.
+    ...(f.facilityId
+      ? { facilityId: facilityIds ? { in: facilityIds.filter((id) => id === f.facilityId) } : f.facilityId }
+      : facilityIds
+        ? { facilityId: { in: facilityIds } }
+        : {}),
     ...(f.scope ? { scope: f.scope } : {}),
+    ...(f.categoryId ? { emissionCategoryId: f.categoryId } : {}),
     ...(refs.siteIds ? { siteId: { in: refs.siteIds } } : {}),
     ...(refs.contractIds ? { contractId: { in: refs.contractIds } } : {}),
     ...(f.supplierKey ? { supplierKey: { contains: f.supplierKey } } : {}),
@@ -131,6 +142,10 @@ export async function loadSliceView(orgId: string, periodId: string, f: SliceFil
       id, facilityId: id, totalCo2e: v.totalCo2e, recordCount: v.recordCount,
       facility: facName.has(id) ? { id, name: facName.get(id)! } : null,
     })),
+    names: {
+      categories: Object.fromEntries(categoryNames.map((c) => [c.id, c.name])),
+      facilities: Object.fromEntries(facilityNames.map((x) => [x.id, x.name])),
+    },
     flows: buildFlows(rows, {
       category: (id) => catName.get(id)?.name ?? "Uncategorised",
       facility: (id) => facName.get(id) ?? "Unknown site",

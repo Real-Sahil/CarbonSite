@@ -10,7 +10,7 @@ import { RUN_STATUSES } from "@/lib/calculation/run-list-filters";
  * its URL; nothing else about a view changes.
  */
 export const SURFACES = {
-  dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country", "supplier", "from", "to", "scope", "projectId", "sv"] },
+  dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country", "supplier", "from", "to", "scope", "projectId", "sv", "categoryId"] },
   records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
   submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },

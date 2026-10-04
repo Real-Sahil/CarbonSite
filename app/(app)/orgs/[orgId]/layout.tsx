@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { OrgSidebar } from "@/components/org-sidebar";
+import { CommandPalette } from "@/components/org/command-palette";
+import { viewRoles } from "@/lib/saved-views/roles";
 import { paymentState } from "@/lib/billing/dunning";
 import { PageTransition } from "@/components/page-transition";
 import React from "react";
@@ -184,6 +186,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8F9FA]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} />
+      <CommandPalette orgId={orgId} role={membership!.role} canUseViews={viewRoles().includes(membership!.role)} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
         {payment.state !== "ok" ? (
           <div role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-2.5 text-sm sm:px-8 ${payment.state === "blocked" ? "border-red-200 bg-red-50 text-red-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>

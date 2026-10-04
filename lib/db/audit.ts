@@ -291,6 +291,7 @@ export type AuditAction =
   | "saved_view.created"
   | "saved_view.updated"
   | "saved_view.deleted"
+  | "dashboard_layout.org_default_changed"
   | "subcontractor_submission.requested"
   | "subcontractor_submission.submitted"
   | "subcontractor_submission.verified"

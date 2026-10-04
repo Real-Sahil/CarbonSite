@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { outdatedMethodology } from "@/lib/calculation/methodology";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   Activity,
@@ -66,8 +67,10 @@ import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
 import { loadPeriodCategoryTotals, loadSliceView, parseSliceFilter, resolveSliceRefs, socialValueBeside, type SliceRefs } from "@/lib/dashboard/slice-filter";
-import { SankeyChart } from "@/components/charts/kit/sankey-chart";
-import { WaterfallChart } from "@/components/charts/kit/waterfall-chart";
+import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
+import { loadStoredLayout } from "@/lib/dashboard/layout-store";
+import { resolveLayout, widgetsForRole } from "@/lib/dashboard/widgets";
+import { ActiveCrossFilters, LinkedSankey, LinkedWaterfall } from "@/components/dashboard/cross-filter";
 import { buildWaterfall } from "@/lib/charts/waterfall";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { countryOf } from "@/lib/i18n/countries";
@@ -78,7 +81,7 @@ import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from 
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string }>;
 }
 
 function formatKgCo2e(locale: string, value: unknown): string {
@@ -106,8 +109,8 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv } = await searchParams;
-  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv });
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId } = await searchParams;
+  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, facilityId: selectedFacilityId });
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
   let dashAuthErr: AuthError | null = null;
@@ -233,7 +236,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const scoped = scopeFacilityIds !== null || sliceFilter !== null;
   const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
     const q = new URLSearchParams();
-    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv })) if (v) q.set(k, v);
+    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId })) if (v) q.set(k, v);
     if (p.contractId) q.set("contractId", p.contractId);
     if (p.entityId) q.set("entityId", p.entityId);
     if (p.country) q.set("country", p.country);
@@ -241,7 +244,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
   };
 
-  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv });
+  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId });
   const currentPeriod = reportingPeriods[0] ?? null;
   const priorPeriod = reportingPeriods[1] ?? null;
 
@@ -697,6 +700,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       }
     : null;
   const sliced = sliceFilter ? sliceView : null;
+  const crossChips = [
+    selectedScope && ["1", "2", "3"].includes(selectedScope) ? { key: "scope", label: `Scope ${selectedScope}` } : null,
+    selectedCategoryId ? { key: "categoryId", label: sliceView?.names.categories[selectedCategoryId] ?? "Category" } : null,
+    selectedFacilityId ? { key: "facilityId", label: sliceView?.names.facilities[selectedFacilityId] ?? "Site" } : null,
+  ].filter((c): c is { key: string; label: string } => c !== null);
+  const recordsQuery = new URLSearchParams();
+  if (currentPeriod) recordsQuery.set("periodId", currentPeriod.id);
+  for (const [k, v] of Object.entries({ categoryId: selectedCategoryId, facilityId: selectedFacilityId, contractId: selectedContractId, supplier: selectedSupplier })) if (v) recordsQuery.set(k, v);
+  const recordsHref = selectedCategoryId || selectedFacilityId || selectedContractId || selectedSupplier ? `/orgs/${orgId}/records?${recordsQuery.toString()}` : null;
   const scopeAggregates = sliced?.scopeAggregates ?? liveScopeAggregates;
   const topCategoryAggregates = sliced?.topCategoryAggregates ?? liveTopCategoryAggregates;
   const facilityAggregates = sliced?.facilityAggregates ?? liveFacilityAggregates;
@@ -1022,273 +1034,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     reviewAssigneeOptions[0]?.id ??
     session!.user.id;
 
-  return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-                  <LayoutDashboard className="h-4 w-4 text-[#111827]" />
-                </div>
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
-                  Overview
-                </span>
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
-                Dashboard
-              </h1>
-              <p className="text-sm text-[#374151] font-normal mt-1">
-                Live emissions operations for {organization.name}.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {currentPeriod ? currentPeriod.label : "No reporting period"}
-              </Badge>
-              {currentPeriod && <Badge variant="secondary">{currentPeriod.status}</Badge>}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
-      {/* Onboarding checklist — shown to admins until all setup steps are complete */}
-      {role === "admin" && onboardingProgress && !onboardingProgress.isComplete && (() => {
-        const completedSteps = new Set(onboardingProgress.completedSteps);
-        const checklistSteps = [
-          {
-            label: "Organisation profile",
-            description: "Set your industry and country",
-            href: `/orgs/${orgId}/settings`,
-            done: completedSteps.has("org_profile") || !!(organization.industry && organization.hqCountry),
-          },
-          {
-            label: "Invite your team",
-            description: "Add at least one other member",
-            href: `/orgs/${orgId}/settings/members`,
-            done: completedSteps.has("first_team_member"),
-          },
-          {
-            label: "Create a reporting period",
-            description: "Define your first reporting window",
-            href: `/orgs/${orgId}/settings/periods`,
-            done: completedSteps.has("reporting_period") || reportingPeriods.length > 0,
-          },
-          {
-            label: "Import activity data",
-            description: "Upload a CSV or enter records manually",
-            href: `/orgs/${orgId}/imports`,
-            done: completedSteps.has("first_import") || recordCount > 0,
-          },
-          {
-            label: "Run your first calculation",
-            description: "Calculate CO2e for your records",
-            href: `/orgs/${orgId}/calculations`,
-            done: completedSteps.has("first_calculation") || calculationRuns.length > 0,
-          },
-        ];
-        return <OnboardingChecklist orgId={orgId} steps={checklistSteps} />;
-      })()}
-
-      {/* Quick setup links — shown to admins who skipped the wizard but haven't run a calculation yet */}
-      {role === "admin" && onboardingProgress?.isComplete && calculationRuns.length === 0 && (
-        <div className="mb-8 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-medium text-[#111827] tracking-[-0.42px]">Quick setup</h2>
-              <p className="text-xs text-[#6B7280] tracking-[-0.36px] mt-0.5">
-                Jump to any area to configure your organisation. This panel disappears once you run your first calculation.
-              </p>
-            </div>
-            <Link href={`/orgs/${orgId}/onboarding`} className="text-xs text-[#6B7280] hover:text-[#374151] underline underline-offset-2 shrink-0 ml-4">
-              Open setup guide
-            </Link>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {[
-              { label: "Org settings", description: "Industry, country, currency", href: `/orgs/${orgId}/settings` },
-              { label: "Invite team", description: "Add editors and reviewers", href: `/orgs/${orgId}/settings/members` },
-              { label: "Reporting period", description: "Define your reporting window", href: `/orgs/${orgId}/settings/periods` },
-              { label: "Contracts & projects", description: "Add sites and assign field workers", href: `/orgs/${orgId}/contracts` },
-              { label: "Import data", description: "Upload CSV or enter records", href: `/orgs/${orgId}/imports` },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex items-start gap-2.5 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors"
-              >
-                <ArrowRight className="h-3.5 w-3.5 text-[#6B7280] mt-0.5 shrink-0" aria-hidden="true" />
-                <div>
-                  <p className="text-xs font-medium text-[#111827] tracking-[-0.36px]">{item.label}</p>
-                  <p className="text-[11px] text-[#6B7280] tracking-[-0.33px] mt-0.5 leading-snug">{item.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Role-contextual quick-action banner */}
-      {role === "auditor" && (
-        <div className="mb-6 rounded-[10px] border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-3 flex items-center gap-3">
-          <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0" />
-          <span className="text-sm text-emerald-800 font-medium">Auditor view</span>
-          <span className="text-sm text-emerald-700">You have read-only access to all emissions data and audit trails.</span>
-          <div className="ml-auto flex items-center gap-2">
-            <Link href={`/orgs/${orgId}/settings/audit`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Audit log</Link>
-            <Link href={`/orgs/${orgId}/lineage`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Trace a figure</Link>
-          </div>
-        </div>
-      )}
-      {role === "reviewer" && openReviewTaskCount > 0 && (
-        <div className="mb-6 rounded-[10px] border border-[#FEF9C3] bg-[#FEFCE8] px-4 py-3 flex items-center gap-3">
-          <ClipboardCheck className="h-4 w-4 text-yellow-700 shrink-0" />
-          <span className="text-sm text-yellow-800 font-medium">{openReviewTaskCount} item{openReviewTaskCount !== 1 ? "s" : ""} awaiting review</span>
-          <Link href={`/orgs/${orgId}/submissions`} className="ml-auto text-xs font-medium text-yellow-700 underline underline-offset-2 hover:text-yellow-900">Go to review queue</Link>
-        </div>
-      )}
-      {role === "viewer" && (
-        <div className="mb-6 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 flex items-center gap-3">
-          <Layers className="h-4 w-4 text-zinc-500 shrink-0" />
-          <span className="text-sm text-zinc-600">You have read-only access to this dashboard. Contact an admin to request edit permissions.</span>
-        </div>
-      )}
-
-      <DashboardFilterBar filters={dashboardFilters} projects={projectOptions} socialValue={socialValueNote} />
-
-      {/* Saved views: personal and shared sets of the filters below */}
-      {viewRoles().includes(role) && (
-        <div className="mb-3 flex items-center gap-2">
-          <SavedViewsMenu
-            orgId={orgId}
-            surface="dashboard"
-            filters={dashboardFilters}
-            canShare={mayShare(role)}
-            isAdmin={role === "admin"}
-          />
-        </div>
-      )}
-
-      {/* Group filter: legal entity (with its subsidiaries) and country */}
-      {(groupEntities.length > 0 || groupCountries.length > 1) && (
-        <div className="flex flex-col gap-2">
-          {groupEntities.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by entity:</span>
-              {[{ id: "", name: "All" }, ...groupEntities].map((e) => (
-                <Link
-                  key={e.id || "all"}
-                  href={dashboardHref({ contractId: selectedContractId, entityId: e.id || undefined, country: selectedCountry })}
-                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
-                    (selectedEntityId ?? "") === e.id
-                      ? "bg-[#c2410c] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
-                  }`}
-                >
-                  {e.name}
-                </Link>
-              ))}
-            </div>
-          )}
-          {groupCountries.length > 1 && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by country:</span>
-              {["", ...groupCountries].map((c) => (
-                <Link
-                  key={c || "all"}
-                  href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: c || undefined })}
-                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
-                    (selectedCountry ?? "") === c
-                      ? "bg-[#c2410c] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
-                  }`}
-                >
-                  {c ? countryOf(c)?.name ?? c : "All"}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Contract filter */}
-      {activeContracts.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {selectedContract && (
-            <div className="flex items-center gap-2 rounded-[14px] border border-[#FED7AA] bg-[#FFF7ED]/20 px-4 py-3">
-              <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
-                Filtering by contract: <strong>{selectedContract.name}</strong>
-              </span>
-              <Link
-                href={`/orgs/${orgId}/dashboard`}
-                className="ml-auto text-xs text-[#374151] underline hover:text-[#111827]"
-              >
-                Clear
-              </Link>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs font-normal text-[#374151] tracking-[-0.36px] mr-1">Filter by contract:</span>
-            <Link
-              href={`/orgs/${orgId}/dashboard`}
-              className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
-                !selectedContractId
-                  ? "bg-[#c2410c] text-white"
-                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
-              }`}
-            >
-              All
-            </Link>
-            {activeContracts.map((contract) => (
-              <Link
-                key={contract.id}
-                href={dashboardHref({ contractId: contract.id, entityId: selectedEntityId, country: selectedCountry })}
-                className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
-                  selectedContractId === contract.id
-                    ? "bg-[#c2410c] text-white"
-                    : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
-                }`}
-              >
-                {contract.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Unpublished changes: live figures moved since the last publish ── */}
-      {snapshotDiverges && latestSnapshot && (() => {
-        const deltaKg = liveTotalCo2e - snapshotTotalCo2e;
-        const deltaT = Math.abs(deltaKg) / 1000;
-        return (
-          <div
-            role="status"
-            className="mt-2 mb-4 flex flex-col gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <p className="tracking-[-0.42px]">
-              <AlertTriangle aria-hidden="true" className="inline h-4 w-4 mr-2 align-text-bottom" />
-              <span className="font-medium">
-                Unpublished changes: {deltaKg >= 0 ? "+" : "\u2212"}
-                {deltaT.toLocaleString(L, { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO₂e
-              </span>{" "}
-              since snapshot v{latestSnapshot.version} ({formatKgCo2e(L, snapshotTotalCo2e)}). The figures below are live
-              ({formatKgCo2e(L, liveTotalCo2e)}); reports still use the published snapshot until you publish again.
-            </p>
-            {latestPeriodRun && (
-              <Link
-                href={`/orgs/${orgId}/calculations/${latestPeriodRun.id}`}
-                className="shrink-0 rounded-full bg-[#c2410c] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#9a3412]"
-              >
-                Review and publish
-              </Link>
-            )}
-          </div>
-        );
-      })()}
-
+  // Each block of the dashboard is a widget: the layout (per person, per
+  // organisation, per role) only orders and sizes them, the figures inside are
+  // built here, under this viewer's role.
+  const widgetNodes: Record<string, ReactNode> = {};
+  widgetNodes["headline"] = (
+    <>
       {/* ── Carbon footprint hero ─────────────────────────────────────────── */}
       <section
         aria-label="Carbon footprint summary"
@@ -1370,6 +1121,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         )}
       </section>
 
+    </>
+  );
+  widgetNodes["live"] = (
+    <>
       {/* ── Real-time dashboard stream (plan feature; without it the stream
           answers 402 and the panel would sit on "Connecting" retrying) ── */}
       {liveDashboardEnabled && (
@@ -1391,6 +1146,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       </section>
       )}
 
+    </>
+  );
+  widgetNodes["industry"] = (
+    <>
       {industryData && (
         <section aria-label="Industry insights" className="mt-8">
           <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
@@ -1505,6 +1264,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </section>
       )}
 
+    </>
+  );
+  widgetNodes["environment"] = (
+    <>
       {hasEnvironmentalData && (
         <section aria-label="Water and waste" className="mt-8">
           <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
@@ -1544,6 +1307,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </section>
       )}
 
+    </>
+  );
+  widgetNodes["operations"] = (
+    <>
       <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
         Operations
       </p>
@@ -1575,6 +1342,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         />
       </div>
 
+    </>
+  );
+  widgetNodes["scope-breakdown"] = (
+    <>
       {hasAggregates && (
         <div
           className={`mt-6 grid gap-6 lg:grid-cols-2 ${showTrend ? "xl:grid-cols-3" : ""}`}
@@ -1620,13 +1391,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
-      {(sliceView && sliceView.flows.totalKg > 0) || changeSteps.length > 1 ? (
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          {sliceView && sliceView.flows.totalKg > 0 ? <SankeyChart flows={sliceView.flows} locale={L} period={currentPeriod?.label} /> : null}
-          {changeSteps.length > 1 ? <WaterfallChart steps={changeSteps} locale={L} /> : null}
-        </div>
-      ) : null}
-
+    </>
+  );
+  widgetNodes["facilities"] = (
+    <>
       {facilityRows.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
@@ -1736,6 +1504,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </Card>
       )}
 
+    </>
+  );
+  widgetNodes["scope-detail"] = (
+    <>
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
         <Card>
           <CardHeader>
@@ -1869,6 +1641,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </Card>
       </div>
 
+    </>
+  );
+  widgetNodes["data-quality"] = (
+    <>
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
@@ -2024,6 +1800,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardContent>
       </Card>
 
+    </>
+  );
+  widgetNodes["analytics-reporting"] = (
+    <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
           <CardHeader className="border-b border-[#E5E7EB] bg-[#c2410c] text-white">
@@ -2201,6 +1981,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         )}
       </div>
 
+    </>
+  );
+  widgetNodes["social-evidence"] = (
+    <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <Card>
           <CardHeader>
@@ -2357,6 +2141,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </Card>
       </div>
 
+    </>
+  );
+  widgetNodes["ops-health"] = (
+    <>
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="text-base">Operations health</CardTitle>
@@ -2417,6 +2205,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardContent>
       </Card>
 
+    </>
+  );
+  widgetNodes["review-queue"] = (
+    <>
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
@@ -2445,6 +2237,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardContent>
       </Card>
 
+    </>
+  );
+  widgetNodes["run-calculation"] = (
+    <>
       {["admin", "editor", "sustainability_director", "sustainability_manager", "operations_manager"].includes(role) && <Card id="run-calculation" className="mt-6 scroll-mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
@@ -2478,12 +2274,305 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardContent>
       </Card>}
 
+    </>
+  );
+  widgetNodes["quick-links"] = (
+    <>
       <div className="grid gap-6 mt-6 md:grid-cols-2 xl:grid-cols-4">
         <ActionCard title="Records" description="Review committed activity data and evidence status." href={`/orgs/${orgId}/records`} />
         <ActionCard title="Imports" description="Upload, validate, and commit activity data batches." href={`/orgs/${orgId}/imports`} />
         <ActionCard title="Reports" description="Track report requests and signed output artefacts." href={`/orgs/${orgId}/reports`} />
         <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
       </div>
+    </>
+  );
+  widgetNodes["flow"] = sliceView && sliceView.flows.totalKg > 0 ? <LinkedSankey flows={sliceView.flows} locale={L} period={currentPeriod?.label} /> : null;
+  widgetNodes["waterfall"] = changeSteps.length > 1 ? <LinkedWaterfall steps={changeSteps} locale={L} /> : null;
+  const widgetShown: Record<string, boolean> = {
+    live: Boolean(liveDashboardEnabled),
+    industry: Boolean(industryData),
+    environment: Boolean(hasEnvironmentalData),
+    "scope-breakdown": Boolean(hasAggregates),
+    flow: Boolean(sliceView && sliceView.flows.totalKg > 0),
+    waterfall: changeSteps.length > 1,
+    facilities: facilityRows.length > 0,
+  };
+  const storedLayout = await loadStoredLayout(orgId, session!.user.id).catch(onLoadFailure(() => ({ layout: null, source: "preset" as const })));
+  const placedWidgets = resolveLayout(
+    widgetsForRole(role).filter((w) => widgetShown[w.id] ?? true),
+    storedLayout.layout,
+    role,
+  ).map((w) => ({ ...w, node: widgetNodes[w.id] }));
+
+  return (
+    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+      {/* Page header */}
+      <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
+                  <LayoutDashboard className="h-4 w-4 text-[#111827]" />
+                </div>
+                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                  Overview
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+                Dashboard
+              </h1>
+              <p className="text-sm text-[#374151] font-normal mt-1">
+                Live emissions operations for {organization.name}.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {currentPeriod ? currentPeriod.label : "No reporting period"}
+              </Badge>
+              {currentPeriod && <Badge variant="secondary">{currentPeriod.status}</Badge>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
+      {/* Onboarding checklist — shown to admins until all setup steps are complete */}
+      {role === "admin" && onboardingProgress && !onboardingProgress.isComplete && (() => {
+        const completedSteps = new Set(onboardingProgress.completedSteps);
+        const checklistSteps = [
+          {
+            label: "Organisation profile",
+            description: "Set your industry and country",
+            href: `/orgs/${orgId}/settings`,
+            done: completedSteps.has("org_profile") || !!(organization.industry && organization.hqCountry),
+          },
+          {
+            label: "Invite your team",
+            description: "Add at least one other member",
+            href: `/orgs/${orgId}/settings/members`,
+            done: completedSteps.has("first_team_member"),
+          },
+          {
+            label: "Create a reporting period",
+            description: "Define your first reporting window",
+            href: `/orgs/${orgId}/settings/periods`,
+            done: completedSteps.has("reporting_period") || reportingPeriods.length > 0,
+          },
+          {
+            label: "Import activity data",
+            description: "Upload a CSV or enter records manually",
+            href: `/orgs/${orgId}/imports`,
+            done: completedSteps.has("first_import") || recordCount > 0,
+          },
+          {
+            label: "Run your first calculation",
+            description: "Calculate CO2e for your records",
+            href: `/orgs/${orgId}/calculations`,
+            done: completedSteps.has("first_calculation") || calculationRuns.length > 0,
+          },
+        ];
+        return <OnboardingChecklist orgId={orgId} steps={checklistSteps} />;
+      })()}
+
+      {/* Quick setup links — shown to admins who skipped the wizard but haven't run a calculation yet */}
+      {role === "admin" && onboardingProgress?.isComplete && calculationRuns.length === 0 && (
+        <div className="mb-8 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-medium text-[#111827] tracking-[-0.42px]">Quick setup</h2>
+              <p className="text-xs text-[#6B7280] tracking-[-0.36px] mt-0.5">
+                Jump to any area to configure your organisation. This panel disappears once you run your first calculation.
+              </p>
+            </div>
+            <Link href={`/orgs/${orgId}/onboarding`} className="text-xs text-[#6B7280] hover:text-[#374151] underline underline-offset-2 shrink-0 ml-4">
+              Open setup guide
+            </Link>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {[
+              { label: "Org settings", description: "Industry, country, currency", href: `/orgs/${orgId}/settings` },
+              { label: "Invite team", description: "Add editors and reviewers", href: `/orgs/${orgId}/settings/members` },
+              { label: "Reporting period", description: "Define your reporting window", href: `/orgs/${orgId}/settings/periods` },
+              { label: "Contracts & projects", description: "Add sites and assign field workers", href: `/orgs/${orgId}/contracts` },
+              { label: "Import data", description: "Upload CSV or enter records", href: `/orgs/${orgId}/imports` },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-start gap-2.5 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors"
+              >
+                <ArrowRight className="h-3.5 w-3.5 text-[#6B7280] mt-0.5 shrink-0" aria-hidden="true" />
+                <div>
+                  <p className="text-xs font-medium text-[#111827] tracking-[-0.36px]">{item.label}</p>
+                  <p className="text-[11px] text-[#6B7280] tracking-[-0.33px] mt-0.5 leading-snug">{item.description}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Role-contextual quick-action banner */}
+      {role === "auditor" && (
+        <div className="mb-6 rounded-[10px] border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-3 flex items-center gap-3">
+          <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0" />
+          <span className="text-sm text-emerald-800 font-medium">Auditor view</span>
+          <span className="text-sm text-emerald-700">You have read-only access to all emissions data and audit trails.</span>
+          <div className="ml-auto flex items-center gap-2">
+            <Link href={`/orgs/${orgId}/settings/audit`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Audit log</Link>
+            <Link href={`/orgs/${orgId}/lineage`} className="text-xs font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-900">Trace a figure</Link>
+          </div>
+        </div>
+      )}
+      {role === "reviewer" && openReviewTaskCount > 0 && (
+        <div className="mb-6 rounded-[10px] border border-[#FEF9C3] bg-[#FEFCE8] px-4 py-3 flex items-center gap-3">
+          <ClipboardCheck className="h-4 w-4 text-yellow-700 shrink-0" />
+          <span className="text-sm text-yellow-800 font-medium">{openReviewTaskCount} item{openReviewTaskCount !== 1 ? "s" : ""} awaiting review</span>
+          <Link href={`/orgs/${orgId}/submissions`} className="ml-auto text-xs font-medium text-yellow-700 underline underline-offset-2 hover:text-yellow-900">Go to review queue</Link>
+        </div>
+      )}
+      {role === "viewer" && (
+        <div className="mb-6 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 flex items-center gap-3">
+          <Layers className="h-4 w-4 text-zinc-500 shrink-0" />
+          <span className="text-sm text-zinc-600">You have read-only access to this dashboard. Contact an admin to request edit permissions.</span>
+        </div>
+      )}
+
+      <DashboardFilterBar filters={dashboardFilters} projects={projectOptions} socialValue={socialValueNote} />
+      <ActiveCrossFilters chips={crossChips} recordsHref={recordsHref} />
+
+      {/* Saved views: personal and shared sets of the filters below */}
+      {viewRoles().includes(role) && (
+        <div className="mb-3 flex items-center gap-2">
+          <SavedViewsMenu
+            orgId={orgId}
+            surface="dashboard"
+            filters={dashboardFilters}
+            canShare={mayShare(role)}
+            isAdmin={role === "admin"}
+          />
+        </div>
+      )}
+
+      {/* Group filter: legal entity (with its subsidiaries) and country */}
+      {(groupEntities.length > 0 || groupCountries.length > 1) && (
+        <div className="flex flex-col gap-2">
+          {groupEntities.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by entity:</span>
+              {[{ id: "", name: "All" }, ...groupEntities].map((e) => (
+                <Link
+                  key={e.id || "all"}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: e.id || undefined, country: selectedCountry })}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    (selectedEntityId ?? "") === e.id
+                      ? "bg-[#c2410c] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  }`}
+                >
+                  {e.name}
+                </Link>
+              ))}
+            </div>
+          )}
+          {groupCountries.length > 1 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs font-normal text-[#374151] tracking-[-0.36px]">Filter by country:</span>
+              {["", ...groupCountries].map((c) => (
+                <Link
+                  key={c || "all"}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: c || undefined })}
+                  className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                    (selectedCountry ?? "") === c
+                      ? "bg-[#c2410c] text-white"
+                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  }`}
+                >
+                  {c ? countryOf(c)?.name ?? c : "All"}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Contract filter */}
+      {activeContracts.length > 0 && (
+        <div className="flex flex-col gap-3">
+          {selectedContract && (
+            <div className="flex items-center gap-2 rounded-[14px] border border-[#FED7AA] bg-[#FFF7ED]/20 px-4 py-3">
+              <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
+                Filtering by contract: <strong>{selectedContract.name}</strong>
+              </span>
+              <Link
+                href={`/orgs/${orgId}/dashboard`}
+                className="ml-auto text-xs text-[#374151] underline hover:text-[#111827]"
+              >
+                Clear
+              </Link>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-normal text-[#374151] tracking-[-0.36px] mr-1">Filter by contract:</span>
+            <Link
+              href={`/orgs/${orgId}/dashboard`}
+              className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                !selectedContractId
+                  ? "bg-[#c2410c] text-white"
+                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+              }`}
+            >
+              All
+            </Link>
+            {activeContracts.map((contract) => (
+              <Link
+                key={contract.id}
+                href={dashboardHref({ contractId: contract.id, entityId: selectedEntityId, country: selectedCountry })}
+                className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
+                  selectedContractId === contract.id
+                    ? "bg-[#c2410c] text-white"
+                    : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                }`}
+              >
+                {contract.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Unpublished changes: live figures moved since the last publish ── */}
+      {snapshotDiverges && latestSnapshot && (() => {
+        const deltaKg = liveTotalCo2e - snapshotTotalCo2e;
+        const deltaT = Math.abs(deltaKg) / 1000;
+        return (
+          <div
+            role="status"
+            className="mt-2 mb-4 flex flex-col gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <p className="tracking-[-0.42px]">
+              <AlertTriangle aria-hidden="true" className="inline h-4 w-4 mr-2 align-text-bottom" />
+              <span className="font-medium">
+                Unpublished changes: {deltaKg >= 0 ? "+" : "\u2212"}
+                {deltaT.toLocaleString(L, { maximumFractionDigits: deltaT < 10 ? 2 : 1 })} tCO₂e
+              </span>{" "}
+              since snapshot v{latestSnapshot.version} ({formatKgCo2e(L, snapshotTotalCo2e)}). The figures below are live
+              ({formatKgCo2e(L, liveTotalCo2e)}); reports still use the published snapshot until you publish again.
+            </p>
+            {latestPeriodRun && (
+              <Link
+                href={`/orgs/${orgId}/calculations/${latestPeriodRun.id}`}
+                className="shrink-0 rounded-full bg-[#c2410c] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#9a3412]"
+              >
+                Review and publish
+              </Link>
+            )}
+          </div>
+        );
+      })()}
+
+      <DashboardGrid orgId={orgId} widgets={placedWidgets} isAdmin={role === "admin"} source={storedLayout.source} />
       </div>
     </div>
   );

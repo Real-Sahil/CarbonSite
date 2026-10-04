@@ -14,7 +14,17 @@ type L = SankeyLink<Datum, object>;
 const colour = (scope?: number) => (scope ? SCOPE_COLORS[scope] : NEUTRAL_SERIES_COLOR);
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
 
-function Diagram({ flows, width, height, locale }: { flows: Flows; width: number; height: number; locale: string }) {
+export type FlowSelection = { key: "scope" | "categoryId" | "facilityId"; value: string };
+
+/** What clicking a node filters by, or null for grouped nodes (Other, no site) that are not one thing. */
+export function selectionFor(node: { id: string; kind: string }): FlowSelection | null {
+  if (node.kind === "scope") return { key: "scope", value: node.id.slice("scope:".length) };
+  if (node.kind === "category" && !node.id.startsWith("category:other:")) return { key: "categoryId", value: node.id.slice("category:".length) };
+  if (node.kind === "site" && node.id !== "site:other" && node.id !== "site:none") return { key: "facilityId", value: node.id.slice("site:".length) };
+  return null;
+}
+
+function Diagram({ flows, width, height, locale, onSelect, selected }: { flows: Flows; width: number; height: number; locale: string; onSelect?: (s: FlowSelection) => void; selected?: Record<string, string> }) {
   const [hover, setHover] = useState<string | null>(null);
   const layout = useMemo(() => {
     const labelRoom = 150;
@@ -60,13 +70,19 @@ function Diagram({ flows, width, height, locale }: { flows: Flows; width: number
         const node = n as N & { label: string; scope?: number; kind: string; value?: number };
         const v = node.value ?? 0;
         const dim = rel && !rel.has(node.id!);
+        const pick = onSelect ? selectionFor({ id: node.id!, kind: node.kind }) : null;
+        const isSelected = pick ? selected?.[pick.key] === pick.value : false;
         const x0 = node.x0 ?? 0, x1 = node.x1 ?? 0, y0 = node.y0 ?? 0, y1 = node.y1 ?? 0;
         return (
           <g
             key={node.id}
             tabIndex={0}
-            role="img"
-            aria-label={`${node.label}: ${tonnes(v, locale)}, ${share(v)} of the total`}
+            role={pick ? "button" : "img"}
+            aria-pressed={pick ? isSelected : undefined}
+            aria-label={`${node.label}: ${tonnes(v, locale)}, ${share(v)} of the total${pick ? (isSelected ? ". Selected: press Enter to clear the filter" : ". Press Enter to filter the dashboard to this") : ""}`}
+            style={pick ? { cursor: "pointer" } : undefined}
+            onClick={pick ? () => onSelect!(pick) : undefined}
+            onKeyDown={pick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect!(pick); } } : undefined}
             opacity={dim ? 0.35 : 1}
             className="outline-none [&:focus-visible_rect]:stroke-[#111827] [&:focus-visible_rect]:stroke-2"
             onMouseEnter={() => setHover(node.id!)}
@@ -74,7 +90,7 @@ function Diagram({ flows, width, height, locale }: { flows: Flows; width: number
             onFocus={() => setHover(node.id!)}
             onBlur={() => setHover(null)}
           >
-            <rect x={x0} y={y0} width={x1 - x0} height={Math.max(1, y1 - y0)} rx={2} fill={colour(node.scope)} />
+            <rect x={x0} y={y0} width={x1 - x0} height={Math.max(1, y1 - y0)} rx={2} fill={colour(node.scope)} stroke={isSelected ? "#111827" : "none"} strokeWidth={2} />
             {y1 - y0 >= 14 || node.kind === "scope" ? (
               <text x={x1 + 6} y={(y0 + y1) / 2} dy="0.32em" fontSize={11} fill="#374151">
                 {node.label.length > 22 ? `${node.label.slice(0, 21)}…` : node.label}
@@ -88,13 +104,13 @@ function Diagram({ flows, width, height, locale }: { flows: Flows; width: number
   );
 }
 
-export function SankeyChart({ flows, locale = "en-GB", period }: { flows: Flows; locale?: string; period?: string }) {
+export function SankeyChart({ flows, locale = "en-GB", period, onSelect, selected }: { flows: Flows; locale?: string; period?: string; onSelect?: (s: FlowSelection) => void; selected?: Record<string, string> }) {
   if (flows.totalKg <= 0) return null;
   const scopes = flows.nodes.filter((n) => n.kind === "scope");
   return (
     <ChartFrame
       title="Where the emissions flow"
-      description={`Scope to category to site${period ? `, ${period}` : ""}. Hover or focus a block to follow it.`}
+      description={`Scope to category to site${period ? `, ${period}` : ""}. Hover or focus a block to follow it${onSelect ? "; click or press Enter on one to filter the dashboard to it" : ""}.`}
       table={{
         columns: ["From", "To", "tCO₂e", "Share of total"],
         rows: [...flows.links]
@@ -107,7 +123,7 @@ export function SankeyChart({ flows, locale = "en-GB", period }: { flows: Flows;
       footnote={`Total ${tonnes(flows.totalKg, locale)} across ${scopes.length} ${scopes.length === 1 ? "scope" : "scopes"}. Small categories and sites are grouped under Other; nothing is dropped.`}
     >
       <div className="h-[420px]">
-        <ParentSize debounceTime={10}>{({ width, height }) => (width > 0 ? <Diagram flows={flows} width={width} height={height} locale={locale} /> : null)}</ParentSize>
+        <ParentSize debounceTime={10}>{({ width, height }) => (width > 0 ? <Diagram flows={flows} width={width} height={height} locale={locale} onSelect={onSelect} selected={selected} /> : null)}</ParentSize>
       </div>
     </ChartFrame>
   );
