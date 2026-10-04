@@ -4,8 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { FormField, fieldClass } from "@/components/forms/form-kit";
+import { FormActions, FormDisclosure, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 import {
   Select,
   SelectContent,
@@ -144,14 +143,10 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
     : null;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Report logo (white-label) */}
-      <div className="flex flex-col gap-2">
-        <Label className="text-sm text-slate-900 tracking-[-0.42px]">
-          Report logo{" "}
-          <span className="text-slate-600 font-normal">(appears on every PDF export)</span>
-        </Label>
-        <div className="flex items-center gap-4">
+      <FormSection title="Report logo" description="Appears on every PDF export." cols={2}>
+        <div className="flex items-center gap-4 @md:col-span-full">
           <div className="flex h-16 w-32 items-center justify-center rounded-[10px] border border-dashed border-slate-200 bg-slate-50 overflow-hidden shrink-0">
             {logoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -195,33 +190,10 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             </p>
           </div>
         </div>
-      </div>
+      </FormSection>
 
-      {/* Subdomain */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="subdomain" className="text-sm text-slate-900 tracking-[-0.42px]">
-          Subdomain
-        </Label>
-        <Input
-          id="subdomain"
-          value={subdomain}
-          onChange={(e) => {
-            setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
-            setSuccessMessage(null);
-            setErrorMessage(null);
-          }}
-          placeholder="your-company"
-          pattern="[a-z0-9-]+"
-          className="max-w-sm"
-        />
-        {subdomainPreview && (
-          <p className="text-xs text-slate-500 tracking-[-0.36px]">
-            Preview URL:{" "}
-            <span className="text-slate-700 font-normal">{subdomainPreview}</span>
-          </p>
-        )}
-      </div>
-
+      {/* Colour and type */}
+      <FormSection title="Colour and type" cols={2}>
       {/* Primary colour */}
       <FormField label="Primary colour" htmlFor="primaryHex">
         <div className="flex items-center gap-3">
@@ -234,7 +206,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={primaryHex}
             onChange={(e) => handlePrimaryHexChange(e.target.value)}
-            className={fieldClass}
+            className="h-9 w-9 cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
             aria-label="Primary colour picker"
           />
           <Input
@@ -260,7 +232,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={accentHex}
             onChange={(e) => handleAccentHexChange(e.target.value)}
-            className={fieldClass}
+            className="h-9 w-9 cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
             aria-label="Accent colour picker"
           />
           <Input
@@ -274,25 +246,6 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
         </div>
       </FormField>
 
-      {/* Email from name */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="emailFromName" className="text-sm text-slate-900 tracking-[-0.42px]">
-          Email from name{" "}
-          <span className="text-slate-600 font-normal">(optional)</span>
-        </Label>
-        <Input
-          id="emailFromName"
-          value={emailFromName}
-          onChange={(e) => {
-            setEmailFromName(e.target.value);
-            setSuccessMessage(null);
-            setErrorMessage(null);
-          }}
-          placeholder="Acme Carbon"
-          className="max-w-sm"
-        />
-      </div>
-
       {/* Font family */}
       <FormField label="Font family" htmlFor="fontFamily">
         <Select
@@ -303,7 +256,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             setErrorMessage(null);
           }}
         >
-          <SelectTrigger id="fontFamily" className="max-w-sm">
+          <SelectTrigger id="fontFamily" className="w-full">
             <SelectValue placeholder="Select font" />
           </SelectTrigger>
           <SelectContent>
@@ -316,65 +269,61 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
         </Select>
       </FormField>
 
-      {/* Advanced (custom domain) */}
-      <div className="flex flex-col gap-3">
-        <button
-          type="button"
-          onClick={() => setShowAdvanced((prev) => !prev)}
-          className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 tracking-[-0.36px] w-fit transition-colors"
-        >
-          <span>{showAdvanced ? "Hide" : "Show"} advanced</span>
-          <svg
-            className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-            viewBox="0 0 12 12"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+      </FormSection>
 
-        {showAdvanced && (
-          <div className="flex flex-col gap-2 rounded-[14px] border border-slate-200 bg-slate-50 p-4">
-            <Label htmlFor="customDomain" className="text-sm text-slate-900 tracking-[-0.42px]">
-              Custom domain{" "}
-              <span className="text-slate-600 font-normal">(optional)</span>
-            </Label>
-            <Input
-              id="customDomain"
-              value={customDomain}
-              onChange={(e) => {
-                setCustomDomain(e.target.value);
-                setSuccessMessage(null);
-                setErrorMessage(null);
-              }}
-              placeholder="carbon.yourcompany.com"
-              className="max-w-sm"
-            />
-            <p className="text-xs text-slate-500 tracking-[-0.36px]">
-              Point your DNS CNAME to <code className="font-mono bg-slate-100 px-1 rounded text-slate-700">cname.metricora.co.uk</code>, then enter your domain here.
-            </p>
-          </div>
-        )}
-      </div>
+      <FormSection title="Web address and email" cols={2}>
+      <FormField label="Subdomain" htmlFor="subdomain" optional hint={subdomainPreview ? `Preview URL: ${subdomainPreview}` : undefined}>
+        <Input
+          id="subdomain"
+          value={subdomain}
+          onChange={(e) => {
+            setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+            setSuccessMessage(null);
+            setErrorMessage(null);
+          }}
+          placeholder="your-company"
+          pattern="[a-z0-9-]+"
+        />
+      </FormField>
 
-      {/* Feedback */}
-      {successMessage && (
-        <p className="text-sm font-normal text-teal-300 bg-teal-500/10 border border-teal-500/15 rounded-[10px] px-4 py-2.5 tracking-[-0.42px]">
-          {successMessage}
-        </p>
-      )}
-      {errorMessage && (
-        <p className="text-sm font-normal text-red-400 bg-red-500/10 border border-red-500/15 rounded-[10px] px-4 py-2.5 tracking-[-0.42px]">
-          {errorMessage}
-        </p>
-      )}
+      {/* Email from name */}
+      <FormField label="Email from name" htmlFor="emailFromName" optional hint="The sender name on emails MetricOra sends for you">
+        <Input
+          id="emailFromName"
+          value={emailFromName}
+          onChange={(e) => {
+            setEmailFromName(e.target.value);
+            setSuccessMessage(null);
+            setErrorMessage(null);
+          }}
+          placeholder="Acme Carbon"
+        />
+      </FormField>
 
-      <div>
-        <Button type="submit" disabled={isPending} className="min-w-[120px]">
+      </FormSection>
+
+      <FormDisclosure title="Custom domain">
+        <FormField label="Custom domain" htmlFor="customDomain" span={2} optional hint="Point your DNS CNAME to cname.metricora.co.uk, then enter your domain here.">
+          <Input
+            id="customDomain"
+            value={customDomain}
+            onChange={(e) => {
+              setCustomDomain(e.target.value);
+              setSuccessMessage(null);
+              setErrorMessage(null);
+            }}
+            placeholder="carbon.yourcompany.com"
+          />
+        </FormField>
+      </FormDisclosure>
+
+      {successMessage && <p role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{successMessage}</p>}
+      <FormError>{errorMessage}</FormError>
+      <FormActions>
+        <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? "Saving..." : "Save branding"}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

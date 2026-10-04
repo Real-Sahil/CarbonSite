@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormActions } from "@/components/forms/form-kit";
 
 export type WatchView = {
   enabled: boolean;
@@ -167,9 +167,9 @@ export function TendersWorkspace({
             )}
           </div>
         ) : canEdit && planIncludes ? (
-          <form onSubmit={saveWatch} className="flex flex-col gap-5">
+          <form onSubmit={saveWatch} className="space-y-6">
             <fieldset className="flex flex-col gap-2">
-              <legend className="mb-1 text-sm font-medium text-[#111827]">Work you bid for (CPV codes)</legend>
+              <legend className="text-sm font-semibold text-zinc-900">Work you bid for (CPV codes)</legend>
               <div className="grid gap-2 sm:grid-cols-2">
                 {CPV_PRESETS.map(([code, name]) => (
                   <label key={code} className="flex items-center gap-2 text-sm text-[#374151]">
@@ -178,15 +178,15 @@ export function TendersWorkspace({
                   </label>
                 ))}
               </div>
-              <FormField label="Other CPV codes or prefixes" htmlFor="tw-cpv">
+              <FormField label="Other CPV codes or prefixes" htmlFor="tw-cpv" optional>
                 <Input id="tw-cpv" value={customCpv} onChange={(e) => setCustomCpv(e.target.value)} placeholder="e.g. 45453, 4526" />
               </FormField>
             </fieldset>
-            <FormField label="Title keywords" htmlFor="tw-keywords" hint="A notice with one of these words in its title matches whatever its CPV code.">
+            <FormField label="Title keywords" htmlFor="tw-keywords" optional hint="A notice with one of these words in its title matches whatever its CPV code.">
               <Input id="tw-keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. resurfacing, drainage, bridge" />
             </FormField>
             <fieldset>
-              <legend className="mb-2 text-sm font-medium text-[#111827]">Regions (none ticked: anywhere)</legend>
+              <legend className="mb-2 text-sm font-semibold text-zinc-900">Regions <span className="font-normal text-zinc-500">(none ticked: anywhere)</span></legend>
               <div className="grid gap-2 sm:grid-cols-3">
                 {REGIONS.map(([code, name]) => (
                   <label key={code} className="flex items-center gap-2 text-sm text-[#374151]">
@@ -197,18 +197,18 @@ export function TendersWorkspace({
               </div>
             </fieldset>
             <div className="flex flex-wrap items-end gap-6">
-              <FormField label="Minimum value (£)" htmlFor="tw-min">
-                <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" className="h-9 w-full text-sm" />
+              <FormField label="Minimum value (£)" htmlFor="tw-min" optional>
+                <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" />
               </FormField>
               <label className="flex items-center gap-2 text-sm text-[#374151]">
                 <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4" />
                 Check every morning
               </label>
             </div>
-            <div className="flex gap-2">
-              <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save and check"}</Button>
+            <FormActions>
               {watch && <Button type="button" size="sm" variant="outline" onClick={() => setEditing(false)} disabled={isPending}>Cancel</Button>}
-            </div>
+              <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save and check"}</Button>
+            </FormActions>
           </form>
         ) : (
           <p className="text-sm text-[#6B7280]">No tender watch set up yet. An admin or contract manager can set one up.</p>

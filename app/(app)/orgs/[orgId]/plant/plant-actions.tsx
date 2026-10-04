@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
-const input = "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm disabled:opacity-60";
+const input = fieldClass;
 const labelCls = "mb-1.5 block text-xs text-[#374151]";
 
 const COLUMNS = ["serialNumber", "periodStart", "periodEnd", "operatingHours", "idleHours", "fuelLitres", "idleFuelLitres", "name"] as const;
@@ -66,18 +66,18 @@ export function AddMachineForm({ orgId, sites }: { orgId: string; sites: { id: s
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
+    <form onSubmit={submit} className="space-y-6">
+      <FormSection title="The machine" description="The serial number or PIN is what telematics readings are matched on." cols={2}>
       <FormField label="Name" htmlFor="plant-name" span={2}>
         <input id="plant-name" required maxLength={200} className={input} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. CAT 320 excavator (EX-04)" />
       </FormField>
-      <FormField label="Type" htmlFor="plant-category">
+      <FormField label="Type" htmlFor="plant-category" optional>
         <input id="plant-category" maxLength={60} className={input} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="Excavator, dumper, generator" />
       </FormField>
-      <FormField label="Serial number / PIN" htmlFor="plant-serial">
+      <FormField label="Serial number / PIN" htmlFor="plant-serial" optional>
         <input id="plant-serial" maxLength={100} className={input} value={form.serialNumber} onChange={(e) => setForm({ ...form, serialNumber: e.target.value })} />
       </FormField>
-      <div>
-        <label htmlFor="plant-fuel" className={labelCls}>Fuel</label>
+      <FormField label="Fuel" htmlFor="plant-fuel">
         <input id="plant-fuel" list="plant-fuels" required maxLength={40} className={input} value={form.fuelType} onChange={(e) => setForm({ ...form, fuelType: e.target.value })} />
         <datalist id="plant-fuels">
           <option value="diesel" />
@@ -85,26 +85,30 @@ export function AddMachineForm({ orgId, sites }: { orgId: string; sites: { id: s
           <option value="HVO50" />
           <option value="electric" />
         </datalist>
-      </div>
+      </FormField>
+      </FormSection>
+      <FormSection title="Ownership and site" cols={2}>
       <FormField label="Owned or hired" htmlFor="plant-ownership">
         <select id="plant-ownership" className={input} value={form.ownership} onChange={(e) => setForm({ ...form, ownership: e.target.value })}>
           <option value="owned">Owned</option>
           <option value="hired">Hired</option>
         </select>
       </FormField>
-      <FormField label="Site" htmlFor="plant-site">
+      <FormField label="Site" htmlFor="plant-site" optional>
         <select id="plant-site" className={input} value={form.siteId} onChange={(e) => setForm({ ...form, siteId: e.target.value })}>
           <option value="">Unassigned</option>
           {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </FormField>
-      <FormField label="Hire company" htmlFor="plant-supplier">
+      <FormField label="Hire company" htmlFor="plant-supplier" optional>
         <input id="plant-supplier" maxLength={200} className={input} value={form.supplierName} onChange={(e) => setForm({ ...form, supplierName: e.target.value })} />
       </FormField>
-      <div className="flex items-center gap-3 sm:col-span-2">
+      </FormSection>
+      {msg && !msg.ok && <FormError>{msg.text}</FormError>}
+      {msg?.ok && <p role="status" className="text-sm text-emerald-700">{msg.text}</p>}
+      <FormActions>
         <Button type="submit" size="sm" disabled={busy}>{busy ? "Adding…" : "Add machine"}</Button>
-        {msg && <p className={`text-sm ${msg.ok ? "text-green-700" : "text-red-600"}`}>{msg.text}</p>}
-      </div>
+      </FormActions>
     </form>
   );
 }
