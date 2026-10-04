@@ -10,7 +10,7 @@ import { RUN_STATUSES } from "@/lib/calculation/run-list-filters";
  * its URL; nothing else about a view changes.
  */
 export const SURFACES = {
-  dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country"] },
+  dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country", "supplier", "from", "to", "scope"] },
   records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
   submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },
@@ -22,7 +22,7 @@ export const REVIEW_STATUSES = ["draft", "in_review", "approved", "rejected", "p
 
 /** Filters whose value must come from a fixed list, per page (a key may mean different things on different pages). */
 export const ENUM_FILTERS: Record<Surface, Record<string, readonly string[]>> = {
-  dashboard: {},
+  dashboard: { scope: ["1", "2", "3"] },
   records: { reviewStatus: REVIEW_STATUSES },
   suppliers: { health: ["healthy", "at_risk", "critical"], trend: ["improving", "stable", "declining"] },
   submissions: { status: SUBMISSION_STATUSES, documentType: DOCUMENT_TYPES },
@@ -34,6 +34,9 @@ export const SURFACE_KEYS = Object.keys(SURFACES) as [Surface, ...Surface[]];
 
 /** Views one person may keep per page, so a script cannot fill the table. */
 export const MAX_VIEWS_PER_USER_PER_SURFACE = 50;
+
+/** A month filter, as a native month input writes it. */
+export const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 const filterValue = z.string().trim().min(1).max(64);
 
@@ -68,6 +71,9 @@ export function checkFilters(
   }
   if (raw.country !== undefined && !/^[A-Z]{2}$/.test(raw.country)) {
     return { error: "Country must be a two-letter code such as GB." };
+  }
+  for (const key of ["from", "to"]) {
+    if (raw[key] !== undefined && !MONTH_PATTERN.test(raw[key])) return { error: `"${key}" must be a month such as 2026-03.` };
   }
   for (const [key, allowedValues] of Object.entries(ENUM_FILTERS[surfaceKey])) {
     if (raw[key] !== undefined && !allowedValues.includes(raw[key])) {

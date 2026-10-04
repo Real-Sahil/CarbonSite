@@ -65,6 +65,8 @@ import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType }
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
+import { loadSliceView, parseSliceFilter } from "@/lib/dashboard/slice-filter";
+import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { activeFilters } from "@/lib/saved-views";
@@ -73,7 +75,7 @@ import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from 
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string }>;
 }
 
 function formatKgCo2e(locale: string, value: unknown): string {
@@ -101,7 +103,8 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry } = await searchParams;
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope } = await searchParams;
+  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope });
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
   let dashAuthErr: AuthError | null = null;
@@ -224,9 +227,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       : groupFacilityIds === null
         ? contractFacilityIds
         : contractFacilityIds.filter((id) => groupFacilityIds.includes(id));
-  const scoped = scopeFacilityIds !== null;
+  const scoped = scopeFacilityIds !== null || sliceFilter !== null;
   const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
     const q = new URLSearchParams();
+    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope })) if (v) q.set(k, v);
     if (p.contractId) q.set("contractId", p.contractId);
     if (p.entityId) q.set("entityId", p.entityId);
     if (p.country) q.set("country", p.country);
@@ -234,6 +238,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
   };
 
+  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope });
   const currentPeriod = reportingPeriods[0] ?? null;
   const priorPeriod = reportingPeriods[1] ?? null;
 
@@ -300,7 +305,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     latestSnapshot != null && Math.abs(liveTotalCo2e - snapshotTotalCo2e) > 0.5;
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
-  const [batchA, batchB, trendAggregates, facilityAggregates, ocrDiscrepancySubmissions, priorScopeAggregates, environmentalAggregatesRaw, approvedCountsRows, pilotRecentGeneration, industryData] = await Promise.all([
+  const [batchA, batchB, trendAggregates, liveFacilityAggregates, ocrDiscrepancySubmissions, priorScopeAggregates, environmentalAggregatesRaw, approvedCountsRows, pilotRecentGeneration, industryData] = await Promise.all([
     Promise.all([
       currentPeriod
         ? prisma.dashboardAggregate.groupBy({
@@ -635,7 +640,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   ]);
 
   const [
-    scopeAggregates,
+    liveScopeAggregates,
     myReviewTasks,
     reviewImports,
     reviewRecords,
@@ -652,10 +657,20 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     submissionDocumentRows,
     initiativeStatusRows,
     targetReductionStats,
-    topCategoryAggregates,
+    liveTopCategoryAggregates,
     reportStatusRows,
     socialValueStats,
   ] = batchB;
+
+  // Supplier, month and scope filters read the slice table; the rest of the
+  // page keeps its aggregate reads.
+  const sliceView =
+    currentPeriod && sliceFilter
+      ? await loadSliceView(orgId, currentPeriod.id, sliceFilter, scopeFacilityIds).catch(onLoadFailure(() => null))
+      : null;
+  const scopeAggregates = sliceView?.scopeAggregates ?? liveScopeAggregates;
+  const topCategoryAggregates = sliceView?.topCategoryAggregates ?? liveTopCategoryAggregates;
+  const facilityAggregates = sliceView?.facilityAggregates ?? liveFacilityAggregates;
 
   const recordCount = counts?.records ?? 0;
   const approvedRecordCount = counts?.approvedRecords ?? 0;
@@ -798,12 +813,17 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   }).length;
 
   // Facility breakdown derived values
-  const facilityRows = facilityAggregates.map((agg) => ({
-    id: agg.facilityId ?? "",
-    name: agg.facility?.name ?? "Unknown facility",
-    totalCo2e: Number(agg.totalCo2e),
-    recordCount: agg.recordCount,
-  }));
+  // The per-facility aggregate rows are written one per scope, so a facility
+  // with Scope 1 and Scope 2 records comes back more than once: sum them.
+  const facilityById = new Map<string, { id: string; name: string; totalCo2e: number; recordCount: number }>();
+  for (const agg of facilityAggregates) {
+    const id = agg.facilityId ?? "";
+    const row = facilityById.get(id) ?? { id, name: agg.facility?.name ?? "Unknown facility", totalCo2e: 0, recordCount: 0 };
+    row.totalCo2e += Number(agg.totalCo2e);
+    row.recordCount += agg.recordCount;
+    facilityById.set(id, row);
+  }
+  const facilityRows = [...facilityById.values()].sort((a, b) => b.totalCo2e - a.totalCo2e);
   const facilityTotal = facilityRows.reduce((sum, row) => sum + row.totalCo2e, 0);
   const activeFacility = selectedFacilityId
     ? facilityRows.find((row) => row.id === selectedFacilityId) ?? null
@@ -1108,13 +1128,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
+      <DashboardFilterBar filters={dashboardFilters} />
+
       {/* Saved views: personal and shared sets of the filters below */}
       {viewRoles().includes(role) && (
         <div className="mb-3 flex items-center gap-2">
           <SavedViewsMenu
             orgId={orgId}
             surface="dashboard"
-            filters={activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry })}
+            filters={dashboardFilters}
             canShare={mayShare(role)}
             isAdmin={role === "admin"}
           />
@@ -1256,7 +1278,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           <p className="mt-1 text-xs text-white tracking-[-0.36px]">
             {currentFootprint > 0
               ? `Scopes 1–3 · ${currentPeriod?.label ?? "current period"}`
-              : "Run a calculation to populate your footprint"}
+              : sliceFilter
+                ? "No calculated emissions match these filters"
+                : "Run a calculation to populate your footprint"}
           </p>
         </div>
 

@@ -143,3 +143,18 @@ describe("the calculations surface", () => {
     expect(checkFilters("calculations", { facilityId: "f1" })).toHaveProperty("error");
   });
 });
+
+describe("dashboard slice filters", () => {
+  it("accepts supplier, month range and scope", async () => {
+    const { checkFilters } = await import("../index");
+    expect(checkFilters("dashboard", { supplier: "Certas", from: "2026-01", to: "2026-03", scope: "1" })).toEqual({
+      filters: { supplier: "Certas", from: "2026-01", to: "2026-03", scope: "1" },
+    });
+  });
+
+  it("refuses a malformed month and a scope outside 1 to 3", async () => {
+    const { checkFilters } = await import("../index");
+    expect(checkFilters("dashboard", { from: "March" })).toHaveProperty("error");
+    expect(checkFilters("dashboard", { scope: "4" })).toHaveProperty("error");
+  });
+});
