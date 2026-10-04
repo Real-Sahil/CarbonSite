@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EGRID_CODES } from "@/lib/calculation/egrid-subregion";
 import { acquisitionSchema } from "@/lib/marketing/acquisition";
 import { countryIso2 } from "@/lib/calculation/geography";
 import {
@@ -76,6 +77,8 @@ export const createFacilitySchema = z.object({
   // Regulator identifiers (for example the Abu Dhabi MRV report asks for both). Null clears.
   economicLicenceNumber: z.string().trim().max(60).nullable().optional(),
   environmentalPermitNumber: z.string().trim().max(60).nullable().optional(),
+  // EPA eGRID subregion for US electricity factors. Empty or null clears.
+  egridSubregion: z.union([z.literal(""), z.string().refine((c) => EGRID_CODES.has(c), "Unknown eGRID subregion")]).nullable().optional(),
   // ESRS E3 water-stress classification. Manually assessed for now (e.g.
   // against WRI Aqueduct), not a live GIS lookup.
   waterStressLevel: z.enum(["low", "medium_high", "high", "extremely_high", "unknown"]).nullable().optional(),

@@ -103,6 +103,7 @@ export async function POST(
         externalRef: body.externalRef ?? null,
         economicLicenceNumber: body.economicLicenceNumber || null,
         environmentalPermitNumber: body.environmentalPermitNumber || null,
+        egridSubregion: body.egridSubregion || null,
       },
     });
 

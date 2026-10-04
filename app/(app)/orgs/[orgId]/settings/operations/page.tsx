@@ -126,6 +126,7 @@ export default async function OperationsSettingsPage({
           latitude: facility.latitude == null ? null : Number(facility.latitude),
           longitude: facility.longitude == null ? null : Number(facility.longitude),
           waterStressLevel: facility.waterStressLevel,
+          egridSubregion: facility.egridSubregion ?? "",
         }))}
         businessUnits={businessUnits.map((businessUnit) => ({
           id: businessUnit.id,

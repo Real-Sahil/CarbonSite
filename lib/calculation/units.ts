@@ -122,6 +122,7 @@ const registry: Record<string, UnitConversion> = {
   gj: { toCanonical: 277.778, canonical: "kWh" },
   mj: { toCanonical: 0.277778, canonical: "kWh" },
   therm: { toCanonical: 29.3071, canonical: "kWh" },
+  mmbtu: { toCanonical: 293.07107, canonical: "kWh" },
 
   // Energy on a net calorific value basis (NCV, French "PCI"): a separate
   // dimension, never converted to or from gross kWh, because the ratio

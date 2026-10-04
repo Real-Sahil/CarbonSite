@@ -58,7 +58,7 @@ describe("FacilitiesPanel", () => {
       <FacilitiesPanel
         orgId="o"
         facilities={[
-          { id: "f1", name: "Depot", country: "GB", region: "", addressLine: "", postcode: "", latitude: null, longitude: null, waterStressLevel: null },
+          { id: "f1", name: "Depot", country: "GB", region: "", addressLine: "", postcode: "", latitude: null, longitude: null, waterStressLevel: null, egridSubregion: "" },
         ]}
       />,
     );

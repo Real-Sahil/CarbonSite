@@ -6,9 +6,11 @@ import { Building2, MapPin, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AddressPicker } from "@/components/address/address-picker";
-import { FormActions, FormDisclosure, FormError, FormField, FormSection } from "@/components/forms/form-kit";
+import { FormActions, FormDisclosure, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 import { plusCode, type AddressSuggestion } from "@/lib/geo/address";
 import { EmptyState } from "@/components/ui/empty-state";
+import { EGRID_SUBREGIONS } from "@/lib/calculation/egrid-subregion";
+import { countryIso2 } from "@/lib/calculation/geography";
 
 export type WaterStressLevel = "low" | "medium_high" | "high" | "extremely_high" | "unknown";
 
@@ -22,6 +24,7 @@ export type Facility = {
   latitude: number | null;
   longitude: number | null;
   waterStressLevel: WaterStressLevel | null;
+  egridSubregion: string;
 };
 
 const WATER_STRESS_OPTIONS: { value: WaterStressLevel | ""; label: string }[] = [
@@ -43,6 +46,7 @@ const EMPTY: Facility = {
   latitude: null,
   longitude: null,
   waterStressLevel: null,
+  egridSubregion: "",
 };
 
 async function send(url: string, method: "POST" | "PATCH" | "DELETE", payload?: Record<string, unknown>) {
@@ -159,6 +163,7 @@ function FacilityForm({
   const [country, setCountry] = useState(initial.country);
   const [region, setRegion] = useState(initial.region);
   const [postcode, setPostcode] = useState(initial.postcode);
+  const [egrid, setEgrid] = useState(initial.egridSubregion);
   const [water, setWater] = useState<WaterStressLevel | "">(initial.waterStressLevel ?? "");
   const [picked, setPicked] = useState<AddressSuggestion | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -194,10 +199,11 @@ function FacilityForm({
           await send(`/api/orgs/${orgId}/facilities`, "POST", {
             name, country, region, postcode: postcode.trim() || undefined, ...location,
             ...(water ? { waterStressLevel: water } : {}),
+            ...(egrid ? { egridSubregion: egrid } : {}),
           });
         } else {
           await send(`/api/orgs/${orgId}/facilities/${initial.id}`, "PATCH", {
-            name, country, region, postcode: postcode.trim() || null, waterStressLevel: water || null, ...location,
+            name, country, region, postcode: postcode.trim() || null, waterStressLevel: water || null, egridSubregion: egrid || null, ...location,
           });
         }
         router.refresh();
@@ -251,6 +257,22 @@ function FacilityForm({
         <FormField label="Postcode" htmlFor={`${id}-postcode`}>
           <Input id={`${id}-postcode`} value={postcode} onChange={(e) => setPostcode(e.target.value)} maxLength={20} disabled={isPending} />
         </FormField>
+        {countryIso2(country) === "US" && (
+          <FormField
+            label="eGRID subregion"
+            htmlFor={`${id}-egrid`}
+            span={2}
+            optional
+            hint="Prices this site's electricity with its regional grid. Left empty, the US average is used. Find yours from the site's ZIP code in EPA's Power Profiler."
+          >
+            <select id={`${id}-egrid`} value={egrid} disabled={isPending} onChange={(e) => setEgrid(e.target.value)} className={fieldClass}>
+              <option value="">US average</option>
+              {EGRID_SUBREGIONS.map((s) => (
+                <option key={s.code} value={s.code}>{s.code}, {s.name}</option>
+              ))}
+            </select>
+          </FormField>
+        )}
         {position && (
           <p className="text-xs text-slate-500 @md:col-span-full">
             Position {position.latitude.toFixed(5)}, {position.longitude.toFixed(5)} (Plus Code {plusCode(position.latitude, position.longitude)}).

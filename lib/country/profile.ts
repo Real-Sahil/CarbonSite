@@ -53,7 +53,7 @@ export function countryProfile(country: string | null | undefined): CountryProfi
   } else if (region === "uae") {
     notes.push("The Abu Dhabi MRV facility workbook is under Compliance. Other emirates and federal reporting are not loaded.");
   } else if (region === "us") {
-    notes.push("EPA factors are loaded. US federal and state disclosure rules are not loaded.");
+    notes.push("EPA factors are loaded: fuels, travel, waste, refrigerants and eGRID grid rates (set a site's eGRID subregion in Settings for regional electricity). US federal and state disclosure rules are not loaded.");
   } else if (iso2) {
     notes.push("No national regulatory rules are loaded for this country. GHG Protocol, CDP and TCFD-structure reports work anywhere.");
   }

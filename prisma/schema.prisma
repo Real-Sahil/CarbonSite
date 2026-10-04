@@ -624,6 +624,8 @@ model Facility {
   /// Regulator identifiers some regimes ask for per facility (for example the Abu Dhabi MRV report).
   economicLicenceNumber     String?           @map("economic_licence_number")
   environmentalPermitNumber String?           @map("environmental_permit_number")
+  /// EPA eGRID subregion code (CAMX, ERCT...) for US electricity factors; null uses the national average.
+  egridSubregion            String?           @map("egrid_subregion")
   /// ESRS E3 water-stress classification for this facility's location.
   /// Manually assessed for now (e.g. against WRI Aqueduct); not live-looked-up.
   waterStressLevel          WaterStressLevel? @map("water_stress_level")

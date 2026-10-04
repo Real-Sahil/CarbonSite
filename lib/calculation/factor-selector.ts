@@ -10,6 +10,7 @@ import type { EmissionFactor } from "@prisma/client";
 import { areUnitsCompatible } from "./units";
 import { industryMissingWarning, pickIndustry } from "./industry-code";
 import { pickHeatNetwork } from "./heat-network";
+import { pickEgridSubregion } from "./egrid-subregion";
 
 // Pre-loaded factor table keyed by "factorLibraryId:emissionCategoryId".
 // Build once at the start of a calculation run and pass to selectFactor.
@@ -48,6 +49,8 @@ export type FactorQuery = {
   matchHint?: string;
   /** Supplier's industry code (6-digit NAICS) for spend-by-industry factors. */
   industryCode?: string | null;
+  /** The record's facility's eGRID subregion, for US electricity (egrid-subregion.ts). */
+  egridSubregion?: string | null;
 };
 
 export type FactorSelection = {
@@ -179,6 +182,14 @@ export async function selectFactor(
     return { factor: network.factor, selectionReason: `heat network named on the record (${network.factor.externalId})`, warnings: [] };
   }
   candidates = network.candidates;
+  if (candidates.length === 0) return null;
+
+  // eGRID subregions: only the one the record or its facility names.
+  const subregion = pickEgridSubregion(candidates, query.matchHint, query.egridSubregion);
+  if (subregion.kind === "matched") {
+    return { factor: subregion.factor, selectionReason: `eGRID subregion named (${subregion.factor.externalId})`, warnings: [] };
+  }
+  candidates = subregion.candidates;
   if (candidates.length === 0) return null;
 
   // When market-based Scope 2 is requested, prefer factors with "market" in
