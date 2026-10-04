@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Building2, MapPin, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -176,6 +176,23 @@ function FacilityForm({
       ? { latitude: initial.latitude, longitude: initial.longitude }
       : null;
 
+  // A suggested eGRID subregion from the site's position (nearest plants), to confirm.
+  type Suggestion = { kind: "suggested"; code: string; agree: number; of: number; nearestKm: number } | { kind: "unsure"; candidates: string[] } | { kind: "none" };
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const lat = position?.latitude;
+  const lon = position?.longitude;
+  const wantsSubregion = countryIso2(country) === "US" && !egrid;
+  useEffect(() => {
+    setSuggestion(null);
+    if (!wantsSubregion || lat == null || lon == null) return;
+    const ctrl = new AbortController();
+    fetch(`/api/orgs/${orgId}/egrid-subregion?lat=${lat}&lon=${lon}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setSuggestion(d.suggestion))
+      .catch(() => {});
+    return () => ctrl.abort();
+  }, [orgId, wantsSubregion, lat, lon]);
+
   function pick(s: AddressSuggestion) {
     setPicked(s);
     if (s.country) setCountry(s.country);
@@ -271,6 +288,19 @@ function FacilityForm({
                 <option key={s.code} value={s.code}>{s.code}, {s.name}</option>
               ))}
             </select>
+            {suggestion?.kind === "suggested" && (
+              <p className="mt-1.5 text-xs text-slate-600">
+                {suggestion.agree} of the {suggestion.of} nearest power plants (the closest {suggestion.nearestKm} km away) are in {suggestion.code}.{" "}
+                <button type="button" className="font-medium text-slate-900 underline underline-offset-2" onClick={() => setEgrid(suggestion.code)}>
+                  Use {suggestion.code}
+                </button>
+              </p>
+            )}
+            {suggestion?.kind === "unsure" && (
+              <p className="mt-1.5 text-xs text-slate-600">
+                The nearest power plants are in different subregions ({suggestion.candidates.join(", ")}), so this site is near a boundary. Check its ZIP code in EPA&apos;s Power Profiler.
+              </p>
+            )}
           </FormField>
         )}
         {position && (

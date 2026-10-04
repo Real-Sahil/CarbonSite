@@ -65,4 +65,33 @@ describe("FacilitiesPanel", () => {
     expect(screen.getByText(/0 of 1 placed on the site map/)).toBeTruthy();
     expect(screen.getByText(/Not on the site map/)).toBeTruthy();
   });
+
+  it("suggests an eGRID subregion for a US site with a position, and saves it once confirmed", async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      url.includes("/egrid-subregion")
+        ? new Response(JSON.stringify({ suggestion: { kind: "suggested", code: "CAMX", agree: 5, of: 5, nearestKm: 3 } }), { status: 200 })
+        : new Response(JSON.stringify({}), { status: 200 }),
+    );
+    render(
+      <FacilitiesPanel
+        orgId="o"
+        facilities={[{ id: "f1", name: "LA yard", country: "US", region: "", addressLine: "", postcode: "", latitude: 34.05, longitude: -118.24, waterStressLevel: null, egridSubregion: "" }]}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^edit$/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /use camx/i }));
+    expect((screen.getByLabelText(/eGRID subregion/) as HTMLSelectElement).value).toBe("CAMX");
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    await waitFor(() => {
+      const patch = fetchMock.mock.calls.find(([, init]) => init?.method === "PATCH");
+      expect(JSON.parse(patch![1].body)).toMatchObject({ egridSubregion: "CAMX" });
+    });
+  });
+
+  it("offers no subregion for a site outside the US", () => {
+    render(<FacilitiesPanel orgId="o" facilities={[{ id: "f2", name: "Depot", country: "GB", region: "", addressLine: "", postcode: "", latitude: 52, longitude: -1, waterStressLevel: null, egridSubregion: "" }]} />);
+    fireEvent.click(screen.getByRole("button", { name: /^edit$/i }));
+    expect(screen.queryByLabelText(/eGRID subregion/)).toBeNull();
+    expect(fetchMock.mock.calls.some(([u]) => String(u).includes("/egrid-subregion"))).toBe(false);
+  });
 });

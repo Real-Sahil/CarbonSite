@@ -53,7 +53,9 @@ export function countryProfile(country: string | null | undefined): CountryProfi
   } else if (region === "uae") {
     notes.push("The Abu Dhabi MRV facility workbook is under Compliance. Other emirates and federal reporting are not loaded.");
   } else if (region === "us") {
-    notes.push("EPA factors are loaded: fuels, travel, waste, refrigerants and eGRID grid rates (set a site's eGRID subregion in Settings for regional electricity). US federal and state disclosure rules are not loaded.");
+    notes.push("EPA factors are loaded: fuels, travel, waste, refrigerants and eGRID grid rates (set a site's eGRID subregion in Settings for regional electricity, and add a residual mix rate under Electricity contracts for market-based Scope 2).");
+    notes.push("California SB 253 (Scope 1 and 2, then Scope 3) is served by the GHG Protocol report and its assurance pack; SB 261 (climate-related financial risk) by the climate disclosure, which follows the TCFD structure. Both are on the regulatory calendar. No report in the CARB template is built, as CARB has not published its final one.");
+    notes.push("The SEC climate disclosure rules are stayed and the SEC proposed in May 2026 to rescind them, so no SEC report is built. EPA's Greenhouse Gas Reporting Program is facility-level reporting to EPA and is under reconsideration, so it is not built either.");
   } else if (iso2) {
     notes.push("No national regulatory rules are loaded for this country. GHG Protocol, CDP and TCFD-structure reports work anywhere.");
   }

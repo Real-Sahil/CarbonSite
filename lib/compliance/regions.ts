@@ -6,7 +6,7 @@
 
 import { countryIso2 } from "@/lib/calculation/geography";
 
-export type Region = "uk" | "eu" | "uae";
+export type Region = "uk" | "eu" | "uae" | "us";
 
 const EU_27 = new Set([
   "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE",
@@ -18,6 +18,7 @@ export function regionOf(country: string | null | undefined): Region | null {
   const c = countryIso2(country) ?? "";
   if (c === "GB") return "uk";
   if (c === "AE") return "uae";
+  if (c === "US") return "us";
   return EU_27.has(c) ? "eu" : null;
 }
 

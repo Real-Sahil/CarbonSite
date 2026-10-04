@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField, FormSection } from "@/components/forms/form-kit";
 import { EmptyState } from "@/components/ui/empty-state";
+import { EGRID_SUBREGIONS } from "@/lib/calculation/egrid-subregion";
+import { RESIDUAL_MIX_RELEASE, residualMixKgPerKwh } from "@/lib/factors/us-residual-mix";
 
 type InstrumentType = "rego" | "guarantee_of_origin" | "ppa" | "green_tariff" | "supplier_specific" | "residual_mix";
 
@@ -29,7 +31,7 @@ const TYPES: { value: InstrumentType; label: string; help: string; volume: "requ
   { value: "ppa", label: "Power purchase agreement", help: "Electricity bought directly from a generator. Use the generator's rate, 0 for wind or solar.", volume: "required", defaultFactor: "0" },
   { value: "green_tariff", label: "Green tariff", help: "A supplier tariff backed by certificates. Leave kWh blank if it covers the whole supply.", volume: "optional", defaultFactor: "0" },
   { value: "supplier_specific", label: "Supplier emission rate", help: "The rate on your supplier's fuel mix disclosure. Covers everything not backed by certificates.", volume: "none" },
-  { value: "residual_mix", label: "Residual mix", help: "The published residual mix rate for your market, for example AIB for Europe or Green-e for the US. Enter the figure and keep the source in the notes; MetricOra does not bundle these tables. Used for anything nothing else covers.", volume: "none" },
+  { value: "residual_mix", label: "Residual mix", help: "The published residual mix rate for your market, for example AIB for Europe or the US residual mix. For the US, pick the eGRID subregion to fill in the Center for Resource Solutions rate and its citation; elsewhere enter your market's figure and its source. Used for anything nothing else covers.", volume: "none" },
 ];
 const typeInfo = (t: InstrumentType) => TYPES.find((x) => x.value === t)!;
 
@@ -50,9 +52,12 @@ export function EnergyInstruments({
 }) {
   const router = useRouter();
   const [type, setType] = useState<InstrumentType>("rego");
+  const [usSubregion, setUsSubregion] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const info = typeInfo(type);
+  // A published US residual mix rate, filled in on request and always editable.
+  const usRate = type === "residual_mix" && usSubregion ? residualMixKgPerKwh(usSubregion) : null;
 
   function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -171,11 +176,26 @@ export function EnergyInstruments({
                   {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
                 </select>
               </FormField>
+              {type === "residual_mix" && (
+                <FormField
+                  label="US residual mix by eGRID subregion"
+                  htmlFor="ei-us-subregion"
+                  span={2}
+                  optional
+                  hint={`Fills in the rate from ${RESIDUAL_MIX_RELEASE.label} and cites it. Check the subregion from the site's ZIP code in EPA's Power Profiler.`}
+                >
+                  <select id="ei-us-subregion" value={usSubregion} onChange={(e) => setUsSubregion(e.target.value)} className={selectClass}>
+                    <option value="">Not a US rate</option>
+                    {EGRID_SUBREGIONS.map((r) => <option key={r.code} value={r.code}>{r.code}, {r.name}</option>)}
+                    <option value="PRMS">PRMS, Puerto Rico Miscellaneous</option>
+                  </select>
+                </FormField>
+              )}
               <FormField label="Supplier or generator" htmlFor="ei-supplier">
-                <Input id="ei-supplier" name="supplierName" maxLength={200} />
+                <Input id="ei-supplier" key={`s-${usSubregion}`} name="supplierName" maxLength={200} defaultValue={usRate != null ? "Center for Resource Solutions (residual mix)" : undefined} />
               </FormField>
               <FormField label="Certificate or contract reference" htmlFor="ei-ref" optional>
-                <Input id="ei-ref" name="reference" maxLength={200} />
+                <Input id="ei-ref" key={`r-${usSubregion}`} name="reference" maxLength={200} defaultValue={usRate != null ? `${RESIDUAL_MIX_RELEASE.label}, ${usSubregion}` : undefined} />
               </FormField>
               {info.volume !== "none" && (
                 <div>
@@ -186,7 +206,7 @@ export function EnergyInstruments({
                 </div>
               )}
               <FormField label="Emission rate (kg CO2e per kWh)" htmlFor="ei-factor">
-                <Input id="ei-factor" key={type} name="factor" type="number" min="0" max="2" step="any" required defaultValue={info.defaultFactor} />
+                <Input id="ei-factor" key={`${type}-${usSubregion}`} name="factor" type="number" min="0" max="2" step="any" required defaultValue={usRate ?? info.defaultFactor} />
               </FormField>
               <FormField label="Valid from" htmlFor="ei-from">
                 <Input id="ei-from" name="validFrom" type="date" required />

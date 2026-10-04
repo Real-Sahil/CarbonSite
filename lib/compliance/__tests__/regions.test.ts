@@ -6,14 +6,14 @@ describe("regions", () => {
     expect(regionOf("gb")).toBe("uk");
     expect(regionOf("DE")).toBe("eu");
     expect(regionOf("AE")).toBe("uae");
-    expect(regionOf("US")).toBeNull();
+    expect(regionOf("US")).toBe("us");
     expect(regionOf("NO")).toBeNull();
     expect(regionOf(null)).toBeNull();
   });
   it("unions the HQ and facility countries and lists those with no rules loaded", () => {
-    const r = relevantRegions("GB", ["IE", "IE", "AE", "US", null, "Narnia"]);
-    expect(r.regions.sort()).toEqual(["eu", "uae", "uk"]);
-    expect(r.unloaded).toEqual(["US"]);
+    const r = relevantRegions("GB", ["IE", "IE", "AE", "US", "NO", null, "Narnia"]);
+    expect(r.regions.sort()).toEqual(["eu", "uae", "uk", "us"]);
+    expect(r.unloaded).toEqual(["NO"]);
   });
   it("reads names and aliases a user typed on a facility", () => {
     expect(regionOf("United Kingdom")).toBe("uk");

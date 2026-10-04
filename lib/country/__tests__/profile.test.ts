@@ -24,7 +24,7 @@ describe("countryProfile", () => {
   it("says what the UAE and US actually have loaded, and nothing more", () => {
     expect(countryProfile("AE").notes.join(" ")).toMatch(/Abu Dhabi MRV/);
     expect(countryProfile("US").nationalLibraryCountry).toBe("US");
-    expect(countryProfile("US").notes.join(" ")).toMatch(/not loaded/);
+    expect(countryProfile("US").notes.join(" ")).toMatch(/SB 253/);
   });
 
   it("is honest about a country with nothing loaded and about an unset country", () => {

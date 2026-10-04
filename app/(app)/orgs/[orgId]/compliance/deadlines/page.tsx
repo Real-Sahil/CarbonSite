@@ -19,7 +19,7 @@ interface StatutoryDeadline {
   applicability: string;
   authority: string;
   penalty?: string;
-  category: 'uk' | 'eu' | 'uae' | 'international';
+  category: 'uk' | 'eu' | 'uae' | 'us' | 'international';
   complianceFramework: string; // matches ComplianceRecord.framework
   /** Official page the date and thresholds were checked against. */
   source: string;
@@ -211,6 +211,37 @@ const STATUTORY_DEADLINES: StatutoryDeadline[] = [
     action: { label: 'Prepare facility Scope 1 data', path: 'compliance/abu-dhabi-mrv' },
     source: 'https://www.ropesgray.com/en/insights/alerts/2026/04/preparing-for-new-uae-ghg-emissions-reporting-and-reduction-requirements',
   },
+  // US
+  {
+    id: 'ca-sb253-2026',
+    framework: 'California SB 253',
+    description: 'Corporate Scope 1 and Scope 2 emissions report to the California Air Resources Board for the first reporting year. Scope 3 and limited assurance on Scope 1 and 2 follow from 2027; there is no CARB template and no assurance requirement for the 2026 report',
+    dueDate: '2026-11-10',
+    dueNote: 'CARB moved the first deadline from 10 August to 10 November 2026 in its updated proposal of the initial regulation, subject to Office of Administrative Law approval. A company whose financial year ended on or before 1 February 2026 reports that year, otherwise the one before. Court challenges are pending: check CARB before relying on the date. Checked 4 October 2026.',
+    reportingYear: 2025,
+    applicability: 'US-formed companies that do business in California with total annual revenue over $1 billion',
+    authority: 'California Air Resources Board (CARB)',
+    penalty: 'Administrative penalties set by the statute; CARB has said it will use enforcement discretion for good-faith first-year reports',
+    category: 'us',
+    complianceFramework: 'CA_SB253',
+    action: { label: 'Create a GHG Protocol report', path: 'reports' },
+    source: 'https://ww2.arb.ca.gov/our-work/programs/california-corporate-greenhouse-gas-reporting-and-climate-related-financial-risk',
+  },
+  {
+    id: 'ca-sb261-2026',
+    framework: 'California SB 261',
+    description: 'Climate-related financial risk report, published on the company website every two years, covering the risks and the measures taken to reduce and adapt to them',
+    dueDate: '2026-01-01',
+    dueNote: 'The statutory date was 1 January 2026, but the Ninth Circuit enjoined enforcement in November 2025 while the appeal is heard and CARB has said it will not enforce the date; it has opened a voluntary docket. Check CARB for the current position. Checked 4 October 2026.',
+    reportingYear: 2025,
+    applicability: 'US-formed companies that do business in California with total annual revenue over $500 million',
+    authority: 'California Air Resources Board (CARB)',
+    penalty: 'Administrative penalty under the statute, while enforcement is paused',
+    category: 'us',
+    complianceFramework: 'CA_SB261',
+    action: { label: 'Open the climate disclosure', path: 'climate-disclosure' },
+    source: 'https://ww2.arb.ca.gov/our-work/programs/california-corporate-greenhouse-gas-reporting-and-climate-related-financial-risk',
+  },
   // International
   {
     id: 'cdp-2026',
@@ -245,6 +276,7 @@ function getCategoryBadge(cat: string) {
     case 'uk': return 'bg-blue-100 text-blue-800';
     case 'eu': return 'bg-purple-100 text-purple-800';
     case 'uae': return 'bg-emerald-100 text-emerald-800';
+    case 'us': return 'bg-amber-100 text-amber-800';
     default: return 'bg-gray-100 text-gray-700';
   }
 }
