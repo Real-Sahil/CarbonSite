@@ -23,6 +23,24 @@ export type DashboardCalcInput = {
 };
 
 /**
+ * The (calculation, Scope 2 method) pairs a run is written under: each
+ * calculation once under its own method, and purchased heat a second time under
+ * market-based when the run has market-based electricity (inBothScope2Totals).
+ * Shared with the slice table so both rebuild from the same rule.
+ */
+export function reportingRows<T extends DashboardCalcInput>(
+  calculations: T[],
+): Array<{ calc: T; scope2Method: Scope2Method | null }> {
+  const hasMarket = calculations.some((c) => scope2MethodOf(c.activityRecord) === "market_based");
+  const rows: Array<{ calc: T; scope2Method: Scope2Method | null }> = [];
+  for (const calc of calculations) {
+    rows.push({ calc, scope2Method: scope2MethodOf(calc.activityRecord) });
+    if (hasMarket && inBothScope2Totals(calc.activityRecord)) rows.push({ calc, scope2Method: "market_based" });
+  }
+  return rows;
+}
+
+/**
  * The DashboardAggregate rows for one calculation run. Each calculation is
  * written into several rows, one per breakdown dimension:
  *   - a scope rollup row       (category, facility and business unit null)
@@ -47,12 +65,7 @@ export function groupDashboardAggregates(calculations: DashboardCalcInput[]): Da
     }
   };
 
-  const hasMarket = calculations.some((c) => scope2MethodOf(c.activityRecord) === "market_based");
-  const rows: Array<{ calc: DashboardCalcInput; scope2Method: Scope2Method | null }> = [];
-  for (const calc of calculations) {
-    rows.push({ calc, scope2Method: scope2MethodOf(calc.activityRecord) });
-    if (hasMarket && inBothScope2Totals(calc.activityRecord)) rows.push({ calc, scope2Method: "market_based" });
-  }
+  const rows = reportingRows(calculations);
 
   for (const { calc, scope2Method } of rows) {
     const record = calc.activityRecord;

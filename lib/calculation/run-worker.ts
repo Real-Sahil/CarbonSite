@@ -19,6 +19,7 @@ import {
 import { selectFactor, selectHvoFactor, buildFactorCache, type FactorCache, type FactorSelection } from "./factor-selector";
 import { hvoShare } from "./fuels";
 import { loadOrgCustomFactors, pickCustomFactor, customFactorAsLibraryFactor } from "./custom-factors";
+import { groupDashboardSlices } from "./dashboard-slices";
 import { groupDashboardAggregates } from "./dashboard-groups";
 import { loadMarketAllocations } from "./scope2-allocation-loader";
 import { deflateSpend } from "./price-index";
@@ -707,6 +708,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
   return { done: true };
 }
 
+/** Rows per createMany for dashboard slices (12 columns each, well under Postgres's 65,535 bind limit). */
+const SLICE_INSERT_CHUNK = 2000;
+
 async function rebuildDashboardAggregates(
   orgId: string,
   reportingPeriodId: string,
@@ -736,6 +740,7 @@ async function rebuildDashboardAggregates(
   });
 
   const groups = groupDashboardAggregates(calculations);
+  const slices = groupDashboardSlices(calculations);
 
   // Feature 5: Compute intensity metrics for multi-year trend analysis
   const computeIntensity = (totalCo2e: number) => {
@@ -754,29 +759,57 @@ async function rebuildDashboardAggregates(
 
   // Atomic swap: delete stale rows and insert fresh ones in one transaction so
   // the dashboard is never in a partially-empty state between the two writes.
-  await prisma.$transaction(async (tx) => {
-    await tx.dashboardAggregate.deleteMany({
-      where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
-    });
+  await prisma.$transaction(
+    async (tx) => {
+      await tx.dashboardAggregate.deleteMany({
+        where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
+      });
+      await tx.dashboardSlice.deleteMany({
+        where: { organizationId: orgId, reportingPeriodId, snapshotId: null },
+      });
 
-    if (groups.length === 0) return;
+      if (groups.length === 0) return;
 
-    await tx.dashboardAggregate.createMany({
-      data: groups.map(({ key, totalCo2e, count }) => ({
-        organizationId: orgId,
-        reportingPeriodId,
-        snapshotId: null,
-        scope: key.scope,
-        scope2Method: key.scope2Method,
-        emissionCategoryId: key.emissionCategoryId,
-        facilityId: key.facilityId,
-        businessUnitId: key.businessUnitId,
-        totalCo2e,
-        recordCount: count,
-        ...computeIntensity(Number(totalCo2e)),
-      })),
-    });
-  });
+      await tx.dashboardAggregate.createMany({
+        data: groups.map(({ key, totalCo2e, count }) => ({
+          organizationId: orgId,
+          reportingPeriodId,
+          snapshotId: null,
+          scope: key.scope,
+          scope2Method: key.scope2Method,
+          emissionCategoryId: key.emissionCategoryId,
+          facilityId: key.facilityId,
+          businessUnitId: key.businessUnitId,
+          totalCo2e,
+          recordCount: count,
+          ...computeIntensity(Number(totalCo2e)),
+        })),
+      });
+
+      // Base-grain slices for the portal's supplier, site and contract filters.
+      // Chunked so a large organisation stays under Postgres's bind limit.
+      for (let i = 0; i < slices.length; i += SLICE_INSERT_CHUNK) {
+        await tx.dashboardSlice.createMany({
+          data: slices.slice(i, i + SLICE_INSERT_CHUNK).map(({ key, totalCo2e, count }) => ({
+            organizationId: orgId,
+            reportingPeriodId,
+            snapshotId: null,
+            scope: key.scope,
+            scope2Method: key.scope2Method,
+            emissionCategoryId: key.emissionCategoryId,
+            facilityId: key.facilityId,
+            siteId: key.siteId,
+            contractId: key.contractId,
+            supplierKey: key.supplierKey,
+            month: key.month,
+            totalCo2e,
+            recordCount: count,
+          })),
+        });
+      }
+    },
+    { timeout: 60_000 },
+  );
 }
 
 async function computeAndPersistUncertainty(

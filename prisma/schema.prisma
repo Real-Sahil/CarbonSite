@@ -233,6 +233,7 @@ model Organization {
   uncertaintyResults             CalculationUncertaintyResult[]
   snapshots                      PublishedSnapshot[]
   aggregates                     DashboardAggregate[]
+  dashboardSlices                DashboardSlice[]
   scenarioRuns                   ScenarioRun[]
   routeDistances                 RouteDistance[]
   reports                        Report[]
@@ -729,6 +730,7 @@ model ReportingPeriod {
   calculationRuns               CalculationRun[]
   snapshots                     PublishedSnapshot[]
   aggregates                    DashboardAggregate[]
+  dashboardSlices               DashboardSlice[]
   reports                       Report[]
   targets                       ReductionTarget[]              @relation("BaselinePeriod")
   targetPeriods                 ReductionTarget[]              @relation("TargetPeriod")
@@ -1750,6 +1752,7 @@ model PublishedSnapshot {
   publishedBy                   User                           @relation(fields: [publishedByUserId], references: [id])
   verifiedBy                    User?                          @relation("SnapshotVerifiedBy", fields: [verifiedByUserId], references: [id])
   aggregates                    DashboardAggregate[]
+  dashboardSlices               DashboardSlice[]
   reports                       Report[]
   assurance                     SnapshotAssurance?
   restatementsSuperseding       Restatement[]                  @relation("RestatementSuperseded")
@@ -1879,6 +1882,48 @@ model DashboardAggregate {
   @@index([organizationId, reportingPeriodId, snapshotId])
   @@index([organizationId, snapshotId, scope])
   @@map("dashboard_aggregates")
+}
+
+/// One row per distinct combination of scope, Scope 2 method, category, site,
+/// facility, contract, supplier and month for a calculation run: the
+/// base grain the portal's filters and cross-filters roll up with GROUP BY.
+/// DashboardAggregate pre-writes each rollup, so adding supplier or contract
+/// there would multiply its rows and repeat the double-counting trap described
+/// in lib/calculation/aggregate-filters.ts; this table has exactly one row per
+/// combination, so any subset of dimensions sums without double counting
+/// (read it with PRIMARY_SCOPE2_METHOD, as for aggregates: purchased heat is
+/// written under both Scope 2 methods when the run has market-based electricity).
+/// Written in the same transaction as the aggregates (lib/calculation/
+/// run-worker.ts) and frozen onto each published snapshot. facilityId, siteId
+/// and contractId are plain columns, not foreign keys, so a snapshot stays
+/// intact when a site or contract is later deleted. supplierKey is the
+/// normalised supplier name (lib/social-value/local-spend.ts supplierKey).
+model DashboardSlice {
+  id                 String        @id @default(cuid())
+  organizationId     String        @map("organization_id")
+  reportingPeriodId  String        @map("reporting_period_id")
+  snapshotId         String?       @map("snapshot_id")
+  scope              Int
+  scope2Method       Scope2Method? @map("scope2_method")
+  emissionCategoryId String        @map("emission_category_id")
+  facilityId         String?       @map("facility_id")
+  siteId             String?       @map("site_id")
+  contractId         String?       @map("contract_id")
+  supplierKey        String?       @map("supplier_key")
+  /// First day of the month of the record's activity date (UTC); null when the
+  /// record carries no date.
+  month              DateTime?     @db.Date
+  totalCo2e          Decimal       @map("total_co2e") @db.Decimal(18, 8)
+  recordCount        Int           @map("record_count")
+  createdAt          DateTime      @default(now()) @map("created_at")
+
+  organization    Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod    @relation(fields: [reportingPeriodId], references: [id])
+  snapshot        PublishedSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, reportingPeriodId, snapshotId])
+  @@index([organizationId, snapshotId, scope])
+  @@map("dashboard_slices")
 }
 
 // ─── Targets & Initiatives ────────────────────────────────────────────────────

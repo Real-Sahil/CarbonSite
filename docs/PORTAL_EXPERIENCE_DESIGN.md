@@ -111,7 +111,7 @@ Decision: add one **base-grain slice table**, written inside the same transactio
 Still to verify in phase 1, on real organisation data: row-count reduction, rebuild time added to a calculation run, and agreement with `DashboardAggregate` totals (a reconciliation test, like `report-dashboard-reconciliation.test.ts`).
 Social value filtering keeps its own source and is applied as a record-set filter, with the social value totals shown beside, never added to, emissions.
 
-**Phase 1: slice table, saved views and the first pages.**
+**Phase 1: slice table, saved views and the first pages.** *Step 1 (slice table, writer, snapshot copy, reconciliation test) is built; saved views, the filter bar and the pages follow.*
 Slice table and its reconciliation test first, then the shared filter bar and saved views (personal and shared, with role-based visibility) on the main dashboard and on the records, suppliers, field submissions and calculations pages.
 Server-side table with faceted filters, column control, sticky headers, virtualised rows, saved personal and shared views, CSV and XLSX export of the current view, the shared filter bar (date, project, supplier, scope, social value) with URL-synced state.
 Exit: dashboard and table interactions under 200 ms perceived; view create, share and delete audit-logged; tenancy and role tests added; axe clean; no regression in existing tests.
