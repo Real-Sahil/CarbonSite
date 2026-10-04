@@ -9,7 +9,11 @@ import type { OrgRefs } from "@/lib/security/org-refs";
  */
 export const SURFACES = {
   dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country"] },
+  records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
 } as const;
+
+/** Review statuses a records filter may name (the ReviewStatus enum). */
+export const REVIEW_STATUSES = ["draft", "in_review", "approved", "rejected", "pending_info"] as const;
 
 export type Surface = keyof typeof SURFACES;
 export const SURFACE_KEYS = Object.keys(SURFACES) as [Surface, ...Surface[]];
@@ -51,6 +55,9 @@ export function checkFilters(
   if (raw.country !== undefined && !/^[A-Z]{2}$/.test(raw.country)) {
     return { error: "Country must be a two-letter code such as GB." };
   }
+  if (raw.reviewStatus !== undefined && !(REVIEW_STATUSES as readonly string[]).includes(raw.reviewStatus)) {
+    return { error: "That review status is not one we use." };
+  }
   return { filters: raw };
 }
 
@@ -60,6 +67,7 @@ export function filterRefs(filters: Record<string, string>): OrgRefs {
     facilityId: filters.facilityId,
     contractId: filters.contractId,
     legalEntityId: filters.entityId,
+    reportingPeriodId: filters.periodId,
   };
 }
 

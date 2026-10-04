@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -8,8 +9,19 @@ import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createActivityRecordSchema } from "@/lib/validation/records";
 import { duplicateKey, findExistingDuplicates } from "@/lib/data-quality/duplicates";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { REVIEW_STATUSES } from "@/lib/saved-views";
 
 type Params = { params: Promise<{ orgId: string }> };
+
+/** The filters the records list accepts (the same keys as the saved views surface). */
+const listFilters = z.object({
+  periodId: z.string().min(1).max(64).optional(),
+  categoryId: z.string().min(1).max(64).optional(),
+  reviewStatus: z.enum(REVIEW_STATUSES).optional(),
+  facilityId: z.string().min(1).max(64).optional(),
+  contractId: z.string().min(1).max(64).optional(),
+  supplier: z.string().trim().min(1).max(64).optional(),
+});
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
@@ -26,16 +38,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     const url = new URL(_req.url);
     const cursor = url.searchParams.get("cursor");
-    const periodId = url.searchParams.get("periodId");
-    const categoryId = url.searchParams.get("categoryId");
-    const reviewStatus = url.searchParams.get("reviewStatus");
+    const f = listFilters.parse(Object.fromEntries(url.searchParams));
     const take = 50;
 
+    // Every filter narrows inside the organisation; none can widen the scope.
     const where = {
       organizationId: orgId,
-      ...(periodId ? { reportingPeriodId: periodId } : {}),
-      ...(categoryId ? { emissionCategoryId: categoryId } : {}),
-      ...(reviewStatus ? { reviewStatus: reviewStatus as never } : {}),
+      ...(f.periodId ? { reportingPeriodId: f.periodId } : {}),
+      ...(f.categoryId ? { emissionCategoryId: f.categoryId } : {}),
+      ...(f.reviewStatus ? { reviewStatus: f.reviewStatus } : {}),
+      ...(f.facilityId ? { facilityId: f.facilityId } : {}),
+      ...(f.contractId ? { contractId: f.contractId } : {}),
+      ...(f.supplier ? { supplierName: { contains: f.supplier, mode: "insensitive" as const } } : {}),
     };
 
     const [records, total] = await Promise.all([

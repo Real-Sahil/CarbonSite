@@ -94,3 +94,24 @@ describe("activeFilters and sameFilters", () => {
     expect(sameFilters({}, {})).toBe(true);
   });
 });
+
+describe("the records surface", () => {
+  it("reads period, category, status, facility, contract and supplier", () => {
+    const f = { periodId: "p1", categoryId: "c1", reviewStatus: "approved", facilityId: "f1", contractId: "k1", supplier: "acme" };
+    expect(checkFilters("records", f)).toEqual({ filters: f });
+    expect(checkFilters("records", { entityId: "e1" })).toHaveProperty("error");
+    expect(checkFilters("dashboard", { periodId: "p1" })).toHaveProperty("error");
+  });
+  it("refuses a review status we do not use", () => {
+    expect(checkFilters("records", { reviewStatus: "deleted" })).toEqual({ error: "That review status is not one we use." });
+    expect(checkFilters("records", { reviewStatus: "pending_info" })).toHaveProperty("filters");
+  });
+  it("checks the period and contract ids against the organisation", () => {
+    expect(filterRefs({ periodId: "p1", contractId: "k1", facilityId: "f1" })).toEqual({
+      facilityId: "f1",
+      contractId: "k1",
+      legalEntityId: undefined,
+      reportingPeriodId: "p1",
+    });
+  });
+});
