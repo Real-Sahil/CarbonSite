@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { FrameworkView, RequirementView } from "@/lib/management-systems/load";
 import type { RequirementState } from "@/lib/management-systems/readiness";
+import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 const STATE_LABELS: Record<RequirementState, string> = {
   not_started: "Not started",
@@ -132,18 +133,16 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
       )}
 
       <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="ms-search" className="text-xs">Search</Label>
+        <FormField label="Search" htmlFor="ms-search">
           <Input id="ms-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Code or words" className="h-9 w-64" />
-        </div>
+        </FormField>
         {framework.tagLabels && (
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="ms-tag" className="text-xs">Show</Label>
+          <FormField label="Show" htmlFor="ms-tag">
             <select id="ms-tag" value={tag} onChange={(e) => setTag(e.target.value)} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
               <option value="">All requirements</option>
               {Object.entries(framework.tagLabels).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
-          </div>
+          </FormField>
         )}
       </div>
 
@@ -277,42 +276,38 @@ function AdoptionPanel({
       {adoption.scope && !editing && <p className="max-w-[80ch] text-sm text-[#374151]"><span className="text-[#6B7280]">Scope:</span> {adoption.scope}</p>}
 
       {editing && (
-        <form onSubmit={save} className="grid gap-4 border-t border-[#E5E7EB] pt-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ad-status">Status</Label>
-            <select id="ad-status" value={form.status} onChange={set("status")} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
-              {ADOPTION_STATUSES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-            </select>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="ad-target">Target date</Label>
-            <Input id="ad-target" type="date" value={form.targetDate} onChange={set("targetDate")} className="h-9" />
-          </div>
+        <form onSubmit={save} className="space-y-6 border-t border-[#E5E7EB] pt-4">
+          <FormSection title="Adoption" cols={2}>
+            <FormField label="Status" htmlFor="ad-status">
+              <select id="ad-status" value={form.status} onChange={set("status")} className={fieldClass}>
+                {ADOPTION_STATUSES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+              </select>
+            </FormField>
+            <FormField label="Target date" htmlFor="ad-target" optional>
+              <Input id="ad-target" type="date" value={form.targetDate} onChange={set("targetDate")} />
+            </FormField>
+            <FormField label="Scope" htmlFor="ad-scope" span={4} optional>
+              <Textarea id="ad-scope" value={form.scope} onChange={set("scope")} rows={3} placeholder="Sites, activities and services the system covers" />
+            </FormField>
+          </FormSection>
           {certifiable && (
-            <>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="ad-body">Certification body</Label>
-                <Input id="ad-body" value={form.certificationBody} onChange={set("certificationBody")} className="h-9" placeholder="e.g. BSI, NQA, LRQA" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="ad-cert">Certificate number</Label>
-                <Input id="ad-cert" value={form.certificateNumber} onChange={set("certificateNumber")} className="h-9" />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="ad-until">Certificate valid until</Label>
-                <Input id="ad-until" type="date" value={form.certifiedUntil} onChange={set("certifiedUntil")} className="h-9" />
-              </div>
-            </>
+            <FormSection title="Certification" cols={3}>
+              <FormField label="Certification body" htmlFor="ad-body" optional>
+                <Input id="ad-body" value={form.certificationBody} onChange={set("certificationBody")} placeholder="e.g. BSI, NQA, LRQA" />
+              </FormField>
+              <FormField label="Certificate number" htmlFor="ad-cert" optional>
+                <Input id="ad-cert" value={form.certificateNumber} onChange={set("certificateNumber")} />
+              </FormField>
+              <FormField label="Valid until" htmlFor="ad-until" optional>
+                <Input id="ad-until" type="date" value={form.certifiedUntil} onChange={set("certifiedUntil")} />
+              </FormField>
+            </FormSection>
           )}
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <Label htmlFor="ad-scope">Scope</Label>
-            <Textarea id="ad-scope" value={form.scope} onChange={set("scope")} rows={3} placeholder="Sites, activities and services the system covers" />
-          </div>
-          {error && <p role="alert" className="text-sm text-red-600 sm:col-span-2">{error}</p>}
-          <div className="flex gap-2 sm:col-span-2">
-            <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save"}</Button>
+          <FormError>{error}</FormError>
+          <FormActions>
             <Button type="button" size="sm" variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
-          </div>
+            <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save"}</Button>
+          </FormActions>
         </form>
       )}
     </section>
@@ -490,38 +485,46 @@ function RequirementCard({
           </div>
 
           {canEdit ? (
-            <form onSubmit={save} className="grid gap-3 border-t border-[#E5E7EB] pt-4 sm:grid-cols-3">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor={`st-${q.code}`}>Status</Label>
-                <select id={`st-${q.code}`} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as RequirementState })} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
-                  {Object.entries(STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor={`ow-${q.code}`}>Owner</Label>
-                <select id={`ow-${q.code}`} value={form.ownerUserId} onChange={(e) => setForm({ ...form, ownerUserId: e.target.value })} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
-                  <option value="">Nobody yet</option>
-                  {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor={`du-${q.code}`}>Due</Label>
-                <Input id={`du-${q.code}`} type="date" value={form.dueOn} onChange={(e) => setForm({ ...form, dueOn: e.target.value })} className="h-9" />
-              </div>
-              <div className="flex flex-col gap-1.5 sm:col-span-3">
-                <Label htmlFor={`no-${q.code}`}>{form.status === "not_applicable" ? "Why it does not apply (required)" : "How you meet it"}</Label>
-                <Textarea id={`no-${q.code}`} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
-              </div>
-              <div className="flex flex-col gap-1.5 sm:col-span-3">
-                <Label htmlFor={`in-${q.code}`}>Your interpretation (optional)</Label>
-                <Textarea id={`in-${q.code}`} value={form.interpretation} onChange={(e) => setForm({ ...form, interpretation: e.target.value })} rows={3} />
-                <p className="text-xs text-[#6B7280]">Written by your competent person. Your team sees it in place of MetricOra&apos;s guidance.</p>
-              </div>
-              {error && <p role="alert" className="text-sm text-red-600 sm:col-span-3">{error}</p>}
-              <div className="flex items-center gap-3 sm:col-span-3">
+            <form onSubmit={save} className="space-y-6 border-t border-[#E5E7EB] pt-4">
+              <FormSection title="Status" cols={3}>
+                <FormField label="Status" htmlFor={`st-${q.code}`}>
+                  <select id={`st-${q.code}`} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as RequirementState })} className={fieldClass}>
+                    {Object.entries(STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Owner" htmlFor={`ow-${q.code}`} optional>
+                  <select id={`ow-${q.code}`} value={form.ownerUserId} onChange={(e) => setForm({ ...form, ownerUserId: e.target.value })} className={fieldClass}>
+                    <option value="">Nobody yet</option>
+                    {members.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                  </select>
+                </FormField>
+                <FormField label="Due" htmlFor={`du-${q.code}`} optional>
+                  <Input id={`du-${q.code}`} type="date" value={form.dueOn} onChange={(e) => setForm({ ...form, dueOn: e.target.value })} />
+                </FormField>
+              </FormSection>
+              <FormSection title="How you meet it" cols={2}>
+                <FormField
+                  label={form.status === "not_applicable" ? "Why it does not apply" : "How you meet it"}
+                  htmlFor={`no-${q.code}`}
+                  span={4}
+                  optional={form.status !== "not_applicable"}
+                >
+                  <Textarea id={`no-${q.code}`} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
+                </FormField>
+                <FormField
+                  label="Your interpretation"
+                  htmlFor={`in-${q.code}`}
+                  span={4}
+                  optional
+                  hint="Written by your competent person. Your team sees it in place of MetricOra's guidance."
+                >
+                  <Textarea id={`in-${q.code}`} value={form.interpretation} onChange={(e) => setForm({ ...form, interpretation: e.target.value })} rows={3} />
+                </FormField>
+              </FormSection>
+              <FormError>{error}</FormError>
+              <FormActions start={saved ? <span role="status" className="text-xs text-emerald-700">Saved</span> : undefined}>
                 <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : "Save"}</Button>
-                {saved && <span role="status" className="text-xs text-emerald-700">Saved</span>}
-              </div>
+              </FormActions>
             </form>
           ) : (
             q.notes && <p className="whitespace-pre-line border-t border-[#E5E7EB] pt-4 text-sm text-[#374151]">{q.notes}</p>
@@ -579,13 +582,12 @@ function AddEvidence({ orgId, reqUrl, onError }: { orgId: string; reqUrl: string
   return (
     <form onSubmit={add} className="flex flex-col gap-2 rounded-lg bg-[#F9FAFB] p-3">
       <div className="flex flex-wrap items-end gap-2">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor={`ek-${reqUrl}`} className="text-xs">Add evidence</Label>
+        <FormField label="Add evidence" htmlFor={`ek-${reqUrl}`}>
           <select id={`ek-${reqUrl}`} value={kind} onChange={(e) => { setKind(e.target.value); setTargetId(""); setOptions([]); }} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
             <option value="">Choose a type…</option>
             {EVIDENCE_KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
-        </div>
+        </FormField>
         {isRecord && (
           <>
             <Input aria-label="Search records" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-9 w-40 bg-white" />

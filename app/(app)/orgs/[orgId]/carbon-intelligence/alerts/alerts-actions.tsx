@@ -119,7 +119,7 @@ export function CreateAlertButton({ orgId }: { orgId: string }) {
             <DialogDescription>Manually raise an impact alert.</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
+          <form onSubmit={handleSubmit} className="space-y-5 pt-1">
             <FormField label="Title" htmlFor="title">
               <Input id="title" name="title" required placeholder="e.g. Scope 1 emissions above threshold" />
             </FormField>

@@ -175,7 +175,7 @@ export function CreateSocialValueRecordForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
       <FormSection title="Where it counts" description="Link the record to a contract and a reporting period." cols={2}>
-        <FormField label="Contract" htmlFor="f-contract" optional>
+        <FormField label="Contract" htmlFor="f-contract">
           <Select value={contractId} onValueChange={setContractId}>
             <SelectTrigger id="f-contract" className="w-full">
               <SelectValue placeholder="Select contract" />
@@ -187,7 +187,7 @@ export function CreateSocialValueRecordForm({
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label="Period" htmlFor="f-period" optional>
+        <FormField label="Period" htmlFor="f-period">
           <Select value={reportingPeriodId} onValueChange={setReportingPeriodId}>
             <SelectTrigger id="f-period" className="w-full">
               <SelectValue placeholder="Select period" />
@@ -202,7 +202,7 @@ export function CreateSocialValueRecordForm({
       </FormSection>
 
       <FormSection title="What was delivered" description="Pick a National TOMs theme and measure. The value is the quantity times the measure's value per unit." cols={2}>
-        <FormField label="Theme" htmlFor="f-theme" optional>
+        <FormField label="Theme" htmlFor="f-theme">
           <Select value={selectedThemeCode} onValueChange={handleThemeChange}>
             <SelectTrigger id="f-theme" className="w-full">
               <SelectValue placeholder="Select theme" />
@@ -214,7 +214,7 @@ export function CreateSocialValueRecordForm({
             </SelectContent>
           </Select>
         </FormField>
-        <FormField label="Measure" htmlFor="f-measure" optional>
+        <FormField label="Measure" htmlFor="f-measure">
           <Select value={measureId} onValueChange={setMeasureId} disabled={!selectedTheme}>
             <SelectTrigger id="f-measure" className="w-full">
               <SelectValue placeholder="Select measure" />
@@ -231,7 +231,7 @@ export function CreateSocialValueRecordForm({
             </p>
           )}
         </FormField>
-        <FormField label="Quantity" htmlFor="f-quantity" optional>
+        <FormField label="Quantity" htmlFor="f-quantity">
           <Input id="f-quantity" type="number" min="0.0001" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 5" />
           {computedValue !== null && (
             <p className="text-xs font-medium text-zinc-900">

@@ -100,7 +100,7 @@ export function CreateActivityButton({ orgId, commitments }: { orgId: string; co
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
+          <form onSubmit={handleSubmit} className="space-y-5 pt-1">
             <FormField label="Title" htmlFor="title">
               <Input id="title" name="title" required placeholder="e.g. Apprentice hired - John Smith" />
             </FormField>
@@ -236,7 +236,7 @@ function ReviewForm({
   const [notes, setNotes] = useState("");
 
   return (
-    <div className="flex flex-col gap-4 pt-1">
+    <div className="space-y-5 pt-1">
       <FormField label="Review notes" htmlFor="f-review-notes-optional" optional>
         <Textarea id="f-review-notes-optional"
           rows={3}

@@ -79,7 +79,7 @@ export function AddCredentialButton({ orgId }: { orgId: string }) {
             <DialogDescription>Connect an external carbon data source.</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
+          <form onSubmit={handleSubmit} className="space-y-5 pt-1">
             <FormSection cols={2}>
               <FormField label="Provider" htmlFor="provider">
                 <Input id="provider" name="provider" required placeholder="e.g. electricitymaps" className="h-8 text-sm font-mono" />
@@ -169,7 +169,7 @@ export function EditCredentialButton({ orgId, credential }: { orgId: string; cre
             <DialogDescription>Update <span className="font-mono">{credential.provider}</span> settings. Leave API key blank to keep existing.</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
+          <form onSubmit={handleSubmit} className="space-y-5 pt-1">
             <FormField label="Label" htmlFor="edit-label" optional>
               <Input id="edit-label" name="label" defaultValue={credential.label ?? ""} placeholder="e.g. Production key" />
             </FormField>

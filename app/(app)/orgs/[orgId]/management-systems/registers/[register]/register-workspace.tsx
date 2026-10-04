@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { REGISTERS, type Field, type RegisterKey } from "@/lib/management-systems/registers/config";
+import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 type Option = { id: string; name: string };
 type ChecklistResult = { item: string; result: "pass" | "fail" | "na"; note?: string };
@@ -232,17 +232,17 @@ function RowForm({ orgId, registerKey, initial, lookups, onDone }: { orgId: stri
   }
 
   return (
-    <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2" onClick={(e) => e.stopPropagation()}>
+    <form onSubmit={submit} className="space-y-5" onClick={(e) => e.stopPropagation()}>
+      <FormSection cols={2}>
       {config.fields.map((f) => {
         const id = `${registerKey}-${String(initial.id ?? "new")}-${f.name}`;
         const wide = f.type === "textarea" || f.type === "frameworks" || f.type === "checklist";
         return (
-          <div key={f.name} className={`flex flex-col gap-1.5 ${wide ? "sm:col-span-2" : ""}`}>
-            <Label htmlFor={id}>{f.label}{f.required ? " (required)" : ""}</Label>
+          <FormField key={f.name} label={f.label} htmlFor={id} span={wide ? 4 : 1} optional={!f.required} hint={f.help}>
             {f.type === "textarea" ? (
-              <Textarea id={id} value={String(values[f.name] ?? "")} onChange={(e) => set(f.name, e.target.value)} rows={f.name === "body" ? 10 : 3} className="bg-white" />
+              <Textarea id={id} value={String(values[f.name] ?? "")} onChange={(e) => set(f.name, e.target.value)} rows={f.name === "body" ? 10 : 3} />
             ) : f.type === "select" || f.type === "member" || f.type === "person" || f.type === "row" || f.type === "score" ? (
-              <select id={id} value={String(values[f.name] ?? "")} onChange={(e) => set(f.name, e.target.value)} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+              <select id={id} value={String(values[f.name] ?? "")} onChange={(e) => set(f.name, e.target.value)} className={fieldClass}>
                 <option value="">{f.type === "member" || f.type === "person" ? "Nobody" : "Choose…"}</option>
                 {(f.type === "select"
                   ? f.options!.map(([v, l]) => ({ id: v, name: l }))
@@ -276,18 +276,19 @@ function RowForm({ orgId, registerKey, initial, lookups, onDone }: { orgId: stri
                 })}
               </div>
             ) : (
-              <Input id={id} type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"} step={f.type === "number" ? "any" : undefined} value={String(values[f.name] ?? "")} onChange={(e) => set(f.name, e.target.value)} className="h-9 bg-white" />
+              <Input id={id} type={f.type === "date" ? "date" : f.type === "number" ? "number" : "text"} step={f.type === "number" ? "any" : undefined} value={String(values[f.name] ?? "")} onChange={(e) => set(f.name, e.target.value)} />
             )}
-            {f.help && <p className="text-xs text-[#6B7280]">{f.help}</p>}
-          </div>
+          </FormField>
         );
       })}
-      {error && <p role="alert" className="text-sm text-red-600 sm:col-span-2">{error}</p>}
-      <div className="flex gap-2 sm:col-span-2">
-        <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : isNew ? "Add" : "Save"}</Button>
+      </FormSection>
+      <FormError>{error}</FormError>
+      <FormActions
+        start={!isNew && <Button type="button" variant="ghost" size="sm" onClick={remove} disabled={isPending} className="text-red-700 hover:text-red-800">Delete</Button>}
+      >
         <Button type="button" size="sm" variant="outline" onClick={onDone}>Cancel</Button>
-        {!isNew && <Button type="button" size="sm" variant="outline" onClick={remove} disabled={isPending} className="ml-auto text-red-600">Delete</Button>}
-      </div>
+        <Button type="submit" size="sm" disabled={isPending}>{isPending ? "Saving…" : isNew ? "Add" : "Save"}</Button>
+      </FormActions>
     </form>
   );
 }

@@ -272,7 +272,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       </FormSection>
 
       <FormSection title="Web address and email" cols={2}>
-      <FormField label="Subdomain" htmlFor="subdomain" optional hint={subdomainPreview ? `Preview URL: ${subdomainPreview}` : undefined}>
+      <FormField label="Subdomain" htmlFor="subdomain" hint={subdomainPreview ? `Preview URL: ${subdomainPreview}` : undefined}>
         <Input
           id="subdomain"
           value={subdomain}

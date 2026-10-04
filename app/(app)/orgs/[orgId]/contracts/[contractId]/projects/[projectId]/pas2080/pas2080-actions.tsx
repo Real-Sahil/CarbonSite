@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HIERARCHY, LIFECYCLE_MODULES, ROLE_LABELS, STATUS_LABELS } from "@/lib/pas2080";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 type Role = keyof typeof ROLE_LABELS;
 type Status = keyof typeof STATUS_LABELS;
@@ -34,9 +34,8 @@ type Opportunity = {
   ownerName: string | null;
 };
 
-const input = "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm disabled:opacity-60";
-const area = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
-const labelCls = "mb-1.5 block text-xs text-[#374151]";
+const input = fieldClass;
+const area = fieldClass;
 const LEVEL_LABEL = Object.fromEntries(HIERARCHY.map((h) => [h.level, h.label])) as Record<Level, string>;
 
 async function send(url: string, method: string, body?: unknown) {
@@ -93,27 +92,31 @@ export function PlanForm({
   }
 
   return (
-    <form onSubmit={save} className="flex flex-col gap-4">
-      <fieldset disabled={!canEdit || busy} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <form onSubmit={save} className="space-y-6">
+      <fieldset disabled={!canEdit || busy} className="space-y-6 border-0 p-0">
+        <FormSection title="Role" cols={2}>
         <FormField label="Your role on this project" htmlFor="pas-role">
           <select id="pas-role" className={input} value={form.valueChainRole} onChange={(e) => setForm({ ...form, valueChainRole: e.target.value as Role })}>
             {Object.entries(ROLE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </FormField>
-        <FormField label="Carbon lead" htmlFor="pas-lead">
+        <FormField label="Carbon lead" htmlFor="pas-lead" optional>
           <input id="pas-lead" className={input} maxLength={120} value={form.carbonLeadName} onChange={(e) => setForm({ ...form, carbonLeadName: e.target.value })} placeholder="Name of the accountable person" />
         </FormField>
-        <FormField label="Baseline (tCO₂e)" htmlFor="pas-baseline">
+        </FormSection>
+        <FormSection title="Baseline and target" cols={2}>
+        <FormField label="Baseline (tCO₂e)" htmlFor="pas-baseline" optional>
           <input id="pas-baseline" type="number" min={0} step="any" className={input} value={form.baselineTco2e} onChange={(e) => setForm({ ...form, baselineTco2e: e.target.value })} />
         </FormField>
-        <FormField label="Target (tCO₂e)" htmlFor="pas-target">
+        <FormField label="Target (tCO₂e)" htmlFor="pas-target" optional>
           <input id="pas-target" type="number" min={0} step="any" className={input} value={form.targetTco2e} onChange={(e) => setForm({ ...form, targetTco2e: e.target.value })} />
         </FormField>
-        <FormField label="How the baseline was set" htmlFor="pas-basis" span={4}>
+        <FormField label="How the baseline was set" htmlFor="pas-basis" span={4} optional>
           <textarea id="pas-basis" rows={2} className={area} maxLength={2000} value={form.baselineBasis} onChange={(e) => setForm({ ...form, baselineBasis: e.target.value })} placeholder="e.g. Stage 2 reference design quantified with ICE v3 and DEFRA factors; excludes B6 as the asset has no operational energy" />
         </FormField>
-        <fieldset className="sm:col-span-2 lg:col-span-4">
-          <legend className={labelCls}>Life cycle modules in scope</legend>
+        </FormSection>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-semibold text-zinc-900">Life cycle modules in scope</legend>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {LIFECYCLE_MODULES.map((m) => (
               <label key={m} className="flex items-center gap-1.5 text-sm text-[#111827]">
@@ -130,11 +133,12 @@ export function PlanForm({
         </fieldset>
       </fieldset>
       {canEdit && (
-        <div className="flex items-center gap-3">
-          <Button type="submit" size="sm" disabled={busy}>{busy ? "Saving…" : "Save plan"}</Button>
-          {saved && <p className="text-sm text-green-700">Saved</p>}
-          {error && <p className="text-sm text-red-600">{error}</p>}
-        </div>
+        <>
+          <FormError>{error}</FormError>
+          <FormActions start={saved ? <span role="status" className="text-sm text-emerald-700">Saved</span> : undefined}>
+            <Button type="submit" size="sm" disabled={busy}>{busy ? "Saving…" : "Save plan"}</Button>
+          </FormActions>
+        </>
       )}
     </form>
   );
@@ -280,7 +284,8 @@ export function OpportunityLog({
       )}
 
       {canEdit && adding && (
-        <form onSubmit={add} className="grid gap-4 rounded-[10px] border border-[#E5E7EB] p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <form onSubmit={add} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+          <FormSection title="Opportunity" cols={4}>
           <FormField label="Opportunity" htmlFor="opp-title" span={2}>
             <input id="opp-title" required maxLength={200} className={input} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="e.g. Retain and strengthen the existing culvert" />
           </FormField>
@@ -289,16 +294,16 @@ export function OpportunityLog({
               {HIERARCHY.map((h) => <option key={h.level} value={h.level}>{h.label}</option>)}
             </select>
           </FormField>
-          <FormField label="Work stage" htmlFor="opp-stage">
+          <FormField label="Work stage" htmlFor="opp-stage" optional>
             <input id="opp-stage" maxLength={80} className={input} value={draft.workStage} onChange={(e) => setDraft({ ...draft, workStage: e.target.value })} placeholder="e.g. RIBA 2 / Options" />
           </FormField>
-          <FormField label="Description" htmlFor="opp-desc" span={2}>
+          <FormField label="Description" htmlFor="opp-desc" optional span={2}>
             <input id="opp-desc" maxLength={4000} className={input} value={draft.description} onChange={(e) => setDraft({ ...draft, description: e.target.value })} />
           </FormField>
-          <FormField label="Estimated saving (tCO₂e)" htmlFor="opp-saving">
+          <FormField label="Estimated saving (tCO₂e)" htmlFor="opp-saving" optional>
             <input id="opp-saving" type="number" min={0} step="any" className={input} value={draft.estimatedSavingTco2e} onChange={(e) => setDraft({ ...draft, estimatedSavingTco2e: e.target.value })} />
           </FormField>
-          <FormField label="Owner" htmlFor="opp-owner">
+          <FormField label="Owner" htmlFor="opp-owner" optional>
             <input id="opp-owner" maxLength={120} className={input} value={draft.ownerName} onChange={(e) => setDraft({ ...draft, ownerName: e.target.value })} />
           </FormField>
           <FormField label="Status" htmlFor="opp-status">
@@ -306,14 +311,14 @@ export function OpportunityLog({
               {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </FormField>
-          <div className="sm:col-span-2 lg:col-span-3">
-            <label htmlFor="opp-rationale" className={labelCls}>Decision reason{draft.status === "rejected" ? " (required)" : ""}</label>
+          <FormField label="Decision reason" htmlFor="opp-rationale" span={3} optional={draft.status !== "rejected"}>
             <input id="opp-rationale" maxLength={4000} required={draft.status === "rejected"} className={input} value={draft.decisionRationale} onChange={(e) => setDraft({ ...draft, decisionRationale: e.target.value })} />
-          </div>
-          <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-4">
+          </FormField>
+          </FormSection>
+          <FormActions>
+            <Button type="button" size="sm" variant="outline" onClick={() => { setAdding(false); setDraft(EMPTY); }}>Cancel</Button>
             <Button type="submit" size="sm" disabled={busy === "new"}>{busy === "new" ? "Adding…" : "Add to log"}</Button>
-            <Button type="button" size="sm" variant="ghost" onClick={() => { setAdding(false); setDraft(EMPTY); }}>Cancel</Button>
-          </div>
+          </FormActions>
         </form>
       )}
       {error && <p className="text-sm text-red-600">{error}</p>}

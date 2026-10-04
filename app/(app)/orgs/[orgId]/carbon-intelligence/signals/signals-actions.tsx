@@ -75,7 +75,7 @@ export function IngestSignalButton({ orgId, signalTypes }: { orgId: string; sign
             <DialogDescription>Manually record a carbon data reading.</DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
+          <form onSubmit={handleSubmit} className="space-y-5 pt-1">
             <FormSection cols={2}>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="signalType" className="text-xs font-medium">Signal type *</Label>

@@ -277,7 +277,7 @@ function FrameworkForm({
   defaultValues?: Partial<FrameworkSummary>;
 }) {
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4 pt-1">
+    <form onSubmit={onSubmit} className="space-y-5 pt-1">
       <FormField label="Name" htmlFor="name">
         <Input
           id="name"
