@@ -134,3 +134,12 @@ describe("the submissions surface", () => {
     expect(checkFilters("submissions", { q: "x" })).toHaveProperty("error");
   });
 });
+
+describe("the calculations surface", () => {
+  it("reads status, period and factor library, with its own status list", () => {
+    expect(checkFilters("calculations", { status: "failed", periodId: "p1", factorLibraryId: "lib1" })).toHaveProperty("filters");
+    expect(checkFilters("calculations", { status: "approved" })).toHaveProperty("error");
+    expect(checkFilters("submissions", { status: "failed" })).toHaveProperty("error");
+    expect(checkFilters("calculations", { facilityId: "f1" })).toHaveProperty("error");
+  });
+});

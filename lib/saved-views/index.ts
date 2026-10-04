@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { OrgRefs } from "@/lib/security/org-refs";
 import { DOCUMENT_TYPES, SUBMISSION_STATUSES } from "@/lib/field-submissions/list-filters";
+import { RUN_STATUSES } from "@/lib/calculation/run-list-filters";
 
 /**
  * Saved views: a named set of filters for one portal page, private to its owner
@@ -13,18 +14,19 @@ export const SURFACES = {
   records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
   submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },
+  calculations: { path: "calculations", filters: ["status", "periodId", "factorLibraryId"] },
 } as const;
 
 /** Review statuses a records filter may name (the ReviewStatus enum). */
 export const REVIEW_STATUSES = ["draft", "in_review", "approved", "rejected", "pending_info"] as const;
 
-/** Filters whose value must come from a fixed list. */
-export const ENUM_FILTERS: Record<string, readonly string[]> = {
-  reviewStatus: REVIEW_STATUSES,
-  health: ["healthy", "at_risk", "critical"],
-  trend: ["improving", "stable", "declining"],
-  status: SUBMISSION_STATUSES,
-  documentType: DOCUMENT_TYPES,
+/** Filters whose value must come from a fixed list, per page (a key may mean different things on different pages). */
+export const ENUM_FILTERS: Record<Surface, Record<string, readonly string[]>> = {
+  dashboard: {},
+  records: { reviewStatus: REVIEW_STATUSES },
+  suppliers: { health: ["healthy", "at_risk", "critical"], trend: ["improving", "stable", "declining"] },
+  submissions: { status: SUBMISSION_STATUSES, documentType: DOCUMENT_TYPES },
+  calculations: { status: RUN_STATUSES },
 };
 
 export type Surface = keyof typeof SURFACES;
@@ -67,7 +69,7 @@ export function checkFilters(
   if (raw.country !== undefined && !/^[A-Z]{2}$/.test(raw.country)) {
     return { error: "Country must be a two-letter code such as GB." };
   }
-  for (const [key, allowedValues] of Object.entries(ENUM_FILTERS)) {
+  for (const [key, allowedValues] of Object.entries(ENUM_FILTERS[surfaceKey])) {
     if (raw[key] !== undefined && !allowedValues.includes(raw[key])) {
       return { error: `"${raw[key]}" is not a value the ${key} filter uses.` };
     }
