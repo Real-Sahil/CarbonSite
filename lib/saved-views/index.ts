@@ -10,10 +10,18 @@ import type { OrgRefs } from "@/lib/security/org-refs";
 export const SURFACES = {
   dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country"] },
   records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
+  suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
 } as const;
 
 /** Review statuses a records filter may name (the ReviewStatus enum). */
 export const REVIEW_STATUSES = ["draft", "in_review", "approved", "rejected", "pending_info"] as const;
+
+/** Filters whose value must come from a fixed list. */
+export const ENUM_FILTERS: Record<string, readonly string[]> = {
+  reviewStatus: REVIEW_STATUSES,
+  health: ["healthy", "at_risk", "critical"],
+  trend: ["improving", "stable", "declining"],
+};
 
 export type Surface = keyof typeof SURFACES;
 export const SURFACE_KEYS = Object.keys(SURFACES) as [Surface, ...Surface[]];
@@ -55,8 +63,10 @@ export function checkFilters(
   if (raw.country !== undefined && !/^[A-Z]{2}$/.test(raw.country)) {
     return { error: "Country must be a two-letter code such as GB." };
   }
-  if (raw.reviewStatus !== undefined && !(REVIEW_STATUSES as readonly string[]).includes(raw.reviewStatus)) {
-    return { error: "That review status is not one we use." };
+  for (const [key, allowedValues] of Object.entries(ENUM_FILTERS)) {
+    if (raw[key] !== undefined && !allowedValues.includes(raw[key])) {
+      return { error: `"${raw[key]}" is not a value the ${key} filter uses.` };
+    }
   }
   return { filters: raw };
 }

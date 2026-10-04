@@ -103,7 +103,7 @@ describe("the records surface", () => {
     expect(checkFilters("dashboard", { periodId: "p1" })).toHaveProperty("error");
   });
   it("refuses a review status we do not use", () => {
-    expect(checkFilters("records", { reviewStatus: "deleted" })).toEqual({ error: "That review status is not one we use." });
+    expect(checkFilters("records", { reviewStatus: "deleted" })).toEqual({ error: '"deleted" is not a value the reviewStatus filter uses.' });
     expect(checkFilters("records", { reviewStatus: "pending_info" })).toHaveProperty("filters");
   });
   it("checks the period and contract ids against the organisation", () => {
@@ -113,5 +113,14 @@ describe("the records surface", () => {
       legalEntityId: undefined,
       reportingPeriodId: "p1",
     });
+  });
+});
+
+describe("the suppliers surface", () => {
+  it("reads a name search, a health band and a trend", () => {
+    expect(checkFilters("suppliers", { q: "acme", health: "at_risk", trend: "declining" })).toHaveProperty("filters");
+    expect(checkFilters("suppliers", { health: "fine" })).toHaveProperty("error");
+    expect(checkFilters("suppliers", { trend: "up" })).toHaveProperty("error");
+    expect(checkFilters("suppliers", { periodId: "p1" })).toHaveProperty("error");
   });
 });
