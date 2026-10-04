@@ -19,7 +19,7 @@ interface StatutoryDeadline {
   applicability: string;
   authority: string;
   penalty?: string;
-  category: 'uk' | 'eu' | 'uae' | 'us' | 'international';
+  category: 'uk' | 'eu' | 'uae' | 'us' | 'au' | 'ca' | 'de' | 'international';
   complianceFramework: string; // matches ComplianceRecord.framework
   /** Official page the date and thresholds were checked against. */
   source: string;
@@ -34,7 +34,7 @@ interface ComplianceRecord {
 }
 
 /** When the dates, thresholds and sources below were last checked. Recheck each quarter. */
-const LAST_CHECKED = '26 September 2026';
+const LAST_CHECKED = '4 October 2026';
 
 const STATUTORY_DEADLINES: StatutoryDeadline[] = [
   // UK
@@ -242,6 +242,68 @@ const STATUTORY_DEADLINES: StatutoryDeadline[] = [
     action: { label: 'Open the climate disclosure', path: 'climate-disclosure' },
     source: 'https://ww2.arb.ca.gov/our-work/programs/california-corporate-greenhouse-gas-reporting-and-climate-related-financial-risk',
   },
+  // Australia
+  {
+    id: 'au-nger-2026',
+    framework: 'Australia NGER report',
+    description: 'National Greenhouse and Energy Reporting: annual emissions, energy production and energy consumption report to the Clean Energy Regulator for the year 1 July 2025 to 30 June 2026',
+    dueDate: '2026-10-31',
+    dueNote: 'Due every year on 31 October for the financial year ending the previous 30 June. Registration is due 31 August.',
+    reportingYear: 2026,
+    applicability: 'A corporate group emitting 50 kt CO2e or more, or producing or using 200 TJ or more of energy, or a facility at 25 kt CO2e or 100 TJ',
+    authority: 'Clean Energy Regulator',
+    penalty: 'Civil penalties under the National Greenhouse and Energy Reporting Act 2007',
+    category: 'au',
+    complianceFramework: 'AU_NGER',
+    action: { label: 'Create a GHG Protocol report', path: 'reports' },
+    source: 'https://cer.gov.au/schemes/national-greenhouse-and-energy-reporting-scheme',
+  },
+  {
+    id: 'au-climate-group2',
+    framework: 'Australia mandatory climate report (AASB S2), Group 2',
+    description: 'Sustainability report with climate-related disclosures, lodged with the annual report, for the first year starting on or after 1 July 2026. Group 1 (largest entities and NGER reporters above the publication threshold) began for years starting on or after 1 January 2025; Group 3 begins for years starting on or after 1 July 2027',
+    dueDate: '2027-10-31',
+    dueNote: 'Date shown for an unlisted entity with a 30 June year end, which lodges within four months of the year end. Listed disclosing entities lodge within three months. Check ASIC for your year end and group.',
+    reportingYear: 2027,
+    applicability: 'Large entities meeting two of: consolidated revenue of A$200 million or more, gross assets of A$500 million or more, 100 or more employees, and other NGER reporters. Group 3 thresholds are lower (A$50 million, A$25 million, 50 employees)',
+    authority: 'Australian Securities and Investments Commission (ASIC)',
+    penalty: 'A modified liability (no private action) regime applies for the first three years; ASIC may take civil action for non-compliance',
+    category: 'au',
+    complianceFramework: 'AU_AASB_S2',
+    action: { label: 'Open the climate disclosure', path: 'climate-disclosure' },
+    source: 'https://asic.gov.au/regulatory-resources/financial-reporting-and-audit/sustainability-reporting/',
+  },
+  // Canada
+  {
+    id: 'ca-ghgrp-2027',
+    framework: 'Canada GHG reporting (facilities)',
+    description: 'Facility greenhouse gas report for 2026 to Environment and Climate Change Canada (the report for 2025 was due 1 June 2026)',
+    dueDate: '2027-06-01',
+    dueNote: 'Due every year on 1 June for the previous calendar year. Facilities report through the Single Window.',
+    reportingYear: 2026,
+    applicability: 'Facilities that emit 10 kt CO2e or more a year, and some sectors (such as oil and gas, electricity, cement) with their own rules',
+    authority: 'Environment and Climate Change Canada',
+    penalty: 'Offences under the Canadian Environmental Protection Act, 1999',
+    category: 'ca',
+    complianceFramework: 'CA_GHGRP',
+    action: { label: 'Create a GHG Protocol report', path: 'reports' },
+    source: 'https://www.canada.ca/en/environment-climate-change/services/climate-change/greenhouse-gas-emissions/facility-reporting/reporting.html',
+  },
+  // Germany
+  {
+    id: 'de-behg-2027',
+    framework: 'Germany BEHG emissions report',
+    description: 'National fuel emissions trading: verified report of the fuel emissions released for consumption in 2026 to the German Emissions Trading Authority (DEHSt). Allowances for the reported quantity are surrendered by 30 September',
+    dueDate: '2027-04-30',
+    dueNote: 'Due every year on 30 April for the previous year. Verification by an accredited verifier has applied since the 2025 reporting year.',
+    reportingYear: 2026,
+    applicability: 'Parties that release fuels such as petrol, diesel, heating oil, gas or coal for consumption (fuel suppliers and distributors), not the businesses that burn the fuel',
+    authority: 'German Emissions Trading Authority (DEHSt)',
+    penalty: 'Fines under the Fuel Emissions Trading Act (BEHG) for missing reports or allowances',
+    category: 'de',
+    complianceFramework: 'DE_BEHG',
+    source: 'https://dehst.de/EN/national-emissions-trading/participating-in-national-emissions-trading/participating-in-nehs_node.html',
+  },
   // International
   {
     id: 'cdp-2026',
@@ -277,6 +339,9 @@ function getCategoryBadge(cat: string) {
     case 'eu': return 'bg-purple-100 text-purple-800';
     case 'uae': return 'bg-emerald-100 text-emerald-800';
     case 'us': return 'bg-amber-100 text-amber-800';
+    case 'au': return 'bg-orange-100 text-orange-800';
+    case 'ca': return 'bg-rose-100 text-rose-800';
+    case 'de': return 'bg-violet-100 text-violet-800';
     default: return 'bg-gray-100 text-gray-700';
   }
 }

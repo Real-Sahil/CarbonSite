@@ -32,6 +32,14 @@ describe("countryProfile", () => {
     expect(countryProfile("US").notes.join(" ")).toMatch(/SB 253/);
   });
 
+  it("says Australia and Canada have calendar dates but no report list of their own", () => {
+    for (const c of ["AU", "CA"]) {
+      const p = countryProfile(c);
+      expect(p.region).toBe("other");
+      expect(p.notes.join(" ")).toMatch(/calendar lists/);
+    }
+  });
+
   it("is honest about a country with nothing loaded and about an unset country", () => {
     const jp = countryProfile("JP");
     expect(jp.region).toBe("other");

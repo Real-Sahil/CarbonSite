@@ -6,19 +6,21 @@
 
 import { countryIso2 } from "@/lib/calculation/geography";
 
-export type Region = "uk" | "eu" | "uae" | "us";
+export type Region = "uk" | "eu" | "uae" | "us" | "au" | "ca" | "de";
 
 const EU_27 = new Set([
   "AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE",
   "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE",
 ]);
 
-/** The region whose rules are loaded for an ISO 3166-1 alpha-2 country, if any. */
+/** The primary region whose rules are loaded for an ISO 3166-1 alpha-2 country, if any. */
 export function regionOf(country: string | null | undefined): Region | null {
   const c = countryIso2(country) ?? "";
   if (c === "GB") return "uk";
   if (c === "AE") return "uae";
   if (c === "US") return "us";
+  if (c === "AU") return "au";
+  if (c === "CA") return "ca";
   return EU_27.has(c) ? "eu" : null;
 }
 
@@ -36,6 +38,8 @@ export function relevantRegions(
     const r = regionOf(c);
     if (r) regions.add(r);
     else unloaded.add(c);
+    // Germany sits in the EU region and also has national rules of its own.
+    if (c === "DE") regions.add("de");
   }
   return { regions: [...regions], unloaded: [...unloaded].sort() };
 }
