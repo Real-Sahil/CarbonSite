@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
+import { isSupplierCurrency } from "@/lib/suppliers/units";
 
 type Params = { params: Promise<{ orgId: string; reportId: string }> };
 
@@ -117,8 +118,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     // Determine spend vs. emission unit
-    const currencyUnits = ["GBP", "USD", "EUR"];
-    const isCurrencyUnit = currencyUnits.includes(report.unit);
+    const isCurrencyUnit = isSupplierCurrency(report.unit);
 
     const activityRecord = await prisma.$transaction(async (tx) => {
       const record = await tx.activityRecord.create({

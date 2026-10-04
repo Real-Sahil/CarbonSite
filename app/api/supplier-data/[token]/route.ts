@@ -4,13 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
+import { isSupplierCurrency, isSupplierUnit, methodForUnit } from "@/lib/suppliers/units";
 
 type Params = { params: Promise<{ token: string }> };
 
 const SubmitSchema = z.object({
   totalAmount: z.number().positive("Amount must be positive"),
-  unit: z.enum(["tCO2e", "kgCO2e", "GBP", "USD", "EUR"]),
-  calculationMethod: z.enum(["spend_based", "activity_based", "direct_measurement"]),
+  unit: z.string().refine(isSupplierUnit, "Choose one of the listed units"),
+  // Left out, the method follows from the unit (an emissions figure, activity data or spend).
+  calculationMethod: z.enum(["spend_based", "activity_based", "direct_measurement"]).optional(),
   notes: z.string().max(2000).optional(),
   // Optional supplier name correction (pre-populated from request but editable)
   supplierName: z.string().max(200).optional(),
@@ -30,7 +32,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       );
     }
 
-    const { totalAmount, unit, calculationMethod, notes, supplierName } = parsed.data;
+    const { totalAmount, unit, notes, supplierName } = parsed.data;
+    const calculationMethod = parsed.data.calculationMethod ?? methodForUnit(unit);
 
     // Load the request and validate token
     const request = await prisma.supplierDataRequest.findUnique({
@@ -100,10 +103,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
     }
 
-    if (calculationMethod === "spend_based" && !["GBP", "USD", "EUR"].includes(unit)) {
+    if (calculationMethod === "spend_based" && !isSupplierCurrency(unit)) {
       qualityFlags.push({
         type: "unit_method_mismatch",
-        message: "Spend-based calculation method typically uses a currency unit (GBP, USD, EUR).",
+        message: "Spend-based calculation method uses a currency unit (such as GBP, USD or EUR).",
         severity: "warning",
       });
     }

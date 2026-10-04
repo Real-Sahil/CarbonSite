@@ -21,17 +21,27 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FormField, FormSection } from "@/components/forms/form-kit";
+import { currencySymbol } from "@/lib/i18n/org-format";
 
-const UNITS = [
+const BASE_UNITS = [
+  { value: "tCO2e",  label: "tCO₂e — tonnes of CO₂e (your own calculation)" },
+  { value: "kgCO2e", label: "kgCO₂e — kilograms of CO₂e (your own calculation)" },
   { value: "kg",     label: "kg — kilograms" },
   { value: "tonne",  label: "tonne — metric tonnes" },
   { value: "kWh",    label: "kWh — kilowatt-hours" },
   { value: "MWh",    label: "MWh — megawatt-hours" },
   { value: "litre",  label: "litre — litres" },
   { value: "m3",     label: "m³ — cubic metres" },
-  { value: "GBP",    label: "£ — spend (GBP)" },
   { value: "piece",  label: "piece — units / items" },
 ];
+
+/** Spend in the requesting organisation's currency first, then the other common ones. */
+function unitsFor(currency: string) {
+  const codes = [currency, ...["GBP", "USD", "EUR"].filter((c) => c !== currency)];
+  const money = codes.map((c) => ({ value: c, label: `${currencySymbol(c)} — spend (${c})` }));
+  const at = BASE_UNITS.findIndex((u) => u.value === "piece");
+  return [...BASE_UNITS.slice(0, at), ...money, ...BASE_UNITS.slice(at)];
+}
 
 const SCOPE_GUIDANCE: Record<string, { hint: string; example: string }> = {
   "business travel": {
@@ -55,6 +65,7 @@ const SCOPE_GUIDANCE: Record<string, { hint: string; example: string }> = {
 interface SupplierDataFormProps {
   token: string;
   orgName: string;
+  currency: string;
   categoryCode: string;
   categoryName: string;
   periodLabel: string;
@@ -69,6 +80,7 @@ interface SupplierDataFormProps {
 export function SupplierDataForm({
   token,
   orgName,
+  currency,
   categoryName,
   periodLabel,
   notes,
@@ -85,6 +97,8 @@ export function SupplierDataForm({
   const [done, setDone] = useState(initialSubmitted);
 
   const expires = new Date(expiresAt);
+  const units = unitsFor(currency);
+  const sym = currencySymbol(currency);
   const guidance = SCOPE_GUIDANCE[categoryName.toLowerCase()] ?? null;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -102,10 +116,11 @@ export function SupplierDataForm({
       const res = await fetch(`/api/supplier-data/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // The route works the method out from the unit (emissions figure, activity data or spend).
         body: JSON.stringify({
-          quantity: qty,
+          totalAmount: qty,
           unit,
-          description: description.trim() || undefined,
+          notes: description.trim() || undefined,
           supplierName: supplierName.trim() || undefined,
         }),
       });
@@ -211,7 +226,7 @@ export function SupplierDataForm({
           <Leaf className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
           <div className="text-sm text-slate-600">
             <p>{guidance.hint}</p>
-            <p className="mt-0.5 text-slate-500">{guidance.example}</p>
+            <p className="mt-0.5 text-slate-500">{guidance.example.replaceAll("£", sym)}</p>
           </div>
         </div>
       )}
@@ -259,7 +274,7 @@ export function SupplierDataForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {UNITS.map((u) => (
+                    {units.map((u) => (
                       <SelectItem key={u.value} value={u.value}>
                         {u.label}
                       </SelectItem>

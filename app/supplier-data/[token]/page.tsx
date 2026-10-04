@@ -17,7 +17,7 @@ export default async function SupplierDataPage({ params }: PageProps) {
       expiresAt: true,
       categoryCode: true,
       notes: true,
-      organization: { select: { name: true } },
+      organization: { select: { name: true, reportingCurrency: true } },
       reportingPeriod: { select: { label: true, startDate: true, endDate: true } },
     },
   });
@@ -53,6 +53,7 @@ export default async function SupplierDataPage({ params }: PageProps) {
         <SupplierDataForm
           token={token}
           orgName={request.organization.name}
+          currency={/^[A-Za-z]{3}$/.test(request.organization.reportingCurrency ?? "") ? request.organization.reportingCurrency!.toUpperCase() : "GBP"}
           categoryCode={request.categoryCode}
           categoryName={categoryName}
           periodLabel={request.reportingPeriod.label}
