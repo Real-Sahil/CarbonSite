@@ -10,8 +10,7 @@ import { ApiDataSourcesPanel } from "./api-data-sources";
 import { PilotKitPanel } from "./pilot-kit-panel";
 import { COUNTRIES, countryOf } from "@/lib/i18n/countries";
 import { fiscalYearOf } from "@/lib/i18n/fiscal-year";
-import { AddressPicker } from "@/components/address/address-picker";
-import { plusCode, type AddressSuggestion } from "@/lib/geo/address";
+import { FacilitiesPanel, type Facility } from "./facilities-panel";
 
 type ReportingPeriod = {
   id: string;
@@ -21,29 +20,6 @@ type ReportingPeriod = {
   endDate: string;
   status: string;
 };
-
-type WaterStressLevel = "low" | "medium_high" | "high" | "extremely_high" | "unknown";
-
-type Facility = {
-  id: string;
-  name: string;
-  country: string;
-  region: string;
-  addressLine: string;
-  postcode: string;
-  latitude: number | null;
-  longitude: number | null;
-  waterStressLevel: WaterStressLevel | null;
-};
-
-const WATER_STRESS_OPTIONS: { value: WaterStressLevel | ""; label: string }[] = [
-  { value: "", label: "Not assessed" },
-  { value: "low", label: "Low" },
-  { value: "medium_high", label: "Medium-high" },
-  { value: "high", label: "High" },
-  { value: "extremely_high", label: "Extremely high" },
-  { value: "unknown", label: "Unknown / data unavailable" },
-];
 
 type BusinessUnit = {
   id: string;
@@ -141,10 +117,8 @@ export function OperationsSetup({
     <div className="flex flex-col gap-[28px]">
       <OrgProfilePanel orgId={orgId} profile={orgProfile} />
       <ReportingPeriodsPanel orgId={orgId} periods={periods} fiscalYearStartMonth={orgProfile.fiscalYearStartMonth} />
-      <div className="grid gap-[28px] md:grid-cols-2">
-        <FacilitiesPanel orgId={orgId} facilities={facilities} />
-        <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
-      </div>
+      <FacilitiesPanel orgId={orgId} facilities={facilities} />
+      <BusinessUnitsPanel orgId={orgId} businessUnits={businessUnits} />
       <FactorImportPanel orgId={orgId} factorLibraries={factorLibraries} canEdit={canEditSharedLibraries} />
       <MaterialImportPanel orgId={orgId} materialLibrary={materialLibrary} canEdit={canEditSharedLibraries} />
       <ApiDataSourcesPanel orgId={orgId} sources={apiDataSources} />
@@ -659,188 +633,6 @@ function ReportingPeriodRow({
         {error && <p className="mt-1 max-w-48 text-xs text-red-600">{error}</p>}
       </td>
     </tr>
-  );
-}
-
-function FacilitiesPanel({
-  orgId,
-  facilities,
-}: {
-  orgId: string;
-  facilities: Facility[];
-}) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const [address, setAddress] = useState("");
-  const [picked, setPicked] = useState<AddressSuggestion | null>(null);
-  const [country, setCountry] = useState("");
-  const [region, setRegion] = useState("");
-  const [postcode, setPostcode] = useState("");
-
-  function pick(suggestion: AddressSuggestion) {
-    setPicked(suggestion);
-    if (suggestion.country) setCountry(suggestion.country);
-    setRegion(suggestion.region ?? "");
-    setPostcode(suggestion.postcode ?? "");
-  }
-
-  function createFacility(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    const formEl = event.currentTarget;
-    const form = new FormData(formEl);
-
-    startTransition(async () => {
-      try {
-        await requestJson(`/api/orgs/${orgId}/facilities`, "POST", {
-          name: form.get("name"),
-          country,
-          region,
-          // A chosen suggestion gives the structured address and position; typed text alone is kept as the street line.
-          addressLine: picked ? picked.addressLine || address : address || undefined,
-          postcode: postcode.trim() || undefined,
-          latitude: picked?.latitude,
-          longitude: picked?.longitude,
-        });
-        formEl.reset();
-        setAddress("");
-        setPicked(null);
-        setCountry("");
-        setRegion("");
-        setPostcode("");
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not create facility");
-      }
-    });
-  }
-
-  return (
-    <EntityPanel title="Facilities" description="Site, depot, and project locations used by records and field submissions.">
-      <form onSubmit={createFacility} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_8rem_10rem_8rem_auto]">
-        <Field label="Name">
-          <Input name="name" required maxLength={100} disabled={isPending} />
-        </Field>
-        <Field label="Country">
-          <Input name="country" value={country} onChange={(e) => setCountry(e.target.value)} maxLength={80} disabled={isPending} />
-        </Field>
-        <Field label="Region">
-          <Input name="region" value={region} onChange={(e) => setRegion(e.target.value)} maxLength={80} disabled={isPending} />
-        </Field>
-        <Field label="Postcode">
-          <Input name="postcode" value={postcode} onChange={(e) => setPostcode(e.target.value)} maxLength={20} disabled={isPending} />
-        </Field>
-        <div className="flex items-end">
-          <Button type="submit" disabled={isPending} size="sm">
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
-        </div>
-        <div className="sm:col-span-2 lg:col-span-5">
-          <Field label="Address (search or type)">
-            <AddressPicker orgId={orgId} country={country.length === 2 ? country : null} value={address} onChange={setAddress} onSelect={pick} disabled={isPending} />
-          </Field>
-          {picked && <p className="mt-1 text-xs text-slate-500">Position found: {picked.latitude.toFixed(5)}, {picked.longitude.toFixed(5)} (Plus Code {plusCode(picked.latitude, picked.longitude)}).</p>}
-        </div>
-        {error && <p className="text-sm text-red-600 sm:col-span-2 lg:col-span-5">{error}</p>}
-      </form>
-      {facilities.length === 0 ? (
-        <EmptyRow text="No facilities yet." />
-      ) : (
-        <div className="divide-y divide-slate-100">
-          {facilities.map((facility) => (
-            <FacilityRow key={facility.id} orgId={orgId} facility={facility} />
-          ))}
-        </div>
-      )}
-    </EntityPanel>
-  );
-}
-
-function FacilityRow({ orgId, facility }: { orgId: string; facility: Facility }) {
-  const router = useRouter();
-  const [name, setName] = useState(facility.name);
-  const [country, setCountry] = useState(facility.country ?? "");
-  const [region, setRegion] = useState(facility.region ?? "");
-  const [waterStressLevel, setWaterStressLevel] = useState<WaterStressLevel | "">(facility.waterStressLevel ?? "");
-  const [address, setAddress] = useState(facility.addressLine);
-  const [postcode, setPostcode] = useState(facility.postcode ?? "");
-  const [picked, setPicked] = useState<AddressSuggestion | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const changed = name !== facility.name || country !== (facility.country ?? "") || region !== (facility.region ?? "")
-    || waterStressLevel !== (facility.waterStressLevel ?? "")
-    || address !== facility.addressLine
-    || postcode !== (facility.postcode ?? "");
-
-  function save() {
-    setError(null);
-    startTransition(async () => {
-      try {
-        await requestJson(`/api/orgs/${orgId}/facilities/${facility.id}`, "PATCH", {
-          name, country, region, waterStressLevel: waterStressLevel || null,
-          ...(postcode !== (facility.postcode ?? "") ? { postcode: postcode.trim() || null } : {}),
-          ...(address !== facility.addressLine
-            ? picked
-              ? { addressLine: picked.addressLine || address, latitude: picked.latitude, longitude: picked.longitude }
-              : { addressLine: address }
-            : {}),
-        });
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not update facility");
-      }
-    });
-  }
-
-  function remove() {
-    if (!window.confirm(`Delete ${facility.name}? Records using this facility will block deletion.`)) return;
-    setError(null);
-    startTransition(async () => {
-      try {
-        await requestJson(`/api/orgs/${orgId}/facilities/${facility.id}`, "DELETE");
-        router.refresh();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not delete facility");
-      }
-    });
-  }
-
-  return (
-    <div className="grid gap-3 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_8rem_10rem_8rem_10rem_auto]">
-      <Input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} />
-      <Input value={country} disabled={isPending} onChange={(event) => setCountry(event.target.value)} />
-      <Input value={region} disabled={isPending} onChange={(event) => setRegion(event.target.value)} />
-      <Input value={postcode} disabled={isPending} onChange={(event) => setPostcode(event.target.value)} placeholder="Postcode" maxLength={20} />
-      <select
-        value={waterStressLevel}
-        disabled={isPending}
-        onChange={(event) => setWaterStressLevel(event.target.value as WaterStressLevel | "")}
-        className="h-9 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs disabled:opacity-50"
-        title="ESRS E3 water-stress classification"
-      >
-        {WATER_STRESS_OPTIONS.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-      <RowActions save={save} remove={remove} disabled={isPending} canSave={changed && name.trim().length > 0} />
-      <div className="sm:col-span-2 lg:col-span-6">
-        <AddressPicker
-          orgId={orgId}
-          country={country.length === 2 ? country : null}
-          value={address}
-          onChange={setAddress}
-          onSelect={(s) => { setPicked(s); if (s.country) setCountry(s.country); setRegion(s.region ?? ""); setPostcode(s.postcode ?? ""); }}
-          disabled={isPending}
-        />
-        {(picked ?? (facility.latitude != null && facility.longitude != null ? { latitude: facility.latitude, longitude: facility.longitude } : null)) && (() => {
-          const pos = picked ?? { latitude: facility.latitude!, longitude: facility.longitude! };
-          return <p className="mt-1 text-xs text-slate-500">Position {pos.latitude.toFixed(5)}, {pos.longitude.toFixed(5)} (Plus Code {plusCode(pos.latitude, pos.longitude)}).</p>;
-        })()}
-      </div>
-      {error && <p className="text-xs text-red-600 sm:col-span-2 lg:col-span-6">{error}</p>}
-    </div>
   );
 }
 
