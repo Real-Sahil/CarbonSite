@@ -1,6 +1,13 @@
 # Portal experience: design proposal
 
-Status: proposal for review. No code has been written. Nothing here changes behaviour until the owner approves a phase.
+Status: scope agreed 4 October 2026, phase 0 complete, phase 1 next. No application code has been written; nothing here changes behaviour until a phase merges.
+
+## Decisions taken
+
+- Shared team views are in scope from phase 1, alongside personal views.
+- Start with the main dashboard and the other pages where people work with field data and records: records, suppliers, field submissions and calculations. Further pages follow the same pattern after review.
+- Phase 0 (data spike) approved and run; result below.
+- First roles to design for are not yet named by the owner. Working assumption: sustainability manager or admin, and executive. Reviewer, auditor and field worker defaults follow, unchanged from today's RBAC.
 
 ## 1. Goal
 
@@ -81,11 +88,31 @@ CSV and XLSX stream from the same request as the view. PDF reuses the existing C
 
 Each phase merges independently, behind the existing role and plan checks, and has exit criteria.
 
-**Phase 0: data spike (about one week).**
-Measure and decide how supplier, project and social value slices are served. Deliver a short written result and a prototype query with timings on a realistic dataset.
-Exit: a decision recorded here, p95 under 500 ms for a slice on 100k records, reconciliation to the report for the same filters.
+**Phase 0: data spike. Done.**
+Question: can supplier, project and social value slices be served within budget without breaking the rule that dashboards never read raw calculations?
 
-**Phase 1: records table and saved views.**
+Findings:
+- `DashboardAggregate` writes the same calculations into several single-dimension rows plus a category-by-facility cross row (`aggregate-filters.ts`). Adding supplier and project the same way would multiply rows and repeat the double-counting trap that file warns about.
+- `ActivityRecord` carries `supplierName` (free text, normalised elsewhere by `supplierKey()`), `siteId`, `contractId` and `facilityId`. A project is reached through its site or contract. Social value is a different domain (`SvActivity`, `SvCommitment`) and is a filter on those records, not a slice of emissions.
+- A timing benchmark on a throwaway local Postgres 16 (100k records, two calculation runs, uniform synthetic data, best of three, includes about 30 ms of client start-up; timing only, no product data):
+
+| Query | Time |
+|---|---|
+| Raw join, top suppliers, latest run found per record by subquery | 368 ms |
+| Raw join, top suppliers, run pinned | 85 ms |
+| Base-grain fact table, top suppliers | 59 ms |
+| Fact table, category with 5 sites | 31 ms |
+| Fact table, monthly trend for one supplier and contract | 31 ms |
+| Fact table, category by facility by supplier (cross-filter worst case) | 139 ms |
+
+Reading the numbers honestly: at 100k records both approaches are inside the budget when the run is pinned; only the latest-run-per-record lookup is slow. The uniform data gave the fact table almost no row reduction (99,649 rows from 100,000), so real data will favour it more, but that is not measured here. The decisive reasons are correctness and consistency, not speed.
+
+Decision: add one **base-grain slice table**, written inside the same transaction that rebuilds `DashboardAggregate` for a run, one row per distinct combination of scope, category, facility, site, contract, normalised supplier key, month and Scope 2 method, holding summed kg CO2e and record count. Reads roll it up with `GROUP BY`; because there is one row per combination, there is no double-counting and no dedupe fragment. Published snapshots keep a frozen copy, as `DashboardAggregate` does. The migration is additive, with RLS deny-all.
+Still to verify in phase 1, on real organisation data: row-count reduction, rebuild time added to a calculation run, and agreement with `DashboardAggregate` totals (a reconciliation test, like `report-dashboard-reconciliation.test.ts`).
+Social value filtering keeps its own source and is applied as a record-set filter, with the social value totals shown beside, never added to, emissions.
+
+**Phase 1: slice table, saved views and the first pages.**
+Slice table and its reconciliation test first, then the shared filter bar and saved views (personal and shared, with role-based visibility) on the main dashboard and on the records, suppliers, field submissions and calculations pages.
 Server-side table with faceted filters, column control, sticky headers, virtualised rows, saved personal and shared views, CSV and XLSX export of the current view, the shared filter bar (date, project, supplier, scope, social value) with URL-synced state.
 Exit: dashboard and table interactions under 200 ms perceived; view create, share and delete audit-logged; tenancy and role tests added; axe clean; no regression in existing tests.
 
@@ -122,19 +149,18 @@ Exit: AI off by default, grounding check applied, generated text labelled, repor
 
 | Risk | Mitigation |
 |---|---|
-| Supplier and project slices are slow or inconsistent with reports | Phase 0 decides before any UI is built. |
+| Slice table disagrees with `DashboardAggregate` or slows calculation runs | Reconciliation test and rebuild-time measurement are phase 1 exit criteria. |
 | Custom chart kit grows into its own project | Build primitives first, two flagship charts, then stop and review. |
 | Drag and resize fail accessibility | Keyboard alternative is an exit criterion, not a follow-up. |
 | Bundle growth hurts marketing and sign-in pages | Dynamic imports only inside `(app)`; size reported per page. |
 | Saved views leak across tenants or roles | Server-side enforcement, tenancy tests, audit log. |
 | Scope creep toward a BI tool | Fixed metric and grouping list; additions need a review. |
 
-## 10. Decisions needed from the owner
+## 10. Open questions
 
-1. First two roles to design for (for example sustainability manager and executive).
-2. Whether shared team views are in scope for phase 1 or personal views only.
-3. Whether the main dashboard is the only customisable page at first.
-4. Approval to run the phase 0 spike.
+1. Name the first two roles to design the default dashboards for (assumption stated at the top).
+2. Who may publish a shared view: any editor, or only admins and sustainability leads? Proposed: editors and above create shared views, any member can save a personal copy, admins can remove a shared view.
+3. Should a shared view follow later edits automatically, or should people be notified and choose? Proposed: shared views are edited in place, with an audit log entry and a "last updated by" label.
 
 ## 11. Reference material
 
