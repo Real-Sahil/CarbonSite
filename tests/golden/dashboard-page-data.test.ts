@@ -58,6 +58,9 @@ async function prismaFigures(orgId: string) {
       zeroCo2eCount: await prisma.emissionCalculation.count({
         where: { organizationId: orgId, calculationRunId: run.id, totalCo2e: 0 },
       }),
+      noFactorCount: await prisma.emissionCalculation.count({
+        where: { organizationId: orgId, calculationRunId: run.id, totalCo2e: 0, emissionFactorId: null, organizationEmissionFactorId: null },
+      }),
       totalCo2e: await sum({}),
       approvedCo2e: await sum({ activityRecord: { reviewStatus: "approved" } }),
       fallbackCo2e: await sum({ selectionReason: { contains: "fallback", mode: "insensitive" } }),

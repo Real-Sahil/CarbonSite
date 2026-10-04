@@ -249,8 +249,9 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
           "No activity date on this record — today's date was used for factor version selection. Add a date to ensure the correct factor version is applied.",
         );
       }
+      const country = recordCountry(record.country, record.facility?.country, orgCountry);
       try {
-        normalized = normalizeUnit(Number(record.amount), record.unit, record.activityDate ?? record.startDate);
+        normalized = normalizeUnit(Number(record.amount), record.unit, record.activityDate ?? record.startDate, country);
       } catch (err) {
         if (err instanceof UnitError) {
           unitWarnings.push(`Unknown unit "${record.unit}" — using amount as-is.`);
@@ -264,6 +265,7 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
       // Without this the figure is not reproducible: the rate moves daily and
       // nothing on the immutable row would say which one applied.
       if (normalized.fx && normalized.fx.currency !== "GBP") unitWarnings.push(describeFx(normalized.fx));
+      if (normalized.note) unitWarnings.push(normalized.note);
 
       if (normalized.amount === 0) {
         unitWarnings.push(
@@ -280,7 +282,6 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         continue;
       }
 
-      const country = recordCountry(record.country, record.facility?.country, orgCountry);
       const matchHint = [record.fuelType, record.transportMode, record.refrigerantType]
         .filter(Boolean)
         .join(" ");

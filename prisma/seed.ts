@@ -24,6 +24,16 @@ async function main() {
     },
   });
 
+  await prisma.methodologyVersion.upsert({
+    where: { name: "ghg-protocol-v2026-03" },
+    update: {},
+    create: {
+      name: "ghg-protocol-v2026-03",
+      gwpVersion: "AR6",
+      notes: "Bare gallon units follow the record's country: US gallons for United States records, imperial gallons elsewhere, with a note on the calculation",
+    },
+  });
+
   // Emission categories (MVP scope — seeded globally, no per-org custom categories)
   const categories = [
     { scope: 1, code: "s1-stationary", name: "Stationary Combustion", activityType: "stationary_combustion" },

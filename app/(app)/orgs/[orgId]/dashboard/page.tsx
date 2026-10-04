@@ -254,6 +254,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // CO2e is genuinely 0, so the headline total is silently short by however many
   // of these there are unless the count is on the page.
   const zeroCo2eCalcCount = latestRun?.zeroCo2eCount ?? 0;
+  const noFactorCount = latestRun?.noFactorCount ?? 0;
   const latestRunCalcCount = latestRun?.calculationCount ?? 0;
 
   // Reports are built from a PublishedSnapshot, but every figure on this page
@@ -1782,14 +1783,21 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 <Link href={`/orgs/${orgId}/settings/carbon-price`} className="underline underline-offset-2">Carbon price</Link>
               </div>
             )}
-            {zeroCo2eCalcCount > 0 && (
+            {noFactorCount > 0 && (
+              <div role="alert" className="rounded-[14px] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 tracking-[-0.42px]">
+                <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
+                {noFactorCount} of {latestRunCalcCount} calculated record{latestRunCalcCount !== 1 ? "s" : ""} matched no emission factor in
+                this run&apos;s library, so they count as 0 and the totals above are short by their emissions. Add your own
+                factor for them, or recalculate on a library that covers them.{" "}
+                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Open the run</Link>
+              </div>
+            )}
+            {zeroCo2eCalcCount - noFactorCount > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                {zeroCo2eCalcCount} of {latestRunCalcCount} calculated record
-                {latestRunCalcCount !== 1 ? "s" : ""} contributed 0 kg CO2e, so the
-                totals above exclude them. Usual causes: the record&apos;s unit does not
-                match the factor, no factor matched the category, or the input amount
-                was zero. Open the calculation run to see the per record reason.
+                {zeroCo2eCalcCount - noFactorCount} calculated record{zeroCo2eCalcCount - noFactorCount !== 1 ? "s" : ""} contributed 0 kg CO2e
+                for another reason (a unit the factor could not use, or an input amount of zero), so the totals above
+                exclude them. Open the calculation run to see each record&apos;s reason.
               </div>
             )}
             {staleRecordCount > 0 && (

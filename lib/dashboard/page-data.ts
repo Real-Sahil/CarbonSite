@@ -50,6 +50,8 @@ export type LatestRunStats = {
   reportingPeriodId: string;
   calculationCount: number;
   zeroCo2eCount: number;
+  /** Of those, records that matched no factor at all (no library factor and no organisation factor). */
+  noFactorCount: number;
   totalCo2e: number;
   approvedCo2e: number;
   fallbackCo2e: number;
@@ -82,6 +84,7 @@ export async function loadLatestRunStats(orgId: string): Promise<LatestRunStats 
       r.reporting_period_id AS "reportingPeriodId",
       s.n AS "calculationCount",
       s.zero AS "zeroCo2eCount",
+      s.nofactor AS "noFactorCount",
       s.total AS "totalCo2e",
       s.approved AS "approvedCo2e",
       s.fallback AS "fallbackCo2e",
@@ -96,6 +99,7 @@ export async function loadLatestRunStats(orgId: string): Promise<LatestRunStats 
       SELECT
         count(*)::int AS n,
         (count(*) FILTER (WHERE ec.total_co2e = 0))::int AS zero,
+        (count(*) FILTER (WHERE ec.total_co2e = 0 AND ec.emission_factor_id IS NULL AND ec.organization_emission_factor_id IS NULL))::int AS nofactor,
         sum(ec.total_co2e)::text AS total,
         (sum(ec.total_co2e) FILTER (WHERE ar.review_status = 'approved'))::text AS approved,
         (sum(ec.total_co2e) FILTER (WHERE ec.selection_reason ILIKE '%fallback%'))::text AS fallback

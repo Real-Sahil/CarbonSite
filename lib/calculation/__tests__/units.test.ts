@@ -170,4 +170,31 @@ describe("cubic metre unit aliases", () => {
     const normalized = normalizeUnit(120, "m³");
     expect(convertBetween(normalized.amount, normalized.unit, "m3")).toBeCloseTo(120);
   });
+
+  describe("a bare gallon follows the record's country", () => {
+    it("is a US gallon for a US record, with a note saying so", () => {
+      for (const word of ["gallon", "gallons", "gal"]) {
+        const r = normalizeUnit(10, word, null, "US");
+        expect(r.amount).toBeCloseTo(37.8541);
+        expect(r.unit).toBe("litre");
+        expect(r.note).toMatch(/US gallons/);
+      }
+      expect(normalizeUnit(1, "gallons", null, "PR").amount).toBeCloseTo(3.78541);
+    });
+
+    it("stays the imperial gallon for the UK without a note, and for other or unknown countries with one", () => {
+      expect(normalizeUnit(10, "gallons", null, "GB")).toEqual({ amount: 45.4609, unit: "litre" });
+      const de = normalizeUnit(10, "gallons", null, "DE");
+      expect(de.amount).toBeCloseTo(45.4609);
+      expect(de.note).toMatch(/US gallons/);
+      expect(normalizeUnit(10, "gallons").note).toMatch(/UK gallons/);
+    });
+
+    it("never changes an explicit unit, and bare gal is accepted only for US records", () => {
+      expect(normalizeUnit(1, "us gallon", null, "GB").amount).toBeCloseTo(3.78541);
+      expect(normalizeUnit(1, "uk gallon", null, "US").amount).toBeCloseTo(4.54609);
+      expect(() => normalizeUnit(1, "gal", null, "GB")).toThrow(/Unsupported unit/);
+      expect(() => normalizeUnit(1, "gal")).toThrow(/Unsupported unit/);
+    });
+  });
 });

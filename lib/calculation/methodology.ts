@@ -27,6 +27,14 @@ export type MethodologyChange = { name: string; effective: string; gwp: string; 
 /** Newest first. The first entry must match the newest methodology_versions row. */
 export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   {
+    name: "ghg-protocol-v2026-03",
+    effective: "2026-10-05",
+    gwp: "AR6",
+    changes: [
+      'A bare "gallon" or "gallons" is read as a US gallon (3.785 L) for a record whose country is the United States, and as an imperial gallon (4.546 L) elsewhere. Before this, every bare gallon was imperial, which overstated US fuel by about 20%. The calculation says which gallon was used; "US gallons" and "UK gallons" are never reinterpreted.',
+    ],
+  },
+  {
     name: "ghg-protocol-v2026-02",
     effective: "2026-09-24",
     gwp: "AR6",

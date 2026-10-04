@@ -235,10 +235,44 @@ export type NormalizedUnit = {
   unit: string;
   /// Set only when the input unit was a currency.
   fx?: FxProvenance;
+  /// Set when a unit word meant different things in different countries and one was chosen for the record.
+  note?: string;
 };
 
-export function normalizeUnit(amount: number, unit: string, onDate?: Date | null): NormalizedUnit {
+// A bare "gallon" is 3.785 L in the US and 4.546 L in the UK, a 20% difference.
+// Countries that buy fuel by the US gallon; everywhere else keeps the imperial one.
+const US_GALLON_COUNTRIES = new Set(["US", "PR", "GU", "VI", "AS", "MP"]);
+const BARE_GALLON = new Set(["gallon", "gallons", "gal"]);
+const US_GAL_L = 3.78541;
+const UK_GAL_L = 4.54609;
+
+function bareGallon(amount: number, country: string | null | undefined): NormalizedUnit | null {
+  const iso = (country ?? "").trim().toUpperCase();
+  if (US_GALLON_COUNTRIES.has(iso)) {
+    return { amount: amount * US_GAL_L, unit: "litre", note: "Gallons read as US gallons (3.785 L) because the record's country is the United States." };
+  }
+  if (iso === "GB" || iso === "UK") return { amount: amount * UK_GAL_L, unit: "litre" };
+  return {
+    amount: amount * UK_GAL_L,
+    unit: "litre",
+    note: 'Gallons read as UK gallons (4.546 L). If these are US gallons, enter the unit as "US gallons" (3.785 L).',
+  };
+}
+
+export function normalizeUnit(
+  amount: number,
+  unit: string,
+  onDate?: Date | null,
+  /// ISO country of the record (record, then facility, then organisation); only used for units whose meaning depends on it.
+  country?: string | null,
+): NormalizedUnit {
   const upper = unit.toUpperCase().trim();
+  const lowerUnit = unit.toLowerCase().trim();
+  if (BARE_GALLON.has(lowerUnit)) {
+    const g = bareGallon(amount, country);
+    // "gal" alone was never accepted: only a US country makes it unambiguous.
+    if (g && (lowerUnit !== "gal" || US_GALLON_COUNTRIES.has((country ?? "").trim().toUpperCase()))) return g;
+  }
   if (onDate && upper !== "GBP") {
     const dated = datedFx.get(isoDay(onDate));
     if (dated?.rates[upper] !== undefined) {
