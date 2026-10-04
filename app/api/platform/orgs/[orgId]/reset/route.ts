@@ -27,6 +27,7 @@ export async function POST(_req: Request, { params }: Params) {
 
     // 1. Leaf rows that depend on CalculationRun or ActivityRecord
     await prisma.emissionCalculation.deleteMany({ where: { organizationId: orgId } });
+    await prisma.dashboardSlice.deleteMany({ where: { organizationId: orgId } });
     await prisma.dashboardAggregate.deleteMany({ where: { organizationId: orgId } });
 
     // 2. Reports reference PublishedSnapshot; delete before snapshots

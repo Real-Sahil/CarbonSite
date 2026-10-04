@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { copyLiveSlicesToSnapshot } from "@/lib/calculation/snapshot-slices";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
@@ -84,8 +85,10 @@ export async function POST(
         });
       }
 
+      await copyLiveSlicesToSnapshot(tx, orgId, run.reportingPeriodId, created.id);
+
       return created;
-    });
+    }, { timeout: 60_000 });
 
     await writeAuditLog({
       organizationId: orgId,

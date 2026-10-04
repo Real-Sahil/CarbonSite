@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { copyLiveSlicesToSnapshot } from "@/lib/calculation/snapshot-slices";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
@@ -152,8 +153,10 @@ export async function POST(req: NextRequest, { params }: Params) {
         });
       }
 
+      await copyLiveSlicesToSnapshot(tx, orgId, body.reportingPeriodId, created.id);
+
       return created;
-    });
+    }, { timeout: 60_000 });
 
     await writeAuditLog({
       organizationId: orgId,
