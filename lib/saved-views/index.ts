@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { OrgRefs } from "@/lib/security/org-refs";
+import { DOCUMENT_TYPES, SUBMISSION_STATUSES } from "@/lib/field-submissions/list-filters";
 
 /**
  * Saved views: a named set of filters for one portal page, private to its owner
@@ -11,6 +12,7 @@ export const SURFACES = {
   dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country"] },
   records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
+  submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },
 } as const;
 
 /** Review statuses a records filter may name (the ReviewStatus enum). */
@@ -21,6 +23,8 @@ export const ENUM_FILTERS: Record<string, readonly string[]> = {
   reviewStatus: REVIEW_STATUSES,
   health: ["healthy", "at_risk", "critical"],
   trend: ["improving", "stable", "declining"],
+  status: SUBMISSION_STATUSES,
+  documentType: DOCUMENT_TYPES,
 };
 
 export type Surface = keyof typeof SURFACES;

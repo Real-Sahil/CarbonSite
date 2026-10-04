@@ -124,3 +124,13 @@ describe("the suppliers surface", () => {
     expect(checkFilters("suppliers", { periodId: "p1" })).toHaveProperty("error");
   });
 });
+
+describe("the submissions surface", () => {
+  it("reads status, document type, facility, contract and period", () => {
+    const f = { status: "needs_info", documentType: "delivery_note", facilityId: "f1", contractId: "k1", periodId: "p1" };
+    expect(checkFilters("submissions", f)).toEqual({ filters: f });
+    expect(checkFilters("submissions", { status: "pending" })).toHaveProperty("error");
+    expect(checkFilters("submissions", { documentType: "invoice" })).toHaveProperty("error");
+    expect(checkFilters("submissions", { q: "x" })).toHaveProperty("error");
+  });
+});
