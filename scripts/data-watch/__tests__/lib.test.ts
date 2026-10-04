@@ -129,7 +129,7 @@ describe("other sources", () => {
 
   it("reads the calendar's LAST_CHECKED", () => {
     const src = readFileSync(path.join(root, "app/(app)/orgs/[orgId]/compliance/deadlines/page.tsx"), "utf8");
-    expect(calendarLastChecked(src)?.toISOString().slice(0, 10)).toBe("2026-09-26");
+    expect(calendarLastChecked(src)?.toISOString().slice(0, 10)).toBe("2026-10-04");
   });
 });
 
