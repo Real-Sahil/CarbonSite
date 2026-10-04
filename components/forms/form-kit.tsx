@@ -10,6 +10,10 @@ import { cn } from "@/lib/utils";
 
 // Columns follow the width of the container, not the screen, so the same form
 // reads well on a full page, in a half-width panel and inside a dialog.
+/** Native inputs, selects and textareas that sit beside the shadcn Input: same border, radius, focus ring. */
+export const fieldClass =
+  "block min-h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] placeholder:text-[#9CA3AF] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
+
 const GRID = "grid grid-cols-1 gap-x-4 gap-y-4";
 const COLS: Record<2 | 3 | 4, string> = {
   2: "@md:grid-cols-2",

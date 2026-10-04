@@ -137,8 +137,7 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                 <FormField label="Client (buyer)" htmlFor="fts-client" optional>
                   <Input id="fts-client" value={draft.clientName ?? ""} maxLength={200} onChange={(e) => setDraft({ ...draft, clientName: e.target.value || null })} className={field} />
                 </FormField>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="fts-value" className={label}>Value ({draft.currency})</Label>
+                <FormField label={`Value (${draft.currency})`} htmlFor="fts-value" optional>
                   <Input
                     id="fts-value"
                     type="number"
@@ -147,7 +146,7 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                     onChange={(e) => setDraft({ ...draft, contractValue: e.target.value === "" ? null : Number(e.target.value) })}
                     className={field}
                   />
-                </div>
+                </FormField>
                 <FormField label="Start date" htmlFor="fts-start" optional>
                   <Input id="fts-start" type="date" value={draft.startDate ?? ""} onChange={(e) => setDraft({ ...draft, startDate: e.target.value || null })} className={field} />
                 </FormField>

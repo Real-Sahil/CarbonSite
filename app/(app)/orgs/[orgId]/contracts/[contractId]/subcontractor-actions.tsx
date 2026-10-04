@@ -6,7 +6,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormActions, FormError, FormSection } from "@/components/forms/form-kit";
 
 interface Submission {
   id: string;
@@ -79,29 +79,28 @@ export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; co
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
-      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">Request subcontractor carbon data</p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <FormField label="Subcontractor" htmlFor="sub-name">
-          <Input id="sub-name" name="subcontractorName" required placeholder="Subcontractor name" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Contact email" htmlFor="sub-email" optional>
-          <Input id="sub-email" name="contactEmail" type="email" placeholder="contact@example.com" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Reporting period" htmlFor="sub-period">
-          <Input id="sub-period" name="reportingPeriodLabel" required placeholder="Q3 2026" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Due date" htmlFor="sub-due">
-          <Input id="sub-due" name="dueDate" type="date" required className="h-9 text-sm" />
-        </FormField>
-      </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="Request subcontractor carbon data" cols={2}>
+          <FormField label="Subcontractor" htmlFor="sub-name">
+            <Input id="sub-name" name="subcontractorName" required placeholder="Subcontractor name" />
+          </FormField>
+          <FormField label="Contact email" htmlFor="sub-email" optional>
+            <Input id="sub-email" name="contactEmail" type="email" placeholder="contact@example.com" />
+          </FormField>
+          <FormField label="Reporting period" htmlFor="sub-period">
+            <Input id="sub-period" name="reportingPeriodLabel" required placeholder="Q3 2026" />
+          </FormField>
+          <FormField label="Due date" htmlFor="sub-due">
+            <Input id="sub-due" name="dueDate" type="date" required />
+          </FormField>
+        </FormSection>
+      <FormError>{error}</FormError>
+      <FormActions>
         <Button type="submit" size="sm" disabled={isPending}>
           <Plus className="mr-1.5 h-3.5 w-3.5" />
           {isPending ? "Requesting…" : "Request submission"}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

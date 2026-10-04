@@ -234,7 +234,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={primaryHex}
             onChange={(e) => handlePrimaryHexChange(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
+            className="h-9 w-full cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
             aria-label="Primary colour picker"
           />
           <Input
@@ -260,7 +260,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={accentHex}
             onChange={(e) => handleAccentHexChange(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
+            className="h-9 w-full cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
             aria-label="Accent colour picker"
           />
           <Input

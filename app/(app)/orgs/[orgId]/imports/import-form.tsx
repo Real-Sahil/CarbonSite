@@ -222,7 +222,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
     <form onSubmit={handleUploadClick} className="flex flex-wrap items-end gap-3">
       <FormField label="Reporting period" htmlFor="f-reporting-period" optional>
         <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>
-          <SelectTrigger id="f-reporting-period" className="w-44">
+          <SelectTrigger id="f-reporting-period" className="w-full">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
           <SelectContent>
@@ -253,7 +253,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
       </div>
       <FormField label="Template" htmlFor="f-template" optional>
         <Select value={templateKey} onValueChange={setTemplateKey} disabled={busy}>
-          <SelectTrigger id="f-template" className="w-52">
+          <SelectTrigger id="f-template" className="w-full">
             <SelectValue placeholder="Select template" />
           </SelectTrigger>
           <SelectContent>

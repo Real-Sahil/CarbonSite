@@ -113,7 +113,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         </FormField>
         <FormField label="Role" htmlFor="invite-role" optional>
           <Select value={role} onValueChange={setRole} disabled={loading}>
-            <SelectTrigger id="invite-role" className="w-36">
+            <SelectTrigger id="invite-role" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

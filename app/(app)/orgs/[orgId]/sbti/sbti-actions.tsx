@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Target, X } from "lucide-react";
-import { FormField, FormSection } from "@/components/forms/form-kit";
+import { FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 export interface SbtiTarget {
   pathway: string;
@@ -133,7 +133,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15 disabled:opacity-50";
+  const inputCls = fieldClass;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

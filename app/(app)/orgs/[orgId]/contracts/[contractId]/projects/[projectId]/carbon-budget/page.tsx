@@ -8,7 +8,7 @@ import { Target, Plus, AlertTriangle, CheckCircle, TrendingUp, X, Pencil, Gauge 
 import { computeCarbonEvm } from "@/lib/project-carbon/evm";
 import type { Burndown } from "@/lib/project-carbon/burndown";
 import { BurndownCard } from "./burndown-card";
-import { FormField, FormSection } from "@/components/forms/form-kit";
+import { FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 interface Phase {
   id: string;
@@ -115,7 +115,7 @@ function SetBudgetModal({
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15 disabled:opacity-50";
+  const inputCls = fieldClass;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -276,14 +276,14 @@ function PhaseRow({
             <input id="f-actual-tco-e"
               type="number" min="0" step="0.01" value={actual}
               onChange={(e) => setActual(e.target.value)}
-              className="w-28 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
+              className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
             />
           </FormField>
           <FormField label="Percent complete" htmlFor="f-percent-complete" optional>
             <input id="f-percent-complete"
               type="number" min="0" max="100" step="1" value={percent}
               onChange={(e) => setPercent(e.target.value)}
-              className="w-24 rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
+              className="w-full rounded-md border border-gray-200 bg-white px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15"
             />
           </FormField>
           <FormField label="Planned completion" htmlFor="f-planned-completion" optional>

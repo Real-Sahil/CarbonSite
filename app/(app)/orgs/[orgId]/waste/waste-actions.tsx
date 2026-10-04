@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Upload, Trash2, X } from "lucide-react";
-import { FormField, FormSection } from "@/components/forms/form-kit";
+import { Button } from "@/components/ui/button";
+import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 interface Facility { id: string; name: string }
 interface Period { id: string; label: string }
@@ -84,7 +85,7 @@ function AddRecordModal({
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15 disabled:opacity-50";
+  const inputCls = fieldClass;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -96,8 +97,8 @@ function AddRecordModal({
             <X className="h-4 w-4 text-gray-500" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          <FormSection cols={2}>
+        <form onSubmit={handleSubmit} className="space-y-6 p-6">
+          <FormSection title="The waste" cols={2}>
             <FormField label="Facility" htmlFor="f-facility">
               <select id="f-facility" required value={form.facilityId}
                 onChange={(e) => setForm((f) => ({ ...f, facilityId: e.target.value }))} className={inputCls}>
@@ -112,8 +113,7 @@ function AddRecordModal({
                 {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
               </select>
             </FormField>
-          </FormSection>
-          <FormField label="Waste type / description" htmlFor="f-waste-type-description">
+          <FormField label="Waste type / description" span={4} htmlFor="f-waste-type-description">
             <input id="f-waste-type-description" type="text" required value={form.wasteType}
               onChange={(e) => setForm((f) => ({ ...f, wasteType: e.target.value }))}
               className={inputCls} placeholder="Mixed construction waste, concrete, timber..." />
@@ -124,14 +124,13 @@ function AddRecordModal({
               {DISPOSAL_ROUTES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </FormField>
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+          <label className="@md:col-span-full flex items-center gap-2 text-sm text-gray-700">
             <input type="checkbox" checked={form.hazardous}
               onChange={(e) => setForm((f) => ({ ...f, hazardous: e.target.checked }))}
               className="h-4 w-4 rounded border-gray-300 text-[#c2410c] focus:ring-[#c2410c]/30" />
             Hazardous waste (ESRS E5 disclosure)
           </label>
-          <FormSection cols={2}>
-            <FormField label="Weight (tonnes)" htmlFor="f-weight-tonnes">
+          <FormField label="Weight (tonnes)" htmlFor="f-weight-tonnes">
               <input id="f-weight-tonnes" type="number" required min="0.001" step="0.001" value={form.weightTonnes}
                 onChange={(e) => setForm((f) => ({ ...f, weightTonnes: e.target.value }))}
                 className={inputCls} placeholder="12.500" />
@@ -144,7 +143,7 @@ function AddRecordModal({
           <p className="text-xs text-gray-500">
             CO2e is calculated automatically from your organisation&apos;s emission factor library once saved.
           </p>
-          <FormSection cols={2}>
+          <FormSection title="Duty of care" description="Record the carrier's registration and the transfer note (or consignment note for hazardous waste). Transfers without them show as gaps on the duty of care register." cols={2}>
             <FormField label="EWC code" htmlFor="f-ewc-code" optional>
               <input id="f-ewc-code" type="text" value={form.ewcCode} maxLength={10}
                 onChange={(e) => setForm((f) => ({ ...f, ewcCode: e.target.value }))}
@@ -155,13 +154,7 @@ function AddRecordModal({
                 onChange={(e) => setForm((f) => ({ ...f, carrierName: e.target.value }))}
                 className={inputCls} placeholder="Biffa, Veolia..." />
             </FormField>
-          </FormSection>
-          <p className="text-xs text-gray-500">
-            Duty of care: record the carrier&apos;s registration and the transfer note (or consignment note for
-            hazardous waste). Transfers without them show as gaps on the duty of care register.
-          </p>
-          <FormSection cols={2}>
-            <FormField label="Carrier registration" htmlFor="f-carrier-registration" optional>
+          <FormField label="Carrier registration" htmlFor="f-carrier-registration" optional>
               <input id="f-carrier-registration" type="text" value={form.carrierRegistration} maxLength={40}
                 onChange={(e) => setForm((f) => ({ ...f, carrierRegistration: e.target.value }))}
                 className={inputCls} placeholder="CBDU123456" />
@@ -187,11 +180,13 @@ function AddRecordModal({
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               className={`${inputCls} resize-none`} />
           </FormField>
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
-          <button type="submit" disabled={loading || !form.facilityId || !form.reportingPeriodId}
-            className="w-full rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
-            {loading ? "Saving..." : "Save waste record"}
-          </button>
+          <FormError>{error}</FormError>
+          <FormActions>
+            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={loading}>Cancel</Button>
+            <Button type="submit" size="sm" disabled={loading || !form.facilityId || !form.reportingPeriodId}>
+              {loading ? "Saving..." : "Save waste record"}
+            </Button>
+          </FormActions>
         </form>
       </div>
     </div>

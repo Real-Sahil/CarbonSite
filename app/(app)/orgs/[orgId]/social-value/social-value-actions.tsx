@@ -181,7 +181,7 @@ export function CreateSocialValueRecordForm({
         {/* Contract */}
         <FormField label="Contract" htmlFor="f-contract" optional>
           <Select value={contractId} onValueChange={setContractId}>
-            <SelectTrigger id="f-contract" className="w-52">
+            <SelectTrigger id="f-contract" className="w-full">
               <SelectValue placeholder="Select contract" />
             </SelectTrigger>
             <SelectContent>
@@ -197,7 +197,7 @@ export function CreateSocialValueRecordForm({
         {/* Reporting period */}
         <FormField label="Period" htmlFor="f-period" optional>
           <Select value={reportingPeriodId} onValueChange={setReportingPeriodId}>
-            <SelectTrigger id="f-period" className="w-44">
+            <SelectTrigger id="f-period" className="w-full">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
@@ -213,7 +213,7 @@ export function CreateSocialValueRecordForm({
         {/* Theme picker (local state only) */}
         <FormField label="Theme" htmlFor="f-theme" optional>
           <Select value={selectedThemeCode} onValueChange={handleThemeChange}>
-            <SelectTrigger id="f-theme" className="w-44">
+            <SelectTrigger id="f-theme" className="w-full">
               <SelectValue placeholder="Select theme" />
             </SelectTrigger>
             <SelectContent>
@@ -517,7 +517,7 @@ export function SocialValueTargetsSection({
                     onValueChange={(v) => setForm((f) => ({ ...f, contractId: v }))}
                     disabled={editingId !== null}
                   >
-                    <SelectTrigger id="f-contract" className="w-52">
+                    <SelectTrigger id="f-contract" className="w-full">
                       <SelectValue placeholder="Select contract" />
                     </SelectTrigger>
                     <SelectContent>
@@ -536,7 +536,7 @@ export function SocialValueTargetsSection({
                     onValueChange={(v) => setForm((f) => ({ ...f, reportingPeriodId: v }))}
                     disabled={editingId !== null}
                   >
-                    <SelectTrigger id="f-period" className="w-44">
+                    <SelectTrigger id="f-period" className="w-full">
                       <SelectValue placeholder="Select period" />
                     </SelectTrigger>
                     <SelectContent>
@@ -557,7 +557,7 @@ export function SocialValueTargetsSection({
                     value={form.targetPounds}
                     onChange={(e) => setForm((f) => ({ ...f, targetPounds: e.target.value }))}
                     placeholder="e.g. 50000"
-                    className="w-32"
+                    className="w-full"
                   />
                 </FormField>
 
@@ -569,7 +569,7 @@ export function SocialValueTargetsSection({
                     value={form.baselinePounds}
                     onChange={(e) => setForm((f) => ({ ...f, baselinePounds: e.target.value }))}
                     placeholder="e.g. 30000"
-                    className="w-32"
+                    className="w-full"
                   />
                 </FormField>
               </div>

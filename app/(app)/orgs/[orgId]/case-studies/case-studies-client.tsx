@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MAX_KPIS, caseStudyChecks, type Kpi } from "@/lib/case-studies";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, fieldClass } from "@/components/forms/form-kit";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
-const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm";
-const selectClass = "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-2 text-sm shadow-sm";
+const areaClass = fieldClass;
+const selectClass = fieldClass;
 
 type Study = {
   id: string; contractId: string | null; title: string; problem: string; solution: string; baseline: string;

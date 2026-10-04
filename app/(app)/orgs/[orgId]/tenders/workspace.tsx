@@ -198,7 +198,7 @@ export function TendersWorkspace({
             </fieldset>
             <div className="flex flex-wrap items-end gap-6">
               <FormField label="Minimum value (£)" htmlFor="tw-min" optional>
-                <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" className="h-9 w-44 text-sm" />
+                <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" className="h-9 w-full text-sm" />
               </FormField>
               <label className="flex items-center gap-2 text-sm text-[#374151]">
                 <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4" />

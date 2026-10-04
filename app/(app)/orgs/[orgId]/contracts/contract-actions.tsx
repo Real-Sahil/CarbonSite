@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormActions, FormError, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 export function CreateContractForm({ orgId }: { orgId: string }) {
   const router = useRouter();
@@ -45,58 +45,60 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
-      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">New contract</p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <FormField label="Name" htmlFor="contract-name">
-          <Input id="contract-name" name="name" required placeholder="Contract name" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Client name" htmlFor="contract-client" optional>
-          <Input id="contract-client" name="clientName" placeholder="Client organisation" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Contract reference" htmlFor="contract-ref" optional>
-          <Input id="contract-ref" name="contractReference" placeholder="REF-001" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Status" htmlFor="contract-status" optional>
-          <select
-            id="contract-status"
-            name="status"
-            defaultValue="active"
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="suspended">Suspended</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </FormField>
-        <FormField label="Start date" htmlFor="contract-start" optional>
-          <Input id="contract-start" name="startDate" type="date" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="End date" htmlFor="contract-end" optional>
-          <Input id="contract-end" name="endDate" type="date" className="h-9 text-sm" />
-        </FormField>
-      </div>
-      <div className="flex flex-wrap gap-5">
-        <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
-          <input type="checkbox" name="ppn0621Required" className="h-4 w-4 rounded border-gray-300" />
-          PPN 06/21 required
-        </label>
-        <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
-          <input type="checkbox" name="nhsEvergreenRequired" className="h-4 w-4 rounded border-gray-300" />
-          NHS Evergreen required
-        </label>
-        <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
-          <input type="checkbox" name="breeamRequired" className="h-4 w-4 rounded border-gray-300" />
-          BREEAM required
-        </label>
-      </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="New contract" cols={3}>
+          <FormField label="Name" span={4} htmlFor="contract-name">
+            <Input id="contract-name" name="name" required placeholder="Contract name" />
+          </FormField>
+          <FormField label="Client name" htmlFor="contract-client" optional>
+            <Input id="contract-client" name="clientName" placeholder="Client organisation" />
+          </FormField>
+          <FormField label="Contract reference" htmlFor="contract-ref" optional>
+            <Input id="contract-ref" name="contractReference" placeholder="REF-001" />
+          </FormField>
+          <FormField label="Status" htmlFor="contract-status" optional>
+            <select
+              id="contract-status"
+              name="status"
+              defaultValue="active"
+              className={fieldClass}
+            >
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="suspended">Suspended</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </FormField>
+          <FormField label="Start date" htmlFor="contract-start" optional>
+            <Input id="contract-start" name="startDate" type="date" />
+          </FormField>
+          <FormField label="End date" htmlFor="contract-end" optional>
+            <Input id="contract-end" name="endDate" type="date" />
+          </FormField>
+        </FormSection>
+      <fieldset className="space-y-2">
+        <legend className="text-sm font-semibold text-zinc-900">Reports the client requires</legend>
+        <div className="flex flex-wrap gap-5">
+          <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
+            <input type="checkbox" name="ppn0621Required" className="h-4 w-4 rounded border-gray-300" />
+            PPN 06/21 required
+          </label>
+          <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
+            <input type="checkbox" name="nhsEvergreenRequired" className="h-4 w-4 rounded border-gray-300" />
+            NHS Evergreen required
+          </label>
+          <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
+            <input type="checkbox" name="breeamRequired" className="h-4 w-4 rounded border-gray-300" />
+            BREEAM required
+          </label>
+        </div>
+      </fieldset>
+      <FormError>{error}</FormError>
+      <FormActions>
         <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? "Creating…" : "Create contract"}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

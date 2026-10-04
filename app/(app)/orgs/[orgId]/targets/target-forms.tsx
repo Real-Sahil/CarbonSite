@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertCircle, Plus } from "lucide-react";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormActions, FormError, FormSection } from "@/components/forms/form-kit";
 
 // Enum values must match prisma schema exactly: absolute | intensity
 const TARGET_TYPES = [
@@ -98,55 +98,57 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
-      <FormField label="Type" htmlFor="f-type" optional>
-        <Select value={targetType} onValueChange={setTargetType}>
-          <SelectTrigger id="f-type" className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TARGET_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </FormField>
-      <FormField label="Baseline period" htmlFor="f-baseline-period" optional>
-        <Select value={baselinePeriodId} onValueChange={setBaselinePeriodId}>
-          <SelectTrigger id="f-baseline-period" className="w-40">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </FormField>
-      <FormField label="Target period" htmlFor="f-target-period" optional>
-        <Select value={targetPeriodId} onValueChange={setTargetPeriodId}>
-          <SelectTrigger id="f-target-period" className="w-40">
-            <SelectValue placeholder="Select" />
-          </SelectTrigger>
-          <SelectContent>
-            {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </FormField>
-      <FormField label="Reduction (kgCO2e)" htmlFor="f-reduction-kgco2e" optional>
-        <Input id="f-reduction-kgco2e"
-          type="number"
-          min="0"
-          step="any"
-          value={reductionAmount}
-          onChange={(e) => setReductionAmount(e.target.value)}
-          placeholder="e.g. 10000"
-          className="w-32"
-        />
-      </FormField>
-      <div className="flex gap-2">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="The target" description="What you want to cut, measured from a baseline period to a target period." cols={2}>
+        <FormField label="Type" htmlFor="f-type" optional>
+          <Select value={targetType} onValueChange={setTargetType}>
+            <SelectTrigger id="f-type" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TARGET_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField label="Baseline period" htmlFor="f-baseline-period" optional>
+          <Select value={baselinePeriodId} onValueChange={setBaselinePeriodId}>
+            <SelectTrigger id="f-baseline-period" className="w-full">
+              <SelectValue placeholder="Select" />
+            </SelectTrigger>
+            <SelectContent>
+              {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField label="Target period" htmlFor="f-target-period" optional>
+          <Select value={targetPeriodId} onValueChange={setTargetPeriodId}>
+            <SelectTrigger id="f-target-period" className="w-full">
+              <SelectValue placeholder="Select" />
+            </SelectTrigger>
+            <SelectContent>
+              {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField label="Reduction (kgCO2e)" htmlFor="f-reduction-kgco2e" optional>
+          <Input id="f-reduction-kgco2e"
+            type="number"
+            min="0"
+            step="any"
+            value={reductionAmount}
+            onChange={(e) => setReductionAmount(e.target.value)}
+            placeholder="e.g. 10000"
+            className="w-full"
+          />
+        </FormField>
+      </FormSection>
+      <FormError>{error}</FormError>
+      <FormActions>
+        <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
         <Button type="submit" disabled={loading} size="sm">
           {loading ? "Saving…" : "Save"}
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-      </div>
-      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+      </FormActions>
     </form>
   );
 }
@@ -234,98 +236,102 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
-      <FormField label="Name" htmlFor="f-name" optional>
-        <Input id="f-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-52" />
-      </FormField>
-      <FormField label="Status" htmlFor="f-status" optional>
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger id="f-status" className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {INITIATIVE_STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </FormField>
-      {members.length > 0 && (
-        <FormField label="Owner" htmlFor="f-owner" optional>
-          <Select value={ownerId} onValueChange={setOwnerId}>
-            <SelectTrigger id="f-owner" className="w-40">
-              <SelectValue placeholder="Optional" />
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="The initiative" cols={3}>
+        <FormField label="Name" span={4} htmlFor="f-name" optional>
+          <Input id="f-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-full" />
+        </FormField>
+        <FormField label="Status" htmlFor="f-status" optional>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger id="f-status" className="w-full">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {members.map((m) => <SelectItem key={m.userId} value={m.userId}>{m.label}</SelectItem>)}
+              {INITIATIVE_STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </FormField>
-      )}
-      <FormField label="Expected impact (kgCO2e)" htmlFor="f-expected-impact-kgco2e" optional>
-        <Input id="f-expected-impact-kgco2e" type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} placeholder="Optional" className="w-36" />
-      </FormField>
-      <FormField label="Starts" htmlFor="initiative-start" optional>
-        <Input id="initiative-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-40" />
-      </FormField>
-      <FormField label="Currency" htmlFor="initiative-currency" optional>
-        <Input id="initiative-currency" value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value)} className="w-20 uppercase" />
-      </FormField>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Capital cost ({currency.toUpperCase() || defaultCurrency})</label>
-        <Input type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} placeholder="Optional" className="w-28" />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Annual opex change ({currency.toUpperCase() || defaultCurrency})</label>
-        <Input type="number" step="any" value={opexDeltaAnnual} onChange={(e) => setOpexDeltaAnnual(e.target.value)} placeholder="Negative = saves money" className="w-40" />
-      </div>
-      <FormField label="Lifetime (years)" htmlFor="f-lifetime-years" optional>
-        <Input id="f-lifetime-years" type="number" min="1" step="1" value={lifetimeYears} onChange={(e) => setLifetimeYears(e.target.value)} placeholder="Optional" className="w-24" />
-      </FormField>
-      {facilities.length > 0 && (
-        <FormField label="Facility" htmlFor="f-facility" optional>
-          <Select value={facilityId || NONE} onValueChange={(v) => setFacilityId(v === NONE ? "" : v)}>
-            <SelectTrigger id="f-facility" className="w-40">
-              <SelectValue placeholder="Org-wide" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>Org-wide</SelectItem>
-              {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        {members.length > 0 && (
+          <FormField label="Owner" htmlFor="f-owner" optional>
+            <Select value={ownerId} onValueChange={setOwnerId}>
+              <SelectTrigger id="f-owner" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((m) => <SelectItem key={m.userId} value={m.userId}>{m.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+      </FormSection>
+      <FormSection title="Impact, timing and cost" cols={3}>
+        <FormField label="Expected impact (kgCO2e)" htmlFor="f-expected-impact-kgco2e" optional>
+          <Input id="f-expected-impact-kgco2e" type="number" min="0" step="any" value={expectedImpact} onChange={(e) => setExpectedImpact(e.target.value)} className="w-full" />
         </FormField>
-      )}
-      {categories.length > 0 && (
-        <FormField label="Category" htmlFor="f-category" optional>
-          <Select value={emissionCategoryId || NONE} onValueChange={(v) => setEmissionCategoryId(v === NONE ? "" : v)}>
-            <SelectTrigger id="f-category" className="w-44">
-              <SelectValue placeholder="Not specified" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>Not specified</SelectItem>
-              {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        <FormField label="Starts" htmlFor="initiative-start" optional>
+          <Input id="initiative-start" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full" />
         </FormField>
-      )}
-      {targets.length > 0 && (
-        <FormField label="Counts toward" htmlFor="f-counts-toward" optional>
-          <Select value={reductionTargetId || NONE} onValueChange={(v) => setReductionTargetId(v === NONE ? "" : v)}>
-            <SelectTrigger id="f-counts-toward" className="w-44">
-              <SelectValue placeholder="No target" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NONE}>No target</SelectItem>
-              {targets.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        <FormField label="Currency" htmlFor="initiative-currency" optional>
+          <Input id="initiative-currency" value={currency} maxLength={3} onChange={(e) => setCurrency(e.target.value)} className="w-full uppercase" />
         </FormField>
-      )}
-      <div className="flex gap-2">
+        <FormField label={`Capital cost (${currency.toUpperCase() || defaultCurrency})`} htmlFor="f-capital-cost" optional>
+          <Input id="f-capital-cost" type="number" min="0" step="any" value={costAmount} onChange={(e) => setCostAmount(e.target.value)} className="w-full" />
+        </FormField>
+        <FormField label={`Annual opex change (${currency.toUpperCase() || defaultCurrency})`} htmlFor="f-annual-opex" optional>
+          <Input id="f-annual-opex" type="number" step="any" value={opexDeltaAnnual} onChange={(e) => setOpexDeltaAnnual(e.target.value)} placeholder="Negative = saves money" className="w-full" />
+        </FormField>
+        <FormField label="Lifetime (years)" htmlFor="f-lifetime-years" optional>
+          <Input id="f-lifetime-years" type="number" min="1" step="1" value={lifetimeYears} onChange={(e) => setLifetimeYears(e.target.value)} className="w-full" />
+        </FormField>
+      </FormSection>
+      <FormSection title="Where it applies" description="Link the initiative to a site, an emission category and the target it counts toward." cols={3}>
+        {facilities.length > 0 && (
+          <FormField label="Facility" htmlFor="f-facility" optional>
+            <Select value={facilityId || NONE} onValueChange={(v) => setFacilityId(v === NONE ? "" : v)}>
+              <SelectTrigger id="f-facility" className="w-full">
+                <SelectValue placeholder="Org-wide" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>Org-wide</SelectItem>
+                {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+        {categories.length > 0 && (
+          <FormField label="Category" htmlFor="f-category" optional>
+            <Select value={emissionCategoryId || NONE} onValueChange={(v) => setEmissionCategoryId(v === NONE ? "" : v)}>
+              <SelectTrigger id="f-category" className="w-full">
+                <SelectValue placeholder="Not specified" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>Not specified</SelectItem>
+                {categories.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+        {targets.length > 0 && (
+          <FormField label="Counts toward" htmlFor="f-counts-toward" optional>
+            <Select value={reductionTargetId || NONE} onValueChange={(v) => setReductionTargetId(v === NONE ? "" : v)}>
+              <SelectTrigger id="f-counts-toward" className="w-full">
+                <SelectValue placeholder="No target" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>No target</SelectItem>
+                {targets.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+      </FormSection>
+      <FormError>{error}</FormError>
+      <FormActions>
+        <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
         <Button type="submit" disabled={loading} size="sm">
           {loading ? "Saving…" : "Save"}
         </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-      </div>
-      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+      </FormActions>
     </form>
   );
 }

@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { PlanFields } from "@/lib/transition-plan";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, fieldClass } from "@/components/forms/form-kit";
 
 const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
-const areaClass = "w-full rounded-md border border-[#E5E7EB] bg-white px-3 py-2 text-sm shadow-sm disabled:opacity-60";
+const areaClass = fieldClass;
 
 const FIELDS: { key: keyof PlanFields; label: string; help: string }[] = [
   { key: "ambition", label: "Ambition", help: "What the organisation commits to, in its own words, and the scope it covers." },

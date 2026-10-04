@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Layers, Settings2, X, AlertCircle } from "lucide-react";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, fieldClass } from "@/components/forms/form-kit";
 
 interface WholeLifeResult {
   aStagesKgCo2e: number;
@@ -82,7 +82,7 @@ function SettingsModal({
     }
   }
 
-  const inputCls = "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15";
+  const inputCls = fieldClass;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/forms/form-kit";
+import { FormField, FormActions, FormError, FormSection } from "@/components/forms/form-kit";
 
 export function CreateSiteForm({
   orgId,
@@ -53,34 +53,33 @@ export function CreateSiteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
-      <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">New site</p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <FormField label="Name" htmlFor="site-name">
-          <Input id="site-name" name="name" required placeholder="Site name" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Site code" htmlFor="site-code" optional>
-          <Input id="site-code" name="siteCode" placeholder="SITE-001" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Postcode" htmlFor="site-postcode" optional>
-          <Input id="site-postcode" name="postcode" placeholder="SW1A 1AA" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Address line 1" htmlFor="site-address" span={2} optional>
-          <Input id="site-address" name="addressLine1" placeholder="1 Example Street" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="City" htmlFor="site-city" optional>
-          <Input id="site-city" name="city" placeholder="London" className="h-9 text-sm" />
-        </FormField>
-        <FormField label="Country" htmlFor="site-country" optional>
-          <Input id="site-country" name="country" defaultValue="GB" placeholder="GB" className="h-9 text-sm" />
-        </FormField>
-      </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
-      <div>
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="New site" cols={3}>
+          <FormField label="Name" htmlFor="site-name">
+            <Input id="site-name" name="name" required placeholder="Site name" />
+          </FormField>
+          <FormField label="Site code" htmlFor="site-code" optional>
+            <Input id="site-code" name="siteCode" placeholder="SITE-001" />
+          </FormField>
+          <FormField label="Postcode" htmlFor="site-postcode" optional>
+            <Input id="site-postcode" name="postcode" placeholder="SW1A 1AA" />
+          </FormField>
+          <FormField label="Address line 1" htmlFor="site-address" span={2} optional>
+            <Input id="site-address" name="addressLine1" placeholder="1 Example Street" />
+          </FormField>
+          <FormField label="City" htmlFor="site-city" optional>
+            <Input id="site-city" name="city" placeholder="London" />
+          </FormField>
+          <FormField label="Country" htmlFor="site-country" optional>
+            <Input id="site-country" name="country" defaultValue="GB" placeholder="GB" />
+          </FormField>
+        </FormSection>
+      <FormError>{error}</FormError>
+      <FormActions>
         <Button type="submit" size="sm" disabled={isPending}>
           {isPending ? "Creating…" : "Create site"}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }
