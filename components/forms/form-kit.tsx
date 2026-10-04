@@ -18,12 +18,12 @@ const GRID = "grid grid-cols-1 gap-x-4 gap-y-4";
 const COLS: Record<2 | 3 | 4, string> = {
   2: "@md:grid-cols-2",
   3: "@md:grid-cols-3",
-  4: "@md:grid-cols-2 @2xl:grid-cols-4",
+  4: "@md:grid-cols-2 @xl:grid-cols-4",
 };
 const SPAN: Record<1 | 2 | 3 | 4, string> = {
   1: "",
   2: "@md:col-span-2",
-  3: "@md:col-span-2 @2xl:col-span-3",
+  3: "@md:col-span-2 @xl:col-span-3",
   4: "@md:col-span-full",
 };
 

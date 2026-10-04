@@ -4,9 +4,10 @@ import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Circle, Loader2, Plus } from "lucide-react";
-import { inputCls, labelCls } from "@/components/structured-forms/ms-fields";
+import { inputCls } from "@/components/structured-forms/ms-fields";
 import type { CriterionSummary, Ppn026Check } from "@/lib/social-value/ppn026";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormField, FormSection } from "@/components/forms/form-kit";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   orgId: string;
@@ -177,7 +178,7 @@ export function Ppn026Panel(p: Props) {
 
       {logFor ? (
         <form
-          className="grid gap-3 rounded-[14px] border border-[#E5E7EB] p-4 sm:grid-cols-4"
+          className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5"
           onSubmit={(e) => {
             e.preventDefault();
             const k = p.criteria.flatMap((c) => c.kpis).find((x) => x.id === logFor);
@@ -215,35 +216,32 @@ export function Ppn026Panel(p: Props) {
             );
           }}
         >
-          <p className="sm:col-span-4 text-sm font-medium text-[#111827]">Log delivery: {p.criteria.flatMap((c) => c.kpis).find((x) => x.id === logFor)?.title}</p>
-          <FormField label="Date" htmlFor="ppn026-date">
-            <input id="ppn026-date" type="date" required className={inputCls} value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
-          </FormField>
-          <div>
-            <label htmlFor="ppn026-qty" className={labelCls}>Quantity{unitFor(logFor) ? ` (${unitFor(logFor)})` : ""}</label>
-            <input id="ppn026-qty" type="number" min="0" step="any" required className={inputCls} value={entry.quantity} onChange={(e) => setEntry({ ...entry, quantity: e.target.value })} />
-          </div>
-          <div className="sm:col-span-2">
-            <label htmlFor="ppn026-file" className={labelCls}>Evidence file</label>
-            <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#374151] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-            <input id="ppn026-evidence" type="url" aria-label="Or a link to the evidence" placeholder="Or a link to the payroll extract, training record or timesheet" className={`${inputCls} mt-2`} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
-          </div>
-          <FormField label="Note" htmlFor="ppn026-note" span={4}>
-            <input id="ppn026-note" className={inputCls} value={entry.note} onChange={(e) => setEntry({ ...entry, note: e.target.value })} />
-          </FormField>
-          <div className="flex items-end gap-2">
-            <button type="submit" disabled={!!busy} className="rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
-              {busy === "log" ? "Saving..." : "Submit for review"}
-            </button>
-            <button type="button" onClick={() => setLogFor(null)} className="text-sm text-[#6B7280]">Cancel</button>
-          </div>
+          <FormSection title={`Log delivery: ${p.criteria.flatMap((c) => c.kpis).find((x) => x.id === logFor)?.title ?? ""}`} description="Delivery is reviewed before it counts. Do not include personal details in notes or files." cols={3}>
+            <FormField label="Date" htmlFor="ppn026-date">
+              <input id="ppn026-date" type="date" required className={inputCls} value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
+            </FormField>
+            <FormField label={`Quantity${unitFor(logFor) ? ` (${unitFor(logFor)})` : ""}`} htmlFor="ppn026-qty">
+              <input id="ppn026-qty" type="number" min="0" step="any" required className={inputCls} value={entry.quantity} onChange={(e) => setEntry({ ...entry, quantity: e.target.value })} />
+            </FormField>
+            <FormField label="Evidence" htmlFor="ppn026-file" span={3} optional hint="Upload a file or paste a link to the payroll extract, training record or timesheet">
+              <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#374151] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <input id="ppn026-evidence" type="url" aria-label="Or a link to the evidence" placeholder="https://" className={inputCls} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
+            </FormField>
+            <FormField label="Note" htmlFor="ppn026-note" span={3} optional>
+              <input id="ppn026-note" className={inputCls} value={entry.note} onChange={(e) => setEntry({ ...entry, note: e.target.value })} />
+            </FormField>
+          </FormSection>
+          <FormActions>
+            <Button type="button" size="sm" variant="outline" onClick={() => setLogFor(null)}>Cancel</Button>
+            <Button type="submit" size="sm" disabled={!!busy}>{busy === "log" ? "Saving..." : "Submit for review"}</Button>
+          </FormActions>
         </form>
       ) : null}
 
       {p.canEdit ? (
         adding ? (
           <form
-            className="grid gap-3 rounded-[14px] border border-[#E5E7EB] p-4 sm:grid-cols-4"
+            className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5"
             onSubmit={(e) => {
               e.preventDefault();
               void run(
@@ -265,30 +263,30 @@ export function Ppn026Panel(p: Props) {
               );
             }}
           >
-            <FormField label="Award criterion" htmlFor="ppn026-criterion" span={2}>
-              <select id="ppn026-criterion" className={inputCls} value={kpi.criterion} onChange={(e) => setKpi({ ...kpi, criterion: e.target.value })}>
-                {p.criteria.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.outcomeName}: {c.name}
-                  </option>
-                ))}
-              </select>
-            </FormField>
-            <FormField label="KPI, as committed in the bid" htmlFor="ppn026-title" span={2}>
-              <input id="ppn026-title" required maxLength={300} placeholder="For example: apprenticeship starts on the contract" className={inputCls} value={kpi.title} onChange={(e) => setKpi({ ...kpi, title: e.target.value })} />
-            </FormField>
-            <FormField label="Target" htmlFor="ppn026-target">
-              <input id="ppn026-target" type="number" min="0" step="any" className={inputCls} value={kpi.target} onChange={(e) => setKpi({ ...kpi, target: e.target.value })} />
-            </FormField>
-            <FormField label="Unit" htmlFor="ppn026-unit">
-              <input id="ppn026-unit" maxLength={50} placeholder="starts, hours, people" className={inputCls} value={kpi.unit} onChange={(e) => setKpi({ ...kpi, unit: e.target.value })} />
-            </FormField>
-            <div className="sm:col-span-2 flex items-end gap-2">
-              <button type="submit" disabled={!!busy} className="rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
-                {busy === "kpi" ? "Saving..." : "Add KPI"}
-              </button>
-              <button type="button" onClick={() => setAdding(false)} className="text-sm text-[#6B7280]">Cancel</button>
-            </div>
+            <FormSection title="Add a KPI" description="The measure you committed to in the bid, under one of the award criteria." cols={4}>
+              <FormField label="Award criterion" htmlFor="ppn026-criterion" span={2}>
+                <select id="ppn026-criterion" className={inputCls} value={kpi.criterion} onChange={(e) => setKpi({ ...kpi, criterion: e.target.value })}>
+                  {p.criteria.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.outcomeName}: {c.name}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+              <FormField label="KPI, as committed in the bid" htmlFor="ppn026-title" span={2}>
+                <input id="ppn026-title" required maxLength={300} placeholder="For example: apprenticeship starts on the contract" className={inputCls} value={kpi.title} onChange={(e) => setKpi({ ...kpi, title: e.target.value })} />
+              </FormField>
+              <FormField label="Target" htmlFor="ppn026-target" optional>
+                <input id="ppn026-target" type="number" min="0" step="any" className={inputCls} value={kpi.target} onChange={(e) => setKpi({ ...kpi, target: e.target.value })} />
+              </FormField>
+              <FormField label="Unit" htmlFor="ppn026-unit" optional>
+                <input id="ppn026-unit" maxLength={50} placeholder="starts, hours, people" className={inputCls} value={kpi.unit} onChange={(e) => setKpi({ ...kpi, unit: e.target.value })} />
+              </FormField>
+            </FormSection>
+            <FormActions>
+              <Button type="button" size="sm" variant="outline" onClick={() => setAdding(false)}>Cancel</Button>
+              <Button type="submit" size="sm" disabled={!!busy}>{busy === "kpi" ? "Saving..." : "Add KPI"}</Button>
+            </FormActions>
           </form>
         ) : (
           <div>

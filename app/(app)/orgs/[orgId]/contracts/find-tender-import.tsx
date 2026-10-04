@@ -26,7 +26,6 @@ type Preview = {
 };
 
 const field = "h-9 text-sm";
-const label = "text-xs text-[#374151] tracking-[-0.36px]";
 
 /** Contracts page: fill a contract from a Find a Tender notice, check it, then save. */
 export function FindTenderImport({ orgId }: { orgId: string }) {

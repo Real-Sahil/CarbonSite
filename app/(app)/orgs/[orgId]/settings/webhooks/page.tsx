@@ -8,7 +8,7 @@ import { Plus, Trash2, Copy, Check, Eye, ToggleLeft, ToggleRight, Zap } from "lu
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { FormField } from "@/components/forms/form-kit";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 const ALL_EVENTS = [
   "calculation_run.completed",
@@ -193,24 +193,22 @@ export default function WebhooksPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {/* Create form */}
-      <form
-        onSubmit={handleCreate}
-        className="rounded-[10px] border border-[#E5E7EB] bg-[#f9fafb] p-4 flex flex-col gap-4"
-      >
-        <p className="text-sm font-medium text-zinc-800">Add endpoint</p>
+      <form onSubmit={handleCreate} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+        <FormSection title="Add an endpoint" description="MetricOra sends a signed POST to this address when a subscribed event happens." cols={2}>
+          <FormField label="Endpoint URL" htmlFor="webhook-url" span={4} hint="Must be HTTPS">
+            <Input
+              id="webhook-url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://your-server.example.com/webhooks/metricora"
+              className="font-mono"
+              type="url"
+            />
+          </FormField>
+        </FormSection>
 
-        <FormField label="Endpoint URL (must be HTTPS)" htmlFor="f-endpoint-url-must-be-https">
-          <Input id="f-endpoint-url-must-be-https"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://your-server.example.com/webhooks/metricora"
-            className="h-8 text-sm font-mono"
-            type="url"
-          />
-        </FormField>
-
-        <div className="flex flex-col gap-1.5">
-          <p className="text-xs text-zinc-500">Events to subscribe to</p>
+        <fieldset className="space-y-2">
+          <legend className="text-sm font-semibold text-zinc-900">Events to subscribe to</legend>
           <div className="flex flex-wrap gap-2">
             {ALL_EVENTS.map((ev) => {
               const active = selectedEvents.includes(ev);
@@ -218,10 +216,11 @@ export default function WebhooksPage() {
                 <button
                   key={ev}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => toggleEvent(ev)}
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                     active
-                      ? "bg-blue-600 text-white border-blue-600"
+                      ? "bg-[#c2410c] text-white border-[#c2410c]"
                       : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400"
                   }`}
                 >
@@ -231,11 +230,10 @@ export default function WebhooksPage() {
               );
             })}
           </div>
-        </div>
+        </fieldset>
 
-        {createError && <p className="text-xs text-red-600">{createError}</p>}
-
-        <div>
+        <FormError>{createError}</FormError>
+        <FormActions>
           <Button
             type="submit"
             size="sm"
@@ -245,7 +243,7 @@ export default function WebhooksPage() {
             <Plus aria-hidden className="h-4 w-4" />
             {creating ? "Creating..." : "Add endpoint"}
           </Button>
-        </div>
+        </FormActions>
       </form>
 
       {/* Webhook list */}

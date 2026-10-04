@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { MAX_KPIS, caseStudyChecks, type Kpi } from "@/lib/case-studies";
 import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
-const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
 const areaClass = fieldClass;
 const selectClass = fieldClass;
 

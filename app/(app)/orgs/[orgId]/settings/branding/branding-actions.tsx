@@ -45,7 +45,6 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
   const [emailFromName, setEmailFromName] = useState(current?.emailFromName ?? "");
   const [fontFamily, setFontFamily] = useState(current?.fontFamily ?? "Inter");
   const [customDomain, setCustomDomain] = useState(current?.customDomain ?? "");
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const [logoKey, setLogoKey] = useState(current?.reportHeaderLogoKey ?? "");
   const [logoPreview, setLogoPreview] = useState(logoPreviewUrl ?? "");

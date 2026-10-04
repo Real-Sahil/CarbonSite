@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Loader2, CheckCircle2, AlertCircle, Download } from "lucide-react";
+import { Upload, Loader2, CheckCircle2, Download } from "lucide-react";
 import { ColumnMapper } from "@/components/import/column-mapper";
 import type { CanonicalField, MappedColumn } from "@/lib/imports/column-mapper";
 import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";

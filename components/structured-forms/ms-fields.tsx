@@ -7,10 +7,11 @@
 
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { fieldClass } from "@/components/forms/form-kit";
 
-export const inputCls =
-  "w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300 disabled:opacity-50 disabled:bg-gray-50";
-export const labelCls = "block text-xs font-medium text-gray-600 mb-1";
+// Same field and label look as the form kit (components/forms/form-kit.tsx).
+export const inputCls = fieldClass;
+export const labelCls = "block text-sm font-medium text-zinc-800 mb-1.5";
 export const textareaCls = `${inputCls} resize-none`;
 
 export function FieldRow({ label, htmlFor, hint, children }: { label: string; htmlFor?: string; hint?: string; children: ReactNode }) {
@@ -20,7 +21,7 @@ export function FieldRow({ label, htmlFor, hint, children }: { label: string; ht
         {label}
       </label>
       {children}
-      {hint ? <p className="mt-1 text-xs text-gray-500">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-xs text-zinc-500">{hint}</p> : null}
     </div>
   );
 }
