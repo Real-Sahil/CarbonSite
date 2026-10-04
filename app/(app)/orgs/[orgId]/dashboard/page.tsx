@@ -66,6 +66,9 @@ import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
 import { countryOf } from "@/lib/i18n/countries";
+import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
+import { activeFilters } from "@/lib/saved-views";
+import { mayShare, viewRoles } from "@/lib/saved-views/roles";
 import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from "@/lib/dashboard/page-data";
 
 interface DashboardPageProps {
@@ -1102,6 +1105,19 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <div className="mb-6 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 flex items-center gap-3">
           <Layers className="h-4 w-4 text-zinc-500 shrink-0" />
           <span className="text-sm text-zinc-600">You have read-only access to this dashboard. Contact an admin to request edit permissions.</span>
+        </div>
+      )}
+
+      {/* Saved views: personal and shared sets of the filters below */}
+      {viewRoles().includes(role) && (
+        <div className="mb-3 flex items-center gap-2">
+          <SavedViewsMenu
+            orgId={orgId}
+            surface="dashboard"
+            filters={activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry })}
+            canShare={mayShare(role)}
+            isAdmin={role === "admin"}
+          />
         </div>
       )}
 

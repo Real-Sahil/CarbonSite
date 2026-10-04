@@ -1,11 +1,13 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import {
+  activeFilters,
   checkFilters,
   createViewBody,
   filterRefs,
   isUniqueViolation,
   mayChangeView,
+  sameFilters,
   updateViewBody,
   viewHref,
 } from "..";
@@ -78,5 +80,17 @@ describe("isUniqueViolation", () => {
     expect(isUniqueViolation({ code: "P2002" })).toBe(true);
     expect(isUniqueViolation({ code: "P2025" })).toBe(false);
     expect(isUniqueViolation(null)).toBe(false);
+  });
+});
+
+describe("activeFilters and sameFilters", () => {
+  it("keeps only the page's own keys that have a value", () => {
+    expect(activeFilters("dashboard", { facilityId: undefined, contractId: "c1", country: "", stray: "x" } as Record<string, string | undefined>)).toEqual({ contractId: "c1" });
+  });
+  it("compares filter sets whatever the key order", () => {
+    expect(sameFilters({ a: "1", b: "2" }, { b: "2", a: "1" })).toBe(true);
+    expect(sameFilters({ a: "1" }, { a: "2" })).toBe(false);
+    expect(sameFilters({ a: "1" }, { a: "1", b: "2" })).toBe(false);
+    expect(sameFilters({}, {})).toBe(true);
   });
 });

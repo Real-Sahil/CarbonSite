@@ -77,3 +77,19 @@ export function mayChangeView(view: { ownerUserId: string; shared: boolean }, us
 export function isUniqueViolation(err: unknown): boolean {
   return typeof err === "object" && err !== null && (err as { code?: string }).code === "P2002";
 }
+
+/** The filters a page currently has set: only the keys it reads, with a value. */
+export function activeFilters(surfaceKey: Surface, values: Record<string, string | undefined>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const key of SURFACES[surfaceKey].filters) {
+    const v = values[key];
+    if (v) out[key] = v;
+  }
+  return out;
+}
+
+/** True when two filter sets say the same thing, whatever the key order. */
+export function sameFilters(a: Record<string, string>, b: Record<string, string>): boolean {
+  const ak = Object.keys(a);
+  return ak.length === Object.keys(b).length && ak.every((k) => a[k] === b[k]);
+}
