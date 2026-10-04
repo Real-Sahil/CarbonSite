@@ -42,4 +42,19 @@ describe("DashboardFilterBar", () => {
     render(<DashboardFilterBar filters={{ facilityId: "f1" }} />);
     expect(screen.queryByText(/organisation-wide/)).toBeNull();
   });
+
+  it("offers projects and the social value switch, and writes both to the URL", () => {
+    render(<DashboardFilterBar filters={{}} projects={[{ id: "pr1", label: "Bridge (Network Rail)" }]} />);
+    fireEvent.change(screen.getByLabelText("Project"), { target: { value: "pr1" } });
+    expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard?projectId=pr1");
+    fireEvent.click(screen.getByLabelText("Contracts with social value commitments"));
+    expect(nav.replace).toHaveBeenLastCalledWith("/orgs/o/dashboard?sv=1");
+  });
+
+  it("hides the project list when there are no projects and says social value is shown beside", () => {
+    render(<DashboardFilterBar filters={{ sv: "1" }} socialValue={{ contracts: 2, commitments: 3, gbpValue: "£12,000", otherCurrency: 0 }} />);
+    expect(screen.queryByLabelText("Project")).toBeNull();
+    expect(screen.getByText(/Social value on 2 contracts: 3 commitments, £12,000 committed \(GBP\)/)).toBeTruthy();
+    expect(screen.getByText(/never added to them/)).toBeTruthy();
+  });
 });

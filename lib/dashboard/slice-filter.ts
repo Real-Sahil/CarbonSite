@@ -5,17 +5,21 @@
 
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
+import { CATEGORY_BREAKDOWN_DIMENSIONS, PRIMARY_SCOPE2_METHOD } from "@/lib/calculation/aggregate-filters";
+import { buildFlows } from "@/lib/charts/sankey";
 import { supplierKey } from "@/lib/social-value/local-spend";
 import { MONTH_PATTERN } from "@/lib/saved-views";
 
-export type SliceFilter = { supplierKey?: string; from?: Date; to?: Date; scope?: 1 | 2 | 3 };
+export type SliceFilter = { supplierKey?: string; from?: Date; to?: Date; scope?: 1 | 2 | 3; projectId?: string; socialValue?: boolean };
+
+/** Ids the filters resolve to inside the organisation: a project's sites, and the contracts that carry social value commitments. */
+export type SliceRefs = { siteIds?: string[]; contractIds?: string[] };
 
 const monthStart = (v: string | undefined) =>
   v && MONTH_PATTERN.test(v) ? new Date(Date.UTC(Number(v.slice(0, 4)), Number(v.slice(5, 7)) - 1, 1)) : undefined;
 
 /** The slice filters a request names; malformed values are dropped, none set gives null. */
-export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: string; scope?: string }): SliceFilter | null {
+export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string }): SliceFilter | null {
   const f: SliceFilter = {};
   const supplier = raw.supplier?.trim().slice(0, 64);
   const key = supplier ? supplierKey(supplier) : "";
@@ -25,7 +29,32 @@ export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: s
   const to = monthStart(raw.to);
   if (to) f.to = to;
   if (raw.scope === "1" || raw.scope === "2" || raw.scope === "3") f.scope = Number(raw.scope) as 1 | 2 | 3;
+  if (raw.projectId && /^[A-Za-z0-9_-]{1,64}$/.test(raw.projectId)) f.projectId = raw.projectId;
+  if (raw.sv === "1") f.socialValue = true;
   return Object.keys(f).length ? f : null;
+}
+
+/**
+ * Resolves the project and social value filters to site and contract ids, always
+ * inside the organisation: a project of another organisation has no sites here,
+ * so it matches nothing. Social value is a record-set filter (contracts with a
+ * commitment that is not cancelled); its figures are never added to emissions.
+ */
+export async function resolveSliceRefs(orgId: string, f: SliceFilter): Promise<SliceRefs> {
+  const refs: SliceRefs = {};
+  if (f.projectId) {
+    const sites = await prisma.site.findMany({ where: { organizationId: orgId, projectId: f.projectId }, select: { id: true } });
+    refs.siteIds = sites.map((x) => x.id);
+  }
+  if (f.socialValue) {
+    const rows = await prisma.svCommitment.findMany({
+      where: { organizationId: orgId, contractId: { not: null }, status: { not: "cancelled" } },
+      select: { contractId: true },
+      distinct: ["contractId"],
+    });
+    refs.contractIds = rows.map((r) => r.contractId!);
+  }
+  return refs;
 }
 
 /** Live slices of one period, inside the organisation, under the chosen filters. */
@@ -34,6 +63,7 @@ export function sliceWhere(
   reportingPeriodId: string,
   f: SliceFilter,
   facilityIds: string[] | null,
+  refs: SliceRefs = {},
 ): Prisma.DashboardSliceWhereInput {
   return {
     organizationId,
@@ -42,6 +72,8 @@ export function sliceWhere(
     ...PRIMARY_SCOPE2_METHOD,
     ...(facilityIds ? { facilityId: { in: facilityIds } } : {}),
     ...(f.scope ? { scope: f.scope } : {}),
+    ...(refs.siteIds ? { siteId: { in: refs.siteIds } } : {}),
+    ...(refs.contractIds ? { contractId: { in: refs.contractIds } } : {}),
     ...(f.supplierKey ? { supplierKey: { contains: f.supplierKey } } : {}),
     // A record with no date has no month, so a date filter leaves it out.
     ...(f.from || f.to ? { month: { ...(f.from ? { gte: f.from } : {}), ...(f.to ? { lte: f.to } : {}) } } : {}),
@@ -69,20 +101,26 @@ export function summariseSlices(rows: SliceRow[]) {
   return { scopes, categories, facilities };
 }
 
-/** The dashboard's aggregate-shaped data for a sliced view. */
+/**
+ * The dashboard's slice-based data: aggregate-shaped scope, category and
+ * facility totals for a sliced view, plus the flows behind the Sankey. With no
+ * filter set it reads every live slice of the period, so the flows always match
+ * the headline.
+ */
 export async function loadSliceView(orgId: string, periodId: string, f: SliceFilter, facilityIds: string[] | null) {
+  const refs = await resolveSliceRefs(orgId, f);
   const rows = await prisma.dashboardSlice.findMany({
-    where: sliceWhere(orgId, periodId, f, facilityIds),
+    where: sliceWhere(orgId, periodId, f, facilityIds, refs),
     select: { scope: true, emissionCategoryId: true, facilityId: true, totalCo2e: true, recordCount: true },
   });
   const { scopes, categories, facilities } = summariseSlices(rows);
-  const topCategories = [...categories].sort((a, b) => b[1].totalCo2e - a[1].totalCo2e).slice(0, 5);
   const [categoryNames, facilityNames] = await Promise.all([
-    prisma.emissionCategory.findMany({ where: { id: { in: topCategories.map(([id]) => id) } }, select: { id: true, name: true, scope: true } }),
+    prisma.emissionCategory.findMany({ where: { id: { in: [...categories.keys()] } }, select: { id: true, name: true, scope: true } }),
     prisma.facility.findMany({ where: { organizationId: orgId, id: { in: [...facilities.keys()] } }, select: { id: true, name: true } }),
   ]);
   const catName = new Map(categoryNames.map((c) => [c.id, c]));
   const facName = new Map(facilityNames.map((x) => [x.id, x.name]));
+  const topCategories = [...categories].sort((a, b) => b[1].totalCo2e - a[1].totalCo2e).slice(0, 5);
   return {
     scopeAggregates: [...scopes].sort((a, b) => a[0] - b[0]).map(([scope, v]) => ({ scope, _sum: { totalCo2e: v.totalCo2e, recordCount: v.recordCount } })),
     topCategoryAggregates: topCategories.map(([id, v]) => ({
@@ -93,5 +131,46 @@ export async function loadSliceView(orgId: string, periodId: string, f: SliceFil
       id, facilityId: id, totalCo2e: v.totalCo2e, recordCount: v.recordCount,
       facility: facName.has(id) ? { id, name: facName.get(id)! } : null,
     })),
+    flows: buildFlows(rows, {
+      category: (id) => catName.get(id)?.name ?? "Uncategorised",
+      facility: (id) => facName.get(id) ?? "Unknown site",
+    }),
+  };
+}
+
+/** Category totals (kg) of two live periods, deduplicated across Scope 2 methods, for the change waterfall. */
+export async function loadPeriodCategoryTotals(orgId: string, currentId: string, previousId: string) {
+  const rows = await prisma.dashboardAggregate.findMany({
+    where: {
+      organizationId: orgId,
+      snapshotId: null,
+      reportingPeriodId: { in: [currentId, previousId] },
+      ...CATEGORY_BREAKDOWN_DIMENSIONS,
+    },
+    select: { reportingPeriodId: true, emissionCategoryId: true, totalCo2e: true, emissionCategory: { select: { name: true } } },
+  });
+  const pick = (periodId: string) =>
+    rows
+      .filter((r) => r.reportingPeriodId === periodId && r.emissionCategoryId)
+      .map((r) => ({ id: r.emissionCategoryId!, label: r.emissionCategory?.name ?? "Uncategorised", kg: Number(r.totalCo2e) }));
+  return { current: pick(currentId), previous: pick(previousId) };
+}
+
+/**
+ * Social value on the contracts a social value filter covers, shown beside the
+ * emissions and never added to them. Monetised values are summed in GBP only;
+ * commitments in another currency are counted but not summed.
+ */
+export async function socialValueBeside(orgId: string, contractIds: string[]) {
+  const rows = await prisma.svCommitment.findMany({
+    where: { organizationId: orgId, contractId: { in: contractIds }, status: { not: "cancelled" } },
+    select: { monetisedValue: true, currency: true },
+  });
+  const gbp = rows.filter((r) => r.currency === "GBP" && r.monetisedValue != null);
+  return {
+    contracts: contractIds.length,
+    commitments: rows.length,
+    gbpValue: gbp.reduce((sum, r) => sum + Number(r.monetisedValue), 0),
+    otherCurrency: rows.filter((r) => r.currency !== "GBP" && r.monetisedValue != null).length,
   };
 }

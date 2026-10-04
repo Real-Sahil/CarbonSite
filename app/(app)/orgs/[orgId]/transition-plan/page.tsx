@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { loadTransitionPlan } from "@/lib/transition-plan/load";
 import { ACA_RATE_1_5C } from "@/lib/transition-plan";
-import { PathwayChart, PlanForm, ApproveForm } from "./plan-client";
+import { PlanForm, ApproveForm } from "./plan-client";
+import { PathwayChartKit } from "@/components/charts/kit/pathway-chart";
 
 const t = (v: number) => v.toLocaleString("en-GB", { maximumFractionDigits: 0 });
 const TONE = {
@@ -71,7 +72,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
         </div>
         {base && points.length > 1 ? (
           <div className="px-2 py-4">
-            <PathwayChart points={points} />
+            <PathwayChartKit points={points} />
           </div>
         ) : (
           <p className="px-5 py-6 text-sm text-[#374151]">

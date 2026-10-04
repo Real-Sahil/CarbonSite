@@ -13,7 +13,17 @@ const FIELD =
  * state: `filters` is every filter the page has set (this bar's and the entity,
  * country, contract and facility ones), so changing one keeps the rest.
  */
-export function DashboardFilterBar({ filters }: { filters: Record<string, string> }) {
+export type SocialValueBeside = { contracts: number; commitments: number; gbpValue: string; otherCurrency: number };
+
+export function DashboardFilterBar({
+  filters,
+  projects = [],
+  socialValue = null,
+}: {
+  filters: Record<string, string>;
+  projects?: { id: string; label: string }[];
+  socialValue?: SocialValueBeside | null;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
@@ -41,7 +51,8 @@ export function DashboardFilterBar({ filters }: { filters: Record<string, string
     </div>
   );
 
-  const sliced = ["supplier", "from", "to", "scope"].some((k) => filters[k]);
+  const SLICE_KEYS = ["supplier", "from", "to", "scope", "projectId", "sv"];
+  const sliced = SLICE_KEYS.some((k) => filters[k]);
 
   return (
     <div className="mb-4 rounded-[14px] border border-[#E5E7EB] bg-white p-4" aria-busy={pending}>
@@ -58,7 +69,35 @@ export function DashboardFilterBar({ filters }: { filters: Record<string, string
             <option value="3">Scope 3</option>
           </select>
         </div>
+        {projects.length > 0 && (
+          <div className="space-y-1">
+            <Label htmlFor="dashboard-filter-projectId" className="text-xs text-[#6B7280]">Project</Label>
+            <select id="dashboard-filter-projectId" className={FIELD} value={filters.projectId ?? ""} onChange={(e) => set("projectId", e.target.value)}>
+              <option value="">All projects</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+        <div className="flex items-end pb-2">
+          <label className="flex items-center gap-2 text-sm text-[#111827]">
+            <input
+              type="checkbox"
+              checked={filters.sv === "1"}
+              onChange={(e) => set("sv", e.target.checked ? "1" : "")}
+            />
+            Contracts with social value commitments
+          </label>
+        </div>
       </div>
+      {socialValue && (
+        <p className="mt-3 text-xs text-[#374151]">
+          Social value on {socialValue.contracts} {socialValue.contracts === 1 ? "contract" : "contracts"}: {socialValue.commitments} {socialValue.commitments === 1 ? "commitment" : "commitments"}
+          {socialValue.gbpValue ? `, ${socialValue.gbpValue} committed (GBP)` : ""}
+          {socialValue.otherCurrency > 0 ? `; ${socialValue.otherCurrency} in another currency not summed` : ""}. Shown beside the emissions, never added to them.
+        </p>
+      )}
       {sliced && (
         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#6B7280]">
           <span>
@@ -70,7 +109,7 @@ export function DashboardFilterBar({ filters }: { filters: Record<string, string
             size="sm"
             onClick={() => {
               const next = new URLSearchParams(filters);
-              for (const k of ["supplier", "from", "to", "scope"]) next.delete(k);
+              for (const k of SLICE_KEYS) next.delete(k);
               const q = next.toString();
               startTransition(() => router.replace(q ? `${pathname}?${q}` : pathname));
             }}

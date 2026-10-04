@@ -157,4 +157,11 @@ describe("dashboard slice filters", () => {
     expect(checkFilters("dashboard", { from: "March" })).toHaveProperty("error");
     expect(checkFilters("dashboard", { scope: "4" })).toHaveProperty("error");
   });
+
+  it("accepts a project and the social value switch, and checks the project id against the organisation", async () => {
+    const { checkFilters, filterRefs } = await import("../index");
+    expect(checkFilters("dashboard", { projectId: "pr1", sv: "1" })).toEqual({ filters: { projectId: "pr1", sv: "1" } });
+    expect(checkFilters("dashboard", { sv: "0" })).toHaveProperty("error");
+    expect(filterRefs({ projectId: "pr1" })).toMatchObject({ projectId: "pr1" });
+  });
 });
