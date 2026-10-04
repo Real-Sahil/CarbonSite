@@ -49,7 +49,8 @@ export function AddressPicker({
         if (mine !== seq.current) return;
         if (!res.ok) {
           setItems([]);
-          setNote(res.status === 503 ? "Address search is not available; type the address." : null);
+          const reason = res.status === 503 ? ((await res.json().catch(() => null))?.details?.reason as string | undefined) : undefined;
+          setNote(res.status === 503 ? `Address search is not available${reason ? ` (${reason})` : ""}; type the address.` : null);
           return;
         }
         setNote(null);

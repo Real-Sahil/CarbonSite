@@ -52,7 +52,12 @@ export function toSuggestion(r: Raw): AddressSuggestion | null {
   };
 }
 
-export class GeocoderUnavailable extends Error {}
+export class GeocoderUnavailable extends Error {
+  /** Why, without the key: "no_key", "unreachable" or "status_<code>" (401/403 = key refused, 429 = allowance used). */
+  constructor(message: string, readonly reason: string = "unknown") {
+    super(message);
+  }
+}
 
 /** Up to five suggestions for the typed text. Throws GeocoderUnavailable with no key or when the service fails. */
 export async function suggestAddresses(
@@ -60,16 +65,16 @@ export async function suggestAddresses(
   opts: { country?: string | null; apiKey?: string; fetchImpl?: typeof fetch } = {},
 ): Promise<AddressSuggestion[]> {
   const key = opts.apiKey ?? process.env.GEOAPIFY_API_KEY;
-  if (!key) throw new GeocoderUnavailable("No address search key is configured.");
+  if (!key) throw new GeocoderUnavailable("No address search key is configured.", "no_key");
   const q = new URLSearchParams({ text: text.trim(), limit: "5", format: "json", lang: "en", apiKey: key });
   if (opts.country && /^[A-Za-z]{2}$/.test(opts.country)) q.set("filter", `countrycode:${opts.country.toLowerCase()}`);
   let res: Response;
   try {
     res = await (opts.fetchImpl ?? fetch)(`${ENDPOINT}?${q}`, { signal: AbortSignal.timeout(5000) });
   } catch {
-    throw new GeocoderUnavailable("Address search did not answer.");
+    throw new GeocoderUnavailable("Address search did not answer.", "unreachable");
   }
-  if (!res.ok) throw new GeocoderUnavailable(`Address search answered ${res.status}.`);
+  if (!res.ok) throw new GeocoderUnavailable(`Address search answered ${res.status}.`, `status_${res.status}`);
   const json = (await res.json().catch(() => null)) as { results?: Raw[] } | null;
   return (json?.results ?? []).map(toSuggestion).filter((s): s is AddressSuggestion => s !== null);
 }

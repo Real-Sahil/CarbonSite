@@ -27,7 +27,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
     return NextResponse.json({ suggestions });
   } catch (err) {
     if (err instanceof GeocoderUnavailable) {
-      return apiError("GEOCODER_UNAVAILABLE", "Address search is not available. Type the address instead.", 503);
+      console.warn(`[geocode] unavailable: ${err.reason}`);
+      return apiError("GEOCODER_UNAVAILABLE", "Address search is not available. Type the address instead.", 503, { reason: err.reason });
     }
     return handleRouteError(err);
   }
