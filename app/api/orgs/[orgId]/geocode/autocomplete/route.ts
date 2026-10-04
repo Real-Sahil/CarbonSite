@@ -7,6 +7,8 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { GeocoderUnavailable, suggestAddresses } from "@/lib/geo/address";
+import { countryIso2 } from "@/lib/calculation/geography";
+import { prisma } from "@/lib/db";
 
 const querySchema = z.object({
   q: z.string().trim().min(3).max(200),
@@ -23,7 +25,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ orgI
     const limited = await rateLimitRequest(req, { key: rateLimitKey(orgId, "address-search", session.user.id), limit: 60, windowMs: 60_000 });
     if (limited) return limited;
     const { q, country } = querySchema.parse(Object.fromEntries(req.nextUrl.searchParams));
-    const suggestions = await suggestAddresses(q, { country });
+    // No country chosen yet: rank the organisation's home country first, so a UK site does not start with US streets.
+    const hq = country ? null : await prisma.organization.findUnique({ where: { id: orgId }, select: { hqCountry: true } });
+    const suggestions = await suggestAddresses(q, { country, bias: countryIso2(hq?.hqCountry) });
     return NextResponse.json({ suggestions });
   } catch (err) {
     if (err instanceof GeocoderUnavailable) {

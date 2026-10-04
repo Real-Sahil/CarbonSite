@@ -18,6 +18,9 @@ vi.mock("@/lib/auth/session", () => ({
   AuthError: class AuthError extends Error {},
 }));
 
+const db = vi.hoisted(() => ({ findUnique: vi.fn() }));
+vi.mock("@/lib/db", () => ({ prisma: { organization: { findUnique: db.findUnique } } }));
+
 import { GET } from "@/app/api/orgs/[orgId]/geocode/autocomplete/route";
 import { GeocoderUnavailable } from "@/lib/geo/address";
 
@@ -26,10 +29,17 @@ const req = (q: string) => new NextRequest(`http://x/api?${q}`);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  db.findUnique.mockResolvedValue({ hqCountry: "GB" });
   auth.requireOrgMember.mockResolvedValue({ session: { user: { id: "u1" } }, membership: { role: "editor" } });
 });
 
 describe("address search route", () => {
+  it("ranks the organisation's home country first when no country is chosen", async () => {
+    geo.suggestAddresses.mockResolvedValue([]);
+    await GET(req("q=1%20Phoenix%20Street"), ctx);
+    expect(geo.suggestAddresses).toHaveBeenCalledWith("1 Phoenix Street", { country: undefined, bias: "GB" });
+    expect(db.findUnique).toHaveBeenCalledWith({ where: { id: "org-a" }, select: { hqCountry: true } });
+  });
   it("checks membership of the organisation in the URL with the editor roles", async () => {
     geo.suggestAddresses.mockResolvedValue([]);
     await GET(req("q=Mussafah"), ctx);
@@ -39,7 +49,7 @@ describe("address search route", () => {
     geo.suggestAddresses.mockResolvedValue([{ label: "Mussafah" }]);
     const res = await GET(req("q=Mussafah%20Industrial&country=AE"), ctx);
     expect(res.status).toBe(200);
-    expect(geo.suggestAddresses).toHaveBeenCalledWith("Mussafah Industrial", { country: "AE" });
+    expect(geo.suggestAddresses).toHaveBeenCalledWith("Mussafah Industrial", { country: "AE", bias: null });
     expect((await res.json()).suggestions).toHaveLength(1);
   });
   it("refuses text under three characters and a country that is not two letters, before any call", async () => {

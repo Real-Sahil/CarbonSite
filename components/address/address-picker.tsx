@@ -42,10 +42,11 @@ export function AddressPicker({
       return;
     }
     const mine = ++seq.current;
+    const ctl = new AbortController();
     const timer = setTimeout(async () => {
       try {
         const qs = new URLSearchParams({ q: text, ...(country ? { country } : {}) });
-        const res = await fetch(`/api/orgs/${orgId}/geocode/autocomplete?${qs}`);
+        const res = await fetch(`/api/orgs/${orgId}/geocode/autocomplete?${qs}`, { signal: ctl.signal });
         if (mine !== seq.current) return;
         if (!res.ok) {
           setItems([]);
@@ -59,8 +60,8 @@ export function AddressPicker({
       } catch {
         if (mine === seq.current) setItems([]);
       }
-    }, 300);
-    return () => clearTimeout(timer);
+    }, 250);
+    return () => { clearTimeout(timer); ctl.abort(); };
   }, [value, country, orgId]);
 
   return (
@@ -89,8 +90,9 @@ export function AddressPicker({
               className="cursor-pointer px-3 py-2 hover:bg-slate-100"
               onMouseDown={(e) => {
                 e.preventDefault();
-                picked.current = s.label;
-                onChange(s.label);
+                const line = s.addressLine || s.label;
+                picked.current = line;
+                onChange(line);
                 onSelect(s);
                 setItems([]);
                 setOpen(false);

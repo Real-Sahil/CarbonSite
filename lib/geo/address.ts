@@ -62,12 +62,13 @@ export class GeocoderUnavailable extends Error {
 /** Up to five suggestions for the typed text. Throws GeocoderUnavailable with no key or when the service fails. */
 export async function suggestAddresses(
   text: string,
-  opts: { country?: string | null; apiKey?: string; fetchImpl?: typeof fetch } = {},
+  opts: { country?: string | null; /** Preferred country when none is fixed: ranks its addresses first without hiding others. */ bias?: string | null; apiKey?: string; fetchImpl?: typeof fetch } = {},
 ): Promise<AddressSuggestion[]> {
   const key = opts.apiKey ?? process.env.GEOAPIFY_API_KEY;
   if (!key) throw new GeocoderUnavailable("No address search key is configured.", "no_key");
   const q = new URLSearchParams({ text: text.trim(), limit: "5", format: "json", lang: "en", apiKey: key });
   if (opts.country && /^[A-Za-z]{2}$/.test(opts.country)) q.set("filter", `countrycode:${opts.country.toLowerCase()}`);
+  else if (opts.bias && /^[A-Za-z]{2}$/.test(opts.bias)) q.set("bias", `countrycode:${opts.bias.toLowerCase()}`);
   let res: Response;
   try {
     res = await (opts.fetchImpl ?? fetch)(`${ENDPOINT}?${q}`, { signal: AbortSignal.timeout(5000) });
