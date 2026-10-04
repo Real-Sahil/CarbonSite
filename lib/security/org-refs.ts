@@ -11,6 +11,7 @@ export type OrgRefs = {
   siteId?: string | null;
   facilityId?: string | null;
   businessUnitId?: string | null;
+  legalEntityId?: string | null;
   reportingPeriodId?: string | null;
   contractId?: string | null;
   permitId?: string | null;
@@ -24,6 +25,7 @@ const TABLES = {
   siteId: ["site", "Site"],
   facilityId: ["facility", "Facility"],
   businessUnitId: ["businessUnit", "Business unit"],
+  legalEntityId: ["legalEntity", "Legal entity"],
   reportingPeriodId: ["reportingPeriod", "Reporting period"],
   contractId: ["contract", "Contract"],
   permitId: ["environmentalPermit", "Permit"],

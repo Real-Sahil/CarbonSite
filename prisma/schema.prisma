@@ -28,6 +28,7 @@ model User {
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
   memberships                       OrganizationMembership[]
+  savedViews                        SavedView[]                     @relation("SavedViewOwner")
   createdRecords                    ActivityRecord[]                @relation("CreatedByUser")
   createdImports                    ImportBatch[]
   reviewTasks                       ReviewTask[]                    @relation("AssignedTo")
@@ -234,6 +235,7 @@ model Organization {
   snapshots                      PublishedSnapshot[]
   aggregates                     DashboardAggregate[]
   dashboardSlices                DashboardSlice[]
+  savedViews                     SavedView[]
   scenarioRuns                   ScenarioRun[]
   routeDistances                 RouteDistance[]
   reports                        Report[]
@@ -1924,6 +1926,30 @@ model DashboardSlice {
   @@index([organizationId, reportingPeriodId, snapshotId])
   @@index([organizationId, snapshotId, scope])
   @@map("dashboard_slices")
+}
+
+/// A named set of filters for one portal page, either private to its owner or
+/// shared with the organisation. It stores the request (which filters), never
+/// results, so opening a view always reads current data under the viewer's own
+/// role. Filter ids are checked against the organisation when saved
+/// (lib/saved-views); `surface` picks the page and its allowed filter keys.
+model SavedView {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  ownerUserId    String   @map("owner_user_id")
+  surface        String
+  name           String
+  filters        Json     @default("{}")
+  shared         Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  owner        User         @relation("SavedViewOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, ownerUserId, surface, name])
+  @@index([organizationId, surface, shared])
+  @@map("saved_views")
 }
 
 // ─── Targets & Initiatives ────────────────────────────────────────────────────
