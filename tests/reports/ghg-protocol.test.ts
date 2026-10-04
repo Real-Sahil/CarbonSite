@@ -124,3 +124,26 @@ describe("report locale", () => {
     withLocale(undefined, () => expect(loc()).toBe("en-GB"));
   });
 });
+
+describe("renderGhgProtocolHtml team summary", () => {
+  const narrative = { executive_summary: "Steady year.\nFuel dominated.", key_findings: ["Diesel is the largest source."], recommendations: "Attach every bill.", source: "team" as const };
+
+  it("is exactly as before when no summary is saved", () => {
+    const html = renderGhgProtocolHtml(baseData);
+    expect(html).not.toContain("Written by the reporting team");
+    expect(html).not.toContain(">Summary<");
+  });
+
+  it("prints the team's summary, findings and recommendations with who wrote them, escaped", () => {
+    const html = renderGhgProtocolHtml({ ...baseData, narrative: { ...narrative, executive_summary: "Steady <i>year</i>." } });
+    expect(html).toContain("Written by the reporting team.");
+    expect(html).toContain("Diesel is the largest source.");
+    expect(html).toContain("Attach every bill.");
+    expect(html).toContain("Steady &lt;i&gt;year&lt;/i&gt;.");
+    expect(html).not.toContain("<i>year</i>");
+  });
+
+  it("says the draft began with AI when it did", () => {
+    expect(renderGhgProtocolHtml({ ...baseData, narrative: { ...narrative, aiDrafted: true } })).toContain("AI-assisted draft that the team reviewed and edited");
+  });
+});

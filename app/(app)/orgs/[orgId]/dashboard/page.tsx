@@ -66,7 +66,8 @@ import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType }
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
-import { loadPeriodCategoryTotals, loadSliceView, parseSliceFilter, resolveSliceRefs, socialValueBeside, type SliceRefs } from "@/lib/dashboard/slice-filter";
+import { loadPeriodCategoryTotals, loadSliceScopes, loadSliceTrend, loadSliceView, parseSliceFilter, resolveSliceRefs, socialValueBeside, type SliceRefs } from "@/lib/dashboard/slice-filter";
+import { aiAssistEnabled } from "@/lib/llm/org-consent";
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
 import { loadStoredLayout } from "@/lib/dashboard/layout-store";
 import { resolveLayout, widgetsForRole } from "@/lib/dashboard/widgets";
@@ -311,7 +312,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     latestSnapshot != null && Math.abs(liveTotalCo2e - snapshotTotalCo2e) > 0.5;
 
   // Split into two parallel batches to stay within TypeScript's Promise.all tuple inference limit
-  const [batchA, batchB, trendAggregates, liveFacilityAggregates, ocrDiscrepancySubmissions, priorScopeAggregates, environmentalAggregatesRaw, approvedCountsRows, pilotRecentGeneration, industryData] = await Promise.all([
+  const [batchA, batchB, liveTrendAggregates, liveFacilityAggregates, ocrDiscrepancySubmissions, livePriorScopeAggregates, environmentalAggregatesRaw, approvedCountsRows, pilotRecentGeneration, industryData] = await Promise.all([
     Promise.all([
       currentPeriod
         ? prisma.dashboardAggregate.groupBy({
@@ -678,6 +679,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     currentPeriod && priorPeriod && !scoped
       ? await loadPeriodCategoryTotals(orgId, currentPeriod.id, priorPeriod.id).catch(onLoadFailure(() => null))
       : null;
+  const waterfallAi = periodCategoryTotals ? await aiAssistEnabled(orgId).catch(() => false) : false;
   const changeSteps =
     periodCategoryTotals && (periodCategoryTotals.previous.length > 0 || periodCategoryTotals.current.length > 0)
       ? buildWaterfall(periodCategoryTotals.previous, periodCategoryTotals.current, { previous: priorPeriod!.label, current: currentPeriod!.label })
@@ -700,6 +702,16 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       }
     : null;
   const sliced = sliceFilter ? sliceView : null;
+  // Under a supplier, month, scope, project, social value, category or site filter the trend and the
+  // year-on-year panel follow it too (same slices, every period), so the change shown is like for like.
+  const [slicedTrend, slicedPrior] = sliceFilter
+    ? await Promise.all([
+        loadSliceTrend(orgId, sliceFilter, scopeFacilityIds).catch(onLoadFailure(() => null)),
+        priorPeriod ? loadSliceScopes(orgId, priorPeriod.id, sliceFilter, scopeFacilityIds).catch(onLoadFailure(() => null)) : Promise.resolve(null),
+      ])
+    : [null, null];
+  const trendAggregates = slicedTrend ?? liveTrendAggregates;
+  const priorScopeAggregates = slicedPrior ?? livePriorScopeAggregates;
   const crossChips = [
     selectedScope && ["1", "2", "3"].includes(selectedScope) ? { key: "scope", label: `Scope ${selectedScope}` } : null,
     selectedCategoryId ? { key: "categoryId", label: sliceView?.names.categories[selectedCategoryId] ?? "Category" } : null,
@@ -946,7 +958,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const latestTrendTotal = trendTotals.length > 0 ? trendTotals[trendTotals.length - 1] : 0;
   const previousTrendTotal = trendTotals.length > 1 ? trendTotals[trendTotals.length - 2] : null;
   const periodDeltaPct =
-    !scoped && previousTrendTotal && previousTrendTotal > 0
+    (!scoped || slicedTrend !== null) && previousTrendTotal && previousTrendTotal > 0
       ? ((latestTrendTotal - previousTrendTotal) / previousTrendTotal) * 100
       : null;
   const scopesWithActivity = scopeRows.filter((row) => Number(row.records) > 0).length;
@@ -1073,10 +1085,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               : "—"
           }
           detail={
-            scoped
-              ? "Clear the filters to compare"
-              : periodDeltaPct !== null
-                ? "vs previous reporting period"
+            periodDeltaPct !== null
+              ? sliceFilter
+                ? "vs previous reporting period, same filters"
+                : "vs previous reporting period"
+              : scoped
+                ? "Clear the filters to compare"
                 : "Calculate a second period to compare"
           }
           tone={periodDeltaPct === null ? "neutral" : periodDeltaPct <= 0 ? "good" : "bad"}
@@ -2287,7 +2301,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     </>
   );
   widgetNodes["flow"] = sliceView && sliceView.flows.totalKg > 0 ? <LinkedSankey flows={sliceView.flows} locale={L} period={currentPeriod?.label} /> : null;
-  widgetNodes["waterfall"] = changeSteps.length > 1 ? <LinkedWaterfall steps={changeSteps} locale={L} /> : null;
+  widgetNodes["waterfall"] = changeSteps.length > 1 && currentPeriod && priorPeriod ? <LinkedWaterfall steps={changeSteps} locale={L} explain={{ orgId, currentPeriodId: currentPeriod.id, previousPeriodId: priorPeriod.id, aiAvailable: waterfallAi }} /> : null;
   const widgetShown: Record<string, boolean> = {
     live: Boolean(liveDashboardEnabled),
     industry: Boolean(industryData),

@@ -65,14 +65,15 @@ export async function resolveSliceRefs(orgId: string, f: SliceFilter): Promise<S
 /** Live slices of one period, inside the organisation, under the chosen filters. */
 export function sliceWhere(
   organizationId: string,
-  reportingPeriodId: string,
+  reportingPeriodId: string | null,
   f: SliceFilter,
   facilityIds: string[] | null,
   refs: SliceRefs = {},
 ): Prisma.DashboardSliceWhereInput {
   return {
     organizationId,
-    reportingPeriodId,
+    // null reads every period (the trend).
+    ...(reportingPeriodId ? { reportingPeriodId } : {}),
     snapshotId: null,
     ...PRIMARY_SCOPE2_METHOD,
     // A chosen facility narrows inside any entity, country or contract scope, never beyond it.
@@ -188,4 +189,35 @@ export async function socialValueBeside(orgId: string, contractIds: string[]) {
     gbpValue: gbp.reduce((sum, r) => sum + Number(r.monetisedValue), 0),
     otherCurrency: rows.filter((r) => r.currency !== "GBP" && r.monetisedValue != null).length,
   };
+}
+
+/** Scope totals of one period under the filters, in the shape of the aggregate groupBy the dashboard already renders. */
+export async function loadSliceScopes(orgId: string, periodId: string, f: SliceFilter, facilityIds: string[] | null) {
+  const refs = await resolveSliceRefs(orgId, f);
+  const rows = await prisma.dashboardSlice.groupBy({
+    by: ["scope"],
+    where: sliceWhere(orgId, periodId, f, facilityIds, refs),
+    _sum: { totalCo2e: true, recordCount: true },
+    orderBy: { scope: "asc" },
+  });
+  return rows.map((r) => ({ scope: r.scope, _sum: { totalCo2e: r._sum.totalCo2e == null ? null : String(r._sum.totalCo2e), recordCount: r._sum.recordCount } }));
+}
+
+/** Scope totals of every period under the filters, in the shape of the live aggregate rows the trend chart reads. */
+export async function loadSliceTrend(orgId: string, f: SliceFilter, facilityIds: string[] | null) {
+  const refs = await resolveSliceRefs(orgId, f);
+  const rows = await prisma.dashboardSlice.groupBy({
+    by: ["reportingPeriodId", "scope"],
+    where: sliceWhere(orgId, null, f, facilityIds, refs),
+    _sum: { totalCo2e: true },
+  });
+  const periods = await prisma.reportingPeriod.findMany({
+    where: { organizationId: orgId, id: { in: [...new Set(rows.map((r) => r.reportingPeriodId))] } },
+    select: { id: true, label: true, startDate: true },
+  });
+  const byId = new Map(periods.map((p) => [p.id, p]));
+  return rows.flatMap((r) => {
+    const period = byId.get(r.reportingPeriodId);
+    return period ? [{ scope: r.scope, totalCo2e: r._sum.totalCo2e ?? 0, reportingPeriod: period }] : [];
+  });
 }

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { NO_NARRATIVE_TYPES } from "@/lib/reports/narrative-types";
 import { requireFeature, requireReportType } from "@/lib/billing/limits";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
@@ -197,6 +198,16 @@ export async function POST(req: NextRequest, { params }: Params) {
       ]);
       if (!disclosure) return apiError("NOT_FOUND", "Save a climate disclosure before generating its report.", 404);
       planVersion = `tcfd@${disclosure.updatedAt.toISOString()}:${lastScenario?.updatedAt.toISOString() ?? ""}:${scenarioCount}:${lastRisk?.updatedAt.toISOString() ?? ""}:${riskCount}:`;
+    }
+
+    // A team-written narrative changes without the snapshot changing. Only when one
+    // exists does it join the hash, so reports with none keep their hash and output.
+    if (!NO_NARRATIVE_TYPES.has(body.type)) {
+      const narrative = await prisma.reportNarrative.findFirst({
+        where: { organizationId: orgId, reportingPeriodId: snapshot.reportingPeriodId },
+        select: { updatedAt: true },
+      });
+      if (narrative) planVersion += `narrative@${narrative.updatedAt.toISOString()}:`;
     }
 
     // Idempotency — same snapshot + type + contract + options = same report

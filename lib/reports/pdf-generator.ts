@@ -2,6 +2,7 @@
 // straightforward reports, no headless Chromium required.
 // Output: Buffer containing a valid PDF/A-compatible document.
 
+import { narrativeLabel } from "./narrative-label";
 import PDFDocument from "pdfkit";
 import type PDFKit from "pdfkit";
 import { PDFDocument as PdfLib, PDFString, StandardFonts, rgb } from "pdf-lib";
@@ -317,7 +318,7 @@ export async function generateReportPdf(data: ReportData): Promise<Buffer> {
       fillColor(COLOR_MID);
       doc.fontSize(7.5);
       setFont("Helvetica-Oblique");
-      doc.text("Wording drafted with AI assistance from the figures in this report; every figure is taken from the report data.", MARGIN, doc.y, { width: BODY_W });
+      doc.text(narrativeLabel(data.narrative), MARGIN, doc.y, { width: BODY_W });
       moveDown(8);
 
       fillColor(COLOR_MID);

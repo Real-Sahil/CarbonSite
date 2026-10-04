@@ -72,3 +72,29 @@ describe("renderReportHtml", () => {
     expect(html).not.toContain("NaN");
   });
 });
+
+describe("report summary wording", () => {
+  const narrative = { executive_summary: "Emissions were steady.", key_findings: ["Fuel is the largest source."], recommendations: "Attach bills to every record." };
+
+  it("prints no summary section when there is no narrative, so reports are unchanged", () => {
+    const html = renderReportHtml(baseData);
+    expect(html).not.toContain("Executive Summary");
+    expect(html).not.toContain("Written by the reporting team");
+    expect(html).not.toContain("AI assistance");
+  });
+
+  it("says the team wrote it, or that it began as an AI draft the team edited", () => {
+    expect(renderReportHtml({ ...baseData, narrative: { ...narrative, source: "team" } })).toContain("Written by the reporting team.");
+    expect(renderReportHtml({ ...baseData, narrative: { ...narrative, source: "team", aiDrafted: true } })).toContain("starting from an AI-assisted draft that the team reviewed and edited");
+  });
+
+  it("labels generated wording as AI-assisted", () => {
+    expect(renderReportHtml({ ...baseData, narrative: { ...narrative, source: "ai" } })).toContain("Wording drafted with AI assistance");
+  });
+
+  it("escapes what the team wrote", () => {
+    const html = renderReportHtml({ ...baseData, narrative: { ...narrative, source: "team", executive_summary: "<script>alert(1)</script>" } });
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).toContain("&lt;script&gt;");
+  });
+});

@@ -30,6 +30,7 @@ model User {
   memberships                       OrganizationMembership[]
   savedViews                        SavedView[]                     @relation("SavedViewOwner")
   dashboardLayouts                  DashboardLayout[]               @relation("DashboardLayoutOwner")
+  reportNarratives                  ReportNarrative[]               @relation("ReportNarrativeAuthor")
   createdRecords                    ActivityRecord[]                @relation("CreatedByUser")
   createdImports                    ImportBatch[]
   reviewTasks                       ReviewTask[]                    @relation("AssignedTo")
@@ -238,6 +239,7 @@ model Organization {
   dashboardSlices                DashboardSlice[]
   savedViews                     SavedView[]
   dashboardLayouts               DashboardLayout[]
+  reportNarratives               ReportNarrative[]
   scenarioRuns                   ScenarioRun[]
   routeDistances                 RouteDistance[]
   reports                        Report[]
@@ -733,6 +735,7 @@ model ReportingPeriod {
   activityRecords               ActivityRecord[]
   calculationRuns               CalculationRun[]
   snapshots                     PublishedSnapshot[]
+  reportNarratives              ReportNarrative[]
   aggregates                    DashboardAggregate[]
   dashboardSlices               DashboardSlice[]
   reports                       Report[]
@@ -1974,6 +1977,31 @@ model DashboardLayout {
 
   @@unique([organizationId, surface, userKey])
   @@map("dashboard_layouts")
+}
+
+/// The organisation's own words for the summary page of its inventory reports,
+/// one per reporting period, written or edited by a person (optionally started
+/// from a grounded AI draft). When one exists the report uses it instead of
+/// generating wording; the report says who wrote it.
+model ReportNarrative {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  reportingPeriodId String   @map("reporting_period_id")
+  executiveSummary  String   @default("") @map("executive_summary")
+  keyFindings       Json     @default("[]") @map("key_findings")
+  recommendations   String   @default("")
+  /// True when the text began as an AI draft; a person has since reviewed and saved it.
+  aiDrafted         Boolean  @default(false) @map("ai_drafted")
+  updatedByUserId   String?  @map("updated_by_user_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod ReportingPeriod @relation(fields: [reportingPeriodId], references: [id], onDelete: Cascade)
+  updatedBy       User?           @relation("ReportNarrativeAuthor", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, reportingPeriodId])
+  @@map("report_narratives")
 }
 
 // ─── Targets & Initiatives ────────────────────────────────────────────────────

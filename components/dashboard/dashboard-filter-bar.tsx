@@ -101,7 +101,7 @@ export function DashboardFilterBar({
       {sliced && (
         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#6B7280]">
           <span>
-            Totals, scopes, categories and facilities follow these filters. The trend, energy, transport and comparison panels stay organisation-wide. Records with no date are left out when a month is set.
+            Totals, scopes, categories, facilities, the trend and the year-on-year comparison follow these filters. The energy, transport, water and industry panels stay organisation-wide. Records with no date are left out when a month is set.
           </span>
           <Button
             type="button"

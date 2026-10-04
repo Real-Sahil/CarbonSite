@@ -20,6 +20,7 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { label: "Calculations", path: "calculations", keywords: "runs factors", roles: CORE },
   { label: "Analytics", path: "analytics", keywords: "charts", roles: CORE },
   { label: "Trace a figure", path: "lineage", keywords: "lineage source evidence", roles: CORE },
+  { label: "Report summary", path: "reports/narrative", keywords: "narrative executive summary wording write", roles: ["admin", "editor", "reviewer", "sustainability_director", "sustainability_manager"] },
   { label: "Reports", path: "reports", keywords: "pdf publish snapshot", roles: CORE },
   { label: "Targets", path: "targets", keywords: "reduction initiatives", roles: EXTENDED },
   { label: "Pathway", path: "pathway", keywords: "net zero 1.5", roles: EXTENDED },

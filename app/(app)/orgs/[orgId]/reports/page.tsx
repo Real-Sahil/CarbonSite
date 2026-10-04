@@ -95,9 +95,11 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
   const initialBid = bidPrefill((await searchParams) ?? {});
 
   let isAdmin = false;
+  let mayWriteSummary = false;
   try {
     const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
     isAdmin = membership.role === "admin";
+    mayWriteSummary = (ROLE_GROUPS.reviewersAndEditors as string[]).includes(membership.role);
   } catch (err) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
@@ -185,6 +187,13 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
               <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
                 Generate PDF and CSV reports from published snapshots. Totals are guaranteed to match dashboard figures for the same snapshot.
               </p>
+              {mayWriteSummary ? (
+                <p className="mt-1 text-sm">
+                  <Link href={`/orgs/${orgId}/reports/narrative`} className="text-[#374151] underline underline-offset-2 hover:text-[#111827]">
+                    Write the summary page of your inventory reports
+                  </Link>
+                </p>
+              ) : null}
             </div>
           </div>
 

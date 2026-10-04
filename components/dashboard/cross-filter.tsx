@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SankeyChart, type FlowSelection } from "@/components/charts/kit/sankey-chart";
 import { WaterfallChart } from "@/components/charts/kit/waterfall-chart";
+import { ExplainChange } from "./explain-change";
 import type { Flows } from "@/lib/charts/sankey";
 import type { WaterfallStep } from "@/lib/charts/waterfall";
 
@@ -28,10 +29,23 @@ export function LinkedSankey({ flows, locale, period }: { flows: Flows; locale: 
   return <SankeyChart flows={flows} locale={locale} period={period} selected={selected} onSelect={(s: FlowSelection) => toggle(s.key, s.value)} />;
 }
 
-export function LinkedWaterfall({ steps, locale }: { steps: WaterfallStep[]; locale: string }) {
+export function LinkedWaterfall({
+  steps,
+  locale,
+  explain,
+}: {
+  steps: WaterfallStep[];
+  locale: string;
+  explain?: { orgId: string; currentPeriodId: string; previousPeriodId: string; aiAvailable: boolean };
+}) {
   const toggle = useToggleFilter();
   const params = useSearchParams();
-  return <WaterfallChart steps={steps} locale={locale} selected={params.get("categoryId") ?? undefined} onSelect={(id) => toggle("categoryId", id)} />;
+  return (
+    <div>
+      <WaterfallChart steps={steps} locale={locale} selected={params.get("categoryId") ?? undefined} onSelect={(id) => toggle("categoryId", id)} />
+      {explain ? <ExplainChange {...explain} /> : null}
+    </div>
+  );
 }
 
 /**
