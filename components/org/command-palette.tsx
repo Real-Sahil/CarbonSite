@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { PALETTE_ITEMS, paletteMatches } from "@/lib/nav/palette-items";
 import { SURFACE_KEYS } from "@/lib/saved-views";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 
 type SavedViewHit = { id: string; name: string; surface: string; href: string; shared: boolean };
 export const OPEN_PALETTE_EVENT = "metricora:open-palette";
@@ -113,6 +114,11 @@ export function CommandPalette({ orgId, role, canUseViews }: { orgId: string; ro
               </li>
             ))}
           </ul>
+          <div className="mt-3 flex items-center gap-3 border-t border-[#E5E7EB] pt-2 text-xs text-[#6B7280]" aria-hidden="true">
+            <span className="inline-flex items-center gap-1"><KbdGroup><Kbd>↑</Kbd><Kbd>↓</Kbd></KbdGroup> move</span>
+            <span className="inline-flex items-center gap-1"><Kbd>Enter</Kbd> open</span>
+            <span className="inline-flex items-center gap-1"><Kbd>Esc</Kbd> close</span>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { METHODOLOGY_CHANGELOG } from "@/lib/calculation/methodology";
+import { Timeline, TimelineContent, TimelineDate, TimelineHeader, TimelineIndicator, TimelineItem, TimelineSeparator, TimelineTitle } from "@/components/reui/timeline";
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, CheckList } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
@@ -104,21 +105,27 @@ export default function MethodologyPage() {
             title="Methodology history."
             lead="The version changes only when a rule would change a figure from the same records and library. Published snapshots keep the version they were calculated under."
           />
-          <div className="flex flex-col divide-y divide-mk-line border-y border-mk-line">
-            {METHODOLOGY_CHANGELOG.map((m) => (
-              <div key={m.name} className="py-6">
-                <p className="font-mono text-[14px] font-medium">{m.name}</p>
-                <p className="mt-1 text-[13px] text-mk-text-3">
-                  Effective {new Date(m.effective).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · GWP {m.gwp}
-                </p>
-                <ul className="mt-3 grid gap-2 text-[15px] leading-relaxed text-mk-text-2">
-                  {m.changes.map((c) => (
-                    <li key={c}>{c}</li>
-                  ))}
-                </ul>
-              </div>
+          <Timeline value={0} className="pt-1">
+            {METHODOLOGY_CHANGELOG.map((m, i) => (
+              <TimelineItem key={m.name} step={i + 1} className="ms-7 not-last:pb-10">
+                <TimelineHeader>
+                  <TimelineSeparator className="-left-[1.75rem] bg-mk-line" />
+                  <TimelineIndicator className="-left-[1.75rem] border-mk-accent bg-mk-surface" />
+                  <TimelineDate dateTime={String(m.effective).slice(0, 10)} className="text-[13px] text-mk-text-3">
+                    Effective {new Date(m.effective).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · GWP {m.gwp}
+                  </TimelineDate>
+                  <TimelineTitle className="font-mono text-[15px] font-medium text-mk-text">{m.name}</TimelineTitle>
+                </TimelineHeader>
+                <TimelineContent className="mt-3">
+                  <ul className="grid gap-2 text-[15px] leading-relaxed text-mk-text-2">
+                    {m.changes.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ul>
+                </TimelineContent>
+              </TimelineItem>
             ))}
-          </div>
+          </Timeline>
         </div>
       </Section>
 

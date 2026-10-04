@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ListChecks } from "lucide-react";
 import { CreateActivityButton, ReviewActivityButton } from "./activities-actions";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 
 interface Props {
   params: Promise<{ orgId: string }>;
@@ -295,19 +296,15 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
 
 function EmptyState({ canSubmit }: { canSubmit: boolean }) {
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
-        <ListChecks className="h-7 w-7 text-[#111827]" />
-      </div>
-      <div>
-        <p className="font-normal text-[#111827] tracking-[-0.42px]">No activities yet</p>
-        <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">
-          {canSubmit
-            ? "Log your first social value activity to record delivery against a commitment."
-            : "No activities have been logged for this organisation yet."}
-        </p>
-      </div>
-    </div>
+    <EmptyPanel
+      icon={ListChecks}
+      title="No activities yet"
+      description={
+        canSubmit
+          ? "Log your first social value activity to record delivery against a commitment."
+          : "No activities have been logged for this organisation yet."
+      }
+    />
   );
 }
 

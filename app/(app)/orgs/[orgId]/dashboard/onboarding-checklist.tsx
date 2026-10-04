@@ -21,7 +21,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
   const nextStep = steps.find((s) => !s.done);
 
   return (
-    <div className="mb-8 rounded-[14px] border border-[#FED7AA] bg-[#f0faf0] p-5">
+    <div className="mb-8 rounded-[14px] border border-zinc-200 bg-zinc-50 p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2
@@ -30,7 +30,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
           >
             Getting started
           </h2>
-          <p className="text-xs text-[#4a7c59] tracking-[-0.36px] mt-0.5">
+          <p className="text-xs text-zinc-600 tracking-[-0.36px] mt-0.5">
             {completedCount} of {steps.length} steps complete
             {nextStep && (
               <> — up next:{" "}
@@ -58,7 +58,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
             className={`flex items-start gap-2.5 rounded-[10px] px-3 py-2.5 text-left transition-colors ${
               step.done
                 ? "cursor-default opacity-60"
-                : "hover:bg-[#FFF7ED] bg-white border border-[#d0ecce]"
+                : "hover:bg-[#FFF7ED] bg-white border border-zinc-200"
             }`}
             tabIndex={step.done ? -1 : undefined}
             aria-disabled={step.done}
@@ -66,13 +66,13 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
             {step.done ? (
               <CheckCircle2 className="h-4 w-4 text-[#111827] mt-0.5 shrink-0" aria-hidden="true" />
             ) : (
-              <Circle className="h-4 w-4 text-[#9ab8a0] mt-0.5 shrink-0" aria-hidden="true" />
+              <Circle className="h-4 w-4 text-zinc-400 mt-0.5 shrink-0" aria-hidden="true" />
             )}
             <div>
               <p className={`text-xs font-medium tracking-[-0.36px] ${step.done ? "text-[#111827]" : "text-[#111827]"}`}>
                 {step.label}
               </p>
-              <p className="text-[11px] text-[#4a7c59] tracking-[-0.33px] mt-0.5 leading-snug">
+              <p className="text-[11px] text-zinc-600 tracking-[-0.33px] mt-0.5 leading-snug">
                 {step.description}
               </p>
             </div>

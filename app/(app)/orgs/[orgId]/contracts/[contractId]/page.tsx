@@ -31,6 +31,7 @@ import { CreateProjectForm, DeleteProjectButton } from "./project-actions";
 import { loadProjectBurndown } from "@/lib/project-carbon/burndown-load";
 import { BudgetStatusChip } from "@/components/project-carbon/budget-status-chip";
 import { RequestSubmissionForm, SubmissionRow } from "./subcontractor-actions";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 
 interface Props {
   params: Promise<{ orgId: string; contractId: string }>;
@@ -457,10 +458,5 @@ function AccessDenied() {
 }
 
 function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[42px] text-center">
-      <Building2 className="h-8 w-8 text-[#111827] opacity-40" />
-      <p className="text-sm text-[#374151] tracking-[-0.42px]">{message}</p>
-    </div>
-  );
+  return <EmptyPanel icon={Building2} title={message} />;
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatMoney, PRICE_TYPES, PRICE_USES, type PriceType, type PriceUse } from "@/lib/carbon-price";
 import { FormField, fieldClass, FormSection } from "@/components/forms/form-kit";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Row = {
   id: string;
@@ -138,7 +139,9 @@ export function CarbonPrices({
         )}
 
         {prices.length === 0 ? (
-          <p className="border-t border-slate-100 p-4 text-sm text-slate-500">No prices recorded yet.</p>
+          <div className="border-t border-slate-100">
+            <EmptyState title="No prices recorded yet" description="Add a shadow, internal or implicit price to value your emissions in decisions." />
+          </div>
         ) : (
           <div className="overflow-x-auto border-t border-slate-100">
             <table className="w-full min-w-[640px] text-sm">

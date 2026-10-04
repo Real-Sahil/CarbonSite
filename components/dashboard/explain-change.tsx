@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 
 type Result = { sentences: string[]; ai: { text: string; provider: string } | null; aiNote: string | null };
 
@@ -50,6 +51,7 @@ export function ExplainChange({
         {result && aiAvailable && !result.ai ? (
           <Button type="button" size="sm" variant="outline" onClick={() => run(true)} disabled={busy}>Add AI wording</Button>
         ) : null}
+        {busy ? <span role="status"><TextShimmer>Reading the figures</TextShimmer></span> : null}
       </div>
       {error ? <p role="alert" className="mt-2 text-red-700">{error}</p> : null}
       {result ? (

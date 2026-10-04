@@ -26,6 +26,7 @@ import { Target } from "lucide-react";
 import { DeleteInitiativeButton, DeleteTargetButton, InitiativeStartDate } from "./target-actions";
 import { TargetProgressSection, type TargetWithProgress } from "./target-progress";
 import { getOrgLocale } from "@/lib/i18n/org-basics";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 
 interface TargetsPageProps {
   params: Promise<{ orgId: string }>;
@@ -374,15 +375,5 @@ function AccessDenied() {
 }
 
 function EmptyState({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
-        <Target className="h-7 w-7 text-[#111827]" />
-      </div>
-      <div>
-        <p className="font-normal text-[#111827] tracking-[-0.42px]">{title}</p>
-        <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">{description}</p>
-      </div>
-    </div>
-  );
+  return <EmptyPanel icon={Target} title={title} description={description} />;
 }

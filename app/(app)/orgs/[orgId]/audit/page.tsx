@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 
 interface AuditPageProps {
   params: Promise<{ orgId: string }>;
@@ -341,17 +342,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
-        <Clock className="h-7 w-7 text-[#111827]" />
-      </div>
-      <div>
-        <p className="font-normal text-[#111827] tracking-[-0.42px]">No audit events match these filters</p>
-        <p className="mt-[7px] max-w-sm text-sm text-[#374151] tracking-[-0.42px]">
-          Clear filters or perform an operational action to create a new audit entry.
-        </p>
-      </div>
-    </div>
+    <EmptyPanel
+      icon={Clock}
+      title="No audit events match these filters"
+      description="Clear the filters or perform an operational action to create a new audit entry."
+    />
   );
 }
 

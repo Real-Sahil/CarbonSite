@@ -6,6 +6,7 @@ import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Button } from "@/components/ui/button";
 import { bulletsToDoc, docToBullets, docToParagraphs, paragraphsToDoc } from "@/lib/reports/narrative-text";
+import { TextShimmer } from "@/components/ui/text-shimmer";
 
 type Saved = { executiveSummary: string; keyFindings: string[]; recommendations: string; aiDrafted: boolean } | null;
 
@@ -137,6 +138,7 @@ export function NarrativeEditor({
           <Button type="button" onClick={save} disabled={busy}>Save narrative</Button>
           {aiAvailable ? <Button type="button" variant="outline" onClick={draft} disabled={busy}>Draft with AI</Button> : null}
           {saved ? <Button type="button" variant="ghost" onClick={remove} disabled={busy}>Remove my narrative</Button> : null}
+          {busy ? <span role="status" className="text-sm"><TextShimmer>Working on it</TextShimmer></span> : null}
         </div>
       ) : (
         <p className="text-sm text-[#6B7280]">Only editors can change this text.</p>

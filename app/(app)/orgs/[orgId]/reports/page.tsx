@@ -25,6 +25,7 @@ import { CreateReportForm } from "./report-form";
 import { hasFeature } from "@/lib/billing/limits";
 import { ReportDownloadActions } from "./report-download-actions";
 import { StatusPoller } from "@/components/ui/status-poller";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 
 interface ReportsPageProps {
   params: Promise<{ orgId: string }>;
@@ -430,21 +431,13 @@ function StatPill({
 }
 
 function EmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
 }: {
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
 }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-4">
-        <Icon className="h-6 w-6 text-[#111827]" />
-      </div>
-      <h3 className="text-sm font-semibold text-[#111827] mb-1">{title}</h3>
-      <p className="text-sm text-[#6B7280] max-w-sm">{description}</p>
-    </div>
-  );
+  return <EmptyPanel icon={icon} title={title} description={description} />;
 }

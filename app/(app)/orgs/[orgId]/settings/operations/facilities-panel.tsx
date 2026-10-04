@@ -2,12 +2,13 @@
 
 import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Plus, Trash2 } from "lucide-react";
+import { Building2, MapPin, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AddressPicker } from "@/components/address/address-picker";
 import { FormActions, FormDisclosure, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 import { plusCode, type AddressSuggestion } from "@/lib/geo/address";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export type WaterStressLevel = "low" | "medium_high" | "high" | "extremely_high" | "unknown";
 
@@ -97,7 +98,9 @@ export function FacilitiesPanel({ orgId, facilities }: { orgId: string; faciliti
       )}
 
       {facilities.length === 0 && !adding ? (
-        <p className="border-t border-slate-100 p-4 text-sm text-slate-500">No facilities yet. Add the first site to place records and field submissions.</p>
+        <div className="border-t border-slate-100">
+          <EmptyState icon={Building2} title="No facilities yet" description="Add the first site to place records and field submissions." />
+        </div>
       ) : (
         <ul className="divide-y divide-slate-100 border-t border-slate-100">
           {facilities.map((facility) => (

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { AuthError, requireOrgMember } from "@/lib/auth/session";
 import { MS_READERS } from "@/lib/management-systems/access";
 import { EXPIRING_DAYS, trainingMatrix, type CellState } from "@/lib/management-systems/training";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const CELL: Record<CellState, string> = {
   valid: "bg-emerald-50 text-emerald-800",
@@ -44,7 +45,7 @@ export default async function TrainingMatrixPage({ params }: { params: Promise<{
         <p className="text-sm tabular-nums text-[#374151]">{totals.expired} expired · {totals.expiring} expiring soon · {rows.length} people</p>
       </div>
       {competences.length === 0 || rows.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-[#E5E7EB] p-6 text-sm text-[#6B7280]">No training recorded yet.</p>
+        <EmptyState title="No training recorded yet" description="Record training against a competence and each person's expiry shows here." />
       ) : (
         <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB] bg-white">
           <table className="text-left text-xs">

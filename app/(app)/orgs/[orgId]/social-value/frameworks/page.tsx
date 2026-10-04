@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Network, ChevronDown } from "lucide-react";
 import { CreateFrameworkButton, EditFrameworkButton, DeleteFrameworkButton } from "./frameworks-actions";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 
 interface Props {
   params: Promise<{ orgId: string }>;
@@ -181,18 +182,12 @@ export default async function FrameworksPage({ params }: Props) {
 function EmptyState() {
   return (
     <Card className="border-[#E5E7EB] shadow-none">
-      <CardContent className="pb-8 pt-8">
-        <div className="flex flex-col items-center gap-4 py-4 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
-            <Network className="h-7 w-7 text-[#111827]" />
-          </div>
-          <div>
-            <p className="font-normal text-[#111827] tracking-[-0.42px]">No frameworks yet</p>
-            <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">
-              Create a measurement framework to define how social value commitments are structured and measured.
-            </p>
-          </div>
-        </div>
+      <CardContent>
+        <EmptyPanel
+          icon={Network}
+          title="No frameworks yet"
+          description="Create a measurement framework to define how social value commitments are structured and measured."
+        />
       </CardContent>
     </Card>
   );

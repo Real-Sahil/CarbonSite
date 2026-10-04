@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormField, FormSection } from "@/components/forms/form-kit";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type InstrumentType = "rego" | "guarantee_of_origin" | "ppa" | "green_tariff" | "supplier_specific" | "residual_mix";
 
@@ -107,10 +108,12 @@ export function EnergyInstruments({
         </div>
 
         {instruments.length === 0 ? (
-          <p className="border-t border-slate-100 p-4 text-sm text-slate-500">
-            No contracts yet. Market-based electricity records use the factor library, and each one carries a warning
-            saying so.
-          </p>
+          <div className="border-t border-slate-100">
+            <EmptyState
+              title="No contracts yet"
+              description="Market-based electricity records use the factor library, and each one carries a warning saying so."
+            />
+          </div>
         ) : (
           <div className="overflow-x-auto border-t border-slate-100">
             <table className="w-full text-sm">

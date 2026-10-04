@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Heart, ClipboardList, ListChecks, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 import {
   CreateSocialValueRecordForm,
   DeleteSocialValueRecordButton,
@@ -447,16 +448,10 @@ function AccessDenied() {
 
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center gap-4 py-12 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
-        <Heart className="h-7 w-7 text-[#111827]" />
-      </div>
-      <div>
-        <p className="font-normal text-[#111827] tracking-[-0.42px]">No social value records yet</p>
-        <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">
-          Add your first record to begin tracking TOMS social value delivered across your contracts.
-        </p>
-      </div>
-    </div>
+    <EmptyPanel
+      icon={Heart}
+      title="No social value records yet"
+      description="Add your first record to begin tracking TOMS social value delivered across your contracts."
+    />
   );
 }

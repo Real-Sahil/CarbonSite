@@ -12,6 +12,7 @@ import { COUNTRIES, countryOf } from "@/lib/i18n/countries";
 import { fiscalYearOf } from "@/lib/i18n/fiscal-year";
 import { FacilitiesPanel, type Facility } from "./facilities-panel";
 import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type ReportingPeriod = {
   id: string;
@@ -796,7 +797,11 @@ function RowActions({
 }
 
 function EmptyRow({ text }: { text: string }) {
-  return <p className="border-t border-slate-100 p-4 text-sm text-slate-500">{text}</p>;
+  return (
+    <div className="border-t border-slate-100">
+      <EmptyState title={text} />
+    </div>
+  );
 }
 
 function labelise(value: string) {

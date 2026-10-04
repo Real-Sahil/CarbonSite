@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/ui/logo";
+import { Kbd, KbdGroup } from "@/components/ui/kbd";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
 /** A micro-group of items within a product's accordion panel, e.g. "Calculations" inside "MetricOra". */
@@ -346,9 +347,12 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
               aria-label="Quick find (Ctrl or Cmd+K)"
               title="Quick find (Ctrl or Cmd+K)"
               onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
-              className="rounded-md border border-slate-200 px-1.5 py-0.5 text-[11px] text-slate-500 hover:bg-slate-50"
+              className="rounded-md hover:bg-slate-50"
             >
-              ⌘K
+              <KbdGroup>
+                <Kbd>⌘</Kbd>
+                <Kbd>K</Kbd>
+              </KbdGroup>
             </button>
             <NotificationBell orgId={orgId} />
           </div>

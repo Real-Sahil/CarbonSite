@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const ALL_EVENTS = [
   "calculation_run.completed",
@@ -270,8 +271,8 @@ export default function WebhooksPage() {
             )}
             {!loading && webhooks.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-zinc-500">
-                  No webhooks yet. Add an endpoint above.
+                <td colSpan={5}>
+                  <EmptyState title="No webhooks yet" description="Add an endpoint above to receive events." />
                 </td>
               </tr>
             )}

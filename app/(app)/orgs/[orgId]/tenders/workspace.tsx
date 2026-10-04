@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormActions } from "@/components/forms/form-kit";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export type WatchView = {
   enabled: boolean;
@@ -227,9 +228,10 @@ export function TendersWorkspace({
           )}
         </div>
         {visible.length === 0 ? (
-          <p className="rounded-[14px] border border-dashed border-[#E5E7EB] p-8 text-center text-sm text-[#6B7280]">
-            {watch ? "No open tenders match yet. New notices are checked every morning." : "Set up a watch above to see matching tenders."}
-          </p>
+          <EmptyState
+            title={watch ? "No open tenders match yet" : "No watch set up"}
+            description={watch ? "New notices are checked every morning." : "Set up a watch above to see matching tenders."}
+          />
         ) : (
           <ul className="flex flex-col gap-3">
             {visible.map((o) => {

@@ -6,7 +6,8 @@
 // person who has filled in a method statement already knows the layout.
 
 import type { ReactNode } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Stepper, StepperIndicator, StepperItem, StepperNav, StepperTitle, StepperTrigger } from "@/components/reui/stepper";
 import { fieldClass } from "@/components/forms/form-kit";
 
 // Same field and label look as the form kit (components/forms/form-kit.tsx).
@@ -104,30 +105,47 @@ export function SectionNav<K extends string>({
           <X className="h-4 w-4 text-gray-400" />
         </button>
       </div>
-      <nav className="flex-1 overflow-y-auto py-2">
-        {sections.map((s, i) => (
-          <button
-            key={s.key}
-            onClick={() => {
-              onSelect(s.key);
+      <div className="flex-1 overflow-y-auto py-2">
+        <Stepper
+          orientation="vertical"
+          value={Math.max(0, sections.findIndex((x) => x.key === active)) + 1}
+          onValueChange={(v) => {
+            const target = sections[v - 1];
+            if (target) {
+              onSelect(target.key);
               onClose();
-            }}
-            aria-current={active === s.key ? "step" : undefined}
-            className={`w-full flex items-center gap-2 text-left px-4 py-2 text-sm transition-colors ${active === s.key ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-600 hover:bg-gray-50"}`}
-          >
-            <span
-              aria-hidden="true"
-              className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
-                s.state === "done" ? "bg-green-100 text-green-800" : s.state === "optional" ? "bg-gray-100 text-gray-500" : "bg-amber-100 text-amber-800"
-              }`}
-            >
-              {s.state === "done" ? "✓" : i + 1}
-            </span>
-            <span className="flex-1">{s.label}</span>
-            {s.state ? <span className="sr-only">{s.state === "done" ? "complete" : s.state === "optional" ? "optional" : "needs attention"}</span> : null}
-          </button>
-        ))}
-      </nav>
+            }
+          }}
+          indicators={{ completed: <Check className="size-3.5" aria-hidden="true" /> }}
+          className="px-2"
+        >
+          <StepperNav className="gap-0">
+            {sections.map((s, i) => (
+              <StepperItem key={s.key} step={i + 1} positional={false} completed={s.state === "done"} className="w-full not-last:flex-none">
+                <StepperTrigger
+                  aria-current={active === s.key ? "step" : undefined}
+                  aria-controls={undefined}
+                  className={`w-full justify-start rounded-md px-2 py-2 text-left text-sm transition-colors ${active === s.key ? "bg-gray-100 font-medium text-gray-900" : "text-gray-600 hover:bg-gray-50"}`}
+                >
+                  <StepperIndicator
+                    className={`size-5 text-[10px] font-semibold ${
+                      s.state === "done"
+                        ? "bg-emerald-100 text-emerald-800 data-[state=completed]:bg-emerald-100 data-[state=completed]:text-emerald-800 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-800"
+                        : s.state === "optional"
+                          ? "bg-gray-100 text-gray-500 data-[state=active]:bg-gray-200 data-[state=active]:text-gray-700 data-[state=completed]:bg-gray-100 data-[state=completed]:text-gray-500"
+                          : "bg-amber-100 text-amber-800 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 data-[state=completed]:bg-amber-100 data-[state=completed]:text-amber-800"
+                    }`}
+                  >
+                    {i + 1}
+                  </StepperIndicator>
+                  <StepperTitle className="flex-1 text-sm font-normal leading-snug group-data-[state=active]/step:font-medium">{s.label}</StepperTitle>
+                  {s.state ? <span className="sr-only">{s.state === "done" ? "complete" : s.state === "optional" ? "optional" : "needs attention"}</span> : null}
+                </StepperTrigger>
+              </StepperItem>
+            ))}
+          </StepperNav>
+        </Stepper>
+      </div>
       {footer ? <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">{footer}</div> : null}
     </aside>
   );
