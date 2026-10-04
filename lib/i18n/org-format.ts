@@ -19,6 +19,27 @@ export function localeForCountry(country: string | null | undefined): string {
   return COUNTRY_LOCALE[(country ?? "").trim().toUpperCase()] ?? DEFAULT_LOCALE;
 }
 
+/** The symbol people write for a currency in a locale: "£", "$", "€", "A$" in en-US, "CHF" where there is none. */
+export function currencySymbol(currency: string, locale: string = DEFAULT_LOCALE): string {
+  try {
+    const part = new Intl.NumberFormat(locale, { style: "currency", currency, currencyDisplay: "narrowSymbol" })
+      .formatToParts(0)
+      .find((p) => p.type === "currency");
+    return part?.value ?? currency;
+  } catch {
+    return currency;
+  }
+}
+
+/** Money in a currency and locale; `decimals` 0 for rounded figures, 2 for invoice lines. */
+export function formatMoney(n: number, currency: string, locale: string = DEFAULT_LOCALE, decimals = 0): string {
+  try {
+    return n.toLocaleString(locale, { style: "currency", currency, minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  } catch {
+    return `${currency} ${n.toLocaleString(DEFAULT_LOCALE, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+  }
+}
+
 export type OrgFormat = { locale: string; currency: string };
 
 export function orgFormat(org: { hqCountry?: string | null; reportingCurrency?: string | null }): OrgFormat {

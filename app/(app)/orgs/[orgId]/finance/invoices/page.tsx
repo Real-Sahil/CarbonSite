@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react';
+import { useOrgMoney } from '@/components/org/org-locale';
 
  
 interface InvoiceAnomaly {
@@ -51,6 +52,7 @@ interface PaginationMeta {
 }
 
 export default function InvoicePage() {
+  const money = useOrgMoney();
   const params = useParams();
   const orgId = params.orgId as string;
 
@@ -387,7 +389,7 @@ export default function InvoicePage() {
                         {anomaly.invoice.externalInvoiceId}
                       </TableCell>
                       <TableCell>{anomaly.invoice.vendorName}</TableCell>
-                      <TableCell>£{anomaly.invoice.totalAmount.toFixed(2)}</TableCell>
+                      <TableCell>{money.format(Number(anomaly.invoice.totalAmount), { decimals: 2 })}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
                           {anomaly.anomalyType

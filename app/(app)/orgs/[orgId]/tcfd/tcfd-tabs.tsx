@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditScenarioButton, DeleteScenarioButton } from "./tcfd-actions";
+import { useOrgMoney } from "@/components/org/org-locale";
 
 interface RiskAssessment {
   id: string;
@@ -55,6 +56,7 @@ export function TcfdTabs({
   canEdit: boolean;
 }) {
   const router = useRouter();
+  const money = useOrgMoney();
   const [activeTab, setActiveTab] = useState<"physical" | "transition">("physical");
   const filtered = scenarios.filter((s) => s.scenarioType === activeTab);
 
@@ -130,9 +132,9 @@ export function TcfdTabs({
                           </span>
                           {scenario.grossValueAtRiskLow != null && (
                             <span>
-                              VaR: £{scenario.grossValueAtRiskLow.toLocaleString()}
+                              VaR: {money.format(scenario.grossValueAtRiskLow)}
                               {scenario.grossValueAtRiskHigh != null &&
-                                ` - £${scenario.grossValueAtRiskHigh.toLocaleString()}`}
+                                ` - ${money.format(scenario.grossValueAtRiskHigh)}`}
                             </span>
                           )}
                         </div>

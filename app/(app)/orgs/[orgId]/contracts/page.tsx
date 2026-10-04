@@ -27,6 +27,8 @@ import {
 import { CreateContractForm, DeleteContractButton } from "./contract-actions";
 import { FindTenderImport } from "./find-tender-import";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
+import { formatMoney } from "@/lib/i18n/org-format";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface Props {
   params: Promise<{ orgId: string }>;
@@ -54,10 +56,10 @@ function formatDate(date: Date | null | undefined) {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function formatCurrency(value: unknown) {
+function formatCurrency(value: unknown, currency: string, locale: string) {
   const num = Number(value ?? 0);
   if (!num) return "—";
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(num);
+  return formatMoney(num, currency, locale);
 }
 
 function formatTco2e(kgCo2e: number): string {
@@ -70,6 +72,7 @@ type ContractCo2eRow = { contract_id: string; total_co2e: number };
 
 export default async function ContractsPage({ params }: Props) {
   const { orgId } = await params;
+  const locale = await getOrgLocale(orgId);
 
   let role: OrgRole;
   try {
@@ -238,7 +241,7 @@ export default async function ContractsPage({ params }: Props) {
                           {contract.clientName ?? "-"}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
-                          {formatCurrency(contract.contractValue)}
+                          {formatCurrency(contract.contractValue, contract.currency, locale)}
                         </TableCell>
                         <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
                           {formatDate(contract.startDate)}

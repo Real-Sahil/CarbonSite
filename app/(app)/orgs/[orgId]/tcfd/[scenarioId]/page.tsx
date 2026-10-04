@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormField, FormSection } from "@/components/forms/form-kit";
+import { useOrgMoney } from "@/components/org/org-locale";
 
 interface Risk {
   id: string;
@@ -65,6 +66,7 @@ function RiskForm({
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
   onCancel: () => void;
 }) {
+  const money = useOrgMoney();
   const [form, setForm] = useState({
     riskCategory: initial?.riskCategory ?? "",
     description: initial?.description ?? "",
@@ -138,7 +140,7 @@ function RiskForm({
         {scaleInput("impact", "Impact", "impact", true)}
       </div>
       <FormSection cols={2}>
-        <FormField label="Financial impact low (£)" htmlFor="fimpLow">
+        <FormField label={`Financial impact low (${money.symbol})`} htmlFor="fimpLow">
           <Input
             id="fimpLow"
             type="number"
@@ -147,7 +149,7 @@ function RiskForm({
             onChange={(e) => setForm((f) => ({ ...f, financialImpactLow: e.target.value }))}
           />
         </FormField>
-        <FormField label="Financial impact high (£)" htmlFor="fimpHigh">
+        <FormField label={`Financial impact high (${money.symbol})`} htmlFor="fimpHigh">
           <Input
             id="fimpHigh"
             type="number"
@@ -179,6 +181,7 @@ function RiskForm({
 }
 
 export default function TcfdScenarioPage() {
+  const money = useOrgMoney();
   const { orgId, scenarioId } = useParams<{ orgId: string; scenarioId: string }>();
   const router = useRouter();
   const [scenario, setScenario] = useState<Scenario | null>(null);
@@ -322,8 +325,8 @@ export default function TcfdScenarioPage() {
                       )}
                       {risk.financialImpactLow != null && (
                         <div className="ml-auto text-muted-foreground">
-                          £{risk.financialImpactLow.toLocaleString()}
-                          {risk.financialImpactHigh != null && ` – £${risk.financialImpactHigh.toLocaleString()}`}
+                          {money.format(risk.financialImpactLow)}
+                          {risk.financialImpactHigh != null && ` – ${money.format(risk.financialImpactHigh)}`}
                         </div>
                       )}
                     </div>

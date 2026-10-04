@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createContractSchema } from "@/lib/validation/project-carbon";
+import { getOrgFormat } from "@/lib/i18n/org-basics";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
         clientName: data.clientName,
         contractReference: data.contractReference,
         contractValue: data.contractValue,
-        currency: data.currency,
+        currency: data.currency ?? (await getOrgFormat(orgId)).currency,
         status: data.status,
         startDate: data.startDate,
         endDate: data.endDate,

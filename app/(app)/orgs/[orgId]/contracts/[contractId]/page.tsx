@@ -32,6 +32,8 @@ import { loadProjectBurndown } from "@/lib/project-carbon/burndown-load";
 import { BudgetStatusChip } from "@/components/project-carbon/budget-status-chip";
 import { RequestSubmissionForm, SubmissionRow } from "./subcontractor-actions";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
+import { formatMoney } from "@/lib/i18n/org-format";
+import { getOrgLocale } from "@/lib/i18n/org-basics";
 
 interface Props {
   params: Promise<{ orgId: string; contractId: string }>;
@@ -74,10 +76,10 @@ function formatDate(date: Date | null | undefined) {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-function formatCurrency(value: unknown) {
+function formatCurrency(value: unknown, currency: string, locale: string) {
   const num = Number(value ?? 0);
   if (!num) return "—";
-  return new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 }).format(num);
+  return formatMoney(num, currency, locale);
 }
 
 function formatTco2e(kgCo2e: number): string {
@@ -101,6 +103,7 @@ function FlagCell({ value, label }: { value: boolean; label: string }) {
 
 export default async function ContractDetailPage({ params }: Props) {
   const { orgId, contractId } = await params;
+  const locale = await getOrgLocale(orgId);
 
   let role: OrgRole | null = null;
   let authErr: AuthError | null = null;
@@ -244,7 +247,7 @@ export default async function ContractDetailPage({ params }: Props) {
             </div>
             <div>
               <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Contract value</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatCurrency(contract.contractValue)}</p>
+              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatCurrency(contract.contractValue, contract.currency, locale)}</p>
             </div>
             <div>
               <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Start date</p>

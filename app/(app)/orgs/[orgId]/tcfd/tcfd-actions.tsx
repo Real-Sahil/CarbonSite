@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormField, FormSection } from "@/components/forms/form-kit";
+import { useOrgMoney } from "@/components/org/org-locale";
 
 interface TcfdScenario {
   id: string;
@@ -28,6 +29,7 @@ interface ScenarioFormProps {
 }
 
 function ScenarioForm({ initial, onSubmit, onCancel }: ScenarioFormProps) {
+  const money = useOrgMoney();
   const [form, setForm] = useState({
     scenarioType: initial?.scenarioType ?? "physical",
     name: initial?.name ?? "",
@@ -88,10 +90,10 @@ function ScenarioForm({ initial, onSubmit, onCancel }: ScenarioFormProps) {
         <Textarea id="f-description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} rows={3} placeholder="Describe the scenario and key assumptions" />
       </FormField>
       <FormSection cols={2}>
-        <FormField label="Gross VaR low (£)" htmlFor="f-gross-var-low" optional>
+        <FormField label={`Gross VaR low (${money.symbol})`} htmlFor="f-gross-var-low" optional>
           <Input id="f-gross-var-low" type="number" min="0" value={form.grossValueAtRiskLow} onChange={(e) => setForm((f) => ({ ...f, grossValueAtRiskLow: e.target.value }))} placeholder="0" />
         </FormField>
-        <FormField label="Gross VaR high (£)" htmlFor="f-gross-var-high" optional>
+        <FormField label={`Gross VaR high (${money.symbol})`} htmlFor="f-gross-var-high" optional>
           <Input id="f-gross-var-high" type="number" min="0" value={form.grossValueAtRiskHigh} onChange={(e) => setForm((f) => ({ ...f, grossValueAtRiskHigh: e.target.value }))} placeholder="0" />
         </FormField>
       </FormSection>

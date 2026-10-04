@@ -7,6 +7,8 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { AuthError } from "@/lib/auth/session";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewTnfdScenarioButton } from "./tnfd-actions";
+import { getOrgFormat } from "@/lib/i18n/org-basics";
+import { formatMoney } from "@/lib/i18n/org-format";
 
 const RISK_CLASSES: Record<string, string> = {
   low: "bg-green-100 text-green-800",
@@ -27,6 +29,7 @@ export default async function TnfdPage({ params }: { params: Promise<{ orgId: st
     throw err;
   }
 
+  const { locale, currency } = await getOrgFormat(orgId);
   const scenarios = await prisma.tnfdScenario.findMany({
     where: { organizationId: orgId },
     orderBy: { createdAt: "desc" },
@@ -109,13 +112,13 @@ export default async function TnfdPage({ params }: { params: Promise<{ orgId: st
                   <td className="px-4 py-3 tabular-nums">
                     {s.financialImpactLow != null || s.financialImpactHigh != null ? (
                       <>
-                        {s.financialImpactLow != null ? `£${Number(s.financialImpactLow).toLocaleString()}` : ""}
+                        {s.financialImpactLow != null ? formatMoney(Number(s.financialImpactLow), currency, locale) : ""}
                         {s.financialImpactLow != null && s.financialImpactHigh != null ? " - " : ""}
-                        {s.financialImpactHigh != null ? `£${Number(s.financialImpactHigh).toLocaleString()}` : ""}
+                        {s.financialImpactHigh != null ? formatMoney(Number(s.financialImpactHigh), currency, locale) : ""}
                       </>
                     ) : "-"}
                   </td>
-                  <td className="px-4 py-3">{new Date(s.createdAt).toLocaleDateString("en-GB")}</td>
+                  <td className="px-4 py-3">{new Date(s.createdAt).toLocaleDateString(locale)}</td>
                 </tr>
               ))}
             </tbody>

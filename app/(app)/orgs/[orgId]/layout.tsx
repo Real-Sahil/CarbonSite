@@ -8,7 +8,7 @@ import { paymentState } from "@/lib/billing/dunning";
 import { PageTransition } from "@/components/page-transition";
 import React from "react";
 import { getOrgBasics } from "@/lib/i18n/org-basics";
-import { localeForCountry } from "@/lib/i18n/org-format";
+import { localeForCountry, orgFormat } from "@/lib/i18n/org-format";
 import { OrgLocaleProvider } from "@/components/org/org-locale";
 
 function buildBrandingCssVars(branding: {
@@ -113,7 +113,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     );
   }
 
-  let org: { id: string; name: string; hqCountry: string | null } | null = null;
+  let org: { id: string; name: string; hqCountry: string | null; reportingCurrency: string | null } | null = null;
   let branding: { primaryHex: string | null; accentHex: string | null; fontFamily: string | null } | null = null;
   let dataFetchError: string | null = null;
 
@@ -200,7 +200,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
             </a>
           </div>
         ) : null}
-        <OrgLocaleProvider locale={localeForCountry(org?.hqCountry)}>
+        <OrgLocaleProvider locale={localeForCountry(org?.hqCountry)} currency={orgFormat(org ?? {}).currency}>
           <PageTransition>{children}</PageTransition>
         </OrgLocaleProvider>
       </main>

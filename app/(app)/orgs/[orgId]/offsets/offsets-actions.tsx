@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, ShieldCheck, Loader2, X } from "lucide-react";
 import { FormField, FormSection, fieldClass, FormActions, FormError } from "@/components/forms/form-kit";
 import { Button } from "@/components/ui/button";
+import { useOrgCurrency } from "@/components/org/org-locale";
 
 export const PROJECT_TYPES = [
   { value: "forestry",           label: "Forestry / REDD+" },
@@ -29,10 +30,11 @@ export const STATUS_COLORS: Record<string, string> = {
 const STANDARDS = ["VCS", "Gold_Standard", "REDD+", "Plan_Vivo", "ACR", "CAR", "Other"];
 
 function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: () => void; onSaved: () => void }) {
+  const orgCurrency = useOrgCurrency();
   const [form, setForm] = useState({
     provider: "", projectName: "", projectType: "forestry",
     standard: "VCS", vintage: new Date().getFullYear() - 1,
-    quantityTonnes: "", pricePerTonne: "", currency: "GBP",
+    quantityTonnes: "", pricePerTonne: "", currency: orgCurrency,
     purchasedAt: new Date().toISOString().slice(0, 10),
     retirementRef: "", notes: "",
   });

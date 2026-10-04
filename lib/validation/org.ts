@@ -390,7 +390,8 @@ export const createContractSchema = z.object({
   clientName: z.string().max(160).optional(),
   contractReference: z.string().max(80).optional(),
   contractValue: z.coerce.number().nonnegative().optional(),
-  currency: z.string().length(3).default("GBP"),
+  // Left out, the contract takes the organisation's reporting currency.
+  currency: z.string().length(3).toUpperCase().optional(),
   startDate: z.preprocess(
     (v) => (v === "" ? undefined : v),
     z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),

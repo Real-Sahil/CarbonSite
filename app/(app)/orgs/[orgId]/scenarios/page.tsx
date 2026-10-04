@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FlaskConical, Plus, Trash2, Loader2, TrendingDown, AlertCircle, PoundSterling } from "lucide-react";
+import { useOrgLocale } from "@/components/org/org-locale";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -232,8 +233,8 @@ interface MaccCurvePoint {
   cumulativeAbatementEndTco2e: number;
 }
 
-function fmtCost(value: number, currency = "GBP"): string {
-  return new Intl.NumberFormat("en-GB", {
+function fmtCost(value: number, currency = "GBP", locale = "en-GB"): string {
+  return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
@@ -242,6 +243,7 @@ function fmtCost(value: number, currency = "GBP"): string {
 }
 
 function MaccCard({ orgId }: { orgId: string }) {
+  const locale = useOrgLocale();
   const [curve, setCurve] = useState<MaccCurvePoint[]>([]);
   const [totalAbatementTco2e, setTotalAbatementTco2e] = useState(0);
   const [excludedCount, setExcludedCount] = useState(0);
@@ -356,7 +358,7 @@ function MaccCard({ orgId }: { orgId: string }) {
                   />
                 </div>
                 <div className={`w-24 shrink-0 text-right text-sm tabular-nums font-medium ${isNegative ? "text-green-700" : "text-amber-700"}`}>
-                  {fmtCost(point.marginalCostPerTco2e, currency)}/t
+                  {fmtCost(point.marginalCostPerTco2e, currency, locale)}/t
                 </div>
                 <div className="w-20 shrink-0 text-right text-xs text-zinc-500 tabular-nums">
                   {point.paybackYears != null ? `${point.paybackYears.toFixed(1)}y payback` : "-"}

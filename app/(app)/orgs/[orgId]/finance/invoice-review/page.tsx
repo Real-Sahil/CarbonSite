@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
+import { useOrgMoney } from '@/components/org/org-locale';
 
 interface InvoiceAnomaly {
   id: string;
@@ -47,6 +48,7 @@ interface InvoiceAnomaly {
 }
 
 export default function InvoiceReviewPage() {
+  const money = useOrgMoney();
   const params = useParams();
   const orgId = params.orgId as string;
 
@@ -361,7 +363,7 @@ export default function InvoiceReviewPage() {
                         {anomaly.invoice.vendorName}
                       </TableCell>
                       <TableCell className="text-sm">
-                        £{parseFloat(anomaly.invoice.totalAmount.toString()).toFixed(2)}
+                        {money.format(parseFloat(anomaly.invoice.totalAmount.toString()), { decimals: 2 })}
                       </TableCell>
                       <TableCell className="text-sm">
                         <div className="space-y-1">
