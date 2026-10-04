@@ -3,6 +3,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Shield, Zap, CheckCircle, Leaf } from "lucide-react";
 import { getSession } from "@/lib/auth/session";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
+import { dirOf, type UiLocale } from "@/lib/i18n/ui-locale";
 
 const TRUST_ITEMS = [
   { icon: Shield,       text: "Audit-grade evidence trail" },
@@ -19,6 +22,8 @@ const FLOATING_STATS = [
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (session) redirect("/app");
+  const locale = (await getLocale()) as UiLocale;
+  const messages = await getMessages();
 
   return (
     <div className="min-h-[100dvh] flex">
@@ -112,7 +117,9 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         {/* Form card */}
         <div className="relative z-10 w-full max-w-sm">
           <div className="rounded-2xl border border-white/8 bg-white/4 backdrop-blur-xl shadow-[0_8px_48px_rgba(0,0,0,0.5)] p-7">
-            {children}
+            <NextIntlClientProvider locale={locale} messages={messages}>
+              <div dir={dirOf(locale)} lang={locale}>{children}</div>
+            </NextIntlClientProvider>
           </div>
         </div>
       </div>

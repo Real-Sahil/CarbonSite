@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 // Security headers are now generated dynamically in middleware.ts with CSP nonces.
 // See middleware.ts for the CSP header generation logic (nonce per request).
@@ -121,4 +122,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// next-intl in no-routing mode (cookie based): see i18n/request.ts.
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
+export default withNextIntl(nextConfig);

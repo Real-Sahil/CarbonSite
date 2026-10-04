@@ -1,0 +1,14 @@
+{
+  "signIn": {
+    "welcomeBack": "Welcome back",
+    "subtitle": "Sign in to your MetricOra account.",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "submit": "Sign in",
+    "submitting": "Signing in…",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "failed": "Sign in failed. Please try again."
+  }
+}
