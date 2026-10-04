@@ -11,6 +11,7 @@ import { PilotKitPanel } from "./pilot-kit-panel";
 import { COUNTRIES, countryOf } from "@/lib/i18n/countries";
 import { fiscalYearOf } from "@/lib/i18n/fiscal-year";
 import { FacilitiesPanel, type Facility } from "./facilities-panel";
+import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 type ReportingPeriod = {
   id: string;
@@ -174,74 +175,58 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white">
-      <PanelHeader
-        title="Organisation profile"
-        description="Industry classification drives sector-specific dashboard widgets and report defaults."
-      />
-      <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Field label="Organisation name">
-          <Input value={name} disabled={isPending} onChange={(e) => setName(e.target.value)} maxLength={200} />
-        </Field>
-        <Field label="Industry">
-          <select
-            value={industry}
-            disabled={isPending}
-            onChange={(e) => setIndustry(e.target.value)}
-            className={selectClass}
-          >
-            {INDUSTRY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="HQ country">
-          <select
-            value={hqCountry}
-            disabled={isPending}
-            onChange={(e) => setHqCountry(e.target.value)}
-            className={selectClass}
-          >
-            <option value="">Not set</option>
-            {COUNTRIES.map((c) => (
-              <option key={c.code} value={c.code}>{c.name}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Reporting currency">
-          <select
-            value={currency}
-            disabled={isPending}
-            onChange={(e) => setCurrency(e.target.value)}
-            className={selectClass}
-          >
-            {CURRENCY_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Financial year starts">
-          <select
-            value={startMonth}
-            disabled={isPending}
-            onChange={(e) => setStartMonth(Number(e.target.value))}
-            className={selectClass}
-          >
-            {MONTH_NAMES.map((m, i) => (
-              <option key={m} value={i + 1}>{m}</option>
-            ))}
-          </select>
-        </Field>
-      </div>
-      <div className="flex items-center gap-3 border-t border-slate-100 px-4 py-3">
-        <Button type="button" disabled={isPending || !changed} onClick={save}>
-          <Save className="h-4 w-4" />
-          Save profile
-        </Button>
-        {success && <p className="text-sm text-green-700">{success}</p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-      </div>
+      <PanelHeader title="Organisation profile" description="Who you are and how you report." />
+      <form
+        onSubmit={(e) => { e.preventDefault(); save(); }}
+        className="space-y-6 border-t border-slate-100 p-4"
+      >
+        <FormSection title="Identity">
+          <FormField label="Organisation name" htmlFor="org-name" span={2}>
+            <Input id="org-name" value={name} disabled={isPending} onChange={(e) => setName(e.target.value)} maxLength={200} />
+          </FormField>
+          <FormField label="Industry" htmlFor="org-industry" span={2} hint="Drives sector widgets and report defaults.">
+            <select id="org-industry" value={industry} disabled={isPending} onChange={(e) => setIndustry(e.target.value)} className={selectClass}>
+              {INDUSTRY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </FormField>
+        </FormSection>
+
+        <FormSection title="Reporting" description="Sets formats, currency and the default financial year.">
+          <FormField label="HQ country" htmlFor="org-country" span={2}>
+            <select id="org-country" value={hqCountry} disabled={isPending} onChange={(e) => setHqCountry(e.target.value)} className={selectClass}>
+              <option value="">Not set</option>
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Reporting currency" htmlFor="org-currency">
+            <select id="org-currency" value={currency} disabled={isPending} onChange={(e) => setCurrency(e.target.value)} className={selectClass}>
+              {CURRENCY_OPTIONS.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Financial year starts" htmlFor="org-fy">
+            <select id="org-fy" value={startMonth} disabled={isPending} onChange={(e) => setStartMonth(Number(e.target.value))} className={selectClass}>
+              {MONTH_NAMES.map((m, i) => (
+                <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+          </FormField>
+        </FormSection>
+
+        <FormError>{error}</FormError>
+        {success && <p role="status" className="text-sm text-emerald-700">{success}</p>}
+        <FormActions>
+          <Button type="submit" size="sm" disabled={isPending || !changed}>
+            <Save className="h-4 w-4" />
+            Save profile
+          </Button>
+        </FormActions>
+      </form>
     </div>
   );
 }
@@ -495,36 +480,38 @@ function ReportingPeriodsPanel({
         description="Define the periods used by imports, field submissions, calculations, snapshots, and reports."
       />
       <div className="border-t border-slate-100 p-4">
-        <form onSubmit={createPeriod} className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_9rem_10rem_10rem_auto]">
-          <Field label="Label">
-            <Input name="label" required maxLength={100} disabled={isPending} />
-          </Field>
-          <Field label="Type">
-            <select name="type" className={selectClass} disabled={isPending} defaultValue="month">
-              {PERIOD_TYPES.map((type) => (
-                <option key={type} value={type}>
-                  {labelise(type)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Start">
-            <Input name="startDate" type="date" required disabled={isPending} />
-          </Field>
-          <Field label="End">
-            <Input name="endDate" type="date" required disabled={isPending} />
-          </Field>
-          <div className="flex items-end">
-            <Button type="button" variant="outline" disabled={isPending} onClick={(e) => suggestYear(e.currentTarget.form)} className="mr-2">
-              Next financial year
+        <form onSubmit={createPeriod} className="space-y-4">
+          <FormSection title="Add a period" description="Use the suggestion for the next financial year, or set the dates yourself.">
+            <FormField label="Label" htmlFor="period-label" span={2}>
+              <Input id="period-label" name="label" required maxLength={100} disabled={isPending} />
+            </FormField>
+            <FormField label="Type" htmlFor="period-type">
+              <select id="period-type" name="type" className={selectClass} disabled={isPending} defaultValue="month">
+                {PERIOD_TYPES.map((type) => (
+                  <option key={type} value={type}>{labelise(type)}</option>
+                ))}
+              </select>
+            </FormField>
+            <span className="hidden lg:block" aria-hidden="true" />
+            <FormField label="Start" htmlFor="period-start">
+              <Input id="period-start" name="startDate" type="date" required disabled={isPending} />
+            </FormField>
+            <FormField label="End" htmlFor="period-end">
+              <Input id="period-end" name="endDate" type="date" required disabled={isPending} />
+            </FormField>
+          </FormSection>
+          <FormActions start={
+            <Button type="button" variant="ghost" size="sm" disabled={isPending} onClick={(e) => suggestYear(e.currentTarget.form)}>
+              Fill next financial year
             </Button>
-            <Button type="submit" disabled={isPending}>
+          }>
+            <Button type="submit" size="sm" disabled={isPending}>
               <Plus className="h-4 w-4" />
-              Add
+              Add period
             </Button>
-          </div>
+          </FormActions>
         </form>
-        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        <div className="mt-3"><FormError>{error}</FormError></div>
       </div>
       <div className="border-t border-slate-100">
         {periods.length === 0 ? (
@@ -668,17 +655,19 @@ function BusinessUnitsPanel({
 
   return (
     <EntityPanel title="Business units" description="Internal divisions used for responsibility, reporting, and rollups.">
-      <form onSubmit={createBusinessUnit} className="grid gap-3 border-b border-slate-100 p-4 grid-cols-1 sm:grid-cols-[1fr_auto]">
-        <Field label="Name">
-          <Input name="name" required maxLength={100} disabled={isPending} />
-        </Field>
-        <div className="flex items-end">
-          <Button type="submit" disabled={isPending} size="sm">
+      <form onSubmit={createBusinessUnit} className="space-y-4 border-b border-slate-100 p-4">
+        <FormSection title="Add a business unit">
+          <FormField label="Name" htmlFor="bu-name" span={2}>
+            <Input id="bu-name" name="name" required maxLength={100} disabled={isPending} />
+          </FormField>
+        </FormSection>
+        <FormError>{error}</FormError>
+        <FormActions>
+          <Button type="submit" size="sm" disabled={isPending}>
             <Plus className="h-4 w-4" />
-            Add
+            Add business unit
           </Button>
-        </div>
-        {error && <p className="text-sm text-red-600 sm:col-span-2">{error}</p>}
+        </FormActions>
       </form>
       {businessUnits.length === 0 ? (
         <EmptyRow text="No business units yet." />
@@ -819,4 +808,4 @@ function toDateInput(value: string) {
 }
 
 const selectClass =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";

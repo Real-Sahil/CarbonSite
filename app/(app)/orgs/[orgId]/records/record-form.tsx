@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormActions, FormDisclosure, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 import { AlertCircle, Plus } from "lucide-react";
 
 interface CreateRecordFormProps {
@@ -115,7 +116,7 @@ export function CreateRecordForm({
         window.location.reload();
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Try again.");
     } finally {
       setLoading(false);
     }
@@ -149,119 +150,73 @@ export function CreateRecordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Period</label>
-        <Select value={periodId} onValueChange={setPeriodId}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Period" />
-          </SelectTrigger>
-          <SelectContent>
-            {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Category</label>
-        <Select value={categoryId} onValueChange={setCategoryId}>
-          <SelectTrigger className="w-52">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((c) => <SelectItem key={c.id} value={c.id}>Scope {c.scope}: {c.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Amount</label>
-        <Input
-          type="number"
-          min="0"
-          step="any"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="e.g. 120"
-          className="w-28"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Unit</label>
-        <Input
-          value={unit}
-          onChange={(e) => setUnit(e.target.value)}
-          placeholder="e.g. kWh"
-          className="w-24"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="record-activity-date" className="text-xs text-[#374151] tracking-[-0.36px]">Date</label>
-        <Input
-          id="record-activity-date"
-          type="date"
-          value={activityDate}
-          onChange={(e) => setActivityDate(e.target.value)}
-          className="w-40"
-        />
-      </div>
-      {facilities.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility</label>
-          <Select value={facilityId} onValueChange={setFacilityId}>
-            <SelectTrigger className="w-36">
-              <SelectValue placeholder="Optional" />
-            </SelectTrigger>
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <FormSection title="What was used" description="The amount and unit are converted to the category's standard unit when calculated.">
+        <FormField label="Reporting period" htmlFor="record-period">
+          <Select value={periodId} onValueChange={setPeriodId}>
+            <SelectTrigger id="record-period" className="w-full"><SelectValue placeholder="Period" /></SelectTrigger>
             <SelectContent>
-              {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>)}
+              {periods.map((p) => <SelectItem key={p.id} value={p.id}>{p.label}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
-      )}
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Description</label>
-        <Input
-          value={sourceDescription}
-          onChange={(e) => setSourceDescription(e.target.value)}
-          placeholder="Optional"
-          className="w-40"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="record-industry-code" className="text-xs text-[#374151] tracking-[-0.36px]">Industry code (NAICS / SIC)</label>
-        <Input
-          id="record-industry-code"
-          list="record-industry-codes"
-          value={industryCode}
-          onChange={(e) => setIndustryCode(e.target.value)}
-          placeholder="For spend: NAICS 236220, UK SIC 41.20 or NAF 41.20Z"
-          className="w-44"
-        />
-        <datalist id="record-industry-codes">
-          {industryOptions.map((o) => <option key={`${o.scheme}-${o.code}`} value={o.code}>{`${o.scheme} · ${o.title}`}</option>)}
-        </datalist>
-      </div>
-      {isHeat && (
-        <div className="flex flex-col gap-1">
-          <label htmlFor="record-heat-network" className="text-xs text-[#374151] tracking-[-0.36px]">Heat network</label>
-          <Input
-            id="record-heat-network"
-            list="record-heat-networks"
-            value={heatNetwork}
-            onChange={(e) => setHeatNetwork(e.target.value)}
-            placeholder="Optional: city or network name"
-            className="w-56"
-          />
-          <datalist id="record-heat-networks">
-            {heatOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </FormField>
+        <FormField label="Category" htmlFor="record-category" span={3}>
+          <Select value={categoryId} onValueChange={setCategoryId}>
+            <SelectTrigger id="record-category" className="w-full"><SelectValue placeholder="Category" /></SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => <SelectItem key={c.id} value={c.id}>Scope {c.scope}: {c.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </FormField>
+        <FormField label="Amount" htmlFor="record-amount">
+          <Input id="record-amount" type="number" min="0" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="120" required />
+        </FormField>
+        <FormField label="Unit" htmlFor="record-unit" hint="For example kWh, litres, tonnes, GBP">
+          <Input id="record-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="kWh" required />
+        </FormField>
+        <FormField label="Date" htmlFor="record-activity-date" optional hint="Picks the factor version and catches repeats">
+          <Input id="record-activity-date" type="date" value={activityDate} onChange={(e) => setActivityDate(e.target.value)} />
+        </FormField>
+        {isHeat && (
+          <FormField label="Heat network" htmlFor="record-heat-network" span={2} optional hint="City or network name, to pick its own factor">
+            <Input id="record-heat-network" list="record-heat-networks" value={heatNetwork} onChange={(e) => setHeatNetwork(e.target.value)} />
+            <datalist id="record-heat-networks">
+              {heatOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </datalist>
+          </FormField>
+        )}
+      </FormSection>
+
+      <FormSection title="Where and why" description="Both optional.">
+        {facilities.length > 0 && (
+          <FormField label="Facility" htmlFor="record-facility" span={2}>
+            <Select value={facilityId} onValueChange={setFacilityId}>
+              <SelectTrigger id="record-facility" className="w-full"><SelectValue placeholder="Not linked to a facility" /></SelectTrigger>
+              <SelectContent>
+                {facilities.map((f) => <SelectItem key={f.id} value={f.id}>{f.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+        <FormField label="Description" htmlFor="record-description" span={facilities.length > 0 ? 2 : 4}>
+          <Input id="record-description" value={sourceDescription} onChange={(e) => setSourceDescription(e.target.value)} placeholder="Supplier, invoice or note" />
+        </FormField>
+      </FormSection>
+
+      <FormDisclosure title="Spend-based pricing">
+        <FormField label="Industry code" htmlFor="record-industry-code" span={2} optional hint="For spend only: NAICS 236220, UK SIC 41.20 or NAF 41.20Z">
+          <Input id="record-industry-code" list="record-industry-codes" value={industryCode} onChange={(e) => setIndustryCode(e.target.value)} />
+          <datalist id="record-industry-codes">
+            {industryOptions.map((o) => <option key={`${o.scheme}-${o.code}`} value={o.code}>{`${o.scheme} · ${o.title}`}</option>)}
           </datalist>
-        </div>
-      )}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={loading} size="sm">
-          {loading ? "Saving…" : "Save"}
-        </Button>
-        <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-      </div>
-      {error && <p className="w-full text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
+        </FormField>
+      </FormDisclosure>
+
+      <FormError>{error}</FormError>
+      <FormActions>
+        <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+        <Button type="submit" disabled={loading} size="sm">{loading ? "Saving…" : "Save record"}</Button>
+      </FormActions>
     </form>
   );
 }

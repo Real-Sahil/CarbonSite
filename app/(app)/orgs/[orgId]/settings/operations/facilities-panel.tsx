@@ -227,8 +227,8 @@ function FacilityForm({
         </FormField>
       </FormSection>
 
-      <FormSection title="Location" description="Search for the address. Choosing a result fills the fields below and places the site on the map.">
-        <FormField label="Address" htmlFor={`${id}-address`} span={4} optional>
+      <FormSection title="Location" description="All optional. Search for the address: choosing a result fills the fields below and places the site on the map.">
+        <FormField label="Address" htmlFor={`${id}-address`} span={4}>
           <AddressPicker
             id={`${id}-address`}
             orgId={orgId}
@@ -239,13 +239,13 @@ function FacilityForm({
             disabled={isPending}
           />
         </FormField>
-        <FormField label="Country" htmlFor={`${id}-country`} hint="Two-letter code, e.g. GB" optional>
+        <FormField label="Country" htmlFor={`${id}-country`} hint="Two-letter code, e.g. GB">
           <Input id={`${id}-country`} value={country} onChange={(e) => setCountry(e.target.value)} maxLength={80} disabled={isPending} />
         </FormField>
-        <FormField label="Region" htmlFor={`${id}-region`} span={2} optional>
+        <FormField label="Region" htmlFor={`${id}-region`} span={2}>
           <Input id={`${id}-region`} value={region} onChange={(e) => setRegion(e.target.value)} maxLength={80} disabled={isPending} />
         </FormField>
-        <FormField label="Postcode" htmlFor={`${id}-postcode`} optional>
+        <FormField label="Postcode" htmlFor={`${id}-postcode`}>
           <Input id={`${id}-postcode`} value={postcode} onChange={(e) => setPostcode(e.target.value)} maxLength={20} disabled={isPending} />
         </FormField>
         {position && (

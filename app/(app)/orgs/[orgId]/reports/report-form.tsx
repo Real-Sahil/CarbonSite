@@ -3,11 +3,10 @@
 import Link from "next/link";
 
 import { FormEvent, useState, useTransition } from "react";
-import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, CheckCircle, XCircle, AlertCircle, Loader2, ChevronDown, ChevronUp, ArrowRight } from "lucide-react";
+import { Plus, CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { FormActions, FormDisclosure, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 
 type SnapshotOption = {
   id: string;
@@ -160,10 +159,8 @@ export function CreateReportForm({
   const [isPending, startTransition] = useTransition();
   const [reportType, setReportType] = useState(initialBid && bidPackIncluded ? "bid_carbon_pack" : DEFAULT_REPORT_TYPE);
   const [snapshotId, setSnapshotId] = useState(snapshots[0]?.id ?? "");
-  const [secrOpen, setSecrOpen] = useState(false);
   const [intensityMetricLabel, setIntensityMetricLabel] = useState("");
   const [intensityMetricValue, setIntensityMetricValue] = useState("");
-  const [cbamOpen, setCbamOpen] = useState(false);
   const [cbamEori, setCbamEori] = useState("");
   const [bid, setBid] = useState({
     bidTitle: initialBid?.bidTitle ?? "",
@@ -290,104 +287,101 @@ export function CreateReportForm({
 
   return (
     <div className="flex flex-col gap-4">
-      <form
-        onSubmit={handleSubmit}
-        className="grid gap-4 rounded-[14px] border border-[#E5E7EB] p-4 lg:grid-cols-[1fr_1fr_1fr_auto_auto]"
-      >
-        <Field label="Snapshot" className="lg:col-span-1">
-          <select
-            name="snapshotId"
-            required
-            disabled={!canCreate}
-            value={snapshotId}
-            onChange={(e) => handleSnapshotChange(e.target.value)}
-            className={selectClass}
-          >
-            {snapshots.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label="Report type">
-          <select
-            name="type"
-            value={reportType}
-            onChange={(e) => handleTypeChange(e.target.value)}
-            disabled={!canCreate}
-            className={selectClass}
-          >
-            {showAll || !core.includes(reportType) ? (
-              <>
-                <optgroup label="Recommended">
-                  {REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="More frameworks">
-                  {REPORT_TYPE_OPTIONS.filter((o) => !core.includes(o.value)).map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </optgroup>
-              </>
-            ) : (
-              REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))
-            )}
-          </select>
-          <button
-            type="button"
-            onClick={() => setShowAll((v) => !v)}
-            className="mt-1 text-xs font-medium text-[#c2410c] hover:underline"
-            aria-expanded={showAll}
-          >
-            {showAll ? "Show recommended only" : `Show all report types (${REPORT_TYPE_OPTIONS.length})`}
-          </button>
-        </Field>
-
-        {isBidPack ? (
-          <Field label="Contracts">
-            <p className="flex h-9 items-center text-sm text-[#374151]">Pick below, under bid details</p>
-          </Field>
-        ) : needsContract ? (
-          <Field label="Contract (required)">
-            <select name="contractId" required={needsContract} disabled={!canCreate || contracts.length === 0} className={selectClass}>
-              <option value="">Select contract…</option>
-              {contracts.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </Field>
-        ) : (
-          <Field label="Contract (optional)">
-            <select name="contractId" disabled={!canCreate || contracts.length === 0} className={selectClass}>
-              <option value="">All contracts</option>
-              {contracts.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </Field>
-        )}
-
-        {/* Validate button — shown for framework-validated types */}
-        {needsValidation && (
-          <div className="flex items-end">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={!canCreate || isValidating}
-              onClick={handleValidate}
-              className="w-full"
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+        <FormSection title="Request a report" description="Reports are built from a published snapshot, so figures match the dashboard.">
+          <FormField label="Snapshot" htmlFor="report-snapshot" span={2}>
+            <select
+              id="report-snapshot"
+              name="snapshotId"
+              required
+              disabled={!canCreate}
+              value={snapshotId}
+              onChange={(e) => handleSnapshotChange(e.target.value)}
+              className={selectClass}
             >
+              {snapshots.map((s) => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </FormField>
+
+          <FormField
+            label="Report type"
+            htmlFor="report-type"
+            span={2}
+          >
+            <select
+              id="report-type"
+              name="type"
+              value={reportType}
+              onChange={(e) => handleTypeChange(e.target.value)}
+              disabled={!canCreate}
+              className={selectClass}
+            >
+              {showAll || !core.includes(reportType) ? (
+                <>
+                  <optgroup label="Recommended">
+                    {REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="More frameworks">
+                    {REPORT_TYPE_OPTIONS.filter((o) => !core.includes(o.value)).map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </optgroup>
+                </>
+              ) : (
+                REPORT_TYPE_OPTIONS.filter((o) => core.includes(o.value)).map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))
+              )}
+            </select>
+            <button
+              type="button"
+              onClick={() => setShowAll((v) => !v)}
+              className="text-xs font-medium text-[#c2410c] hover:underline"
+              aria-expanded={showAll}
+            >
+              {showAll ? "Show recommended only" : `Show all report types (${REPORT_TYPE_OPTIONS.length})`}
+            </button>
+          </FormField>
+
+          {isBidPack ? null : needsContract ? (
+            <FormField label="Contract" htmlFor="report-contract" span={2}>
+              <select id="report-contract" name="contractId" required disabled={!canCreate || contracts.length === 0} className={selectClass}>
+                <option value="">Select contract…</option>
+                {contracts.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </FormField>
+          ) : (
+            <FormField label="Contract" htmlFor="report-contract" span={2} optional>
+              <select id="report-contract" name="contractId" disabled={!canCreate || contracts.length === 0} className={selectClass}>
+                <option value="">All contracts</option>
+                {contracts.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </FormField>
+          )}
+        </FormSection>
+
+        {!canCreate && <p className="text-sm text-[#374151]">Publish a calculation snapshot before requesting a report.</p>}
+        {needsContract && contracts.length === 0 && (
+          <p className="text-sm text-[#374151]">Create contracts first to generate National TOMS or Contract Carbon reports.</p>
+        )}
+        {needsValidation && !validationFresh && !isValidating && (
+          <p className="text-sm text-[#374151]">
+            Click <strong>Validate</strong> to check {isBidPack ? "the pack is ready for a tender" : "framework requirements"} before generating.
+          </p>
+        )}
+        <FormError>{submitError}</FormError>
+
+        <FormActions>
+          {needsValidation && (
+            <Button type="button" variant="outline" size="sm" disabled={!canCreate || isValidating} onClick={handleValidate}>
               {isValidating ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -397,37 +391,12 @@ export function CreateReportForm({
                 "Validate"
               )}
             </Button>
-          </div>
-        )}
-
-        {/* Generate / Request button */}
-        <div className="flex items-end">
-          <Button
-            type="submit"
-            disabled={!canCreate || isPending || (needsValidation && !canGenerate)}
-            className="w-full"
-          >
+          )}
+          <Button type="submit" size="sm" disabled={!canCreate || isPending || (needsValidation && !canGenerate)}>
             <Plus className="h-4 w-4" />
-            {isPending ? "Requesting…" : "Request"}
+            {isPending ? "Requesting…" : "Request report"}
           </Button>
-        </div>
-
-        {!canCreate && (
-          <p className="text-sm text-[#374151] lg:col-span-5">
-            Publish a calculation snapshot before requesting a report.
-          </p>
-        )}
-        {needsContract && contracts.length === 0 && (
-          <p className="text-sm text-[#374151] lg:col-span-5">
-            Create contracts first to generate National TOMS or Contract Carbon reports.
-          </p>
-        )}
-        {needsValidation && !validationFresh && !isValidating && (
-          <p className="text-sm text-[#374151] lg:col-span-5">
-            Click <strong>Validate</strong> to check {isBidPack ? "the pack is ready for a tender" : "framework requirements"} before generating.
-          </p>
-        )}
-        {submitError && <p className="text-sm text-red-600 lg:col-span-5">{submitError}</p>}
+        </FormActions>
       </form>
 
       {reportType === "ppn_006_crp" && (
@@ -440,85 +409,49 @@ export function CreateReportForm({
         </div>
       )}
 
-      {/* SECR intensity metrics collapsible */}
       {reportType === "secr" && (
-        <div className="rounded-[14px] border border-[#E5E7EB]">
-          <button
-            type="button"
-            onClick={() => setSecrOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#111827] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
-          >
-            <span>SECR intensity metrics</span>
-            {secrOpen ? (
-              <ChevronUp className="h-4 w-4 text-[#374151]" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-[#374151]" />
-            )}
-          </button>
-          {secrOpen && (
-            <div className="grid gap-4 border-t border-[#E5E7EB] px-4 pb-4 pt-4 sm:grid-cols-2">
-              <Field label="Intensity denominator">
-                <input
-                  type="text"
-                  value={intensityMetricLabel}
-                  onChange={(e) => setIntensityMetricLabel(e.target.value)}
-                  placeholder="e.g. employee, £m turnover, tonne output"
-                  className="h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]"
-                />
-              </Field>
-              <Field label="Denominator for the period">
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  value={intensityMetricValue}
-                  onChange={(e) => setIntensityMetricValue(e.target.value)}
-                  placeholder="e.g. 250"
-                  className="h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]"
-                />
-              </Field>
-            </div>
-          )}
-        </div>
+        <FormDisclosure title="SECR intensity metrics">
+          <FormField label="Intensity denominator" htmlFor="secr-label" span={2} optional hint="For example employee, £m turnover, tonne output">
+            <input id="secr-label" type="text" value={intensityMetricLabel} onChange={(e) => setIntensityMetricLabel(e.target.value)} className={inputClass} />
+          </FormField>
+          <FormField label="Denominator for the period" htmlFor="secr-value" span={2} optional>
+            <input id="secr-value" type="number" step="any" min="0" value={intensityMetricValue} onChange={(e) => setIntensityMetricValue(e.target.value)} className={inputClass} />
+          </FormField>
+        </FormDisclosure>
       )}
 
       {isBidPack && (
-        <div className="grid gap-4 rounded-[14px] border border-[#E5E7EB] p-4">
-          <div>
-            <p className="text-sm font-medium text-[#111827]">Bid details</p>
-            <p className="mt-0.5 text-xs text-[#374151]">
-              Figures come from the snapshot above and earlier published snapshots. Check readiness before generating.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Field label="Bid or project name">
-              <input id="bid-title" type="text" maxLength={200} value={bid.bidTitle} onChange={(e) => setBid({ ...bid, bidTitle: e.target.value })} placeholder="e.g. Highways maintenance framework" className={inputClass} />
-            </Field>
-            <Field label="Buyer">
-              <input id="bid-buyer" type="text" maxLength={200} value={bid.buyerName} onChange={(e) => setBid({ ...bid, buyerName: e.target.value })} placeholder="e.g. Kent County Council" className={inputClass} />
-            </Field>
-            <Field label="Tender reference">
+        <div className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+          <FormSection title="The bid" description="Figures come from the snapshot above and earlier published snapshots. Buyer and reference are optional.">
+            <FormField label="Bid or project name" htmlFor="bid-title" span={2}>
+              <input id="bid-title" type="text" maxLength={200} value={bid.bidTitle} onChange={(e) => setBid({ ...bid, bidTitle: e.target.value })} placeholder="Highways maintenance framework" className={inputClass} />
+            </FormField>
+            <FormField label="Buyer" htmlFor="bid-buyer">
+              <input id="bid-buyer" type="text" maxLength={200} value={bid.buyerName} onChange={(e) => setBid({ ...bid, buyerName: e.target.value })} className={inputClass} />
+            </FormField>
+            <FormField label="Tender reference" htmlFor="bid-reference">
               <input id="bid-reference" type="text" maxLength={100} value={bid.tenderReference} onChange={(e) => setBid({ ...bid, tenderReference: e.target.value })} className={inputClass} />
-            </Field>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-4">
-            <Field label="Signed off by (director)">
+            </FormField>
+          </FormSection>
+
+          <FormSection title="Sign-off" description="A director confirms the pack before it goes out. All optional until you validate.">
+            <FormField label="Director" htmlFor="bid-signatory">
               <input id="bid-signatory" type="text" maxLength={120} value={bid.signatoryName} onChange={(e) => setBid({ ...bid, signatoryName: e.target.value })} className={inputClass} />
-            </Field>
-            <Field label="Their position">
-              <input id="bid-signatory-title" type="text" maxLength={120} value={bid.signatoryTitle} onChange={(e) => setBid({ ...bid, signatoryTitle: e.target.value })} placeholder="e.g. Managing Director" className={inputClass} />
-            </Field>
-            <Field label="Sign-off date">
+            </FormField>
+            <FormField label="Position" htmlFor="bid-signatory-title">
+              <input id="bid-signatory-title" type="text" maxLength={120} value={bid.signatoryTitle} onChange={(e) => setBid({ ...bid, signatoryTitle: e.target.value })} placeholder="Managing Director" className={inputClass} />
+            </FormField>
+            <FormField label="Sign-off date" htmlFor="bid-signatory-date">
               <input id="bid-signatory-date" type="date" value={bid.signatoryDate} onChange={(e) => setBid({ ...bid, signatoryDate: e.target.value })} className={inputClass} />
-            </Field>
-            <Field label="Net zero year">
-              <input id="bid-net-zero" type="number" min={2025} max={2050} value={bid.netZeroYear} onChange={(e) => setBid({ ...bid, netZeroYear: e.target.value })} placeholder="From your Carbon Reduction Plan" className={inputClass} />
-            </Field>
-          </div>
-          <fieldset>
-            <legend className="mb-1.5 text-xs text-[#374151] tracking-[-0.36px]">
-              Comparable contracts to feature (up to {MAX_BID_CONTRACTS})
-            </legend>
+            </FormField>
+            <FormField label="Net zero year" htmlFor="bid-net-zero" hint="Defaults to your Carbon Reduction Plan">
+              <input id="bid-net-zero" type="number" min={2025} max={2050} value={bid.netZeroYear} onChange={(e) => setBid({ ...bid, netZeroYear: e.target.value })} className={inputClass} />
+            </FormField>
+          </FormSection>
+
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-semibold text-zinc-900">Comparable contracts</legend>
+            <p className="text-xs text-zinc-500">Feature up to {MAX_BID_CONTRACTS} to show delivery evidence.</p>
             {contracts.length === 0 ? (
               <p className="text-sm text-[#374151]">No contracts yet. Add contracts to show delivery evidence.</p>
             ) : (
@@ -547,39 +480,12 @@ export function CreateReportForm({
         </div>
       )}
 
-      {/* CBAM EORI collapsible */}
       {reportType === "cbam" && (
-        <div className="rounded-[14px] border border-[#E5E7EB]">
-          <button
-            type="button"
-            onClick={() => setCbamOpen((v) => !v)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-normal text-[#111827] tracking-[-0.42px] hover:bg-[#f9fafb] rounded-[14px]"
-          >
-            <span>CBAM declarant details (optional)</span>
-            {cbamOpen ? (
-              <ChevronUp className="h-4 w-4 text-[#374151]" />
-            ) : (
-              <ChevronDown className="h-4 w-4 text-[#374151]" />
-            )}
-          </button>
-          {cbamOpen && (
-            <div className="border-t border-[#E5E7EB] px-4 pb-4 pt-4">
-              <Field label="Declarant EORI number">
-                <input
-                  type="text"
-                  value={cbamEori}
-                  onChange={(e) => setCbamEori(e.target.value)}
-                  placeholder="e.g. GB123456789000"
-                  maxLength={17}
-                  className="h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999] max-w-xs"
-                />
-              </Field>
-              <p className="mt-2 text-xs text-[#999]">
-                EORI is required for final EU CBAM submission. The report generates without it — add it when ready.
-              </p>
-            </div>
-          )}
-        </div>
+        <FormDisclosure title="CBAM declarant details">
+          <FormField label="Declarant EORI number" htmlFor="cbam-eori" span={2} optional hint="Required for the final EU CBAM submission. The report generates without it.">
+            <input id="cbam-eori" type="text" value={cbamEori} onChange={(e) => setCbamEori(e.target.value)} placeholder="GB123456789000" maxLength={17} className={inputClass} />
+          </FormField>
+        </FormDisclosure>
       )}
 
       {/* Validation results panel */}
@@ -693,27 +599,8 @@ function ValidationResults({
   );
 }
 
-function Field({
-  label,
-  className,
-  children,
-}: {
-  label: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className={className}>
-      <Label className="mb-1.5 block text-xs font-normal text-[#374151] tracking-[-0.36px]">
-        {label}
-      </Label>
-      <div className="flex flex-col">{children}</div>
-    </div>
-  );
-}
-
 const inputClass =
-  "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm placeholder:text-[#999]";
+  "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm placeholder:text-[#9CA3AF] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50";
 
 const selectClass =
-  "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
