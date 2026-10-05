@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { Check, Minus } from "lucide-react";
 import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from "@/lib/billing/limits";
-import { ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
+import { ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 import { cn } from "@/lib/utils";
 import { StripeNote } from "@/components/marketing/brand-marks";
 
@@ -174,9 +174,10 @@ export default function PricingPage() {
       <Section tone="paper" className="-mt-px">
         <h2 className="sr-only">Plans</h2>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {TIERS.map((t) => (
+          {TIERS.map((t, i) => (
             <div
               key={t.name}
+              {...reveal(i, "self", 4)}
               className={cn(
                 "flex flex-col gap-6 rounded-[12px] border bg-mk-surface p-7",
                 t.highlight ? "border-mk-accent shadow-[0_24px_48px_-24px_rgba(194,65,12,0.35)]" : "border-mk-line",

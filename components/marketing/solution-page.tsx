@@ -1,18 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  Body,
-  ButtonLink,
-  CheckList,
-  ClosingCta,
-  Eyebrow,
-  H1,
-  H3,
-  Lead,
-  ProductLoop,
-  ProductShot,
-  Section,
-  SectionIntro,
-} from "@/components/marketing/kit";
+import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, ProductShot, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 
 type Media = { kind: "shot"; src: string; alt: string } | { kind: "loop"; src: string; label: string };
 
@@ -57,8 +44,8 @@ export function SolutionPage({ c }: { c: SolutionContent }) {
       <Section tone="light">
         <SectionIntro eyebrow="Where it helps" title="The jobs that usually end up in a spreadsheet." />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line md:grid-cols-2">
-          {c.problems.map((p) => (
-            <div key={p.problem} id={p.id} className="flex scroll-mt-24 flex-col gap-3 bg-mk-surface p-7">
+          {c.problems.map((p, i) => (
+            <div key={p.problem} id={p.id} {...reveal(i, "inner")} className="flex scroll-mt-24 flex-col gap-3 bg-mk-surface p-7">
               <H3>{p.problem}</H3>
               <Body>{p.answer}</Body>
             </div>

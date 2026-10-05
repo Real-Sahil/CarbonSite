@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { METHODOLOGY_CHANGELOG } from "@/lib/calculation/methodology";
 import { Timeline, TimelineContent, TimelineDate, TimelineHeader, TimelineIndicator, TimelineItem, TimelineSeparator, TimelineTitle } from "@/components/reui/timeline";
-import { Body, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, CheckList } from "@/components/marketing/kit";
+import { Body, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, CheckList, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
   title: "Methodology",
@@ -70,7 +70,7 @@ export default function MethodologyPage() {
         <SectionIntro eyebrow="Calculation" title="Four steps for every record." />
         <ol className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+            <li key={s.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
               <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
               <H3>{s.title}</H3>
               <Body>{s.text}</Body>

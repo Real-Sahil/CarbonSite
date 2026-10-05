@@ -44,7 +44,7 @@ export function StringTuneEffects() {
       let queued = false;
       const sweep = () => {
         queued = false;
-        document.querySelectorAll<HTMLElement>('[data-st="reveal"]:not(.-inview), [string="split"]:not(.-inview)').forEach((el) => {
+        document.querySelectorAll<HTMLElement>('[data-st^="reveal"]:not(.-inview), [string="split"]:not(.-inview)').forEach((el) => {
           if (el.getBoundingClientRect().bottom < 0) el.classList.add("-inview");
         });
       };

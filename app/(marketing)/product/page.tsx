@@ -1,21 +1,7 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import type { ReactNode } from "react";
-import {
-  ButtonLink,
-  CheckList,
-  ClosingCta,
-  Eyebrow,
-  H1,
-  H3,
-  Lead,
-  ProductLoop,
-  ProductShot,
-  Section,
-  SectionIntro,
-  TextLink,
-  type Tone,
-} from "@/components/marketing/kit";
+import { ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, ProductShot, Section, SectionIntro, TextLink, type Tone, reveal } from "@/components/marketing/kit";
 import { DemoAnalytics } from "@/components/marketing/demo-analytics";
 
 export const metadata: Metadata = withSocial({
@@ -213,8 +199,8 @@ export default function ProductPage() {
           lead="Adopt a standard, record where you are on each requirement and link the evidence you already hold in MetricOra. Starter includes one framework, Growth five."
         />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
-          {MANAGEMENT_SYSTEMS.map((m) => (
-            <div key={m.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+          {MANAGEMENT_SYSTEMS.map((m, i) => (
+            <div key={m.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
               <H3>{m.title}</H3>
               <p className="text-[15px] leading-relaxed text-mk-text-2">{m.text}</p>
             </div>
@@ -232,8 +218,8 @@ export default function ProductPage() {
           lead="These modules sit on the same organisation, sites and people, so there is one place to manage access and one audit trail."
         />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
-          {OPERATIONS.map((o) => (
-            <div key={o.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+          {OPERATIONS.map((o, i) => (
+            <div key={o.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
               <H3>{o.title}</H3>
               <p className="text-[15px] leading-relaxed text-mk-text-2">{o.text}</p>
             </div>

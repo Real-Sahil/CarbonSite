@@ -15,6 +15,19 @@ export type Tone = "dark" | "paper" | "light";
 /** Attributes String Tune reads (components/marketing/string-tune.tsx); inert until its script runs. An empty key only marks the element in view (-inview). */
 const st = (key: string, extra: Record<string, string> = {}) => ({ string: key, ...extra }) as Record<string, string>;
 
+/**
+ * Props that fade an element up when it first scrolls into view, staggered by its place in a row of
+ * `cols`. "inner" fades the element's children instead, for cards whose background must stay put
+ * (a grid with hairline gaps would otherwise show the gap colour while a card is hidden).
+ */
+export function reveal(index = 0, mode: "self" | "inner" = "self", cols = 3) {
+  return {
+    ...st(""),
+    "data-st": mode === "inner" ? "reveal-inner" : "reveal",
+    style: { "--st-delay": `${(index % cols) * 90}ms` } as React.CSSProperties,
+  };
+}
+
 /** Fades its children up the first time they scroll into view. Keep it off anything in the first screen. */
 export function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
   return (

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
+import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
   title: "Guides",
@@ -94,8 +94,8 @@ export default function ResourcesPage() {
       <Section tone="paper">
         <SectionIntro eyebrow="More" title="Elsewhere on the site." />
         <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {LINKS.map((l) => (
-            <Link key={l.href} href={l.href} className="group flex flex-col gap-2 rounded-[12px] border border-mk-line bg-mk-surface p-7 hover:border-mk-text/30">
+          {LINKS.map((l, i) => (
+            <Link key={l.href} href={l.href} {...reveal(i)} className="group flex flex-col gap-2 rounded-[12px] border border-mk-line bg-mk-surface p-7 hover:border-mk-text/30">
               <H3>{l.title}</H3>
               <Body>{l.text}</Body>
               <span className="mt-2 inline-flex items-center gap-1.5 text-[14px] font-medium text-mk-accent">

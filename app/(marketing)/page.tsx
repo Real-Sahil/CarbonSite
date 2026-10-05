@@ -7,21 +7,7 @@ import { withSocial } from "@/lib/seo/page-meta";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import {
-  Body,
-  ButtonLink,
-  CheckList,
-  ClosingCta,
-  Eyebrow,
-  H1,
-  H3,
-  Lead,
-  ProductLoop,
-  ProductShot,
-  Section,
-  SectionIntro,
-  TextLink,
-} from "@/components/marketing/kit";
+import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, ProductShot, Section, SectionIntro, TextLink, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
   title: { absolute: "MetricOra | Carbon evidence and reporting for UK contractors" },
@@ -196,8 +182,8 @@ export default function HomePage() {
           lead="Carbon figures are read by people whose job is to find the weak one. Each of them gets what they look for."
         />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line md:grid-cols-3">
-          {CHECKERS.map((c) => (
-            <div key={c.who} className="flex flex-col gap-3 bg-mk-surface p-7">
+          {CHECKERS.map((c, i) => (
+            <div key={c.who} {...reveal(i, "inner")} className="flex flex-col gap-3 bg-mk-surface p-7">
               <H3>{c.who}</H3>
               <p className="text-[15px] font-medium text-mk-text">{c.asks}</p>
               <Body>{c.answer}</Body>
@@ -221,7 +207,7 @@ export default function HomePage() {
           </div>
           <ol className="grid gap-4">
             {FIRST_DOCUMENTS.map((d, i) => (
-              <li key={d.title} className="flex gap-4 rounded-[12px] border border-mk-line bg-mk-surface p-6">
+              <li key={d.title} {...reveal(i, "self", 1)} className="flex gap-4 rounded-[12px] border border-mk-line bg-mk-surface p-6">
                 <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
                 <div className="flex flex-col gap-1.5">
                   <H3>{d.title}</H3>
@@ -241,7 +227,7 @@ export default function HomePage() {
         />
         <ol className="mt-14 grid gap-8 md:grid-cols-2">
           {STEPS.map((s, i) => (
-            <li key={s.step} className="flex flex-col gap-4">
+            <li key={s.step} {...reveal(i, "self", 2)} className="flex flex-col gap-4">
               <div className="overflow-hidden rounded-[12px] border border-mk-line bg-mk-paper">
                 <Image src={s.img} alt={s.alt} width={2400} height={1500} sizes="(min-width: 768px) 560px, 100vw" className="h-auto w-full" />
               </div>
@@ -323,8 +309,8 @@ export default function HomePage() {
       <Section tone="light">
         <SectionIntro eyebrow="The platform" title="One dataset, from the site to the board report." />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
-          {AREAS.map((a) => (
-            <Link key={a.href} href={a.href} className="group flex flex-col gap-3 bg-mk-surface p-7 transition-colors hover:bg-mk-paper">
+          {AREAS.map((a, i) => (
+            <Link key={a.href} href={a.href} {...reveal(i, "inner")} className="group flex flex-col gap-3 bg-mk-surface p-7 transition-colors hover:bg-mk-paper">
               <H3>{a.title}</H3>
               <Body>{a.text}</Body>
               <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-[14px] font-medium text-mk-accent">
@@ -364,8 +350,8 @@ export default function HomePage() {
       <Section tone="light">
         <SectionIntro eyebrow="Who it is for" title="Built around how UK contractors work." />
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {AUDIENCES.map((a) => (
-            <Link key={a.href} href={a.href} className="group flex flex-col gap-3 rounded-[12px] border border-mk-line p-7 transition-colors hover:border-mk-text/30">
+          {AUDIENCES.map((a, i) => (
+            <Link key={a.href} href={a.href} {...reveal(i)} className="group flex flex-col gap-3 rounded-[12px] border border-mk-line p-7 transition-colors hover:border-mk-text/30">
               <H3>{a.title}</H3>
               <Body>{a.text}</Body>
               <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-[14px] font-medium text-mk-accent">

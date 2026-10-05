@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
-import { Body, ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, ProductShot, Section, SectionIntro, CheckList } from "@/components/marketing/kit";
+import { Body, ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, ProductShot, Section, SectionIntro, CheckList, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
   title: "Security",
@@ -57,8 +57,8 @@ export default function SecurityPage() {
       <Section tone="light">
         <SectionIntro eyebrow="Controls" title="What protects your data." />
         <div className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2">
-          {CONTROLS.map((c) => (
-            <div key={c.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+          {CONTROLS.map((c, i) => (
+            <div key={c.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
               <H3>{c.title}</H3>
               <Body>{c.text}</Body>
             </div>

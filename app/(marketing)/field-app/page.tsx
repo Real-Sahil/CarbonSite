@@ -1,18 +1,6 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
-import {
-  Body,
-  ButtonLink,
-  CheckList,
-  ClosingCta,
-  Eyebrow,
-  H1,
-  H3,
-  Lead,
-  ProductLoop,
-  Section,
-  SectionIntro,
-} from "@/components/marketing/kit";
+import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 import { GooglePlayBadge } from "@/components/marketing/brand-marks";
 
 export const metadata: Metadata = withSocial({
@@ -66,7 +54,7 @@ export default function FieldAppPage() {
         <SectionIntro eyebrow="On the phone" title="From invite to first submission." lead="Designed for people who are not carbon specialists and may be working in gloves." />
         <ol className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="flex flex-col gap-2 bg-mk-surface p-7">
+            <li key={s.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
               <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
               <H3>{s.title}</H3>
               <Body>{s.text}</Body>
