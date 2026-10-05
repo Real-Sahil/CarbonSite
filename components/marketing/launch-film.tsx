@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { Play, Volume2 } from "lucide-react";
+import { DemoNote } from "@/components/marketing/kit";
 
 // The launch film (videos/, Remotion) in the home page hero. It plays muted
 // and looping while on screen, from a 720p WebM with an MP4 fallback for
@@ -98,7 +99,7 @@ export function LaunchFilm() {
           </button>
         ) : null}
       </div>
-      <figcaption className="mt-3 text-[13px] text-mk-on-dark-3">Launch film, 56 seconds. Figures are demo data.</figcaption>
+      <DemoNote tone="dark" />
     </figure>
   );
 }

@@ -179,7 +179,8 @@ export function selectForecast(data: SeriesPoint[], periods: number, prophet?: S
   // Ranges from how this model really missed on earlier months, not from its own assumptions.
   const maxH = Math.min(periods, 3);
   const errs = rollingErrors(bestLocal.model, y, maxH);
-  const q = errs.map((e) => conformalQuantile(e));
+  // A longer horizon is never more certain than a shorter one, whatever few samples say.
+  const q = errs.map((e) => conformalQuantile(e)).map((v, i, all) => Math.max(...all.slice(0, i + 1)));
   const samples = errs[0]?.length ?? 0;
   const point = bestLocal.model(y, periods);
   const lastIso = sorted[n - 1].date;

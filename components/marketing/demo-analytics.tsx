@@ -80,12 +80,12 @@ function CountUp({ to, run, reduce }: { to: number; run: boolean; reduce: boolea
 const MAX_CATEGORY = Math.max(...CATEGORIES.map((c) => c.value));
 const GROW = "transition-[width] duration-[900ms] ease-out motion-reduce:transition-none";
 
-export function DemoAnalytics({ caption }: { caption?: string }) {
+export function DemoAnalytics() {
   const reduce = useReducedMotion() ?? false;
   const { ref, seen } = useSeen<HTMLDivElement>();
 
   return (
-    <ProductFrame caption={caption ?? "Northgate Civils Ltd, a sample company. FY2025."}>
+    <ProductFrame>
       <div ref={ref} className="grid gap-6 p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>

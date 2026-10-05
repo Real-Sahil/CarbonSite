@@ -201,8 +201,15 @@ export function CheckList({ items, tone = "light" }: { items: ReactNode[]; tone?
   );
 }
 
-/** A browser-window frame around a real product capture. Captures come from the demo tenant, so the label says so. */
-export function ProductFrame({ children, caption, tone = "light", className }: { children: ReactNode; caption?: string; tone?: Tone; className?: string }) {
+/** The only caption under demo material: an asterisk and the words. */
+export function DemoNote({ tone = "light", className }: { tone?: Tone; className?: string }) {
+  return (
+    <p className={cn("mt-3 text-[13px]", tone === "dark" ? "text-mk-on-dark-3" : "text-mk-text-3", className)}>*Demo data</p>
+  );
+}
+
+/** A browser-window frame around a real product capture. Captures come from the demo tenant, so every frame carries the one-line note. */
+export function ProductFrame({ children, tone = "light", className }: { children: ReactNode; tone?: Tone; className?: string }) {
   return (
     <figure {...st("")} data-st="reveal" className={cn("m-0", className)}>
       <div
@@ -216,13 +223,10 @@ export function ProductFrame({ children, caption, tone = "light", className }: {
           <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
-          <span className={cn("ml-3 font-mono text-[11px]", tone === "dark" ? "text-mk-on-dark-3" : "text-mk-text-3")}>app.metricora · demo data</span>
         </div>
         {children}
       </div>
-      {caption ? (
-        <figcaption className={cn("mt-3 text-[13px]", tone === "dark" ? "text-mk-on-dark-3" : "text-mk-text-3")}>{caption}</figcaption>
-      ) : null}
+      <DemoNote tone={tone} />
     </figure>
   );
 }
@@ -232,7 +236,6 @@ export function ProductShot({
   alt,
   width = 1440,
   height = 900,
-  caption,
   tone,
   priority,
   className,
@@ -241,21 +244,20 @@ export function ProductShot({
   alt: string;
   width?: number;
   height?: number;
-  caption?: string;
   tone?: Tone;
   priority?: boolean;
   className?: string;
 }) {
   return (
-    <ProductFrame caption={caption} tone={tone} className={className}>
+    <ProductFrame tone={tone} className={className}>
       <Image src={src} alt={alt} width={width} height={height} priority={priority} sizes="(min-width: 1024px) 720px, 100vw" className="block h-auto w-full" />
     </ProductFrame>
   );
 }
 
-export function ProductLoop({ src, poster, label, caption, tone }: { src: string; poster: string; label: string; caption?: string; tone?: Tone }) {
+export function ProductLoop({ src, poster, label, tone }: { src: string; poster: string; label: string; tone?: Tone }) {
   return (
-    <ProductFrame caption={caption} tone={tone}>
+    <ProductFrame tone={tone}>
       <LoopVideo src={src} poster={poster} label={label} className="block aspect-[16/10] h-auto w-full object-cover object-top" />
     </ProductFrame>
   );
