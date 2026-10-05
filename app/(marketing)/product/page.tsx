@@ -120,7 +120,7 @@ export default function ProductPage() {
           "Your own organisation factors are matched first, then the run's library",
           "Location- and market-based Scope 2, with REGOs, PPAs, green tariffs and residual mix in GHG Protocol order",
           "HVO and biomass handled with biogenic CO₂ kept outside the inventory",
-          "Monte Carlo uncertainty range and data-quality scores for every run",
+          "Uncertainty range and data-quality scores for every run",
         ]}
         media={<ProductLoop src="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" label="Calculation run detail" tone="dark" />}
         link={{ href: "/methodology", label: "Read the methodology" }}

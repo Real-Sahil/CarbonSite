@@ -7,7 +7,7 @@ import { Body, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionI
 export const metadata: Metadata = withSocial({
   title: "Methodology",
   description:
-    "How MetricOra calculates emissions: factor libraries and licences, factor selection, Scope 2 dual reporting, spend conversion, uncertainty and methodology versions.",
+    "What you can check in a MetricOra figure: the calculation promises, how to verify a number, factor sources and licences, and how the rules are versioned.",
   alternates: { canonical: "/methodology" },
 });
 
@@ -20,10 +20,17 @@ const LIBRARIES = [
   { name: "Defra UK spend multipliers 2023", scope: "Spend factors for 111 UK SIC groups, 2015 to 2023", licence: "Open Government Licence v3.0" },
 ];
 
+const PROMISES = [
+  { title: "Rules that stay put", text: "A calculation run is pinned to one factor library and one methodology version, so the rules behind a figure never change underneath it." },
+  { title: "Every figure traces back", text: "Open any total and follow it to the record, the factor, the formula and the evidence behind it." },
+  { title: "Published figures do not change", text: "A correction creates a new version of the report. The earlier one stays as it was, and the change is logged." },
+  { title: "Uncertainty is shown", text: "Totals carry a range, not only a single number, and anything that needed judgement is listed for the reviewer before publishing." },
+];
+
 const STEPS = [
-  { title: "Normalise the unit", text: "Each record's quantity is converted to the unit its factor uses, and the original is kept. Net calorific value quantities only match net-CV factors." },
-  { title: "Select the factor", text: "Your organisation's own factors are tried first. Otherwise the run's library is matched on category, country, date, fuel and Scope 2 method, and the reason is stored." },
-  { title: "Compute CO₂e", text: "Gas-by-gas factors use IPCC AR6 100-year GWPs (CH₄ 27.9, N₂O 273). The formula string is saved with the result." },
+  { title: "Normalise the unit", text: "Each quantity is converted to the unit its factor uses, and the original is kept." },
+  { title: "Select the factor", text: "Your own factors are used first. Otherwise the best match from the run's library is chosen, and the reason is stored with the result." },
+  { title: "Compute CO₂e", text: "Gases use IPCC AR6 100-year warming potentials. The formula is saved with the result." },
   { title: "Store the result", text: "Calculations are never edited. A new run creates new rows, and the snapshot you publish points at one run." },
 ];
 
@@ -35,9 +42,40 @@ export default function MethodologyPage() {
           <Eyebrow tone="dark">Methodology</Eyebrow>
           <H1>How a figure is calculated.</H1>
           <Lead tone="dark">
-            MetricOra follows the GHG Protocol Corporate Standard. This page lists the factor sources, the rules that turn a record into CO₂e and the version
-            history of those rules.
+            MetricOra follows the GHG Protocol Corporate Standard. This page shows what you can check in every figure, where the factors come from and how the
+            rules are versioned.
           </Lead>
+        </div>
+      </Section>
+
+      <Section tone="light">
+        <SectionIntro eyebrow="Our promises" title="What holds for every figure." />
+        <ol className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-4">
+          {PROMISES.map((p, i) => (
+            <li key={p.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
+              <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+              <H3>{p.title}</H3>
+              <Body>{p.text}</Body>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Section tone="dark" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg">
+        <div className="grid items-center gap-14 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            <SectionIntro eyebrow="Verify it yourself" tone="dark" title="Built for the person who checks it." />
+            <CheckList
+              tone="dark"
+              items={[
+                "Trace a figure from the published total down to the record, factor and formula",
+                "Every emissions report ships with a CSV of each record, factor and formula used",
+                "An assurance pack for auditors: the calculations, the factors, the evidence index and the audit log, with a checksum list",
+                "An auditor role with read-only access to the figures and the evidence behind them",
+              ]}
+            />
+          </div>
+          <ProductLoop src="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg" label="Activity record with its calculations" tone="dark" />
         </div>
       </Section>
 
@@ -77,24 +115,19 @@ export default function MethodologyPage() {
             </li>
           ))}
         </ol>
-      </Section>
-
-      <Section tone="dark" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg">
-        <div className="grid items-center gap-14 lg:grid-cols-2">
-          <div className="flex flex-col gap-6">
-            <SectionIntro eyebrow="Rules" tone="dark" title="The judgement calls, written down." />
+        <div className="mt-12 max-w-3xl">
+          <H3>The judgement calls, written down.</H3>
+          <div className="mt-4">
             <CheckList
-              tone="dark"
               items={[
                 "Headline totals use location-based Scope 2. Market-based is shown beside it and never added.",
-                "Market-based electricity draws on certificates and PPAs, then green tariffs, supplier rates and the residual mix. A certificate is never claimed twice.",
-                "Spend is converted at the ECB rate for the record's date and deflated to the factor's price year with UK CPI, US CPI-U or euro area HICP.",
+                "Market-based electricity follows the GHG Protocol order, and a certificate is never claimed twice.",
+                "Spend is converted at the exchange rate for the record's date and adjusted for inflation to the factor's price year.",
                 "HVO and biomass carry their biogenic CO₂ beside the inventory, not in it.",
-                "Each run reports a Monte Carlo 95% range from each record's data quality.",
+                "Every total carries an uncertainty range.",
               ]}
             />
           </div>
-          <ProductLoop src="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg" label="Activity record with its calculations" tone="dark" />
         </div>
       </Section>
 
@@ -103,7 +136,7 @@ export default function MethodologyPage() {
           <SectionIntro
             eyebrow="Versions"
             title="Methodology history."
-            lead="The version changes only when a rule would change a figure from the same records and library. Published snapshots keep the version they were calculated under."
+            lead="The version changes only when a rule would change a figure from the same records and library. Published snapshots keep the version they were calculated under. The full account of each change is in the app and the assurance pack."
           />
           <Timeline value={0} className="pt-1">
             {METHODOLOGY_CHANGELOG.map((m, i) => (
@@ -117,11 +150,7 @@ export default function MethodologyPage() {
                   <TimelineTitle className="font-mono text-[15px] font-medium text-mk-text">{m.name}</TimelineTitle>
                 </TimelineHeader>
                 <TimelineContent className="mt-3">
-                  <ul className="grid gap-2 text-[15px] leading-relaxed text-mk-text-2">
-                    {m.changes.map((c) => (
-                      <li key={c}>{c}</li>
-                    ))}
-                  </ul>
+                  <p className="text-[15px] leading-relaxed text-mk-text-2">{m.summary}</p>
                 </TimelineContent>
               </TimelineItem>
             ))}

@@ -23,12 +23,14 @@
 // version (outdatedMethodology below) with this changelog, and customers are
 // told through the release notes. Nothing is recalculated automatically.
 
-export type MethodologyChange = { name: string; effective: string; gwp: string; changes: string[] };
+/** `summary` is the plain-language line shown on the public methodology page; `changes` is the full account for customers, auditors and the assurance pack. */
+export type MethodologyChange = { name: string; effective: string; gwp: string; summary: string; changes: string[] };
 
 /** Newest first. The first entry must match the newest methodology_versions row. */
 export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   {
     name: "ghg-protocol-v2026-05",
+    summary: "National factor sets for more countries, regional electricity where a site's location is known, and sharper fuel matching.",
     effective: "2026-10-05",
     gwp: "AR6",
     changes: [
@@ -39,6 +41,7 @@ export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   },
   {
     name: "ghg-protocol-v2026-04",
+    summary: "A record the chosen factor set cannot price now uses a clearly labelled alternative, flagged on the result, instead of being left at zero.",
     effective: "2026-10-05",
     gwp: "AR6",
     changes: [
@@ -47,6 +50,7 @@ export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   },
   {
     name: "ghg-protocol-v2026-03",
+    summary: "Gallons are now read according to the record's country.",
     effective: "2026-10-05",
     gwp: "AR6",
     changes: [
@@ -55,6 +59,7 @@ export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   },
   {
     name: "ghg-protocol-v2026-02",
+    summary: "Spend is priced by supplier industry where known, heat and cooling are counted in Scope 2, and inflation adjustment covers more currencies.",
     effective: "2026-09-24",
     gwp: "AR6",
     changes: [
@@ -66,6 +71,7 @@ export const METHODOLOGY_CHANGELOG: MethodologyChange[] = [
   },
   {
     name: "ghg-protocol-v2026-01",
+    summary: "First version: GHG Protocol Corporate Standard, IPCC AR6 warming potentials, location- and market-based Scope 2 side by side.",
     effective: "2026-08-07",
     gwp: "AR6",
     changes: [

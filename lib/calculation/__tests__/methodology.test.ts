@@ -9,6 +9,10 @@ describe("methodology versioning", () => {
     expect(seed).toContain(`"${METHODOLOGY_CHANGELOG[0].name}"`);
   });
 
+  it("gives every version a plain-language public summary", () => {
+    for (const m of METHODOLOGY_CHANGELOG) expect(m.summary.length).toBeGreaterThan(20);
+  });
+
   it("flags only each period's latest snapshot, and only when it used an older version", () => {
     const out = outdatedMethodology(
       [

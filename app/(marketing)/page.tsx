@@ -33,7 +33,7 @@ const STEPS = [
     step: "Calculate",
     text: "A run is pinned to one factor library and one methodology version. Warnings and an uncertainty range appear before anything is published.",
     img: "/marketing/screens/calc-run.jpg",
-    alt: "Calculation run with warnings and a Monte Carlo uncertainty range",
+    alt: "Calculation run with warnings and an uncertainty range",
   },
   {
     step: "Publish",
@@ -192,6 +192,34 @@ export default function HomePage() {
         </div>
       </Section>
 
+      <Section tone="dark" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg">
+        <div className="grid items-center gap-14 lg:grid-cols-2">
+          <div className="flex flex-col gap-6">
+            <SectionIntro
+              eyebrow="Prove the number"
+              tone="dark"
+              title="Open any figure and see how it was made."
+              lead="Every activity record keeps its calculations, and each one states the amount, the factor, the library it came from and the methodology version."
+            />
+            <div className="rounded-[12px] border border-white/10 bg-mk-ink-2 p-5 font-mono text-[13px] leading-relaxed text-mk-on-dark">
+              <p className="text-mk-on-dark-3">Plant HVO trial, A61 corridor works, FY2025</p>
+              <p className="mt-2">6,500 litre × 0.03558 kg CO₂e/litre = 231.27 kg CO₂e</p>
+              <p className="mt-1 text-mk-on-dark-3">Biogenic CO₂ reported separately, outside the scopes</p>
+              <p className="mt-2 text-mk-on-dark-3">DEFRA 2025.2 · ghg-protocol-v2026-02 · AR6</p>
+            </div>
+            <TextLink href="/methodology" tone="dark">
+              Read the methodology
+            </TextLink>
+          </div>
+          <ProductLoop
+            src="/marketing/loops/record.mp4"
+            poster="/marketing/loops/record.jpg"
+            label="Activity record showing each calculation with its factor, library and formula"
+            tone="dark"
+          />
+        </div>
+      </Section>
+
       <Section tone="paper">
         <div className="grid items-start gap-12 lg:grid-cols-[1fr_1.3fr]">
           <div className="flex flex-col gap-8">
@@ -243,34 +271,6 @@ export default function HomePage() {
         </ol>
       </Section>
 
-      <Section tone="dark" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg">
-        <div className="grid items-center gap-14 lg:grid-cols-2">
-          <div className="flex flex-col gap-6">
-            <SectionIntro
-              eyebrow="Prove the number"
-              tone="dark"
-              title="Open any figure and see how it was made."
-              lead="Every activity record keeps its calculations, and each one states the amount, the factor, the library it came from and the methodology version."
-            />
-            <div className="rounded-[12px] border border-white/10 bg-mk-ink-2 p-5 font-mono text-[13px] leading-relaxed text-mk-on-dark">
-              <p className="text-mk-on-dark-3">Plant HVO trial, A61 corridor works, FY2025</p>
-              <p className="mt-2">6,500 litre × 0.03558 kg CO₂e/litre = 231.27 kg CO₂e</p>
-              <p className="mt-1 text-mk-on-dark-3">Biogenic CO₂ reported separately, outside the scopes</p>
-              <p className="mt-2 text-mk-on-dark-3">DEFRA 2025.2 · ghg-protocol-v2026-02 · AR6</p>
-            </div>
-            <TextLink href="/methodology" tone="dark">
-              Read the methodology
-            </TextLink>
-          </div>
-          <ProductLoop
-            src="/marketing/loops/record.mp4"
-            poster="/marketing/loops/record.jpg"
-            label="Activity record showing each calculation with its factor, library and formula"
-            tone="dark"
-          />
-        </div>
-      </Section>
-
       <Section tone="paper">
         <div className="grid items-center gap-14 lg:grid-cols-[1.1fr_1fr]">
           <ProductShot src="/marketing/screens/calc-run.jpg" alt="Calculation run detail with checks before publishing and an uncertainty range" width={2400} height={1500} />
@@ -283,7 +283,7 @@ export default function HomePage() {
             <CheckList
               items={[
                 "Unit conversions and spend deflation to the factor's price year, listed with the records they touched",
-                "A Monte Carlo 95% range from each record's data quality, next to what a simple sum would claim",
+                "An uncertainty range on every total, next to what a simple sum would claim",
                 "Biogenic CO₂ from HVO and biomass reported beside the inventory, never inside it",
                 "A warning on any factor marked unverified, and on records with no matching factor",
               ]}
