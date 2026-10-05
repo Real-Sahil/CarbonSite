@@ -26,6 +26,7 @@ vi.mock("../index", () => ({
 }));
 
 import { writeAuditLog, verifyAuditChain } from "../audit";
+import { CHAIN_VERSION, rowHash } from "@/lib/audit/chain";
 
 describe("writeAuditLog", () => {
   test("accepts precise invite acceptance audit actions", async () => {
@@ -132,66 +133,62 @@ describe("writeAuditLog", () => {
   });
 });
 
+describe("writeAuditLog chain", () => {
+  test("stores the exact values it hashed, so the stored row recomputes to its own hash", async () => {
+    mocks.auditLogCreate.mockClear();
+    mocks.auditLogFindFirst.mockResolvedValueOnce({ hash: "prev-hash" });
+    await writeAuditLog({ organizationId: "org-1", actorUserId: "u1", action: "record.created", resourceType: "activity_record", resourceId: "r1", metadata: { z: 1, a: { y: 2, b: 3 } } });
+    const { data } = mocks.auditLogCreate.mock.calls.at(-1)![0];
+    expect(data.previousHash).toBe("prev-hash");
+    expect(data.hashVersion).toBe(CHAIN_VERSION);
+    expect(data.createdAt).toBeInstanceOf(Date);
+    // what comes back from the database: same values, metadata keys in a different order
+    const stored = { ...data, metadata: { a: { b: 3, y: 2 }, z: 1 } };
+    expect(rowHash(stored)).toBe(data.hash);
+    // the previous row is the latest by chainSeq, under a per-organisation lock
+    expect(mocks.auditLogFindFirst.mock.calls.at(-1)![0].orderBy).toEqual({ chainSeq: "desc" });
+    expect(mocks.executeRaw).toHaveBeenCalled();
+  });
+});
+
 describe("verifyAuditChain", () => {
-  test("returns null for an intact chain", async () => {
-    const createdAt = new Date("2026-01-01T00:00:00.000Z");
-    const base = {
-      actorUserId: "user-1",
-      action: "record.created",
-      resourceType: "activity_record",
-      resourceId: "record-1",
-      metadata: {},
-      createdAt,
-    };
-    const { createHash } = await import("crypto");
-    const hash1 = createHash("sha256")
-      .update(["", "org-1", "user-1", "record.created", "activity_record", "record-1", "{}", createdAt.toISOString()].join("|"))
-      .digest("hex");
-    const hash2 = createHash("sha256")
-      .update([hash1, "org-1", "user-1", "record.created", "activity_record", "record-1", "{}", createdAt.toISOString()].join("|"))
-      .digest("hex");
+  const mk = (n: number) => {
+    const rows: Array<Record<string, unknown>> = [];
+    let prev: string | null = null;
+    for (let i = 0; i < n; i++) {
+      const f = { actorUserId: "u1", action: "record.created", resourceType: "activity_record", resourceId: `r${i}`, metadata: { i }, createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, i)) };
+      const hash = rowHash({ ...f, previousHash: prev, organizationId: "org-1" });
+      rows.push({ chainSeq: BigInt(i + 1), ...f, previousHash: prev, hash, hashVersion: CHAIN_VERSION });
+      prev = hash;
+    }
+    return rows;
+  };
 
-    mocks.auditLogFindMany.mockResolvedValueOnce([
-      { ...base, previousHash: null, hash: hash1 },
-      { ...base, previousHash: hash1, hash: hash2 },
-    ]);
-
-    await expect(verifyAuditChain("org-1")).resolves.toBeNull();
+  test("reports an intact chain, reading it page by page", async () => {
+    mocks.auditLogFindMany.mockReset();
+    mocks.auditLogFindMany.mockResolvedValueOnce(mk(3)).mockResolvedValueOnce([]);
+    await expect(verifyAuditChain("org-1")).resolves.toMatchObject({ status: "intact", rows: 3, verified: 3, headSeq: "3" });
+    expect(mocks.auditLogFindMany.mock.calls[0][0].orderBy).toEqual({ chainSeq: "asc" });
+    expect(mocks.auditLogFindMany.mock.calls[1][0].where.chainSeq).toEqual({ gt: BigInt(3) });
   });
 
-  test("detects a tampered row", async () => {
-    const createdAt = new Date("2026-01-01T00:00:00.000Z");
-    mocks.auditLogFindMany.mockResolvedValueOnce([
-      {
-        actorUserId: "user-1",
-        action: "record.created",
-        resourceType: "activity_record",
-        resourceId: "record-1",
-        metadata: {},
-        createdAt,
-        previousHash: null,
-        hash: "this-does-not-match-the-recomputed-hash",
-      },
-    ]);
-
-    await expect(verifyAuditChain("org-1")).resolves.toBe(0);
+  test("reports an empty chain as empty", async () => {
+    mocks.auditLogFindMany.mockReset();
+    mocks.auditLogFindMany.mockResolvedValueOnce([]);
+    await expect(verifyAuditChain("org-1")).resolves.toMatchObject({ status: "empty", rows: 0 });
   });
 
-  test("skips pre-chain rows with no hash", async () => {
-    const createdAt = new Date("2026-01-01T00:00:00.000Z");
-    mocks.auditLogFindMany.mockResolvedValueOnce([
-      {
-        actorUserId: "user-1",
-        action: "record.created",
-        resourceType: "activity_record",
-        resourceId: "record-1",
-        metadata: {},
-        createdAt,
-        previousHash: null,
-        hash: null,
-      },
-    ]);
+  test("finds a tampered row and says where", async () => {
+    mocks.auditLogFindMany.mockReset();
+    const rows = mk(4);
+    rows[2] = { ...rows[2], action: "record.deleted" };
+    mocks.auditLogFindMany.mockResolvedValueOnce(rows);
+    await expect(verifyAuditChain("org-1")).resolves.toMatchObject({ status: "broken", firstBreak: { chainSeq: "3", reason: "content" } });
+  });
 
-    await expect(verifyAuditChain("org-1")).resolves.toBeNull();
+  test("does not call rows from before the recomputable hash verified", async () => {
+    mocks.auditLogFindMany.mockReset();
+    mocks.auditLogFindMany.mockResolvedValueOnce([{ chainSeq: BigInt(1), createdAt: new Date(), actorUserId: null, action: "x", resourceType: "t", resourceId: "x", metadata: {}, previousHash: null, hash: "old", hashVersion: null }]).mockResolvedValueOnce([]);
+    await expect(verifyAuditChain("org-1")).resolves.toMatchObject({ status: "intact", verified: 0, legacy: 1 });
   });
 });

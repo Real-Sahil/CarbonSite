@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
+import { VerifyChain } from "./verify-chain";
 
 interface AuditPageProps {
   params: Promise<{ orgId: string }>;
@@ -45,8 +46,10 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   const offset = Math.max(0, parseInt(filters.offset || "0", 10));
 
   let authErr: AuthError | null = null;
+  let canVerify = false;
   try {
-    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
+    const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
+    canVerify = ["admin", "sustainability_director", "sustainability_manager", "reviewer", "auditor"].includes(membership.role);
   } catch (err) {
     if (err instanceof AuthError) {
       authErr = err;
@@ -138,6 +141,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
 
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
+        {canVerify && <VerifyChain orgId={orgId} />}
         <Card className="border-[#E5E7EB] shadow-none">
           <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
             <CardTitle className="text-sm font-semibold text-[#111827]">Event filters</CardTitle>

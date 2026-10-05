@@ -2404,6 +2404,10 @@ model AuditLog {
   previousHash   String?  @map("previous_hash")
   hash           String?  @map("hash")
   chainSeq       BigInt   @default(autoincrement()) @map("chain_seq")
+  /// 2 = the hash covers exactly the stored fields (lib/audit/chain.ts) and can
+  /// be recomputed from them. Null = a row written before that: its links are
+  /// checked, its contents cannot be.
+  hashVersion    Int?     @map("hash_version")
   createdAt      DateTime @default(now()) @map("created_at")
 
   organization  Organization   @relation(fields: [organizationId], references: [id])

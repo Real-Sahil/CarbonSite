@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireOrgMember } from '@/lib/auth/session';
+import { writeAuditLog } from '@/lib/db/audit';
 import { apiError, handleRouteError } from '@/lib/validation/api';
 import { requireFeature } from '@/lib/billing/limits';
 import { z } from 'zod';
@@ -58,7 +59,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'admin');
+    const { session } = await requireOrgMember(orgId, 'admin');
 
     const gate = await requireFeature(orgId, "sso");
     if (gate) return gate;
@@ -91,16 +92,13 @@ export async function POST(
       },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        organizationId: orgId,
-        action: 'sso_config.created',
-        resourceType: 'SsoConfiguration',
-        resourceId: config.id,
-        metadata: {
-          provider: config.provider,
-        },
-      },
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: "sso_config.created",
+      resourceType: "SsoConfiguration",
+      resourceId: config.id,
+      metadata: { provider: config.provider },
     });
 
     return NextResponse.json(
@@ -130,7 +128,7 @@ export async function PATCH(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'admin');
+    const { session } = await requireOrgMember(orgId, 'admin');
 
     const gate = await requireFeature(orgId, "sso");
     if (gate) return gate;
@@ -167,16 +165,13 @@ export async function PATCH(
       data: updateData,
     });
 
-    await prisma.auditLog.create({
-      data: {
-        organizationId: orgId,
-        action: 'sso_config.updated',
-        resourceType: 'SsoConfiguration',
-        resourceId: config.id,
-        metadata: {
-          changes: Object.keys(updateData),
-        },
-      },
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: "sso_config.updated",
+      resourceType: "SsoConfiguration",
+      resourceId: config.id,
+      metadata: { changes: Object.keys(updateData) },
     });
 
     return NextResponse.json({

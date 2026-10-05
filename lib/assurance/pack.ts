@@ -10,6 +10,7 @@
  *   evidence/            the files themselves, up to MAX_EVIDENCE_BYTES in total
  *   samples.csv          the engagement's sample and test results (when an engagement is given)
  *   audit-log.csv        the organisation's audit trail from the period start, with its hash chain
+ *   verify-audit-log.mjs  a script that rechecks that chain with nothing but Node
  *   manifest.sha256      SHA-256 of every other file in the pack
  *
  * Figures come from the stored immutable calculations; nothing is recalculated.
@@ -19,6 +20,8 @@ import type { Archiver } from "archiver";
 import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
 import { evidenceTier, EVIDENCE_TIER_LABEL, EVIDENCE_TIER_ORDER, summariseTiers } from "@/lib/data-quality/evidence-tier";
+import { VERIFY_AUDIT_LOG_SCRIPT } from "@/lib/audit/verify-script";
+import { verifyAuditChain } from "@/lib/db/audit";
 import { recomputeFromFormula, type RecomputeStatus } from "./recompute";
 import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 
@@ -259,7 +262,7 @@ export async function writeAssurancePack(
   }
 
   // audit-log.csv, oldest first so the hash chain reads in order
-  let auditCsv = csvLine(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash"]);
+  let auditCsv = csvLine(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version"]);
   let auditRows = 0;
   let seq: bigint | undefined;
   while (auditRows < MAX_AUDIT_ROWS) {
@@ -267,14 +270,16 @@ export async function writeAssurancePack(
       where: { organizationId: opts.orgId, createdAt: { gte: snapshot.reportingPeriod.startDate }, ...(seq != null ? { chainSeq: { gt: seq } } : {}) },
       orderBy: { chainSeq: "asc" },
       take: PAGE,
-      select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true },
+      select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true },
     });
     if (!rows.length) break;
-    for (const a of rows) auditCsv += csvLine([a.chainSeq.toString(), a.createdAt, a.actorUserId, a.action, a.resourceType, a.resourceId, a.metadata, a.previousHash, a.hash]);
+    for (const a of rows) auditCsv += csvLine([a.chainSeq.toString(), a.createdAt, a.actorUserId, a.action, a.resourceType, a.resourceId, a.metadata, a.previousHash, a.hash, a.hashVersion]);
     auditRows += rows.length;
     seq = rows[rows.length - 1].chainSeq;
   }
   add("audit-log.csv", auditCsv);
+  add("verify-audit-log.mjs", VERIFY_AUDIT_LOG_SCRIPT);
+  const chainCheck = await verifyAuditChain(opts.orgId);
 
   // README.txt
   const split = summariseTiers(tierRows);
@@ -300,9 +305,14 @@ export async function writeAssurancePack(
     `  evidence/           ${evidenceIncluded} files included${evidenceSkipped ? `, ${evidenceSkipped} listed but not included (see evidence-index.csv)` : ""}`,
     ...(opts.engagementId ? [`  samples.csv         the engagement's sample and test results`] : []),
     `  audit-log.csv       ${auditRows} audit entries from the period start${auditRows >= MAX_AUDIT_ROWS ? ` (first ${MAX_AUDIT_ROWS})` : ""}, with hash chain`,
+    `  verify-audit-log.mjs  checks that chain on your machine: node verify-audit-log.mjs audit-log.csv ${opts.orgId}`,
     `  manifest.sha256     SHA-256 of every file above`,
     ``,
     `Recompute check (calculations.csv, recompute_status): each formula's own arithmetic was repeated and compared with the stored total. ${recomputeCounts.matches} agree, ${recomputeCounts.differs} differ, ${recomputeCounts.not_checkable} could not be read (for example records with no factor); list the differing and unreadable rows first. It does not look the factor up again: check factor values against factors.csv and the publisher's file.`,
+    `Organisation id (needed to verify the audit trail): ${opts.orgId}`,
+    chainCheck.status === "broken"
+      ? `Audit trail check at export: BROKEN at chain row ${chainCheck.firstBreak?.chainSeq} (${chainCheck.firstBreak?.reason}). Treat the audit trail as altered until explained.`
+      : `Audit trail check at export: ${chainCheck.status === "empty" ? "no entries" : "intact"} over the organisation's whole chain: ${chainCheck.rows} entries, ${chainCheck.verified} recomputed and matching, ${chainCheck.legacy} older entries whose links were checked but whose contents cannot be recomputed. Last entry: row ${chainCheck.headSeq ?? "-"}, hash ${chainCheck.headHash ?? "-"}. Removing the newest entries would leave a shorter chain that still checks, so compare the last hash with a copy you hold from earlier.`,
     `Stored calculations are immutable; nothing in this pack changed them.`,
     ``,
   ].join("\n");

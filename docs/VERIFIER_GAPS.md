@@ -42,7 +42,7 @@ Existing automated checks worth reading first: `lib/calculation/__tests__/` (uni
 | D1 | Duplicate records are refused only when category, amount, unit, date, facility and supplier all match. | `lib/data-quality/duplicates.ts` | Test near-duplicates (different supplier spelling). |
 | D2 | OCR and bill extraction are deterministic helpers; nothing is recorded until a person confirms. Low-confidence fields are flagged for review. | `lib/evidence/bill-extractor.ts`, `lib/field-submissions/ocr-confidence.ts` | Sample approved field submissions against their photos. |
 | D3 | Data origin and evidence tier are labels on records ("Verified" needs primary data, complete evidence and approval). | `lib/data-quality/evidence-tier.ts` | Check the tier split of the headline. |
-| D4 | The audit log is append-only with a hash chain; the nightly backup is encrypted and restore-tested weekly. | `lib/db/audit.ts`, `.github/workflows/backup.yml` | Verify the chain in `audit-log.csv`. |
+| D4 | The audit log is append-only with a per-organisation hash chain. Entries written before 6 October 2026 (`hash_version` empty) were hashed from values that were not all stored, so their links are checked but their contents cannot be recomputed; newer entries recompute fully. Removing the newest entries leaves a shorter chain that still checks: compare the last hash with a copy held earlier. The nightly backup is encrypted and restore-tested weekly. | `lib/audit/chain.ts`, `lib/db/audit.ts`, `.github/workflows/backup.yml` | Run `node verify-audit-log.mjs audit-log.csv <organisation id>` from the pack, or use Audit trail → Check the audit trail; note the older-entry count and the last hash. |
 
 ## 4. Forecasting: known limits
 
