@@ -79,7 +79,7 @@ function Note({ tone = "info", children }: { tone?: "info" | "warn" | "ok"; chil
   return <div className={`rounded border px-3 py-2 text-sm ${cls}`}>{children}</div>;
 }
 
-function Checks({ checks, section }: { checks: CrpCheck[]; section: CrpSectionKey }) {
+function Checks({ checks, section, orgId }: { checks: CrpCheck[]; section: CrpSectionKey; orgId: string }) {
   const mine = checks.filter((c) => c.section === section);
   if (!mine.length) return null;
   return (
@@ -97,6 +97,11 @@ function Checks({ checks, section }: { checks: CrpCheck[]; section: CrpSectionKe
               {!c.passed ? <span className="ml-1 text-xs text-gray-500">({c.required ? "required" : "recommended"})</span> : null}
             </span>
             {c.fix ? <span className="block text-xs text-gray-600">{c.fix}</span> : null}
+            {c.link ? (
+              <Link className="block text-xs font-medium text-[#c2410c] underline underline-offset-2" href={`/orgs/${orgId}/${c.link.path}`}>
+                {c.link.label}
+              </Link>
+            ) : null}
           </span>
         </li>
       ))}
@@ -316,7 +321,7 @@ export function CrpWizard({
         </Link>
         , then come back to this plan.
       </p>
-      <Checks checks={data.checks} section="period" />
+      <Checks orgId={orgId} checks={data.checks} section="period" />
     </div>
   );
 
@@ -367,7 +372,7 @@ export function CrpWizard({
           ) : null}
         </div>
       </div>
-      <Checks checks={data.checks} section="organisation" />
+      <Checks orgId={orgId} checks={data.checks} section="organisation" />
     </div>
   );
 
@@ -453,7 +458,7 @@ export function CrpWizard({
           })}
         </div>
       </div>
-      <Checks checks={data.checks} section="emissions" />
+      <Checks orgId={orgId} checks={data.checks} section="emissions" />
     </div>
   );
 
@@ -507,7 +512,7 @@ export function CrpWizard({
       <FieldRow label="How you will get there" htmlFor="crp-trajectory" hint="Optional. The main levers and the expected path to net zero.">
         <textarea id="crp-trajectory" rows={3} className={textareaCls} disabled={disabled} value={s.targets.trajectoryNote} onChange={(e) => update((p) => ({ ...p, targets: { ...p.targets, trajectoryNote: e.target.value } }))} />
       </FieldRow>
-      <Checks checks={data.checks} section="targets" />
+      <Checks orgId={orgId} checks={data.checks} section="targets" />
     </div>
   );
 
@@ -552,7 +557,7 @@ export function CrpWizard({
       <FieldRow label="Further commitments" htmlFor="crp-future" hint="Optional. For example supplier engagement, fleet replacement or site energy policy.">
         <textarea id="crp-future" rows={3} className={textareaCls} disabled={disabled} value={s.measures.futureNote} onChange={(e) => update((p) => ({ ...p, measures: { ...p.measures, futureNote: e.target.value } }))} />
       </FieldRow>
-      <Checks checks={data.checks} section="measures" />
+      <Checks orgId={orgId} checks={data.checks} section="measures" />
     </div>
   );
 
@@ -579,7 +584,7 @@ export function CrpWizard({
           </FieldRow>
         </>
       ) : null}
-      <Checks checks={data.checks} section="secr" />
+      <Checks orgId={orgId} checks={data.checks} section="secr" />
     </div>
   );
 
@@ -601,7 +606,7 @@ export function CrpWizard({
         <CheckRow id="crp-board" label="This plan has been reviewed and signed off by the board of directors (or equivalent management body)." checked={s.declaration.boardApproved} disabled={disabled} onChange={(v) => update((p) => ({ ...p, declaration: { ...p.declaration, boardApproved: v } }))} />
         <CheckRow id="crp-method" label="Emissions are reported under the GHG Protocol Corporate Standard with the UK Government conversion factors, and the required Scope 3 categories under the reporting standard for Carbon Reduction Plans." checked={s.declaration.methodologyConfirmed} disabled={disabled} onChange={(v) => update((p) => ({ ...p, declaration: { ...p.declaration, methodologyConfirmed: v } }))} />
       </div>
-      <Checks checks={data.checks} section="declaration" />
+      <Checks orgId={orgId} checks={data.checks} section="declaration" />
     </div>
   );
 
@@ -657,7 +662,7 @@ export function CrpWizard({
             <button type="button" onClick={() => setActive(sec.key)} className="mb-1 text-sm font-medium text-gray-900 underline-offset-2 hover:underline">
               {sec.label}
             </button>
-            <Checks checks={data.checks} section={sec.key as CrpSectionKey} />
+            <Checks orgId={orgId} checks={data.checks} section={sec.key as CrpSectionKey} />
           </div>
         );
       })}
@@ -870,7 +875,7 @@ function BaselineSection({
       <FieldRow label="Additional details" htmlFor="crp-by-more" hint="Optional. Structural changes since the baseline, recalculations, or data limitations.">
         <textarea id="crp-by-more" rows={3} className={textareaCls} disabled={disabled} value={s.baseline.additionalDetails} onChange={(e) => update((p) => ({ ...p, baseline: { ...p.baseline, additionalDetails: e.target.value } }))} />
       </FieldRow>
-      <Checks checks={checks} section="baseline" />
+      <Checks orgId={base.replace("/api/orgs/", "")} checks={checks} section="baseline" />
     </div>
   );
 }

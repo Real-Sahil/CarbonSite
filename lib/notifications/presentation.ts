@@ -169,6 +169,15 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/settings/billing`,
       };
     }
+    case "monthly_checklist": {
+      const count = num(data.metadata?.count, 0);
+      const label = str(data.metadata?.monthLabel, "last month");
+      return {
+        title: `${label}: ${count} thing${count === 1 ? "" : "s"} to add or review`,
+        body: str(data.metadata?.summary, "Open the monthly checklist to see what is missing and where to add it."),
+        link: `${orgBase}/checklist?month=${str(data.resourceId, "")}`,
+      };
+    }
     case "ms_reminder": {
       const overdue = data.metadata?.stage === "overdue";
       const label = str(data.metadata?.label, "Management system");

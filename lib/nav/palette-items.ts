@@ -12,6 +12,7 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { label: "Dashboard", path: "dashboard", keywords: "home overview footprint" },
   { label: "Records", path: "records", keywords: "activity data bills", roles: CORE },
   { label: "Imports", path: "imports", keywords: "upload csv excel", roles: CORE },
+  { label: "Monthly checklist", path: "checklist", keywords: "missing todo what to add data complete month", roles: ["admin", "editor", "sustainability_director", "sustainability_manager"] },
   { label: "Submissions", path: "submissions", keywords: "field review queue", roles: ["admin", "editor", "reviewer"] },
   { label: "Site map", path: "map", keywords: "sites locations scrubber published snapshots", roles: CORE },
   { label: "Suppliers", path: "suppliers", keywords: "supplier health", roles: CORE },

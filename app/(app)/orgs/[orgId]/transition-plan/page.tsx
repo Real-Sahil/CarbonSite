@@ -125,6 +125,11 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
                   {c.label} <span className="ml-1 text-xs font-normal text-[#6B7280]">{c.code}</span>
                 </p>
                 <p className="mt-0.5 text-sm text-[#374151]">{c.detail}</p>
+                {c.link ? (
+                  <Link href={`/orgs/${orgId}/${c.link.path}`} className="mt-1 inline-block text-xs font-medium text-[#c2410c] underline underline-offset-2">
+                    {c.link.label}
+                  </Link>
+                ) : null}
               </div>
             </li>
           ))}

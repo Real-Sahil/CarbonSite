@@ -1789,7 +1789,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 {noFactorCount} of {latestRunCalcCount} calculated record{latestRunCalcCount !== 1 ? "s" : ""} matched no emission factor in
                 this run&apos;s library, so they count as 0 and the totals above are short by their emissions. Add your own
                 factor for them, or recalculate on a library that covers them.{" "}
-                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Open the run</Link>
+                <Link href={`/orgs/${orgId}/settings/factors`} className="underline underline-offset-2">Add your own factor</Link>
+                {" · "}
+                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Open the run to see which records</Link>
               </div>
             )}
             {zeroCo2eCalcCount - noFactorCount > 0 && (
@@ -1797,13 +1799,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
                 {zeroCo2eCalcCount - noFactorCount} calculated record{zeroCo2eCalcCount - noFactorCount !== 1 ? "s" : ""} contributed 0 kg CO2e
                 for another reason (a unit the factor could not use, or an input amount of zero), so the totals above
-                exclude them. Open the calculation run to see each record&apos;s reason.
+                exclude them. Open the calculation run to see each record&apos;s reason.{" "}
+                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Open calculations</Link>
               </div>
             )}
             {staleRecordCount > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                {staleRecordCount} record{staleRecordCount !== 1 ? "s" : ""} added since last calculation run — results may be outdated.
+                {staleRecordCount} record{staleRecordCount !== 1 ? "s" : ""} added since last calculation run — results may be outdated.{" "}
+                <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Run a calculation</Link>
               </div>
             )}
             {fallbackPct > 0 && (

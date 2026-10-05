@@ -118,7 +118,18 @@ export const PILLARS: { value: Pillar; label: string }[] = [
 ];
 
 export type CheckStatus = "met" | "partial" | "gap";
-export type Check = { id: string; code: string; pillar: Pillar; label: string; status: CheckStatus; detail: string };
+export type Check = { id: string; code: string; pillar: Pillar; label: string; status: CheckStatus; detail: string; link?: { label: string; path: string } };
+
+/** Where to go for checks whose answer lives on another page; narrative checks are written on this page. */
+export const CHECK_LINKS: Record<string, { label: string; path: string }> = {
+  "str-a": { label: "Add scenarios and assess risks", path: "tcfd" },
+  "str-c": { label: "Add a scenario", path: "tcfd" },
+  "rm-a": { label: "Score risks", path: "tcfd" },
+  "rm-b": { label: "Add actions to risks", path: "tcfd" },
+  "mt-a": { label: "Run and publish a calculation", path: "calculations" },
+  "mt-b": { label: "Add Scope 3 records", path: "records" },
+  "mt-c": { label: "Set a target", path: "targets" },
+};
 
 export type ChecklistInput = {
   sections: DisclosureSections;
@@ -232,7 +243,7 @@ export function tcfdChecklist({ sections: s, scenarios, risks, totals, hasTarget
     hasTarget ? "A target is recorded." : "Set a reduction target, an SBTi target or a net zero year.",
   );
 
-  return checks;
+  return checks.map((c) => (c.status === "met" ? c : { ...c, link: CHECK_LINKS[c.id] }));
 }
 
 export function coverage(checks: Check[]) {

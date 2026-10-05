@@ -69,10 +69,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     });
 
     if (res.status === 202 || res.status === 200) {
-      await prisma.xeroSyncLog.updateMany({
-        where: { organizationId: orgId, id: { in: picked.map((p) => p.id) } },
-        data: { status: "staged" },
-      });
+      // The confirmed category is kept on the line, so the next sync of that supplier starts from it.
+      const byCategory = new Map<string, string[]>();
+      for (const p of picked) byCategory.set(p.confirmed.categoryCode, [...(byCategory.get(p.confirmed.categoryCode) ?? []), p.id]);
+      for (const [category, ids] of byCategory) {
+        await prisma.xeroSyncLog.updateMany({
+          where: { organizationId: orgId, id: { in: ids } },
+          data: { status: "staged", category },
+        });
+      }
       await writeAuditLog({
         organizationId: orgId,
         actorUserId: session.user.id,

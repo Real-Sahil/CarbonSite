@@ -75,6 +75,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
       { label: "Data", items: [
         { label: "Imports",          href: `/orgs/${orgId}/imports`,           icon: Upload,        roles: CORE_ROLES },
         { label: "Records",          href: `/orgs/${orgId}/records`,           icon: FileText,      roles: CORE_ROLES },
+        { label: "Monthly checklist", href: `/orgs/${orgId}/checklist`,         icon: ClipboardCheck, roles: ["admin", "editor", "sustainability_director", "sustainability_manager"] },
         { label: "Commuting",        href: `/orgs/${orgId}/commuting`,         icon: Bus,           roles: CORE_ROLES },
         { label: "Site map",         href: `/orgs/${orgId}/map`,               icon: MapPin,        roles: CORE_ROLES },
         { label: "Submissions",      href: `/orgs/${orgId}/submissions`,       icon: Inbox,         roles: ["admin", "editor", "reviewer"] },

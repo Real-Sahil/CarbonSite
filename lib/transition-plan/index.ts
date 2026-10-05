@@ -84,7 +84,16 @@ export function annualRate(baseYear: number, targetYear: number, reductionPct: n
 }
 
 export type CheckStatus = "met" | "partial" | "gap";
-export type Check = { id: string; code: string; label: string; status: CheckStatus; detail: string };
+export type Check = { id: string; code: string; label: string; status: CheckStatus; detail: string; link?: { label: string; path: string } };
+
+/** Where to go for checks whose answer lives on another page; the rest are edited on the transition plan page itself. */
+export const CHECK_LINKS: Record<string, { label: string; path: string }> = {
+  targets: { label: "Set a target", path: "sbti" },
+  levers: { label: "Add reduction initiatives", path: "targets" },
+  schedule: { label: "Give initiatives a start date", path: "targets" },
+  gap: { label: "Add or bring forward initiatives", path: "targets" },
+  progress: { label: "Run and publish a calculation", path: "calculations" },
+};
 
 export type PlanFields = {
   status: string;
@@ -248,5 +257,5 @@ export function transitionChecklist(input: {
       : `${a.year}: ${a.actual.toLocaleString("en-GB", { maximumFractionDigits: 0 })} tCO2e against ${a.expected.toLocaleString("en-GB", { maximumFractionDigits: 0 })} on the line${a.actual > a.expected * 1.05 ? ", behind" : ", on track"}.`,
   });
 
-  return checks;
+  return checks.map((c) => (c.status === "met" ? c : { ...c, link: CHECK_LINKS[c.id] }));
 }

@@ -1,6 +1,6 @@
 /**
  * Scheduled monitoring jobs. Called by the Supabase pg_cron schedule in
- * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045 and 20260927000050 (daily). Each job only alerts once per record or per
+ * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045 and 20260927000050 (daily), 20261005000076 (monthly). Each job only alerts once per record or per
  * threshold day, so a repeated or late call is safe.
  */
 
@@ -15,6 +15,7 @@ import {
 import { processCarbonBudgetAlerts } from "@/lib/project-carbon/burndown-alerts";
 import { runTenderWatches } from "@/lib/tenders/watch";
 import { processManagementSystemReminders } from "@/lib/management-systems/reminders";
+import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -40,6 +41,12 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   // registers (migration 20260927000050); each reminder is sent once.
   "management-systems": async () => {
     await processManagementSystemReminders();
+    return "processed";
+  },
+  // The 3rd of each month: editors told what is outstanding for the month just ended
+  // (migration 20261005000076); one notification per person per month.
+  "monthly-checklist": async () => {
+    await processMonthlyChecklistReminders();
     return "processed";
   },
 };

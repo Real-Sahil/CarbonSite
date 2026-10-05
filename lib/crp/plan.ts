@@ -179,9 +179,23 @@ export type CrpCheck = {
   required: boolean;
   passed: boolean;
   fix?: string;
+  /** The page (relative to the organisation) where the missing piece is added, when it is not on the plan itself. */
+  link?: { label: string; path: string };
 };
 
 const filled = (v: string | number | "") => String(v).trim() !== "";
+
+/** Where to go for checks whose answer lives outside the plan: data, calculations and the base year. */
+export const CHECK_LINKS: Record<string, { label: string; path: string }> = {
+  records: { label: "Import data", path: "imports" },
+  scope12: { label: "Add fuel, gas and electricity records", path: "records" },
+  scope3: { label: "Add Scope 3 records", path: "records" },
+  published: { label: "Run a calculation", path: "calculations" },
+  "current-run": { label: "Open calculations to publish", path: "calculations" },
+  reviewed: { label: "Open calculations to approve", path: "calculations" },
+  "base-year": { label: "Set the base year", path: "base-year" },
+  "baseline-recent": { label: "Review the base year", path: "base-year" },
+};
 
 /**
  * What an evaluator checks on a PPN 006 plan. Required checks block
@@ -373,7 +387,7 @@ export function crpReadiness(s: CrpSections, ctx: CrpContext): CrpCheck[] {
       fix: "Confirm the emissions follow the GHG Protocol Corporate Standard and the PPN 006 reporting standard.",
     },
   ];
-  return checks.map((c) => (c.passed ? { ...c, fix: undefined } : c));
+  return checks.map((c) => (c.passed ? { ...c, fix: undefined } : { ...c, link: CHECK_LINKS[c.id] }));
 }
 
 export function canGenerate(checks: CrpCheck[]): boolean {

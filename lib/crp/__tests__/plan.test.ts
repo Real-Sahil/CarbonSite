@@ -223,3 +223,17 @@ describe("PPN 006 document with a guided plan", () => {
     expect(html).toContain("a<br />b");
   });
 });
+
+describe("where to fix a missing check", () => {
+  it("links checks whose answer lives outside the plan to the page that fixes them", () => {
+    const empty = crpReadiness(parseSections(null), ctx({ records: { total: 0 }, snapshot: null, baseYear: null } as Partial<CrpContext>));
+    const link = (id: string) => empty.find((c) => c.id === id)?.link?.path;
+    expect(link("records")).toBe("imports");
+    expect(link("published")).toBe("calculations");
+    expect(link("base-year")).toBe("base-year");
+  });
+  it("carries no link or fix once a check passes", () => {
+    const passed = crpReadiness(complete(), ctx()).filter((c) => c.passed);
+    expect(passed.every((c) => !c.fix && !c.link)).toBe(true);
+  });
+});

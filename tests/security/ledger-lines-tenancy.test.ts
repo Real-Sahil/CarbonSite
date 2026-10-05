@@ -8,7 +8,7 @@ import { NextRequest } from "next/server";
 
 const db = vi.hoisted(() => ({
   prisma: {
-    xeroSyncLog: { findMany: vi.fn(), updateMany: vi.fn() },
+    xeroSyncLog: { findMany: vi.fn(), updateMany: vi.fn(), groupBy: vi.fn() },
     invoiceRecord: { findMany: vi.fn() },
     activityRecord: { groupBy: vi.fn() },
     emissionCategory: { findMany: vi.fn() },
@@ -31,6 +31,7 @@ import { POST } from "@/app/api/orgs/[orgId]/integrations/xero/suggestions/route
 beforeEach(() => {
   vi.clearAllMocks();
   db.prisma.activityRecord.groupBy.mockResolvedValue([]);
+  db.prisma.xeroSyncLog.groupBy.mockResolvedValue([]);
   db.prisma.emissionCategory.findMany.mockResolvedValue([]);
   db.prisma.invoiceRecord.findMany.mockResolvedValue([]);
   db.prisma.organization.findUnique.mockResolvedValue({ reportingCurrency: "GBP" });
@@ -66,7 +67,7 @@ describe("ledger lines tenancy", () => {
     );
     expect(db.prisma.xeroSyncLog.updateMany).toHaveBeenCalledWith({
       where: { organizationId: "org-a", id: { in: ["l1"] } },
-      data: { status: "staged" },
+      data: { status: "staged", category: "s3-purchased-goods" },
     });
 
     // A refused batch leaves the lines available.

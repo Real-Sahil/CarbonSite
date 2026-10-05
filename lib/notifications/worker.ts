@@ -374,6 +374,14 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
+    .with({ type: "monthly_checklist" }, async (d) => {
+      await sendPushToUser(d.recipientUserId, {
+        title: `Your ${(d.metadata?.monthLabel as string) ?? "monthly"} checklist`,
+        body: `${(d.metadata?.count as number) ?? "Some"} things to add or review so the month is complete.`,
+        data: { type: "monthly_checklist", orgId: d.orgId },
+      });
+    })
+
     .with({ type: "payment_failed" }, async (d) => {
       await sendPushToUser(d.recipientUserId, {
         title: "MetricOra payment failed",

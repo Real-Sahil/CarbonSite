@@ -1,7 +1,16 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 import { LOW_CONFIDENCE, suggestLedgerLine } from "../suggest";
-import { ledgerRecords, type LedgerLineView } from "../xero-lines";
+import { vi } from "vitest";
+const db = vi.hoisted(() => ({
+  prisma: {
+    activityRecord: { groupBy: vi.fn() },
+    emissionCategory: { findMany: vi.fn() },
+    xeroSyncLog: { groupBy: vi.fn() },
+  },
+}));
+vi.mock("@/lib/db", () => db);
+import { ledgerRecords, learnedSupplierCategories, type LedgerLineView } from "../xero-lines";
 
 const s = (supplier: string, description = "") => suggestLedgerLine({ supplier, description });
 
@@ -52,5 +61,20 @@ describe("ledgerRecords", () => {
     const [r] = ledgerRecords([{ ...line, confirmed: { id: "l1", categoryCode: "s3-purchased-goods", industryCode: "23.63" } }], "EUR");
     expect(r).toMatchObject({ externalRecordId: "l1", emissionCategoryCode: "s3-purchased-goods", spendAmount: 1200.5, spendCurrency: "EUR", unit: "EUR", industryCode: "23.63", supplierName: "Tarmac" });
     expect(r.validationWarnings?.join(" ")).toMatch(/priced on spend/);
+  });
+});
+
+describe("learnedSupplierCategories", () => {
+  it("combines committed records with lines already confirmed here, most used wins, ties alphabetical", async () => {
+    db.prisma.emissionCategory.findMany.mockResolvedValue([{ id: "c1", code: "s3-purchased-goods" }, { id: "c2", code: "s3-capital-goods" }]);
+    db.prisma.activityRecord.groupBy.mockResolvedValue([{ supplierName: "Zed Ltd", emissionCategoryId: "c1", _count: { _all: 1 } }]);
+    db.prisma.xeroSyncLog.groupBy.mockResolvedValue([
+      { supplierName: "Zed Limited", category: "s3-capital-goods", _count: { _all: 3 } }, // same supplier, other spelling
+      { supplierName: "Other Co", category: "s9-not-real", _count: { _all: 9 } }, // not a stageable category
+    ]);
+    const m = await learnedSupplierCategories("org-a");
+    expect(m.get("zed")).toBe("s3-capital-goods");
+    expect(m.has("other")).toBe(false);
+    expect(db.prisma.xeroSyncLog.groupBy.mock.calls[0][0].where).toEqual({ organizationId: "org-a", status: "staged" });
   });
 });

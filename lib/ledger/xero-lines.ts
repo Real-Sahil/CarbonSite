@@ -27,16 +27,31 @@ export async function learnedSupplierCategories(orgId: string): Promise<Map<stri
   const categories = await prisma.emissionCategory.findMany({ select: { id: true, code: true } });
   const code = new Map(categories.map((c) => [c.id, c.code]));
 
-  const best = new Map<string, { code: string; n: number }>();
+  // Lines already confirmed here count too, so a correction applies to that supplier's next lines
+  // before the batch has even been committed.
+  const confirmed = await prisma.xeroSyncLog.groupBy({
+    by: ["supplierName", "category"],
+    where: { organizationId: orgId, status: "staged" },
+    _count: { _all: true },
+  });
+
+  const tally = new Map<string, Map<string, number>>();
+  const add = (supplier: string, c: string, n: number) => {
+    if (!(STAGEABLE_CATEGORIES as readonly string[]).includes(c)) return;
+    const key = supplierKey(supplier);
+    const per = tally.get(key) ?? new Map<string, number>();
+    per.set(c, (per.get(c) ?? 0) + n);
+    tally.set(key, per);
+  };
   for (const g of groups) {
-    if (!g.supplierName) continue;
     const c = code.get(g.emissionCategoryId);
-    if (!c || !(STAGEABLE_CATEGORIES as readonly string[]).includes(c)) continue;
-    const key = supplierKey(g.supplierName);
-    const n = g._count._all;
-    if (!best.has(key) || n > best.get(key)!.n) best.set(key, { code: c, n });
+    if (g.supplierName && c) add(g.supplierName, c, g._count._all);
   }
-  return new Map([...best].map(([k, v]) => [k, v.code]));
+  for (const g of confirmed) add(g.supplierName, g.category, g._count._all);
+
+  return new Map(
+    [...tally].map(([key, per]) => [key, [...per].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0]]),
+  );
 }
 
 export async function loadLedgerLines(orgId: string, limit = 500): Promise<LedgerLineView[]> {
