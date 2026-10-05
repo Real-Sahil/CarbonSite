@@ -23,10 +23,10 @@ const COLUMNS = [
   "emissionCategoryCode", "amount", "unit", "activityDate", "startDate", "endDate",
   "sourceDescription", "facilityName", "businessUnitName", "supplierName", "country", "region",
   "fuelType", "transportMode", "refrigerantType", "distanceAmount", "distanceUnit",
-  "spendAmount", "spendCurrency", "scope2Method", "assumptionNotes",
+  "spendAmount", "spendCurrency", "scope2Method", "assumptionNotes", "industryCode",
 ] as const;
 
-type CsvRecord = ConnectorActivityRecord & { distanceAmount?: number; distanceUnit?: string };
+type CsvRecord = ConnectorActivityRecord & { distanceAmount?: number; distanceUnit?: string; industryCode?: string };
 
 const day = (d?: Date) => (d ? d.toISOString().slice(0, 10) : "");
 
@@ -61,6 +61,7 @@ export function recordsToCsv(records: CsvRecord[]): string {
       spendCurrency: r.spendCurrency,
       scope2Method: r.scope2Method,
       assumptionNotes: r.validationWarnings?.join("; "),
+      industryCode: r.industryCode,
     };
     lines.push(COLUMNS.map((c) => cell(row[c])).join(","));
   }

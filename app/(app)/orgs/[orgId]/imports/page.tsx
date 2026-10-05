@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Card,
@@ -112,6 +113,13 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
               <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
                 Upload, validate, and commit activity data. CSV and XLSX templates accepted up to 50 MB.
               </p>
+              {isAdminOrEditor ? (
+                <p className="mt-2 text-sm">
+                  <Link href={`/orgs/${orgId}/imports/from-accounting`} className="font-medium text-[#111827] underline underline-offset-4">
+                    Stage lines from your accounting system
+                  </Link>
+                </p>
+              ) : null}
             </div>
           </div>
 

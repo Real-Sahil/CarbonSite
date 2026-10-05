@@ -34,6 +34,7 @@ export type AuditAction =
   | "evidence.download_requested"
   | "evidence.downloaded"
   | "evidence.removed"
+  | "ledger.lines_staged"
   | "import.created"
   | "import.committed"
   | "import.failed"
