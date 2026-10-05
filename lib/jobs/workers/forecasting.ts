@@ -5,7 +5,8 @@
  */
 
 import { prisma } from "@/lib/db";
-import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
+import { PRIMARY_SCOPE2_METHOD, SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
+import { monthlySeriesFromSlices } from "@/lib/forecasting/monthly";
 import type { Prisma } from "@prisma/client";
 import { selectForecast } from "@/lib/forecasting/select";
 import { explainForecast } from "@/lib/explainability/forecast-explainer";
@@ -243,6 +244,15 @@ export async function getEmissionsHistory(
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);
   startDate.setDate(1);
+
+  // Monthly figures from the live slices, when records are dated densely enough. Annual reporting
+  // periods would otherwise give one point a year.
+  const slices = await prisma.dashboardSlice.findMany({
+    where: { organizationId: orgId, snapshotId: null, ...PRIMARY_SCOPE2_METHOD, month: { gte: startDate } },
+    select: { month: true, totalCo2e: true },
+  });
+  const monthly = monthlySeriesFromSlices(slices.map((s) => ({ month: s.month, totalCo2e: Number(s.totalCo2e) })));
+  if (monthly) return monthly;
 
   // Get monthly totals from DashboardAggregate via ReportingPeriod
   const aggregates = await prisma.dashboardAggregate.findMany({

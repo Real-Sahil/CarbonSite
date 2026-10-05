@@ -53,6 +53,7 @@ Forecasts are planning aids. They are not part of any inventory or regulatory su
 | F2 | **Ranges can be too narrow on short history** | On the demo series the share of actual values inside the 95% range was 77% with 9 months of history and 90% with 12. Confidence is labelled 0.65 under 19 samples. | `metadata.intervalMethod`, `intervalSamples` |
 | F3 | **Prophet ranges can be overconfident** | On the demo series Prophet's ranges were very narrow and its holdout error was larger than simple models'. It competes only with 24 or more months and only if it reports a real holdout score. | `api/forecast.py`, `metadata.selection` |
 | F4 | **Seasonal models untested in practice** | The demo data has no within-year seasonality, so the seasonal candidates were never the winner and their behaviour on real seasonal data is unproven. | `selectForecast()` |
+| F7 | **Sparse dating** | The monthly series needs records in at least 12 distinct months; with quarterly bills the forecast keeps one point per reporting period and says so ("too few points to compare models"). | `lib/forecasting/monthly.ts` |
 | F5 | **Small samples** | Below 8 points the older engine answers without a model comparison. | `MIN_POINTS_TO_COMPARE` |
 | F6 | **Heavier libraries not available** | `statsforecast`, `statsmodels`, `sktime`, `darts` exceed the 250 MB Vercel function limit (about 510 MB measured), so only dependency-free models and Prophet are used. | `CLAUDE.md`, Forecasting |
 
