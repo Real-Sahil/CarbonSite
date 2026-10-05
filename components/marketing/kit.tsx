@@ -12,6 +12,18 @@ import { LoopVideo } from "@/components/marketing/loop-video";
 
 export type Tone = "dark" | "paper" | "light";
 
+/** Attributes String Tune reads (components/marketing/string-tune.tsx); inert until its script runs. An empty key only marks the element in view (-inview). */
+const st = (key: string, extra: Record<string, string> = {}) => ({ string: key, ...extra }) as Record<string, string>;
+
+/** Fades its children up the first time they scroll into view. Keep it off anything in the first screen. */
+export function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
+  return (
+    <div {...st("")} data-st="reveal" style={delay ? ({ "--st-delay": `${delay}ms` } as React.CSSProperties) : undefined} className={className}>
+      {children}
+    </div>
+  );
+}
+
 export function Container({ children, className }: { children: ReactNode; className?: string }) {
   return <div className={cn("mx-auto w-full max-w-[1200px] px-5 sm:px-8", className)}>{children}</div>;
 }
@@ -52,7 +64,7 @@ export function Section({
 function BackgroundVideo({ src, poster, tone }: { src: string; poster?: string; tone: Tone }) {
   const dark = tone === "dark";
   return (
-    <div aria-hidden="true" className="absolute inset-0 -z-10">
+    <div aria-hidden="true" {...st("progress", { "data-st": "drift" })} className="absolute inset-0 -z-10">
       <LoopVideo decorative src={src} poster={poster} className={cn("h-full w-full scale-110 object-cover blur-[6px]", dark ? "opacity-40" : "opacity-20")} />
       <div
         className={cn(
@@ -89,7 +101,10 @@ export function H1({ children, className }: { children: ReactNode; className?: s
 
 export function H2({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <h2 className={cn("text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-balance sm:text-[40px]", className)}>
+    <h2
+      {...(typeof children === "string" ? st("split", { "string-split": "word" }) : {})}
+      className={cn("text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-balance sm:text-[40px]", className)}
+    >
       {children}
     </h2>
   );
@@ -133,7 +148,11 @@ export function ButtonLink({
         ? "border border-white/20 text-mk-on-dark hover:border-white/40 hover:bg-white/5"
         : "border border-mk-text/20 text-mk-text hover:border-mk-text/40 hover:bg-mk-text/[0.03]";
   return (
-    <Link href={href} className={cn(base, styles, className)}>
+    <Link
+      href={href}
+      {...(variant === "primary" ? st("magnetic", { "string-strength": "0.25", "string-radius": "90" }) : {})}
+      className={cn(base, styles, className)}
+    >
       {children}
       {variant === "primary" ? <ArrowRight aria-hidden="true" className="h-4 w-4" /> : null}
     </Link>
@@ -172,8 +191,9 @@ export function CheckList({ items, tone = "light" }: { items: ReactNode[]; tone?
 /** A browser-window frame around a real product capture. Captures come from the demo tenant, so the label says so. */
 export function ProductFrame({ children, caption, tone = "light", className }: { children: ReactNode; caption?: string; tone?: Tone; className?: string }) {
   return (
-    <figure className={cn("m-0", className)}>
+    <figure {...st("")} data-st="reveal" className={cn("m-0", className)}>
       <div
+        {...st("tilt", { "string-tilt-max": "3" })}
         className={cn(
           "overflow-hidden rounded-[12px] border shadow-[0_24px_60px_-24px_rgba(11,16,14,0.35)]",
           tone === "dark" ? "border-white/10 bg-mk-ink-2" : "border-mk-line bg-mk-surface",
@@ -244,9 +264,19 @@ export function SectionIntro({
 }) {
   return (
     <div className={cn("flex flex-col gap-4", align === "center" && "items-center text-center")}>
-      {eyebrow ? <Eyebrow tone={tone}>{eyebrow}</Eyebrow> : null}
+      {eyebrow ? (
+        <Reveal>
+          <Eyebrow tone={tone}>{eyebrow}</Eyebrow>
+        </Reveal>
+      ) : null}
       <H2>{title}</H2>
-      {lead ? <Lead tone={tone} className={align === "center" ? "mx-auto" : undefined}>{lead}</Lead> : null}
+      {lead ? (
+        <Reveal delay={180}>
+          <Lead tone={tone} className={align === "center" ? "mx-auto" : undefined}>
+            {lead}
+          </Lead>
+        </Reveal>
+      ) : null}
     </div>
   );
 }

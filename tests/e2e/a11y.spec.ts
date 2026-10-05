@@ -8,6 +8,10 @@ import AxeBuilder from "@axe-core/playwright";
 
 test.skip(!process.env.E2E_LOCAL, "runs against the local build in CI's e2e-local job (E2E_LOCAL=1)");
 
+// The scroll effects (components/marketing/string-tune.tsx) fade content in, and axe would read
+// the colours mid-fade. Reduced motion is the page in its final state, which is what is checked.
+test.use({ contextOptions: { reducedMotion: "reduce" } });
+
 const PAGES = ["/", "/product", "/pricing", "/methodology", "/security", "/sign-in", "/sign-up"];
 
 for (const path of PAGES) {

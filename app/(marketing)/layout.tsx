@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { SiteNav } from "@/components/marketing/site-nav";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { AcquisitionCarry } from "@/components/marketing/acquisition-carry";
+import { StringTuneEffects } from "@/components/marketing/string-tune";
 
 // Every marketing page opens with a dark hero that sits under the fixed nav.
 export default function MarketingLayout({ children }: { children: ReactNode }) {
@@ -13,6 +14,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
       </main>
       <SiteFooter />
       <AcquisitionCarry />
+      <StringTuneEffects />
     </>
   );
 }

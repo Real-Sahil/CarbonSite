@@ -34,6 +34,9 @@ importers:
       '@dnd-kit/utilities':
         specifier: ^3.2.2
         version: 3.2.2(react@19.2.4)
+      '@fiddle-digital/string-tune':
+        specifier: ^1.2.6
+        version: 1.2.6
       '@number-flow/react':
         specifier: ^0.6.2
         version: 0.6.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1110,6 +1113,9 @@ packages:
 
   '@fastify/busboy@3.2.0':
     resolution: {integrity: sha512-m9FVDXU3GT2ITSe0UaMA5rU3QkfC/UXtCU8y0gSN/GugTqtVldOBWIB5V6V3sbmenVZUIpU6f+mPEO2+m5iTaA==}
+
+  '@fiddle-digital/string-tune@1.2.6':
+    resolution: {integrity: sha512-sfNITQHruA7K9rG6ca6YpazDUaEmLJtpPcz9QhJTuhLmU5Bd9oC6b8xjDZHKDFTqJBZusjGNd+6rQkFuouawOw==}
 
   '@firebase/app-check-interop-types@0.3.4':
     resolution: {integrity: sha512-zz3i6e13B8BfWiLy8MABtTh8aGIACgKbf9UVnyHcWs+yQzJXgQcl8A46b0zfaiJHdQ+niF0ouAfcpuf+3LMPQg==}
@@ -8649,6 +8655,8 @@ snapshots:
       '@noble/hashes': 2.2.0
 
   '@fastify/busboy@3.2.0': {}
+
+  '@fiddle-digital/string-tune@1.2.6': {}
 
   '@firebase/app-check-interop-types@0.3.4': {}
 

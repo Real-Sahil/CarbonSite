@@ -537,3 +537,29 @@
 .mk-prose th { color: var(--color-mk-text); font-weight: 600; }
 .mk-prose section > * + * { margin-top: 1em; }
 .mk-prose section + section { margin-top: 2.2em; }
+
+/* Marketing scroll and pointer effects (String Tune, components/marketing/string-tune.tsx).
+   Every rule sits under .st-on, which the script adds only once the library is running and the
+   visitor has not asked for reduced motion, so the plain page is always complete. */
+.st-on [data-st="reveal"] {
+  transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--st-delay, 0s), translate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--st-delay, 0s);
+}
+.st-on [data-st="reveal"][string-inited]:not(.-inview) { opacity: 0; translate: 0 22px; }
+
+.st-on [string="split"] .-s-word {
+  display: inline-block;
+  transition: opacity 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), translate 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition-delay: calc(var(--word-index, 0) * 55ms);
+}
+.st-on [string="split"]:not(.-inview) .-s-word { opacity: 0; translate: 0 0.45em; }
+
+/* Scroll-linked drift for a background (--progress runs 0 to 1 as it crosses the screen). */
+.st-on [string="progress"][data-st="drift"] { translate: 0 calc((var(--progress, 0.5) - 0.5) * -48px); }
+
+.st-on [string="magnetic"] { translate: calc(var(--magnetic-x, 0) * 1px) calc(var(--magnetic-y, 0) * 1px); }
+
+.st-on [string="tilt"] {
+  transform: perspective(1400px) rotateX(calc(var(--tilt-y, 0) * -1deg)) rotateY(calc(var(--tilt-x, 0) * 1deg));
+  transition: transform 0.25s ease-out;
+  will-change: transform;
+}
