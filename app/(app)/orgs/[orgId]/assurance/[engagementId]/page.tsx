@@ -8,6 +8,7 @@ import type { OrgRole } from "@prisma/client";
 import { ArrowLeft } from "lucide-react";
 import { checkSignOffReadiness } from "@/lib/assurance/engagement";
 import { EngagementWorkspace } from "./workspace";
+import { VerifierLinks } from "./verifier-links";
 
 const MANAGE_ROLES: OrgRole[] = ["admin", "sustainability_director", "auditor"];
 const RESPOND_ROLES: OrgRole[] = ["admin", "sustainability_director", "sustainability_manager", "editor"];
@@ -169,6 +170,10 @@ export default async function EngagementDetailPage({ params }: PageProps) {
           raisedBy: f.raisedBy.name ?? f.raisedBy.email,
         }))}
       />
+
+      {packSnapshot && ["admin", "sustainability_director"].includes(role!) && (
+        <VerifierLinks orgId={orgId} engagementId={engagementId} snapshotId={packSnapshot.id} />
+      )}
     </div>
   );
 }

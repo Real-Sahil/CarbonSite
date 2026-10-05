@@ -217,6 +217,16 @@ export const PII_REGISTRY: PiiRegistryEntry[] = [
     },
   },
   {
+    model: "InventoryAuditorAccess",
+    label: "Inventory verifier links issued to you",
+    erasureStrategy: "redact",
+    where: (s) => ({ email: s.email ?? EMAIL_FALLBACK }),
+    redact: async (tx, s) => {
+      if (!s.email) return;
+      await tx.inventoryAuditorAccess.updateMany({ where: { email: s.email }, data: { email: null, name: "Redacted", revokedAt: new Date() } });
+    },
+  },
+  {
     model: "MsAuditorAccess",
     label: "Certification body auditor links issued to you",
     erasureStrategy: "redact",

@@ -19,6 +19,7 @@ import type { Archiver } from "archiver";
 import { prisma } from "@/lib/db";
 import { getObject } from "@/lib/storage";
 import { evidenceTier, EVIDENCE_TIER_LABEL, EVIDENCE_TIER_ORDER, summariseTiers } from "@/lib/data-quality/evidence-tier";
+import { recomputeFromFormula, type RecomputeStatus } from "./recompute";
 import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 
 export const MAX_EVIDENCE_BYTES = 200 * 1024 * 1024;
@@ -83,12 +84,13 @@ export async function writeAssurancePack(
   const orgFactorIds = new Set<string>();
   const recordIds: string[] = [];
   const tierRows: Parameters<typeof summariseTiers>[0] = [];
+  const recomputeCounts: Record<RecomputeStatus, number> = { matches: 0, differs: 0, not_checkable: 0 };
   let calcCsv = csvLine([
     "calculation_id", "activity_record_id", "scope", "scope2_method", "counts_in_headline", "category_code", "category_name",
     "facility", "site", "activity_date", "start_date", "end_date", "supplier", "source_description",
     "original_amount", "original_unit", "normalized_amount", "normalized_unit",
     "factor_source", "factor_id", "factor_library_version", "factor_value", "selection_reason", "formula",
-    "co2_kg", "ch4_kg_co2e", "n2o_kg_co2e", "biogenic_co2_kg", "total_kg_co2e", "warnings",
+    "co2_kg", "ch4_kg_co2e", "n2o_kg_co2e", "biogenic_co2_kg", "total_kg_co2e", "recompute_status", "recomputed_kg_co2e", "recompute_note", "warnings",
     "data_origin", "data_origin_note", "review_status", "evidence_status", "evidence_tier", "evidence_files",
   ]);
   let cursor: string | undefined;
@@ -146,6 +148,8 @@ export async function writeAssurancePack(
       if (c.organizationEmissionFactorId) orgFactorIds.add(c.organizationEmissionFactorId);
       recordIds.push(r.id);
       if (headline) tierRows.push({ dataOrigin: r.dataOrigin, evidenceStatus: r.evidenceStatus, reviewStatus: r.reviewStatus, totalCo2e: Number(c.totalCo2e) });
+      const rc = recomputeFromFormula({ formula: c.formula, normalizedAmount: Number(c.normalizedAmount), totalCo2e: Number(c.totalCo2e) });
+      recomputeCounts[rc.status]++;
       calcCsv += csvLine([
         c.id, r.id, r.emissionCategory.scope, method ?? "", headline ? "yes" : "no", r.emissionCategory.code, r.emissionCategory.name,
         r.facility?.name, r.site?.name, r.activityDate?.toISOString().slice(0, 10), r.startDate?.toISOString().slice(0, 10), r.endDate?.toISOString().slice(0, 10),
@@ -153,7 +157,7 @@ export async function writeAssurancePack(
         c.originalAmount, c.originalUnit, c.normalizedAmount, c.normalizedUnit,
         c.organizationEmissionFactorId ? "organisation" : c.emissionFactorId ? "library" : "none", c.organizationEmissionFactorId ?? c.emissionFactorId,
         c.factorLibraryVersion, c.factorValue, c.selectionReason, c.formula,
-        c.co2, c.ch4, c.n2o, c.biogenicCo2e, c.totalCo2e,
+        c.co2, c.ch4, c.n2o, c.biogenicCo2e, c.totalCo2e, rc.status, rc.recomputed == null ? "" : rc.recomputed.toFixed(6), rc.note,
         Array.isArray(c.warnings) && c.warnings.length ? (c.warnings as unknown[]).map(String).join(" | ") : "",
         r.dataOrigin, r.dataOriginNote, r.reviewStatus, r.evidenceStatus, EVIDENCE_TIER_LABEL[evidenceTier(r)],
         r.evidence.map((e) => e.evidenceFile.filename).join("; "),
@@ -298,7 +302,8 @@ export async function writeAssurancePack(
     `  audit-log.csv       ${auditRows} audit entries from the period start${auditRows >= MAX_AUDIT_ROWS ? ` (first ${MAX_AUDIT_ROWS})` : ""}, with hash chain`,
     `  manifest.sha256     SHA-256 of every file above`,
     ``,
-    `Stored calculations are immutable; nothing in this pack was recalculated.`,
+    `Recompute check (calculations.csv, recompute_status): each formula's own arithmetic was repeated and compared with the stored total. ${recomputeCounts.matches} agree, ${recomputeCounts.differs} differ, ${recomputeCounts.not_checkable} could not be read (for example records with no factor); list the differing and unreadable rows first. It does not look the factor up again: check factor values against factors.csv and the publisher's file.`,
+    `Stored calculations are immutable; nothing in this pack changed them.`,
     ``,
   ].join("\n");
   add("README.txt", readme);

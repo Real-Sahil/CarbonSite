@@ -432,6 +432,23 @@ function SamplesTab({
     }
   }
 
+  const [checks, setChecks] = useState<Record<string, { ok: boolean; text: string }>>({});
+
+  async function recompute(id: string) {
+    try {
+      const res = await fetch(`/api/orgs/${orgId}/assurance/samples/${id}/recompute`);
+      const body = (await res.json().catch(() => ({}))) as { status?: string; recomputed?: number | null; stored?: number; note?: string; message?: string };
+      if (!res.ok) {
+        setChecks((c) => ({ ...c, [id]: { ok: false, text: body.message ?? "Could not recompute." } }));
+        return;
+      }
+      const figures = body.recomputed == null ? "" : ` Recomputed ${body.recomputed.toFixed(2)} kg, stored ${body.stored?.toFixed(2)} kg.`;
+      setChecks((c) => ({ ...c, [id]: { ok: body.status === "matches", text: `${body.note ?? ""}${figures}` } }));
+    } catch {
+      setChecks((c) => ({ ...c, [id]: { ok: false, text: "Network error. Try again." } }));
+    }
+  }
+
   async function recordResult(id: string, result: string) {
     setError(null);
     try {
@@ -493,6 +510,19 @@ function SamplesTab({
                       {s.totalCo2e !== null && (
                         <div className="text-xs text-zinc-500">
                           {s.totalCo2e.toFixed(2)} tCO₂e{s.dataOrigin ? ` · ${s.dataOrigin}` : ""}
+                        </div>
+                      )}
+                      {canManage && (
+                        <div className="mt-1">
+                          <button type="button" onClick={() => recompute(s.id)} className="text-xs font-medium text-zinc-700 underline underline-offset-2">
+                            Recompute
+                          </button>
+                          {checks[s.id] && (
+                            <p role="status" className={`mt-1 max-w-[40ch] text-xs ${checks[s.id].ok ? "text-emerald-700" : "text-red-700"}`}>
+                              {checks[s.id].ok ? "Agrees. " : "Check. "}
+                              {checks[s.id].text}
+                            </p>
+                          )}
                         </div>
                       )}
                     </TableCell>

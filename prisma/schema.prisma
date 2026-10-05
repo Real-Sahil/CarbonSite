@@ -416,6 +416,7 @@ model Organization {
   impactAlerts                   ImpactAlert[]                    @relation("OrgImpactAlerts")
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
   externalApiCredentials         ExternalApiCredential[]          @relation("OrgExternalApiCredentials")
+  inventoryAuditorAccesses       InventoryAuditorAccess[]
 
   @@index([acquisitionSource])
   @@map("organizations")
@@ -7934,6 +7935,31 @@ model MsAuditorAccess {
 
   @@index([organizationId])
   @@map("ms_auditor_accesses")
+}
+
+/// Read-only, time-limited access for an independent verifier to one published
+/// snapshot's assurance pack, without a paid seat. Only the SHA-256 of the
+/// token is kept. snapshotId and engagementId are plain columns checked against
+/// the organisation when the link is made and again when it is used.
+model InventoryAuditorAccess {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  snapshotId      String    @map("snapshot_id")
+  engagementId    String?   @map("engagement_id")
+  name            String
+  email           String?
+  company         String?
+  tokenHash       String    @unique @map("token_hash")
+  expiresAt       DateTime  @map("expires_at")
+  revokedAt       DateTime? @map("revoked_at")
+  lastUsedAt      DateTime? @map("last_used_at")
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, snapshotId])
+  @@map("inventory_auditor_accesses")
 }
 
 /// The organisation's reusable answer to one pre-qualification topic, used

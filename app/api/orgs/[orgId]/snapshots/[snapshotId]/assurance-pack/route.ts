@@ -2,14 +2,11 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 import { NextRequest } from "next/server";
-import { PassThrough, Readable } from "node:stream";
-import * as Sentry from "@sentry/nextjs";
-import { ZipArchive } from "archiver";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
-import { writeAssurancePack } from "@/lib/assurance/pack";
+import { assurancePackResponse } from "@/lib/assurance/pack-response";
 
 type Params = { params: Promise<{ orgId: string; snapshotId: string }> };
 
@@ -46,29 +43,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       metadata: { engagementId },
     });
 
-    const archive = new ZipArchive({ zlib: { level: 6 } });
-    const out = new PassThrough();
-    archive.on("error", (err) => {
-      Sentry.captureException(err);
-      out.destroy(err);
-    });
-    archive.pipe(out);
-    void writeAssurancePack(archive, { orgId, snapshotId: snapshot.id, engagementId, generatedBy: session.user.id })
-      .then(() => archive.finalize())
-      .catch((err) => {
-        Sentry.captureException(err);
-        archive.abort();
-        out.destroy(err instanceof Error ? err : new Error(String(err)));
-      });
-
-    const slug = snapshot.reportingPeriod.label.replace(/[^\w.-]+/g, "-").slice(0, 40);
-    return new Response(Readable.toWeb(out) as ReadableStream, {
-      headers: {
-        "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="assurance-pack-${slug}-v${snapshot.version}.zip"`,
-        "Cache-Control": "no-store",
-      },
-    });
+    return assurancePackResponse({ orgId, snapshot, engagementId, generatedBy: session.user.id });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -6,9 +6,10 @@ Written 5 October 2026 from the repository at that date. Re-check against the co
 
 ## 1. How to reproduce a figure
 
+0. If you are an outside verifier without a seat, the organisation can send you a read-only, time-limited link to the snapshot's assurance pack (Engagement page → Verifier link); every visit and download is logged in their audit log.
 1. Open a published snapshot and use **Trace a figure** (`/orgs/{orgId}/lineage`): headline split by evidence tier, category totals, then calculations largest first with record, factor, formula, selection reason, warnings and evidence.
 2. Download the **assurance pack** (`GET /api/orgs/{orgId}/snapshots/{snapshotId}/assurance-pack`): `calculations.csv` (every calculation with factor, selection reason, formula, warnings, tier), `factors.csv`, `evidence-index.csv` plus the files, `audit-log.csv` with the hash chain, `manifest.sha256`.
-3. Recompute a sample by hand: `amount (normalised unit) x factor` from `factors.csv`, using the formula string on each row. Calculation rows are immutable; a new run writes new rows.
+3. Start from `recompute_status` in `calculations.csv` (the formula's own arithmetic repeated; list `differs` and `not_checkable` first), then check factor values against `factors.csv` and the publisher's file, and recompute a sample by hand from the formula string on each row. A formula amount that differs from the normalised amount is flagged in the note: it is the unit conversion to the factor's unit or spend deflation, to be checked against the record. Calculation rows are immutable; a new run writes new rows.
 4. Pick the sample with extra weight on the items in section 2.
 
 Existing automated checks worth reading first: `lib/calculation/__tests__/` (units, factor selection, engine, Scope 2 instruments, spend, library fallback, regional grid, Monte Carlo, pedigree), `report-dashboard-reconciliation.test.ts` (report totals equal dashboard totals), `tests/golden/pilot-inventory.test.ts`, `tests/security/` (tenant isolation). These are the platform's own tests, not independent evidence.
