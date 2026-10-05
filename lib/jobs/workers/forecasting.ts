@@ -7,7 +7,7 @@
 import { prisma } from "@/lib/db";
 import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 import type { Prisma } from "@prisma/client";
-import { autoForecast } from "@/lib/forecasting/engine";
+import { selectForecast } from "@/lib/forecasting/select";
 import { explainForecast } from "@/lib/explainability/forecast-explainer";
 
 interface ForecastPrediction {
@@ -25,6 +25,9 @@ interface ForecastResult {
   metadata: Record<string, unknown>;
   trainingDataPoints: number;
 }
+
+/** Prophet needs about two years of monthly points to identify yearly seasonality (see api/forecast.py). */
+const PROPHET_MIN_POINTS = 24;
 
 function appOrigin(): string | null {
   const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
@@ -122,12 +125,14 @@ export async function processForecastingJob(
       return;
     }
 
-    // Prefer Prophet (real seasonal decomposition, cross-validated accuracy)
-    // and fall back to the pure-TS engine if the Python service is
-    // unreachable or the data is unsuitable for it.
-    const forecast =
-      (await tryProphetForecast(historicalData, forecastMonths)) ??
-      autoForecast(historicalData, forecastMonths);
+    // Every candidate forecasts the last few months from the earlier ones and the lowest
+    // error wins (lib/forecasting/select.ts). Prophet only enters with two years of history,
+    // where its yearly seasonality is identified; it is skipped when the service is down.
+    const prophet =
+      historicalData.length >= PROPHET_MIN_POINTS
+        ? await tryProphetForecast(historicalData, forecastMonths)
+        : null;
+    const forecast = selectForecast(historicalData, forecastMonths, prophet);
 
     // Generate explainability for first prediction (most relevant)
     const historicalValues = historicalData.map((d) => d.value);
@@ -136,9 +141,11 @@ export async function processForecastingJob(
     const seasonalComponent = forecast.metadata.seasonalComponent as number | undefined;
 
     const explanationMethod =
-      forecast.method === "prophet" || forecast.method === "seasonal_decomposition"
-        ? forecast.method
-        : "exponential_smoothing";
+      forecast.method === "prophet"
+        ? "prophet"
+        : forecast.method === "seasonal_decomposition" || forecast.method.startsWith("seasonal_")
+          ? "seasonal_decomposition"
+          : "exponential_smoothing";
 
     const explanation = explainForecast(
       historicalValues,
