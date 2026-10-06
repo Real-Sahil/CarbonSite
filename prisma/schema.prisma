@@ -417,6 +417,8 @@ model Organization {
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
   externalApiCredentials         ExternalApiCredential[]          @relation("OrgExternalApiCredentials")
   inventoryAuditorAccesses       InventoryAuditorAccess[]
+  materialClassifications MaterialClassification[]
+  materialMovements MaterialMovement[]
   fuelStores                     FuelStore[]
   fuelDeliveries                 FuelDelivery[]
   fuelIssues                     FuelIssue[]
@@ -7315,6 +7317,96 @@ model FuelDip {
 
   @@index([storeId, dippedOn])
   @@map("fuel_dips")
+}
+
+/// A stockpile or source area of contaminated or hazardous material, classified
+/// by the organisation's competent person before it moves. Free text and
+/// string lists, not enums, because the organisation owns the classification.
+model MaterialClassification {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  siteId              String?   @map("site_id")
+  projectId           String?   @map("project_id")
+  name                String
+  /// contaminated_soil | asbestos | invasive_species | other_hazardous | biological | other
+  materialKind        String    @map("material_kind")
+  description         String?
+  ewcCode             String?   @map("ewc_code")
+  hazardous           Boolean   @default(false)
+  /// HP1 to HP15 as the organisation records them.
+  hazardousProperties String[]  @default([]) @map("hazardous_properties")
+  /// Laboratory report or sample reference the classification rests on.
+  labReference        String?   @map("lab_reference")
+  classifiedBy        String?   @map("classified_by")
+  classifiedOn        DateTime? @map("classified_on") @db.Date
+  /// A disposal route value from the waste register (e.g. hazardous_landfill, recycling_mixed).
+  plannedRoute        String?   @map("planned_route")
+  estimatedTonnes     Decimal?  @map("estimated_tonnes") @db.Decimal(12, 3)
+  /// draft | approved | withdrawn
+  status              String    @default("draft")
+  approvedByUserId    String?   @map("approved_by_user_id")
+  approvedAt          DateTime? @map("approved_at")
+  evidenceFileIds     String[]  @default([]) @map("evidence_file_ids")
+  notes               String?
+  createdByUserId     String?   @map("created_by_user_id")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  movements    MaterialMovement[]
+
+  @@index([organizationId, siteId])
+  @@index([organizationId, status])
+  @@map("material_classifications")
+}
+
+/// One load or consignment of classified material leaving a site. Receipt
+/// writes the existing WasteRecord, so waste totals, ESRS E5 and the carbon
+/// calculation come from the one pipeline.
+model MaterialMovement {
+  id                       String    @id @default(cuid())
+  organizationId           String    @map("organization_id")
+  siteId                   String    @map("site_id")
+  projectId                String?   @map("project_id")
+  /// The facility the waste is booked to once received (WasteRecord needs one).
+  facilityId               String?   @map("facility_id")
+  classificationId         String    @map("classification_id")
+  /// planned | dispatched | received | rejected | cancelled
+  status                   String    @default("planned")
+  plannedOn                DateTime  @map("planned_on") @db.Date
+  dispatchedAt             DateTime? @map("dispatched_at")
+  receivedOn               DateTime? @map("received_on") @db.Date
+  plannedTonnes            Decimal   @map("planned_tonnes") @db.Decimal(12, 3)
+  ticketTonnes             Decimal?  @map("ticket_tonnes") @db.Decimal(12, 3)
+  disposalRoute            String?   @map("disposal_route")
+  destinationName          String    @map("destination_name")
+  destinationPermit        String?   @map("destination_permit")
+  /// The EWC codes the destination's permit or exemption covers, as the organisation entered them.
+  destinationAuthorisedEwc String[]  @default([]) @map("destination_authorised_ewc")
+  carrierName              String?   @map("carrier_name")
+  carrierRegistration      String?   @map("carrier_registration")
+  carrierRegistrationExpiry DateTime? @map("carrier_registration_expiry") @db.Date
+  vehicleRegistration      String?   @map("vehicle_registration")
+  /// Waste transfer note, or hazardous waste consignment note, reference.
+  noteReference            String?   @map("note_reference")
+  haulDistanceKm           Decimal?  @map("haul_distance_km") @db.Decimal(10, 2)
+  returnedCopyDue          DateTime? @map("returned_copy_due") @db.Date
+  returnedCopyOn           DateTime? @map("returned_copy_on") @db.Date
+  evidenceFileIds          String[]  @default([]) @map("evidence_file_ids")
+  wasteRecordId            String?   @unique @map("waste_record_id")
+  rejectionReason          String?   @map("rejection_reason")
+  notes                    String?
+  createdByUserId          String?   @map("created_by_user_id")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  classification MaterialClassification @relation(fields: [classificationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, status, plannedOn])
+  @@index([organizationId, siteId, plannedOn])
+  @@index([classificationId])
+  @@map("material_movements")
 }
 
 /// What an organisation wants to hear about on Find a Tender (lib/tenders).

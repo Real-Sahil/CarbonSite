@@ -107,6 +107,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Biodiversity",   href: `/orgs/${orgId}/biodiversity`,               icon: Sprout,      roles: EXTENDED_VIEW_ROLES },
         { label: "Ecology scans", href: `/orgs/${orgId}/ecology`,                     icon: Leaf,        roles: EXTENDED_VIEW_ROLES },
         { label: "Water",         href: `/orgs/${orgId}/water`,                       icon: Droplets,    roles: EXTENDED_VIEW_ROLES },
+        { label: "Material movements", href: `/orgs/${orgId}/material-movements`, icon: Truck, roles: EXTENDED_VIEW_ROLES },
         { label: "Waste",                href: `/orgs/${orgId}/waste`,              icon: Trash2,       roles: EXTENDED_VIEW_ROLES },
         { label: "Enforcement notices",  href: `/orgs/${orgId}/enforcement-notices`, icon: Gavel,        roles: EXTENDED_VIEW_ROLES },
       ]},

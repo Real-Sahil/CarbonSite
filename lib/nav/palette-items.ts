@@ -18,6 +18,7 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { label: "Suppliers", path: "suppliers", keywords: "supplier health", roles: CORE },
   { label: "Commuting", path: "commuting", keywords: "employee travel survey", roles: CORE },
   { label: "Tasks", path: "tasks" },
+  { label: "Material movements", path: "material-movements", keywords: "contaminated soil hazardous waste consignment note classification loads duty of care asbestos knotweed", roles: EXTENDED },
   { label: "Fuel", path: "fuel", keywords: "bowser tank diesel hvo deliveries issues dips machines litres plant", roles: CORE },
   { label: "Calculations", path: "calculations", keywords: "runs factors", roles: CORE },
   { label: "Analytics", path: "analytics", keywords: "charts", roles: CORE },
