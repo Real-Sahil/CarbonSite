@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { firstEvidenceMismatch, sealAfterApproval } from "@/lib/evidence/seal";
 import { NO_CATEGORY_TYPES } from "@/lib/field-submissions/safety-capture";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
@@ -51,6 +52,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     let updated;
 
     if (body.action === "approved") {
+      const changedFile = await firstEvidenceMismatch(orgId, submission.files.map((f) => f.evidenceFileId));
+      if (changedFile) return apiError("EVIDENCE_CHECKSUM_MISMATCH", "An evidence file no longer matches its recorded SHA-256, so it was changed after upload. Do not approve it.", 422, { evidenceId: changedFile });
       const emissionCategoryId = body.emissionCategoryId ?? submission.emissionCategoryId;
       const resolvedFacilityId = body.facilityId ?? submission.facilityId;
       const blocker = approvalBlocker(submission, emissionCategoryId, resolvedFacilityId);
@@ -105,6 +108,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
       activityRecordId = result.activityRecordId;
       updated = result.submission;
+      await sealAfterApproval(orgId, result.activityRecordId, submissionId, session.user.id);
 
       if (result.embodied) {
         await writeAuditLog({

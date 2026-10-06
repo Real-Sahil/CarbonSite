@@ -418,6 +418,7 @@ model Organization {
   externalApiCredentials         ExternalApiCredential[]          @relation("OrgExternalApiCredentials")
   inventoryAuditorAccesses       InventoryAuditorAccess[]
   materialClassifications MaterialClassification[]
+  recordSeals RecordSeal[]
   materialMovements MaterialMovement[]
   fuelStores                     FuelStore[]
   fuelDeliveries                 FuelDelivery[]
@@ -1291,6 +1292,8 @@ model EvidenceFile {
   virusScanStatus  VirusScanStatus @default(pending) @map("virus_scan_status")
   scanTimestamp    DateTime?       @map("scan_timestamp")
   scanProvider     String?         @map("scan_provider")
+  /// When the server read the stored bytes back and found their SHA-256 equal to `checksum`.
+  verifiedAt       DateTime?       @map("verified_at")
   createdAt        DateTime        @default(now()) @map("created_at")
 
   organization       Organization             @relation(fields: [organizationId], references: [id])
@@ -7407,6 +7410,30 @@ model MaterialMovement {
   @@index([organizationId, siteId, plannedOn])
   @@index([classificationId])
   @@map("material_movements")
+}
+
+/// An immutable seal over an approved activity record: its figures, the
+/// SHA-256 of every evidence file behind it, what the device reported at
+/// capture, and the reviewer. The seal hash is also written into the audit
+/// log's hash chain (`record.sealed`), so altering this row or the record or a
+/// file afterwards is detectable. A later seal of the same record links to the
+/// one before it. Plain ids, so deleting a record never deletes its seal.
+model RecordSeal {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  activityRecordId String   @map("activity_record_id")
+  version          Int
+  sealHash         String   @map("seal_hash")
+  previousSealHash String?  @map("previous_seal_hash")
+  payload          Json
+  sealedByUserId   String?  @map("sealed_by_user_id")
+  sealedAt         DateTime @default(now()) @map("sealed_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([activityRecordId, version])
+  @@index([organizationId, activityRecordId])
+  @@map("record_seals")
 }
 
 /// What an organisation wants to hear about on Find a Tender (lib/tenders).

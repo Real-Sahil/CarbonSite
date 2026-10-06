@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { firstEvidenceMismatch } from "@/lib/evidence/seal";
 import { fuelSubmissionError } from "@/lib/field-submissions/fuel-capture";
 import { SAFETY_TYPES, safetySubmissionError } from "@/lib/field-submissions/safety-capture";
 import { NextRequest } from "next/server";
@@ -306,6 +307,12 @@ export async function POST(req: NextRequest, { params }: Params) {
           422,
         );
       }
+    }
+    // The server reads each uploaded file back: bytes that do not hash to the checksum the device
+    // sent were changed after capture, and are refused.
+    if (body.evidenceIds && body.evidenceIds.length > 0) {
+      const bad = await firstEvidenceMismatch(orgId, body.evidenceIds);
+      if (bad) return apiError("EVIDENCE_CHECKSUM_MISMATCH", "An uploaded file does not match the checksum the device recorded for it. Take the photo again.", 422, { evidenceId: bad });
     }
     if (body.facilityId) {
       const facility = await prisma.facility.findFirst({

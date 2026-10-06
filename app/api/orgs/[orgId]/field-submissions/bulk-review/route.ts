@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { firstEvidenceMismatch, sealAfterApproval } from "@/lib/evidence/seal";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -110,6 +111,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const notifiable: { submissionId: string; recipientUserId: string; activityRecordId: string | null }[] = [];
 
       for (const submission of submissions) {
+        const changedFile = await firstEvidenceMismatch(orgId, submission.files.map((f) => f.evidenceFileId));
+        if (changedFile) {
+          skipped.push({ id: submission.id, reason: "An evidence file no longer matches its recorded SHA-256." });
+          continue;
+        }
         const blocker = approvalBlocker(submission, submission.emissionCategoryId, submission.facilityId);
         if (blocker) {
           skipped.push({ id: submission.id, reason: blocker.message });
@@ -133,6 +139,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           continue;
         }
         approved.push(submission.id);
+        await sealAfterApproval(orgId, result.activityRecordId, submission.id, session.user.id);
         notifiable.push({
           submissionId: submission.id,
           recipientUserId: submission.submittedByUserId,

@@ -15,6 +15,7 @@
  *
  * Figures come from the stored immutable calculations; nothing is recalculated.
  */
+import { evidenceManifestJson, loadManifestSeals, VERIFY_EVIDENCE_SCRIPT, type ManifestFile } from "@/lib/evidence/bundle";
 import { createHash } from "crypto";
 import type { Archiver } from "archiver";
 import { prisma } from "@/lib/db";
@@ -203,7 +204,9 @@ export async function writeAssurancePack(
   add("factors.csv", factorCsv);
 
   // evidence-index.csv and evidence/
-  let evidenceCsv = csvLine(["evidence_id", "filename", "mime_type", "bytes", "sha256", "uploaded_at", "activity_record_ids", "included_as"]);
+  let evidenceCsv = csvLine(["evidence_id", "filename", "mime_type", "bytes", "sha256", "uploaded_at", "activity_record_ids", "included_as", "actual_sha256", "matches_recorded"]);
+  const evidenceFiles: ManifestFile[] = [];
+  let evidenceMismatches = 0;
   let evidenceBytes = 0;
   let evidenceIncluded = 0;
   let evidenceSkipped = 0;
@@ -221,13 +224,19 @@ export async function writeAssurancePack(
     }
     for (const { file, records } of byFile.values()) {
       let includedAs = "";
+      let actualSha = "";
       if (evidenceBytes + file.byteSize <= MAX_EVIDENCE_BYTES && file.storageKey && file.storageKey !== "pending") {
         try {
           const buf = await getObject(file.storageKey);
           let name = `evidence/${file.id}-${zipSafeName(file.filename)}`;
           while (usedNames.has(name)) name = `${name}_`;
           usedNames.add(name);
-          add(name, buf, file.checksum || undefined);
+          // The manifest and index carry the hash of the bytes actually in the pack. The checksum on
+          // file is the device's claim, and a file whose bytes differ from it must show.
+          add(name, buf);
+          actualSha = createHash("sha256").update(buf).digest("hex");
+          if (actualSha !== (file.checksum || "").toLowerCase()) evidenceMismatches++;
+          evidenceFiles.push({ path: name, evidenceId: file.id, sha256: actualSha, bytes: buf.length });
           evidenceBytes += buf.length;
           evidenceIncluded++;
           includedAs = name;
@@ -239,10 +248,13 @@ export async function writeAssurancePack(
         evidenceSkipped++;
         includedAs = "not included: pack size limit reached";
       }
-      evidenceCsv += csvLine([file.id, file.filename, file.mimeType, file.byteSize, file.checksum, file.createdAt, records.join(" "), includedAs]);
+      evidenceCsv += csvLine([file.id, file.filename, file.mimeType, file.byteSize, file.checksum, file.createdAt, records.join(" "), includedAs, actualSha, actualSha ? String(actualSha === (file.checksum || "").toLowerCase()) : ""]);
     }
   }
   add("evidence-index.csv", evidenceCsv);
+  const seals = await loadManifestSeals(opts.orgId, recordIds);
+  add("evidence-manifest.json", evidenceManifestJson(opts.orgId, evidenceFiles, seals));
+  add("verify-evidence.mjs", VERIFY_EVIDENCE_SCRIPT);
 
   // samples.csv
   if (opts.engagementId) {
@@ -302,12 +314,15 @@ export async function writeAssurancePack(
     `  calculations.csv    ${recordIds.length} calculations, one per record in the run`,
     `  factors.csv         ${libFactors.length} library and ${orgFactors.length} organisation factors`,
     `  evidence-index.csv  every evidence file on these records with its SHA-256`,
+    `  evidence-manifest.json  the SHA-256 of each file in evidence/ and ${seals.length} record seal(s)`,
+    `  verify-evidence.mjs  checks the files and seals on your machine, and that each seal is in audit-log.csv: node verify-evidence.mjs`,
     `  evidence/           ${evidenceIncluded} files included${evidenceSkipped ? `, ${evidenceSkipped} listed but not included (see evidence-index.csv)` : ""}`,
     ...(opts.engagementId ? [`  samples.csv         the engagement's sample and test results`] : []),
     `  audit-log.csv       ${auditRows} audit entries from the period start${auditRows >= MAX_AUDIT_ROWS ? ` (first ${MAX_AUDIT_ROWS})` : ""}, with hash chain`,
     `  verify-audit-log.mjs  checks that chain on your machine: node verify-audit-log.mjs audit-log.csv ${opts.orgId}`,
     `  manifest.sha256     SHA-256 of every file above`,
     ``,
+    `Evidence checksums: ${evidenceMismatches ? `${evidenceMismatches} file(s) in evidence/ do not hash to the checksum recorded when they were uploaded (see evidence-index.csv, matches_recorded). Treat them as changed after upload until explained.` : "every included file hashes to the checksum recorded when it was uploaded."} Seals fix an approved record's figures, its files' SHA-256 and the capture details; they prove nothing changed after sealing, not that a photograph was honest when taken. Records approved before sealing existed have no seal.`,
     `Recompute check (calculations.csv, recompute_status): each formula's own arithmetic was repeated and compared with the stored total. ${recomputeCounts.matches} agree, ${recomputeCounts.differs} differ, ${recomputeCounts.not_checkable} could not be read (for example records with no factor); list the differing and unreadable rows first. It does not look the factor up again: check factor values against factors.csv and the publisher's file.`,
     `Organisation id (needed to verify the audit trail): ${opts.orgId}`,
     chainCheck.status === "broken"

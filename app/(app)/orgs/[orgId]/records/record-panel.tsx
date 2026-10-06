@@ -32,14 +32,22 @@ type Detail = {
  * calculation with its formula and factor, and the evidence attached. It reads
  * the same org-scoped record API as the record page and links to it for edits.
  */
+type Seal = { sealed: boolean; latest: { version: number; sealHash: string; sealedAt: string; evidenceCount: number } | null; changes: string[]; versions: number };
+
 export function RecordPanel({ orgId, recordId, label }: { orgId: string; recordId: string; label: string }) {
   const [open, setOpen] = React.useState(false);
   const [detail, setDetail] = React.useState<Detail | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [seal, setSeal] = React.useState<Seal | null>(null);
 
   React.useEffect(() => {
     if (!open) return;
     let cancelled = false;
+    setSeal(null);
+    fetch(`/api/orgs/${orgId}/activity-records/${recordId}/seal`)
+      .then((r) => (r.ok ? (r.json() as Promise<Seal>) : null))
+      .then((d) => !cancelled && setSeal(d))
+      .catch(() => undefined);
     setDetail(null);
     setError(null);
     fetch(`/api/orgs/${orgId}/activity-records/${recordId}`)
@@ -95,6 +103,35 @@ export function RecordPanel({ orgId, recordId, label }: { orgId: string; recordI
               ) : (
                 <p className="text-xs text-[#6B7280]">Not calculated yet.</p>
               )}
+            </section>
+          ) : null}
+          {detail && seal ? (
+            <section className="rounded-[10px] border border-[#E5E7EB] p-3 text-sm">
+              <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-[#6B7280]">Evidence record</h3>
+              {!seal.sealed ? (
+                <p className="text-xs text-[#6B7280]">Not sealed. Records approved from the field app are sealed on approval.</p>
+              ) : seal.changes.length === 0 ? (
+                <>
+                  <p className="text-xs text-green-700">Sealed and unchanged since {new Date(seal.latest!.sealedAt).toLocaleDateString("en-GB")}: the figures and {seal.latest!.evidenceCount} evidence file{seal.latest!.evidenceCount === 1 ? "" : "s"} still match.</p>
+                  <p className="mt-1 break-all text-xs text-[#6B7280]">Seal {seal.latest!.sealHash.slice(0, 16)}… (version {seal.latest!.version})</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-xs font-medium text-amber-800">Changed since it was sealed on {new Date(seal.latest!.sealedAt).toLocaleDateString("en-GB")}:</p>
+                  <ul className="mt-1 list-disc pl-4 text-xs text-amber-800">{seal.changes.map((c) => <li key={c}>{c}</li>)}</ul>
+                  <p className="mt-1 text-xs text-[#6B7280]">If the change was a correction, a reviewer can seal the record again. The earlier seal stays on file.</p>
+                  <button
+                    type="button"
+                    className="mt-1 text-xs underline underline-offset-2"
+                    onClick={async () => {
+                      const r = await fetch(`/api/orgs/${orgId}/activity-records/${recordId}/seal`, { method: "POST" });
+                      if (!r.ok) { setError(((await r.json().catch(() => null)) as { message?: string } | null)?.message ?? "Could not seal the record."); return; }
+                      setSeal(await (await fetch(`/api/orgs/${orgId}/activity-records/${recordId}/seal`)).json());
+                    }}
+                  >Seal again</button>
+                </>
+              )}
+              <a className="mt-2 inline-block text-xs underline underline-offset-2" href={`/api/orgs/${orgId}/activity-records/${recordId}/evidence-bundle`}>Download evidence bundle</a>
             </section>
           ) : null}
           <div className="mt-auto flex gap-2">
