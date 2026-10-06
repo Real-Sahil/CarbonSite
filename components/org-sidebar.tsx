@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Upload, FileText, BarChart2, Calculator,
   Target, Settings, Users, Inbox, LogOut, ChevronDown,
   ChevronLeft, ChevronRight, Briefcase, Heart, MapPin, Clock, ListChecks, Bus, Landmark,
-  Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck, Tractor,
+  Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck, Tractor, Fuel,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
   TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban, Radio, Award,
@@ -90,6 +90,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
         { label: "Calculations",    href: `/orgs/${orgId}/calculations`,    icon: Calculator, roles: CORE_ROLES },
         { label: "Embodied carbon", href: `/orgs/${orgId}/embodied-carbon`, icon: Layers,     roles: CORE_ROLES },
         { label: "Plant",           href: `/orgs/${orgId}/plant`,           icon: Tractor,    roles: CORE_ROLES },
+        { label: "Fuel",            href: `/orgs/${orgId}/fuel`,            icon: Fuel,       roles: CORE_ROLES },
         { label: "Scenarios",       href: `/orgs/${orgId}/scenarios`,       icon: Sliders,    roles: CORE_ROLES },
       ]},
       { label: "Inventory governance", items: [

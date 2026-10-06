@@ -22,6 +22,30 @@ async function plantFactors(to: Date): Promise<PlantFactors> {
   return diesel ? { diesel, hvo: pick("-hvo-litre"), library: `${library.name} ${library.version}` } : null;
 }
 
+/** Litres of diesel and HVO on approved Scope 1 records, by site. Litres only: m3 also converts to litres in the unit registry, and a gas meter reading is not plant fuel. */
+export async function recordedFuelBySite(orgId: string, siteIds: string[], from: Date, to: Date) {
+  const recordedBySite = new Map<string, number>();
+  if (!siteIds.length) return recordedBySite;
+  const recorded = await prisma.activityRecord.findMany({
+    where: {
+      organizationId: orgId,
+      siteId: { in: siteIds },
+      reviewStatus: "approved",
+      emissionCategory: { scope: 1 },
+      activityDate: { gt: from, lte: to },
+    },
+    select: { siteId: true, amount: true, unit: true, fuelType: true },
+  });
+  for (const r of recorded) {
+    if (CUBIC_METRE_UNITS.has(r.unit.toLowerCase().trim())) continue;
+    if (!r.fuelType || !PLANT_FUEL.test(r.fuelType)) continue;
+    const litres = convertBetween(Number(r.amount), r.unit, "litre");
+    if (litres == null || !r.siteId) continue;
+    recordedBySite.set(r.siteId, (recordedBySite.get(r.siteId) ?? 0) + litres);
+  }
+  return recordedBySite;
+}
+
 export async function loadPlant(orgId: string, from: Date, to: Date) {
   const [assets, readings, factors] = await Promise.all([
     prisma.plantAsset.findMany({
@@ -37,28 +61,7 @@ export async function loadPlant(orgId: string, from: Date, to: Date) {
   ]);
 
   const siteIds = [...new Set(assets.map((a) => a.siteId).filter((s): s is string => !!s))];
-  const recorded = siteIds.length
-    ? await prisma.activityRecord.findMany({
-        where: {
-          organizationId: orgId,
-          siteId: { in: siteIds },
-          reviewStatus: "approved",
-          emissionCategory: { scope: 1 },
-          activityDate: { gt: from, lte: to },
-        },
-        select: { siteId: true, amount: true, unit: true, fuelType: true },
-      })
-    : [];
-  const recordedBySite = new Map<string, number>();
-  // Diesel and HVO measured in litres only: m3 also converts to litres in the
-  // unit registry, and a gas meter reading is not plant fuel.
-  for (const r of recorded) {
-    if (CUBIC_METRE_UNITS.has(r.unit.toLowerCase().trim())) continue;
-    if (!r.fuelType || !PLANT_FUEL.test(r.fuelType)) continue;
-    const litres = convertBetween(Number(r.amount), r.unit, "litre");
-    if (litres == null || !r.siteId) continue;
-    recordedBySite.set(r.siteId, (recordedBySite.get(r.siteId) ?? 0) + litres);
-  }
+  const recordedBySite = await recordedFuelBySite(orgId, siteIds, from, to);
 
   const n = (d: { toString(): string } | null) => (d == null ? null : Number(d));
   const summary = summarisePlant(

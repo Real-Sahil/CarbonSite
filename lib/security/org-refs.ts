@@ -18,6 +18,8 @@ export type OrgRefs = {
   methodStatementId?: string | null;
   activityRecordId?: string | null;
   evidenceFileId?: string | null;
+  plantAssetId?: string | null;
+  fuelStoreId?: string | null;
 } & { [userKey: `${string}UserId`]: string | null | undefined };
 
 const TABLES = {
@@ -32,6 +34,8 @@ const TABLES = {
   methodStatementId: ["methodStatement", "Method statement"],
   activityRecordId: ["activityRecord", "Activity record"],
   evidenceFileId: ["evidenceFile", "Evidence file"],
+  plantAssetId: ["plantAsset", "Machine"],
+  fuelStoreId: ["fuelStore", "Fuel store"],
 } as const;
 
 type Delegate = { findFirst: (args: { where: Record<string, unknown>; select: { id: true } }) => Promise<unknown> };

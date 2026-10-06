@@ -417,6 +417,10 @@ model Organization {
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
   externalApiCredentials         ExternalApiCredential[]          @relation("OrgExternalApiCredentials")
   inventoryAuditorAccesses       InventoryAuditorAccess[]
+  fuelStores                     FuelStore[]
+  fuelDeliveries                 FuelDelivery[]
+  fuelIssues                     FuelIssue[]
+  fuelDips                       FuelDip[]
 
   @@index([acquisitionSource])
   @@map("organizations")
@@ -7200,6 +7204,108 @@ model PlantTelematicsReading {
   @@unique([assetId, periodEnd])
   @@index([organizationId, periodEnd])
   @@map("plant_telematics_readings")
+}
+
+/// A bowser, fixed tank or IBC holding fuel on a site (lib/fuel). Deliveries go in,
+/// issues go out to machines and vehicles, dips measure what is left.
+model FuelStore {
+  id               String         @id @default(cuid())
+  organizationId   String         @map("organization_id")
+  siteId           String?        @map("site_id")
+  projectId        String?        @map("project_id")
+  name             String
+  /// bowser | fixed_tank | ibc
+  kind             String
+  /// diesel | gas_oil | hvo | hvo50 | petrol | kerosene (free text allowed, factor hints read it)
+  fuelType         String         @map("fuel_type")
+  capacityLitres   Decimal        @map("capacity_litres") @db.Decimal(12, 2)
+  ownership        PlantOwnership @default(owned)
+  /// Serial number or registration.
+  identifier       String?
+  bunded           Boolean?
+  lastInspectionOn DateTime?      @map("last_inspection_on") @db.Date
+  onSiteFrom       DateTime?      @map("on_site_from") @db.Date
+  onSiteTo         DateTime?      @map("on_site_to") @db.Date
+  active           Boolean        @default(true)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries   FuelDelivery[]
+  issues       FuelIssue[]
+  dips         FuelDip[]
+
+  @@index([organizationId, siteId])
+  @@index([organizationId, projectId])
+  @@map("fuel_stores")
+}
+
+/// Fuel delivered into a store.
+model FuelDelivery {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  storeId         String   @map("store_id")
+  deliveredOn     DateTime @map("delivered_on") @db.Date
+  fuelType        String   @map("fuel_type")
+  litres          Decimal  @db.Decimal(12, 2)
+  supplierName    String?  @map("supplier_name")
+  /// Delivery note or ticket number.
+  reference       String?
+  evidenceFileId  String?  @map("evidence_file_id")
+  note            String?
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  store        FuelStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, deliveredOn])
+  @@index([storeId, deliveredOn])
+  @@map("fuel_deliveries")
+}
+
+/// Fuel drawn from a store into a machine or vehicle.
+model FuelIssue {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  storeId        String   @map("store_id")
+  issuedOn       DateTime @map("issued_on") @db.Date
+  litres         Decimal  @db.Decimal(12, 2)
+  plantAssetId   String?  @map("plant_asset_id")
+  /// A vehicle or item that is not in the plant register.
+  vehicleLabel   String?  @map("vehicle_label")
+  /// Engine hours or odometer at the time, when read.
+  meterReading   Decimal? @map("meter_reading") @db.Decimal(14, 2)
+  issuedByUserId String?  @map("issued_by_user_id")
+  note           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  store        FuelStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, issuedOn])
+  @@index([storeId, issuedOn])
+  @@index([organizationId, plantAssetId, issuedOn])
+  @@map("fuel_issues")
+}
+
+/// A measured level in a store. The difference between this and what deliveries and
+/// issues predict is the variance.
+model FuelDip {
+  id              String   @id @default(cuid())
+  organizationId  String   @map("organization_id")
+  storeId         String   @map("store_id")
+  dippedOn        DateTime @map("dipped_on") @db.Date
+  litres          Decimal  @db.Decimal(12, 2)
+  note            String?
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  store        FuelStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@index([storeId, dippedOn])
+  @@map("fuel_dips")
 }
 
 /// What an organisation wants to hear about on Find a Tender (lib/tenders).
