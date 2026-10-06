@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { fuelSubmissionError } from "@/lib/field-submissions/fuel-capture";
 import { safetySubmissionError } from "@/lib/field-submissions/safety-capture";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
@@ -15,7 +16,7 @@ type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 const resubmitSchema = z.object({
   formData: z.record(z.unknown()),
   ocrExtractedData: z.record(z.unknown()).optional(),
-  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "water_meter_reading", "social_value", "hazard_report", "site_inspection", "other"]).optional(),
+  documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "water_meter_reading", "social_value", "hazard_report", "site_inspection", "fuel_log", "other"]).optional(),
   gpsLat: z.number().optional(),
   gpsLng: z.number().optional(),
   pickupPostcode: z.string().max(20).optional(),
@@ -105,6 +106,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     if ((body.documentType ?? original.documentType) === "social_value") {
       const svError = await socialValueSubmissionError(orgId, original.contractId, body.formData);
       if (svError) return apiError("INVALID_SOCIAL_VALUE", svError, 422);
+    }
+    if ((body.documentType ?? original.documentType) === "fuel_log") {
+      const fuelError = await fuelSubmissionError(orgId, original.siteId, body.formData as Record<string, unknown>);
+      if (fuelError) return apiError("INVALID_FORM_DATA", fuelError, 422);
     }
     const safetyError = await safetySubmissionError(orgId, body.documentType ?? original.documentType, body.formData as Record<string, unknown>);
     if (safetyError) return apiError("INVALID_FORM_DATA", safetyError, 422);

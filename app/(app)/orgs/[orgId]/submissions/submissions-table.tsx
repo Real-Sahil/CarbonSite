@@ -66,6 +66,7 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   water_meter_reading: "Water meter reading",
   social_value: "Social value",
   hazard_report: "Hazard or near miss",
+  fuel_log: "Fuel log",
   site_inspection: "Site inspection",
   other: "Other",
 };

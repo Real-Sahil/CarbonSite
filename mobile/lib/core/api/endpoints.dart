@@ -286,6 +286,80 @@ Future<SiteSocialValue> getSiteSocialValue(String orgId, String siteId) async {
 }
 
 // ---------------------------------------------------------------------------
+// Fuel (bowsers and tanks on a site, and the machines they fuel)
+// ---------------------------------------------------------------------------
+
+class FuelStoreOption {
+  final String id;
+  final String name;
+  final String kind;
+  final String fuelType;
+
+  const FuelStoreOption({
+    required this.id,
+    required this.name,
+    this.kind = 'bowser',
+    this.fuelType = 'diesel',
+  });
+
+  factory FuelStoreOption.fromJson(Map<String, dynamic> json) => FuelStoreOption(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? 'Fuel store',
+        kind: json['kind'] as String? ?? 'bowser',
+        fuelType: json['fuelType'] as String? ?? 'diesel',
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'kind': kind, 'fuelType': fuelType};
+}
+
+class FuelMachineOption {
+  final String id;
+  final String name;
+
+  const FuelMachineOption({required this.id, required this.name});
+
+  factory FuelMachineOption.fromJson(Map<String, dynamic> json) => FuelMachineOption(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? 'Machine',
+      );
+
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+}
+
+class SiteFuel {
+  final List<FuelStoreOption> stores;
+  final List<FuelMachineOption> machines;
+
+  const SiteFuel({this.stores = const [], this.machines = const []});
+
+  factory SiteFuel.fromJson(Map<String, dynamic> json) => SiteFuel(
+        stores: (json['stores'] as List? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(FuelStoreOption.fromJson)
+            .where((s) => s.id.isNotEmpty)
+            .toList(),
+        machines: (json['machines'] as List? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(FuelMachineOption.fromJson)
+            .where((m) => m.id.isNotEmpty)
+            .toList(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'stores': [for (final s in stores) s.toJson()],
+        'machines': [for (final m in machines) m.toJson()],
+      };
+}
+
+/// The active fuel stores and machines on a site. Cached by the caller.
+Future<SiteFuel> getSiteFuel(String orgId, String siteId) async {
+  final client = await getClient();
+  final response = await client.get('/api/orgs/$orgId/my-sites/$siteId/fuel');
+  final raw = response.data;
+  return raw is Map<String, dynamic> ? SiteFuel.fromJson(raw) : const SiteFuel();
+}
+
+// ---------------------------------------------------------------------------
 // Site inspections (checklists set up in the web app's management systems)
 // ---------------------------------------------------------------------------
 

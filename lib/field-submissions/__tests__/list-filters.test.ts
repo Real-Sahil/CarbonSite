@@ -52,6 +52,6 @@ describe("submissionWhere", () => {
 describe("document types", () => {
   it("has a plain label for every type", () => {
     expect(DOCUMENT_TYPES.every((t) => DOCUMENT_TYPE_LABELS[t].length > 0)).toBe(true);
-    expect(DOCUMENT_TYPES).toHaveLength(8);
+    expect(DOCUMENT_TYPES).toHaveLength(9);
   });
 });

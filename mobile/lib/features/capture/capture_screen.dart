@@ -233,6 +233,16 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     context.pushReplacement(Uri(path: '/social-value', queryParameters: query.isEmpty ? null : query).toString());
   }
 
+  /// Fuel deliveries, issues and dips are a form against the site's bowsers and tanks.
+  void _openFuelLog() {
+    final siteId = _selectedSiteId;
+    final query = <String, String>{
+      if (siteId != null && siteId.isNotEmpty) 'projectId': siteId,
+      if (_selectedSiteLabel != null) 'projectLabel': _selectedSiteLabel!,
+    };
+    context.pushReplacement(Uri(path: '/fuel-log', queryParameters: query.isEmpty ? null : query).toString());
+  }
+
   /// Hazard reports and inspections are forms, not document scans.
   void _openSiteSafety(String mode) {
     final siteId = _selectedSiteId;
@@ -780,6 +790,12 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     label: 'Social Value',
                     caption: 'Jobs, pay, training',
                     onTap: _openSocialValue,
+                  ),
+                  _TypeCard(
+                    icon: Icons.oil_barrel_outlined,
+                    label: 'Fuel Log',
+                    caption: 'Delivery, issue, dip',
+                    onTap: _openFuelLog,
                   ),
                   _TypeCard(
                     icon: Icons.report_problem_outlined,

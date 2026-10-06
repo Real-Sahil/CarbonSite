@@ -158,9 +158,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         await writeAuditLog({
           organizationId: orgId,
           actorUserId: session.user.id,
-          action: result.svActivityId ? "sv_activity.create" : "record.created",
-          resourceType: result.svActivityId ? "sv_activity" : result.activityRecordId ? "activity_record" : "water_record",
-          resourceId: result.svActivityId ?? result.activityRecordId ?? submission.id,
+          action: result.fuel ? "fuel.entry_added" : result.svActivityId ? "sv_activity.create" : "record.created",
+          resourceType: result.fuel ? `fuel_${result.fuel.kind}` : result.svActivityId ? "sv_activity" : result.activityRecordId ? "activity_record" : "water_record",
+          resourceId: result.fuel?.fuelEntryId ?? result.svActivityId ?? result.activityRecordId ?? submission.id,
           metadata: { fromFieldSubmission: submission.id, bulk: true },
         });
       }

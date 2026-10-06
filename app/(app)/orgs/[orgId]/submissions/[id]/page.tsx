@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { fuelLogEntry } from "@/lib/field-submissions/fuel-capture";
 import { HAZARD_LABELS, hazardEntry, inspectionEntry } from "@/lib/field-submissions/safety-capture";
 import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
@@ -53,6 +54,7 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   water_meter_reading: "Water meter reading",
   social_value: "Social value",
   hazard_report: "Hazard or near miss",
+  fuel_log: "Fuel log",
   site_inspection: "Site inspection",
   other: "Other",
 };
@@ -212,9 +214,11 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
   const isSocialValue = submission.documentType === "social_value";
   // Hazard reports and inspections: no category, amount or route; approval
   // raises a corrective action, near-miss incident or inspection record.
-  const isSafety = submission.documentType === "hazard_report" || submission.documentType === "site_inspection";
+  // Fuel logs are handled the same way: a fuel store entry, no category or amount.
+  const isFuel = submission.documentType === "fuel_log";
+  const isSafety = submission.documentType === "hazard_report" || submission.documentType === "site_inspection" || isFuel;
   const safetyForm = (submission.formData ?? {}) as Record<string, unknown>;
-  const safetyParsed = !isSafety ? null : submission.documentType === "hazard_report" ? hazardEntry(safetyForm) : inspectionEntry(safetyForm);
+  const safetyParsed = !isSafety ? null : isFuel ? fuelLogEntry(safetyForm) : submission.documentType === "hazard_report" ? hazardEntry(safetyForm) : inspectionEntry(safetyForm);
   const svParsed = isSocialValue ? socialValueEntry((submission.formData ?? {}) as Record<string, unknown>) : null;
   const svEntry = svParsed && "entry" in svParsed ? svParsed.entry : null;
   const [svKpi, svActivity] = isSocialValue
@@ -424,7 +428,20 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               {submission.facility && (
                 <DetailRow label="Facility" value={submission.facility.name} />
               )}
-              {isSafety && safetyParsed && "entry" in safetyParsed && "kind" in safetyParsed.entry && (
+              {isFuel && safetyParsed && "entry" in safetyParsed && "action" in safetyParsed.entry && (
+                <>
+                  <DetailRow label="Entry" value={{ delivery: "Delivery into the store", issue: "Issue to a machine", dip: "Dip (level measured)" }[safetyParsed.entry.action]} />
+                  <DetailRow label="Date" value={safetyParsed.entry.on} />
+                  <DetailRow label="Litres" value={`${safetyParsed.entry.litres} L`} />
+                  {safetyParsed.entry.fuelType && <DetailRow label="Fuel" value={safetyParsed.entry.fuelType} />}
+                  {safetyParsed.entry.supplierName && <DetailRow label="Supplier" value={safetyParsed.entry.supplierName} />}
+                  {safetyParsed.entry.reference && <DetailRow label="Delivery note" value={safetyParsed.entry.reference} />}
+                  {safetyParsed.entry.vehicleLabel && <DetailRow label="Vehicle" value={safetyParsed.entry.vehicleLabel} />}
+                  {safetyParsed.entry.note && <DetailRow label="Note" value={safetyParsed.entry.note} />}
+                  <DetailRow label="On approval" value="The entry is added to the fuel store's record. Your inventory is not changed: fuel is counted from receipts and bills." />
+                </>
+              )}
+              {isSafety && !isFuel && safetyParsed && "entry" in safetyParsed && "kind" in safetyParsed.entry && (
                 <>
                   <DetailRow label="Seen" value={HAZARD_LABELS[safetyParsed.entry.kind]} />
                   <DetailRow label="What was seen" value={safetyParsed.entry.description} />
@@ -434,7 +451,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                   <DetailRow label="On approval" value={safetyParsed.entry.kind === "near_miss" ? "A near-miss incident report and a corrective action are created." : "A corrective action is created."} />
                 </>
               )}
-              {isSafety && safetyParsed && "entry" in safetyParsed && "results" in safetyParsed.entry && (
+              {isSafety && !isFuel && safetyParsed && "entry" in safetyParsed && "results" in safetyParsed.entry && (
                 <>
                   <DetailRow label="Where" value={safetyParsed.entry.location} />
                   {safetyParsed.entry.inspectedOn && <DetailRow label="Inspected on" value={safetyParsed.entry.inspectedOn} />}
@@ -926,6 +943,8 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
               <CardDescription>
                 {isSocialValue
                   ? "Approve to add this delivery, with its evidence, to the contract KPI. Reject with a note if it does not count."
+                  : isFuel
+                    ? "Approve to add this entry to the fuel store, or reject with a note."
                   : isSafety
                     ? "Approve to record it in the management system registers (corrective action, near-miss incident or inspection), or reject with a note."
                     : "Approve to create a committed activity record, or reject with a note."}

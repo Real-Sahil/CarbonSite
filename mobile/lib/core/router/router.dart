@@ -7,6 +7,7 @@ import '../../features/auth/pin_lock_screen.dart';
 import '../../features/auth/pin_setup_screen.dart';
 import '../../features/capture/capture_screen.dart';
 import '../../features/capture/site_safety_screen.dart';
+import '../../features/capture/fuel_log_screen.dart';
 import '../../features/capture/social_value_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/submissions/home_screen.dart';
@@ -173,6 +174,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               resubmittedFromId: extra?['resubmittedFromId'] as String?,
             );
           }
+          if (extra?['documentType'] == 'fuel_log') {
+            return FuelLogScreen(
+              projectId: state.uri.queryParameters['projectId'],
+              projectLabel: state.uri.queryParameters['projectLabel'],
+              resubmittedFromId: extra?['resubmittedFromId'] as String?,
+            );
+          }
           if (extra?['documentType'] == 'social_value') {
             return SocialValueScreen(
               projectId: state.uri.queryParameters['projectId'],
@@ -187,6 +195,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             documentType: extra?['documentType'] as String?,
           );
         },
+      ),
+      GoRoute(
+        path: '/fuel-log',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => FuelLogScreen(
+          projectId: state.uri.queryParameters['projectId'],
+          projectLabel: state.uri.queryParameters['projectLabel'],
+        ),
       ),
       GoRoute(
         path: '/social-value',

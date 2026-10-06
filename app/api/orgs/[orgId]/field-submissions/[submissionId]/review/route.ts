@@ -119,7 +119,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         });
       }
 
-      if (result.safety) {
+      if (result.fuel) {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: "fuel.entry_added",
+          resourceType: `fuel_${result.fuel.kind}`,
+          resourceId: result.fuel.fuelEntryId,
+          metadata: { fromFieldSubmission: submissionId, storeId: result.fuel.storeId, litres: result.fuel.litres },
+        });
+      } else if (result.safety) {
         await writeAuditLog({
           organizationId: orgId,
           actorUserId: session.user.id,
@@ -159,7 +168,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
       // Auto-trigger a calculation run so the approved record is reflected
       // on the dashboard without requiring a manual run.
-      if (!result.svActivityId) scheduleCalculationForPeriod(
+      if (!result.svActivityId && !result.fuel) scheduleCalculationForPeriod(
         orgId,
         submission.reportingPeriodId,
         session.user.id,

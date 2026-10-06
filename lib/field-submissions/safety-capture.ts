@@ -183,5 +183,5 @@ export async function approveInspectionInTx(tx: TxClient, opts: { orgId: string;
   return { inspectionId: inspection.id, correctiveActionId };
 }
 
-export const NO_CATEGORY_TYPES = new Set(["social_value", "hazard_report", "site_inspection", "water_meter_reading"]);
+export const NO_CATEGORY_TYPES = new Set(["social_value", "hazard_report", "site_inspection", "fuel_log", "water_meter_reading"]);
 export const SAFETY_TYPES = new Set(["hazard_report", "site_inspection"]);

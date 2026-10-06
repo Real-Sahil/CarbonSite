@@ -798,6 +798,8 @@ class _RecentTile extends StatelessWidget {
         return Icons.local_gas_station_outlined;
       case 'social_value':
         return Icons.groups_outlined;
+      case 'fuel_log':
+        return Icons.oil_barrel_outlined;
       case 'hazard_report':
         return Icons.report_problem_outlined;
       case 'site_inspection':
@@ -817,6 +819,8 @@ class _RecentTile extends StatelessWidget {
         return 'Fuel Receipt';
       case 'social_value':
         return 'Social Value';
+      case 'fuel_log':
+        return 'Fuel Log';
       case 'hazard_report':
         return 'Hazard / Near Miss';
       case 'site_inspection':

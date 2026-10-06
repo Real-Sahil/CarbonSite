@@ -7,6 +7,7 @@ import { isValid as isValidUkPostcode } from "postcode";
 import { convertBetween } from "@/lib/calculation/units";
 import { recordDeliveryEmbodiedCarbon, type EmbodiedOutcome } from "@/lib/embodied-carbon/delivery-notes";
 import { approveSocialValueInTx, socialValueEntry } from "@/lib/social-value/field-capture";
+import { approveFuelInTx, fuelLogEntry } from "./fuel-capture";
 import { approveHazardInTx, approveInspectionInTx, hazardEntry, inspectionEntry } from "./safety-capture";
 
 type TxClient = Prisma.TransactionClient;
@@ -101,6 +102,12 @@ export function approvalBlocker(
     const parsed = socialValueEntry((submission.formData ?? {}) as Record<string, unknown>);
     return "error" in parsed ? { code: "INVALID_FORM_DATA", message: parsed.error } : null;
   }
+  // Fuel logs become a delivery, issue or dip on a fuel store: no category,
+  // amount or unit of their own.
+  if (submission.documentType === "fuel_log") {
+    const parsed = fuelLogEntry((submission.formData ?? {}) as Record<string, unknown>);
+    return "error" in parsed ? { code: "INVALID_FORM_DATA", message: parsed.error } : null;
+  }
   // Hazard reports and inspections become a corrective action, incident or
   // inspection record: no category, amount or unit.
   if (submission.documentType === "hazard_report" || submission.documentType === "site_inspection") {
@@ -158,6 +165,8 @@ export async function approveSubmissionInTx(
 ): Promise<{
   /** Social value entries only: the approved delivery entry created. */
   svActivityId?: string;
+  /** Fuel logs: the delivery, issue or dip created. */
+  fuel?: { fuelEntryId: string; kind: string; storeId: string; litres: number };
   /** Hazard reports and inspections: what their approval created. */
   safety?: { correctiveActionId: string | null; incidentId?: string | null; inspectionId?: string };
   /** Delivery notes only: the embodied carbon record created, or why none was. */
@@ -181,9 +190,13 @@ export async function approveSubmissionInTx(
   let activityRecordId: string | null = submission.activityRecordId;
   let embodied: EmbodiedOutcome | undefined;
   let svActivityId: string | undefined;
+  let fuel: { fuelEntryId: string; kind: string; storeId: string; litres: number } | undefined;
   let safety: { correctiveActionId: string | null; incidentId?: string | null; inspectionId?: string } | undefined;
 
-  if (submission.documentType === "hazard_report") {
+  if (submission.documentType === "fuel_log") {
+    fuel = await approveFuelInTx(tx, { orgId, submission, evidenceFileId: evidenceFileIds[0] ?? null });
+    activityRecordId = null;
+  } else if (submission.documentType === "hazard_report") {
     safety = await approveHazardInTx(tx, { orgId, submission, reviewerUserId });
     activityRecordId = null;
   } else if (submission.documentType === "site_inspection") {
@@ -348,5 +361,5 @@ export async function approveSubmissionInTx(
     },
   });
 
-  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}), ...(svActivityId ? { svActivityId } : {}), ...(safety ? { safety } : {}) };
+  return { activityRecordId, submission: updated, ...(embodied ? { embodied } : {}), ...(svActivityId ? { svActivityId } : {}), ...(safety ? { safety } : {}), ...(fuel ? { fuel } : {}) };
 }

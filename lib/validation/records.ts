@@ -120,7 +120,7 @@ export const createFieldSubmissionSchema = z
     // open reporting period for the org (handled in the route, not here).
     siteId: z.string().min(1).optional(),
     reportingPeriodId: z.string().min(1).optional(),
-    documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "water_meter_reading", "social_value", "hazard_report", "site_inspection", "other"]),
+    documentType: z.enum(["waste_ticket", "delivery_note", "fuel_receipt", "water_meter_reading", "social_value", "hazard_report", "site_inspection", "fuel_log", "other"]),
     // Accept object or pre-encoded JSON string (Flutter double-encodes in some paths)
     formData: z.union([z.record(z.any()), z.string()]).transform((v) =>
       typeof v === "string" ? (() => { try { return JSON.parse(v); } catch { return {}; } })() : v

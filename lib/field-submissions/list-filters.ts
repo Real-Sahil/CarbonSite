@@ -10,6 +10,7 @@ export const DOCUMENT_TYPE_LABELS: Record<FieldDocumentType, string> = {
   water_meter_reading: "Water meter reading",
   social_value: "Social value",
   hazard_report: "Hazard report",
+  fuel_log: "Fuel log",
   site_inspection: "Site inspection",
   other: "Other",
 };

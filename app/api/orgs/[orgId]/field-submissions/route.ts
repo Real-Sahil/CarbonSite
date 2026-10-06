@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { fuelSubmissionError } from "@/lib/field-submissions/fuel-capture";
 import { SAFETY_TYPES, safetySubmissionError } from "@/lib/field-submissions/safety-capture";
 import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
@@ -333,7 +334,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       // Hazard reports and inspections by the day they were seen or done.
       const fd = body.formData as Record<string, unknown>;
       const deliveredOn =
-        body.documentType === "social_value" ? fd.activityDate : body.documentType === "hazard_report" ? fd.observedOn : body.documentType === "site_inspection" ? fd.inspectedOn : undefined;
+        body.documentType === "social_value" ? fd.activityDate : body.documentType === "hazard_report" ? fd.observedOn : body.documentType === "site_inspection" ? fd.inspectedOn : body.documentType === "fuel_log" ? fd.on : undefined;
       const submissionDate = typeof deliveredOn === "string" && /^\d{4}-\d{2}-\d{2}$/.test(deliveredOn)
         ? new Date(`${deliveredOn}T00:00:00Z`)
         : body.deviceSubmittedAt
@@ -390,6 +391,12 @@ export async function POST(req: NextRequest, { params }: Params) {
       if (planGate) return planGate;
       const svError = await socialValueSubmissionError(orgId, contractId, body.formData as Record<string, unknown>);
       if (svError) return apiError("INVALID_SOCIAL_VALUE", svError, 422);
+    }
+
+    // Fuel logs: the store is the organisation's and on this site.
+    if (body.documentType === "fuel_log") {
+      const fuelError = await fuelSubmissionError(orgId, siteId, body.formData as Record<string, unknown>);
+      if (fuelError) return apiError("INVALID_FORM_DATA", fuelError, 422);
     }
 
     // Hazard reports and site inspections: the form must be complete and an
