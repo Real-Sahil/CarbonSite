@@ -24,6 +24,7 @@ import { NotificationBell } from "@/components/notification-bell";
 import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/ui/logo";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
+import { ProjectSwitcher } from "@/components/org/project-switcher";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
 /** A micro-group of items within a product's accordion panel, e.g. "Calculations" inside "MetricOra". */
@@ -38,6 +39,8 @@ interface OrgSidebarProps {
   orgId: string; orgName: string;
   user: { name?: string | null; email: string };
   role?: string;
+  projects?: { id: string; name: string }[];
+  selectedProjectId?: string | null;
 }
 
 const COLLAPSED_KEY = "metricora:sidebar:collapsed";
@@ -51,7 +54,7 @@ function getInitials(name?: string | null, email?: string): string {
   return (email ?? "?").slice(0, 2).toUpperCase();
 }
 
-export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
+export function OrgSidebar({ orgId, orgName, user, role, projects = [], selectedProjectId = null }: OrgSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -361,6 +364,7 @@ export function OrgSidebar({ orgId, orgName, user, role }: OrgSidebarProps) {
           </div>
         )}
       </div>
+      {!collapsed && <ProjectSwitcher orgId={orgId} projects={projects} selectedId={selectedProjectId} />}
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto overflow-x-hidden" aria-label="Organisation navigation">

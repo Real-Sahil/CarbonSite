@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileStack, Loader2, Mail } from "lucide-react";
+import { SubmissionLinks } from "./submission-links";
 
 type Match = {
   recordId: string;
@@ -198,6 +199,8 @@ export function MatchBills({ orgId }: { orgId: string }) {
           )}
         </div>
       )}
+
+      <SubmissionLinks orgId={orgId} />
 
       <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFB]">
         {busy ? <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" /> : <FileStack className="h-5 w-5 text-[#6B7280]" />}

@@ -29,6 +29,20 @@ export function DashboardFilterBar({
   const [pending, startTransition] = useTransition();
 
   function set(key: string, value: string) {
+    // The sidebar's project choice follows this control, so "All projects" sticks. Clearing
+    // waits for the cookie, or a bare dashboard URL would send the person back to the project.
+    if (key === "projectId") {
+      const saved = fetch(`/api/orgs/${pathname.split("/")[2]}/selected-project`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: value || null }),
+      }).catch(() => null);
+      if (!value) return void saved.then(() => go(key, value));
+    }
+    go(key, value);
+  }
+
+  function go(key: string, value: string) {
     const next = new URLSearchParams(filters);
     if (value) next.set(key, value);
     else next.delete(key);

@@ -34,6 +34,7 @@ import {
   Upload,
 } from "lucide-react";
 import { redirect } from "next/navigation";
+import { getSelectedProject } from "@/lib/project/selected";
 import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
 import {
   CATEGORY_BY_FACILITY_DIMENSIONS,
@@ -110,7 +111,14 @@ function formatPercent(complete: number, total: number): string {
 
 export default async function DashboardPage({ params, searchParams }: DashboardPageProps) {
   const { orgId } = await params;
-  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId } = await searchParams;
+  const rawParams = await searchParams;
+  // A bare dashboard link opens on the project picked in the sidebar. Choosing "All projects"
+  // clears that preference first, so removing the project filter does not bring it back.
+  if (Object.keys(rawParams).length === 0) {
+    const chosen = await getSelectedProject(orgId);
+    if (chosen) redirect(`/orgs/${orgId}/dashboard?projectId=${encodeURIComponent(chosen.id)}`);
+  }
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId } = rawParams;
   const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, facilityId: selectedFacilityId });
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];

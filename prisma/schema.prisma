@@ -190,6 +190,7 @@ model Verification {
 }
 
 model Organization {
+  submissionLinks              SubmissionLink[]
   id                           String                @id @default(cuid())
   name                         String
   industry                     String?
@@ -417,9 +418,9 @@ model Organization {
   geographicImpacts              GeographicImpact[]               @relation("OrgGeographicImpacts")
   externalApiCredentials         ExternalApiCredential[]          @relation("OrgExternalApiCredentials")
   inventoryAuditorAccesses       InventoryAuditorAccess[]
-  materialClassifications MaterialClassification[]
-  recordSeals RecordSeal[]
-  materialMovements MaterialMovement[]
+  materialClassifications        MaterialClassification[]
+  recordSeals                    RecordSeal[]
+  materialMovements              MaterialMovement[]
   fuelStores                     FuelStore[]
   fuelDeliveries                 FuelDelivery[]
   fuelIssues                     FuelIssue[]
@@ -1315,18 +1316,25 @@ model EvidenceFile {
 /// stored as evidence; a person reads it, matches it to a record and
 /// attaches it, or dismisses it.
 model BillInboxItem {
-  id             String    @id @default(cuid())
-  organizationId String    @map("organization_id")
-  evidenceFileId String    @map("evidence_file_id")
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  evidenceFileId   String    @map("evidence_file_id")
   /// Resend's id for the received email (retried webhooks dedupe on it).
-  emailId        String    @map("email_id")
-  fromAddress    String    @map("from_address")
-  senderUserId   String?   @map("sender_user_id")
-  subject        String?
+  emailId          String    @map("email_id")
+  fromAddress      String    @map("from_address")
+  senderUserId     String?   @map("sender_user_id")
+  subject          String?
   /// pending | attached | dismissed
-  status         String    @default("pending")
-  receivedAt     DateTime  @default(now()) @map("received_at") @db.Timestamptz(6)
-  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+  status           String    @default("pending")
+  receivedAt       DateTime  @default(now()) @map("received_at") @db.Timestamptz(6)
+  resolvedAt       DateTime? @map("resolved_at") @db.Timestamptz(6)
+  /// Set when the file came through a subcontractor upload link (plain ids, checked in code).
+  submissionLinkId String?   @map("submission_link_id")
+  projectId        String?   @map("project_id")
+  /// What the uploader typed: their name and company, and an optional note.
+  uploaderName     String?   @map("uploader_name")
+  uploaderCompany  String?   @map("uploader_company")
+  uploaderNote     String?   @map("uploader_note")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   evidenceFile EvidenceFile @relation(fields: [evidenceFileId], references: [id], onDelete: Cascade)
@@ -7250,21 +7258,21 @@ model FuelStore {
 
 /// Fuel delivered into a store.
 model FuelDelivery {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
-  storeId         String   @map("store_id")
-  deliveredOn     DateTime @map("delivered_on") @db.Date
-  fuelType        String   @map("fuel_type")
-  litres          Decimal  @db.Decimal(12, 2)
-  supplierName    String?  @map("supplier_name")
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  storeId           String   @map("store_id")
+  deliveredOn       DateTime @map("delivered_on") @db.Date
+  fuelType          String   @map("fuel_type")
+  litres            Decimal  @db.Decimal(12, 2)
+  supplierName      String?  @map("supplier_name")
   /// Delivery note or ticket number.
-  reference       String?
-  evidenceFileId  String?  @map("evidence_file_id")
-  note            String?
-  createdByUserId String?  @map("created_by_user_id")
+  reference         String?
+  evidenceFileId    String?  @map("evidence_file_id")
+  note              String?
+  createdByUserId   String?  @map("created_by_user_id")
   /// The field submission this entry came from (one entry per submission).
-  fieldSubmissionId String? @unique @map("field_submission_id")
-  createdAt       DateTime @default(now()) @map("created_at")
+  fieldSubmissionId String?  @unique @map("field_submission_id")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   store        FuelStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -7276,21 +7284,21 @@ model FuelDelivery {
 
 /// Fuel drawn from a store into a machine or vehicle.
 model FuelIssue {
-  id             String   @id @default(cuid())
-  organizationId String   @map("organization_id")
-  storeId        String   @map("store_id")
-  issuedOn       DateTime @map("issued_on") @db.Date
-  litres         Decimal  @db.Decimal(12, 2)
-  plantAssetId   String?  @map("plant_asset_id")
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  storeId           String   @map("store_id")
+  issuedOn          DateTime @map("issued_on") @db.Date
+  litres            Decimal  @db.Decimal(12, 2)
+  plantAssetId      String?  @map("plant_asset_id")
   /// A vehicle or item that is not in the plant register.
-  vehicleLabel   String?  @map("vehicle_label")
+  vehicleLabel      String?  @map("vehicle_label")
   /// Engine hours or odometer at the time, when read.
-  meterReading   Decimal? @map("meter_reading") @db.Decimal(14, 2)
-  issuedByUserId String?  @map("issued_by_user_id")
-  note           String?
+  meterReading      Decimal? @map("meter_reading") @db.Decimal(14, 2)
+  issuedByUserId    String?  @map("issued_by_user_id")
+  note              String?
   /// The field submission this entry came from (one entry per submission).
-  fieldSubmissionId String? @unique @map("field_submission_id")
-  createdAt      DateTime @default(now()) @map("created_at")
+  fieldSubmissionId String?  @unique @map("field_submission_id")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   store        FuelStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -7304,16 +7312,16 @@ model FuelIssue {
 /// A measured level in a store. The difference between this and what deliveries and
 /// issues predict is the variance.
 model FuelDip {
-  id              String   @id @default(cuid())
-  organizationId  String   @map("organization_id")
-  storeId         String   @map("store_id")
-  dippedOn        DateTime @map("dipped_on") @db.Date
-  litres          Decimal  @db.Decimal(12, 2)
-  note            String?
-  createdByUserId String?  @map("created_by_user_id")
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  storeId           String   @map("store_id")
+  dippedOn          DateTime @map("dipped_on") @db.Date
+  litres            Decimal  @db.Decimal(12, 2)
+  note              String?
+  createdByUserId   String?  @map("created_by_user_id")
   /// The field submission this entry came from (one entry per submission).
-  fieldSubmissionId String? @unique @map("field_submission_id")
-  createdAt       DateTime @default(now()) @map("created_at")
+  fieldSubmissionId String?  @unique @map("field_submission_id")
+  createdAt         DateTime @default(now()) @map("created_at")
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   store        FuelStore    @relation(fields: [storeId], references: [id], onDelete: Cascade)
@@ -7367,41 +7375,41 @@ model MaterialClassification {
 /// writes the existing WasteRecord, so waste totals, ESRS E5 and the carbon
 /// calculation come from the one pipeline.
 model MaterialMovement {
-  id                       String    @id @default(cuid())
-  organizationId           String    @map("organization_id")
-  siteId                   String    @map("site_id")
-  projectId                String?   @map("project_id")
+  id                        String    @id @default(cuid())
+  organizationId            String    @map("organization_id")
+  siteId                    String    @map("site_id")
+  projectId                 String?   @map("project_id")
   /// The facility the waste is booked to once received (WasteRecord needs one).
-  facilityId               String?   @map("facility_id")
-  classificationId         String    @map("classification_id")
+  facilityId                String?   @map("facility_id")
+  classificationId          String    @map("classification_id")
   /// planned | dispatched | received | rejected | cancelled
-  status                   String    @default("planned")
-  plannedOn                DateTime  @map("planned_on") @db.Date
-  dispatchedAt             DateTime? @map("dispatched_at")
-  receivedOn               DateTime? @map("received_on") @db.Date
-  plannedTonnes            Decimal   @map("planned_tonnes") @db.Decimal(12, 3)
-  ticketTonnes             Decimal?  @map("ticket_tonnes") @db.Decimal(12, 3)
-  disposalRoute            String?   @map("disposal_route")
-  destinationName          String    @map("destination_name")
-  destinationPermit        String?   @map("destination_permit")
+  status                    String    @default("planned")
+  plannedOn                 DateTime  @map("planned_on") @db.Date
+  dispatchedAt              DateTime? @map("dispatched_at")
+  receivedOn                DateTime? @map("received_on") @db.Date
+  plannedTonnes             Decimal   @map("planned_tonnes") @db.Decimal(12, 3)
+  ticketTonnes              Decimal?  @map("ticket_tonnes") @db.Decimal(12, 3)
+  disposalRoute             String?   @map("disposal_route")
+  destinationName           String    @map("destination_name")
+  destinationPermit         String?   @map("destination_permit")
   /// The EWC codes the destination's permit or exemption covers, as the organisation entered them.
-  destinationAuthorisedEwc String[]  @default([]) @map("destination_authorised_ewc")
-  carrierName              String?   @map("carrier_name")
-  carrierRegistration      String?   @map("carrier_registration")
+  destinationAuthorisedEwc  String[]  @default([]) @map("destination_authorised_ewc")
+  carrierName               String?   @map("carrier_name")
+  carrierRegistration       String?   @map("carrier_registration")
   carrierRegistrationExpiry DateTime? @map("carrier_registration_expiry") @db.Date
-  vehicleRegistration      String?   @map("vehicle_registration")
+  vehicleRegistration       String?   @map("vehicle_registration")
   /// Waste transfer note, or hazardous waste consignment note, reference.
-  noteReference            String?   @map("note_reference")
-  haulDistanceKm           Decimal?  @map("haul_distance_km") @db.Decimal(10, 2)
-  returnedCopyDue          DateTime? @map("returned_copy_due") @db.Date
-  returnedCopyOn           DateTime? @map("returned_copy_on") @db.Date
-  evidenceFileIds          String[]  @default([]) @map("evidence_file_ids")
-  wasteRecordId            String?   @unique @map("waste_record_id")
-  rejectionReason          String?   @map("rejection_reason")
-  notes                    String?
-  createdByUserId          String?   @map("created_by_user_id")
-  createdAt                DateTime  @default(now()) @map("created_at")
-  updatedAt                DateTime  @updatedAt @map("updated_at")
+  noteReference             String?   @map("note_reference")
+  haulDistanceKm            Decimal?  @map("haul_distance_km") @db.Decimal(10, 2)
+  returnedCopyDue           DateTime? @map("returned_copy_due") @db.Date
+  returnedCopyOn            DateTime? @map("returned_copy_on") @db.Date
+  evidenceFileIds           String[]  @default([]) @map("evidence_file_ids")
+  wasteRecordId             String?   @unique @map("waste_record_id")
+  rejectionReason           String?   @map("rejection_reason")
+  notes                     String?
+  createdByUserId           String?   @map("created_by_user_id")
+  createdAt                 DateTime  @default(now()) @map("created_at")
+  updatedAt                 DateTime  @updatedAt @map("updated_at")
 
   organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   classification MaterialClassification @relation(fields: [classificationId], references: [id], onDelete: Restrict)
@@ -8236,4 +8244,26 @@ model PqqQuestionSet {
 
   @@index([organizationId])
   @@map("pqq_question_sets")
+}
+
+/// A link an organisation gives a subcontractor or supplier so they can upload invoices,
+/// delivery notes and order PDFs without an account. Only the token's SHA-256 is stored.
+model SubmissionLink {
+  id              String    @id @default(cuid())
+  organizationId  String    @map("organization_id")
+  label           String
+  /// Optional: the project the uploads belong to (checked against the organisation on create).
+  projectId       String?   @map("project_id")
+  tokenHash       String    @unique @map("token_hash")
+  expiresAt       DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdByUserId String    @map("created_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lastUsedAt      DateTime? @map("last_used_at") @db.Timestamptz(6)
+  uploadCount     Int       @default(0) @map("upload_count")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@map("submission_links")
 }

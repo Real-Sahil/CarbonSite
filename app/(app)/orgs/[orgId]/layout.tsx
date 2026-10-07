@@ -10,6 +10,7 @@ import React from "react";
 import { getOrgBasics } from "@/lib/i18n/org-basics";
 import { localeForCountry, orgFormat } from "@/lib/i18n/org-format";
 import { OrgLocaleProvider } from "@/components/org/org-locale";
+import { getSelectedProject } from "@/lib/project/selected";
 
 function buildBrandingCssVars(branding: {
   primaryHex: string | null;
@@ -182,10 +183,16 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
         )
       : ({ state: "ok" } as const);
 
+  // Project switcher: every project of the organisation, newest first, and the one picked.
+  const [projects, selectedProject] = await Promise.all([
+    prisma.project.findMany({ where: { organizationId: orgId }, orderBy: { createdAt: "desc" }, take: 200, select: { id: true, name: true } }).catch(() => []),
+    getSelectedProject(orgId).catch(() => null),
+  ]);
+
   return (
     <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8F9FA]">
       {cssVars && <style>{`:root { ${cssVars} }`}</style>}
-      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} />
+      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} />
       <CommandPalette orgId={orgId} role={membership!.role} canUseViews={viewRoles().includes(membership!.role)} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
         {payment.state !== "ok" ? (
