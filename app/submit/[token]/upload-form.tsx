@@ -4,8 +4,9 @@ import { useState } from "react";
 import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { DOC_KINDS } from "@/lib/waste/documents";
 
-export function UploadForm({ token }: { token: string }) {
+export function UploadForm({ token, purpose = "bills" }: { token: string; purpose?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ accepted: number; skipped: string[] } | null>(null);
@@ -44,6 +45,19 @@ export function UploadForm({ token }: { token: string }) {
         <FormField label="Company" htmlFor="company" optional><Input id="company" name="company" maxLength={160} autoComplete="organization" /></FormField>
       </FormSection>
       <FormSection title="Documents" cols={2}>
+        {purpose === "waste_documents" && (
+          <>
+            <FormField label="Kind of document" htmlFor="kind">
+              <select id="kind" name="kind" required defaultValue="" className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
+                <option value="" disabled>Choose</option>
+                {DOC_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+              </select>
+            </FormField>
+            <FormField label="Reference" htmlFor="reference" optional hint="Note number or licence number."><Input id="reference" name="reference" maxLength={120} /></FormField>
+            <FormField label="Carrier or site it covers" htmlFor="issuer" optional><Input id="issuer" name="issuer" maxLength={160} /></FormField>
+            <FormField label="Valid until" htmlFor="validUntil" optional hint="For licences, permits and exemptions."><Input id="validUntil" name="validUntil" type="date" /></FormField>
+          </>
+        )}
         <FormField label="PDF or photo files" htmlFor="file" span={2} hint="Invoices, delivery notes, orders. Up to 5, 10 MB each.">
           <Input id="file" name="file" type="file" required multiple accept="application/pdf,image/jpeg,image/png,image/webp" />
         </FormField>

@@ -3,29 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Upload, Trash2, X } from "lucide-react";
+import { DISPOSAL_ROUTES } from "@/lib/waste/routes";
 import { Button } from "@/components/ui/button";
 import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 interface Facility { id: string; name: string }
 interface Period { id: string; label: string }
 
-export const DISPOSAL_ROUTES = [
-  { value: "landfill_mixed",        label: "Landfill - Mixed waste",      hierarchy: "landfill" },
-  { value: "landfill_food",         label: "Landfill - Food waste",        hierarchy: "landfill" },
-  { value: "landfill_wood",         label: "Landfill - Wood",              hierarchy: "landfill" },
-  { value: "landfill_plastic",      label: "Landfill - Plastic",           hierarchy: "landfill" },
-  { value: "incineration_efw",      label: "Energy from Waste (EfW)",      hierarchy: "recovery" },
-  { value: "recycling_paper",       label: "Recycling - Paper",            hierarchy: "recycle" },
-  { value: "recycling_cardboard",   label: "Recycling - Cardboard",        hierarchy: "recycle" },
-  { value: "recycling_plastic",     label: "Recycling - Plastic",          hierarchy: "recycle" },
-  { value: "recycling_glass",       label: "Recycling - Glass",            hierarchy: "recycle" },
-  { value: "recycling_metal",       label: "Recycling - Metal",            hierarchy: "recycle" },
-  { value: "recycling_mixed",       label: "Recycling - Mixed",            hierarchy: "recycle" },
-  { value: "composting_food",       label: "Composting - Food waste",      hierarchy: "recycle" },
-  { value: "composting_garden",     label: "Composting - Garden waste",    hierarchy: "recycle" },
-  { value: "anaerobic_digestion",   label: "Anaerobic Digestion",          hierarchy: "recycle" },
-  { value: "hazardous_landfill",    label: "Hazardous waste - Landfill",   hierarchy: "landfill" },
-];
 
 const WASTE_TEMPLATE_CSV = [
   "facilityId,reportingPeriodId,wasteType,disposalRoute,hazardous,weightTonnes,ewcCode,carrierName,carrierRegistration,transferNoteReference,destination,vehicleRegistration,recordedAt,notes",
@@ -34,9 +18,10 @@ const WASTE_TEMPLATE_CSV = [
 ].join("\n");
 
 function AddRecordModal({
-  orgId, facilities, periods, onClose, onSaved,
-}: { orgId: string; facilities: Facility[]; periods: Period[]; onClose: () => void; onSaved: () => void }) {
+  orgId, facilities, periods, projects, defaultProjectId, onClose, onSaved,
+}: { orgId: string; facilities: Facility[]; periods: Period[]; projects: { id: string; name: string }[]; defaultProjectId: string | null; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState({
+    projectId: defaultProjectId ?? "",
     facilityId: facilities[0]?.id ?? "",
     reportingPeriodId: periods[0]?.id ?? "",
     wasteType: "", disposalRoute: "recycling_mixed", hazardous: false,
@@ -58,6 +43,7 @@ function AddRecordModal({
         body: JSON.stringify({
           facilityId: form.facilityId,
           reportingPeriodId: form.reportingPeriodId,
+          projectId: form.projectId || undefined,
           wasteType: form.wasteType,
           disposalRoute: form.disposalRoute,
           hazardous: form.hazardous,
@@ -106,6 +92,15 @@ function AddRecordModal({
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
               </select>
             </FormField>
+            {projects.length > 0 && (
+              <FormField label="Project" htmlFor="f-project" optional hint="Counts towards that project's waste KPIs.">
+                <select id="f-project" value={form.projectId}
+                  onChange={(e) => setForm((f) => ({ ...f, projectId: e.target.value }))} className={inputCls}>
+                  <option value="">Not tied to a project</option>
+                  {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </FormField>
+            )}
             <FormField label="Reporting period" htmlFor="f-reporting-period">
               <select id="f-reporting-period" required value={form.reportingPeriodId}
                 onChange={(e) => setForm((f) => ({ ...f, reportingPeriodId: e.target.value }))} className={inputCls}>
@@ -274,8 +269,8 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
   );
 }
 
-export function WasteAddButtons({ orgId, facilities, periods }: {
-  orgId: string; facilities: Facility[]; periods: Period[];
+export function WasteAddButtons({ orgId, facilities, periods, projects = [], defaultProjectId = null }: {
+  orgId: string; facilities: Facility[]; periods: Period[]; projects?: { id: string; name: string }[]; defaultProjectId?: string | null;
 }) {
   const router = useRouter();
   const [showAdd, setShowAdd] = useState(false);
@@ -297,7 +292,7 @@ export function WasteAddButtons({ orgId, facilities, periods }: {
       </div>
       {showAdd && (
         <AddRecordModal
-          orgId={orgId} facilities={facilities} periods={periods}
+          orgId={orgId} facilities={facilities} periods={periods} projects={projects} defaultProjectId={defaultProjectId}
           onClose={() => setShowAdd(false)}
           onSaved={() => { setShowAdd(false); router.refresh(); }}
         />

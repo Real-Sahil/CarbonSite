@@ -30,10 +30,10 @@ export default async function SubmitPage({ params }: { params: Promise<{ token: 
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{org?.name}</p>
           <h1 className="text-2xl font-bold text-slate-950">Send documents{project ? ` for ${project.name}` : ""}</h1>
           <p className="text-sm text-slate-600">
-            Upload invoices, delivery notes, waste transfer notes or material orders as PDF or photo. Up to 5 files at a time, 10 MB each. They go to the {org?.name} team to check; you do not need an account.
+            {link.purpose === "waste_documents" ? "Upload waste transfer notes, carrier licences, site permits or exemptions as PDF or photo." : "Upload invoices, delivery notes, waste transfer notes or material orders as PDF or photo."} Up to 5 files at a time, 10 MB each. They go to the {org?.name} team to check; you do not need an account.
           </p>
         </header>
-        <UploadForm token={token} />
+        <UploadForm token={token} purpose={link.purpose} />
         <p className="text-xs text-slate-500">
           Your name and company are kept with the files so the team knows who sent them. Do not include personal details of individuals beyond what a document needs.
         </p>

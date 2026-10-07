@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 import { BarChart3, Trash2 } from "lucide-react";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
-import { WasteAddButtons, DeleteWasteButton, DISPOSAL_ROUTES } from "./waste-actions";
+import { getSelectedProject } from "@/lib/project/selected";
+import { loadWasteKpis } from "@/lib/waste/kpis";
+import { getOrgBasics } from "@/lib/i18n/org-basics";
+import { orgFormat } from "@/lib/i18n/org-format";
+import { WasteKpiPanel } from "@/components/waste/waste-kpi-panel";
+import { DISPOSAL_ROUTES } from "@/lib/waste/routes";
+import { WasteAddButtons, DeleteWasteButton } from "./waste-actions";
 
 const HIERARCHY_COLORS: Record<string, string> = {
   recycle:  "bg-green-100 text-green-700",
@@ -24,9 +30,12 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
     throw err;
   }
 
-  const [rawRecords, facilities, rawPeriods] = await Promise.all([
+  const project = await getSelectedProject(orgId);
+  const basics = await getOrgBasics(orgId);
+  const kpis = await loadWasteKpis(orgId, orgFormat(basics ?? {}).currency);
+  const [rawRecords, facilities, rawPeriods, projectList] = await Promise.all([
     prisma.wasteRecord.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, ...(project ? { projectId: project.id } : {}) },
       orderBy: { recordedAt: "desc" },
       take: 200,
       select: {
@@ -46,6 +55,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
       select: { id: true, label: true },
       orderBy: { startDate: "desc" },
     }),
+    prisma.project.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
   ]);
 
   const records = rawRecords.map((r) => ({
@@ -81,9 +91,19 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
           <a href={`/orgs/${orgId}/waste/register`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
             Duty of care register
           </a>
+          <a href={`/orgs/${orgId}/waste/documents`} className="mt-2 ml-4 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
+            Waste documents
+          </a>
         </div>
-        {canEdit && <WasteAddButtons orgId={orgId} facilities={facilities} periods={rawPeriods} />}
+        {canEdit && <WasteAddButtons orgId={orgId} facilities={facilities} periods={rawPeriods} projects={projectList} defaultProjectId={project?.id ?? null} />}
       </div>
+
+      {project && (
+        <p className="mb-4 rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+          Showing <span className="font-medium">{project.name}</span> only. Choose All projects in the sidebar to see everything.
+        </p>
+      )}
+      <div className="mb-8"><WasteKpiPanel set={kpis} onlyProjectId={project?.id ?? null} orgId={orgId} /></div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         {[

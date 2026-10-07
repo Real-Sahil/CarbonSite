@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getSelectedProject } from "@/lib/project/selected";
+import { WasteKpisWidget } from "@/components/waste/waste-kpis-widget";
 import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
 import {
   CATEGORY_BY_FACILITY_DIMENSIONS,
@@ -1289,6 +1290,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
     </>
   );
+  widgetNodes["waste-kpis"] = <WasteKpisWidget orgId={orgId} />;
   widgetNodes["environment"] = (
     <>
       {hasEnvironmentalData && (

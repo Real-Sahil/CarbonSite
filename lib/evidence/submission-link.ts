@@ -24,6 +24,7 @@ export const LINK_ISSUERS = [...new Set([...ROLE_GROUPS.editor, ...ROLE_GROUPS.p
 export const createLinkSchema = z
   .object({
     label: z.string().trim().min(1).max(120),
+    purpose: z.enum(["bills", "waste_documents"]).default("bills"),
     projectId: z.string().min(1).max(60).nullish(),
     days: z.number().int().min(1).max(MAX_LINK_DAYS),
   })

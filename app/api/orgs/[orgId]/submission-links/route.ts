@@ -20,7 +20,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       where: { organizationId: orgId },
       orderBy: { createdAt: "desc" },
       take: 100,
-      select: { id: true, label: true, projectId: true, expiresAt: true, revokedAt: true, createdAt: true, lastUsedAt: true, uploadCount: true },
+      select: { id: true, label: true, purpose: true, projectId: true, expiresAt: true, revokedAt: true, createdAt: true, lastUsedAt: true, uploadCount: true },
     });
     const projects = await prisma.project.findMany({
       where: { organizationId: orgId },
@@ -51,6 +51,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       data: {
         organizationId: orgId,
         label: body.label,
+        purpose: body.purpose,
         projectId: body.projectId ?? null,
         tokenHash: hashToken(token),
         expiresAt: new Date(Date.now() + body.days * 86_400_000),
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       action: "evidence.link_created",
       resourceType: "SubmissionLink",
       resourceId: link.id,
-      metadata: { label: body.label, projectId: body.projectId ?? null, days: body.days },
+      metadata: { label: body.label, purpose: body.purpose, projectId: body.projectId ?? null, days: body.days },
     });
     const base = (process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin).replace(/\/$/, "");
     return NextResponse.json({ id: link.id, expiresAt: link.expiresAt, url: `${base}/submit/${token}` }, { status: 201 });

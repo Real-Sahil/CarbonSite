@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 type LinkRow = {
-  id: string; label: string; projectName: string | null; expiresAt: string; revokedAt: string | null; lastUsedAt: string | null; uploadCount: number;
+  id: string; label: string; purpose: string; projectName: string | null; expiresAt: string; revokedAt: string | null; lastUsedAt: string | null; uploadCount: number;
 };
 type Project = { id: string; name: string };
 
 /** Issue and withdraw the no-login upload links subcontractors use; their files land in the list above. */
-export function SubmissionLinks({ orgId }: { orgId: string }) {
+export function SubmissionLinks({ orgId, purpose = "bills" }: { orgId: string; purpose?: "bills" | "waste_documents" }) {
   const [allowed, setAllowed] = useState(false);
   const [open, setOpen] = useState(false);
   const [links, setLinks] = useState<LinkRow[]>([]);
@@ -25,10 +25,10 @@ export function SubmissionLinks({ orgId }: { orgId: string }) {
     const res = await fetch(`/api/orgs/${orgId}/submission-links`).catch(() => null);
     if (!res?.ok) return;
     const d = await res.json();
-    setLinks(d.links);
+    setLinks((d.links as LinkRow[]).filter((l) => l.purpose === purpose));
     setProjects(d.projects);
     setAllowed(true);
-  }, [orgId]);
+  }, [orgId, purpose]);
   useEffect(() => { void load(); }, [load]);
   if (!allowed) return null;
 
@@ -40,7 +40,7 @@ export function SubmissionLinks({ orgId }: { orgId: string }) {
     const res = await fetch(`/api/orgs/${orgId}/submission-links`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ label: f.get("label"), projectId: f.get("projectId") || null, days: Number(f.get("days")) }),
+      body: JSON.stringify({ purpose, label: f.get("label"), projectId: f.get("projectId") || null, days: Number(f.get("days")) }),
     }).catch(() => null);
     const d = await res?.json().catch(() => null);
     setBusy(false);
@@ -61,7 +61,7 @@ export function SubmissionLinks({ orgId }: { orgId: string }) {
     <div className="rounded-lg bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <Link2 className="h-4 w-4 text-[#6B7280]" aria-hidden />
-        <span>Subcontractors can send invoices and delivery notes through a link, no account needed. Their files appear in this list to match.</span>
+        <span>{purpose === "waste_documents" ? "Contractors can send transfer notes, licences and permits through a link, no account needed. They wait below for you to accept." : "Subcontractors can send invoices and delivery notes through a link, no account needed. Their files appear in this list to match."}</span>
         <button type="button" onClick={() => { setOpen(!open); setIssued(null); }} className="text-xs font-medium underline underline-offset-2">
           {open ? "Close" : `Upload links (${live.length})`}
         </button>

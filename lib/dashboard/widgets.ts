@@ -17,6 +17,7 @@ export const WIDGETS: readonly WidgetDef[] = [
   { id: "industry", title: "Industry insights", width: "full" },
   { id: "environment", title: "Water and waste", width: "full" },
   { id: "operations", title: "Operations at a glance", width: "full" },
+  { id: "waste-kpis", title: "Waste KPIs", width: "half" },
   { id: "scope-breakdown", title: "Scope breakdown, categories and trend", width: "full" },
   { id: "flow", title: "Emissions flow", width: "half" },
   { id: "waterfall", title: "Change since the previous period", width: "half" },

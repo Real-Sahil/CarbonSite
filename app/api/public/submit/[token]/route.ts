@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { documentFieldsSchema } from "@/lib/waste/documents";
 import { storeEvidenceFile } from "@/lib/evidence/store";
 import {
   MAX_FILES_PER_UPLOAD, MAX_LINK_FILE_BYTES, isReadableType, looksLike, resolveSubmissionToken, uploaderSchema,
@@ -30,6 +31,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     if (files.length === 0) return apiError("VALIDATION_ERROR", "Choose at least one PDF or photo.", 422);
     if (files.length > MAX_FILES_PER_UPLOAD) return apiError("VALIDATION_ERROR", `Upload at most ${MAX_FILES_PER_UPLOAD} files at a time.`, 422);
 
+    let docFields: ReturnType<typeof documentFieldsSchema.parse> | null = null;
+    if (link.purpose === "waste_documents") {
+      const parsed = documentFieldsSchema.safeParse({ kind: form.get("kind"), title: form.get("title"), reference: form.get("reference"), issuer: form.get("issuer"), validUntil: form.get("validUntil") });
+      if (!parsed.success) return apiError("VALIDATION_ERROR", "Choose what kind of document this is.", 422);
+      docFields = parsed.data;
+    }
     const uploadId = crypto.randomUUID();
     const accepted: string[] = [];
     const skipped: string[] = [];
@@ -41,6 +48,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       const buffer = Buffer.from(await f.arrayBuffer());
       if (!looksLike(type, buffer)) { skipped.push(`${name}: not a valid ${type.split("/")[1]}`); continue; }
       const stored = await storeEvidenceFile(link.organizationId, link.createdByUserId, { name, type, buffer });
+      if (link.purpose === "waste_documents") {
+        await prisma.wasteDocument.create({
+          data: {
+            organizationId: link.organizationId,
+            projectId: link.projectId,
+            kind: docFields!.kind,
+            title: docFields!.title ?? name.slice(0, 160),
+            reference: docFields!.reference ?? null,
+            issuer: docFields!.issuer ?? null,
+            validUntil: docFields!.validUntil ? new Date(docFields!.validUntil) : null,
+            note: who.data.note ?? null,
+            evidenceFileId: stored.id,
+            status: "pending",
+            submissionLinkId: link.id,
+            uploaderName: who.data.name,
+            uploaderCompany: who.data.company ?? null,
+          },
+        });
+        accepted.push(name);
+        continue;
+      }
       await prisma.billInboxItem.upsert({
         where: { organizationId_emailId_evidenceFileId: { organizationId: link.organizationId, emailId: `link:${link.id}:${uploadId}`, evidenceFileId: stored.id } },
         create: {

@@ -425,6 +425,7 @@ model Organization {
   fuelDeliveries                 FuelDelivery[]
   fuelIssues                     FuelIssue[]
   fuelDips                       FuelDip[]
+  wasteDocuments                 WasteDocument[]
 
   @@index([acquisitionSource])
   @@map("organizations")
@@ -8252,6 +8253,8 @@ model SubmissionLink {
   id              String    @id @default(cuid())
   organizationId  String    @map("organization_id")
   label           String
+  /// bills (invoices and delivery notes, read in the records page) | waste_documents (transfer notes, licences, permits).
+  purpose         String    @default("bills")
   /// Optional: the project the uploads belong to (checked against the organisation on create).
   projectId       String?   @map("project_id")
   tokenHash       String    @unique @map("token_hash")
@@ -8266,4 +8269,38 @@ model SubmissionLink {
 
   @@index([organizationId, createdAt])
   @@map("submission_links")
+}
+
+/// A waste paper trail document: waste transfer note, carrier licence, site permit or exemption.
+/// Uploaded by the team, or by a contractor through an upload link (then pending until accepted).
+/// Ids other than the organisation are plain columns, checked against the organisation in code.
+model WasteDocument {
+  id               String    @id @default(cuid())
+  organizationId   String    @map("organization_id")
+  projectId        String?   @map("project_id")
+  /// transfer_note | carrier_licence | site_permit | exemption | other
+  kind             String
+  title            String
+  reference        String?
+  /// The carrier or receiving site the document is about.
+  issuer           String?
+  validUntil       DateTime? @map("valid_until") @db.Date
+  evidenceFileId   String    @map("evidence_file_id")
+  /// pending | accepted | rejected
+  status           String    @default("accepted")
+  submissionLinkId String?   @map("submission_link_id")
+  uploaderName     String?   @map("uploader_name")
+  uploaderCompany  String?   @map("uploader_company")
+  note             String?
+  createdByUserId  String?   @map("created_by_user_id")
+  reviewedByUserId String?   @map("reviewed_by_user_id")
+  reviewedAt       DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, kind, validUntil])
+  @@map("waste_documents")
 }
