@@ -5,6 +5,7 @@ import { LegalShell } from "@/components/marketing/legal-shell";
 export const metadata: Metadata = withSocial({
   title: "Cookie Policy",
   alternates: { canonical: "/cookies" },
+  robots: { index: false, follow: true },
   description: "Information about how MetricOra uses cookies.",
 });
 

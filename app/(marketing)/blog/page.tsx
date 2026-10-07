@@ -5,7 +5,7 @@ import { getPosts } from "@/lib/blog/posts";
 import { Eyebrow, H1, Lead, Section } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
-  title: "Blog",
+  title: "Carbon reporting guides: PPN 006, SECR, Scope 3",
   description: "How MetricOra calculates, reviews and reports emissions, explained with worked examples.",
   alternates: { canonical: "/blog" },
 });

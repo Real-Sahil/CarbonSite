@@ -1,12 +1,13 @@
+import { GuideLinks } from "@/components/marketing/guide-links";
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 import { GooglePlayBadge } from "@/components/marketing/brand-marks";
 
 export const metadata: Metadata = withSocial({
-  title: "Field app",
+  title: "Site carbon data app for tickets and fuel",
   description:
-    "The MetricOra field app lets site teams and subcontractors photograph tickets, delivery notes and fuel receipts, read them on the phone and submit them offline.",
+    "The MetricOra field app lets site teams and subcontractors photograph waste tickets, delivery notes and fuel receipts, read them on the phone and submit them offline for review. Android and iPhone.",
   alternates: { canonical: "/field-app" },
 });
 
@@ -130,6 +131,12 @@ export default function FieldAppPage() {
           />
         </div>
       </Section>
+
+      <GuideLinks links={[
+        { href: "/blog/waste-ticket-to-reported-tonne", title: "From a waste ticket to a reported tonne", text: "How a photographed ticket becomes a record with a factor and a formula." },
+        { href: "/blog/plant-idling-fuel-and-carbon", title: "Idling plant and fuel", text: "What field research says about fuel burnt for no work." },
+        { href: "/blog/embodied-carbon-data-quality", title: "Embodied carbon data quality", text: "Why material data quality is the bottleneck." },
+      ]} />
 
       <ClosingCta title="Put evidence capture in every van and site cabin." lead="Invite your first field worker in the trial. There is no charge per device." />
     </>

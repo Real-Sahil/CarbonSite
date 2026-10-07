@@ -3,7 +3,7 @@ import { withSocial } from "@/lib/seo/page-meta";
 import { SolutionPage } from "@/components/marketing/solution-page";
 
 export const metadata: Metadata = withSocial({
-  title: "Main contractors",
+  title: "Carbon accounting for main contractors",
   description:
     "Carbon accounting for UK main contractors: site fuel and plant, materials and embodied carbon, subcontractor evidence, waste and PAS 2080, in one inventory.",
   alternates: { canonical: "/solutions/construction" },
@@ -54,6 +54,11 @@ export default function ConstructionPage() {
           media: { kind: "shot", src: "/marketing/screens/submission-review.jpg", alt: "Waste ticket review with a note querying the net weight" },
         },
         closing: { title: "Start with one live project.", lead: "Bring a site's fuel, electricity, waste and deliveries for one period. We will help you set up the field app for the team." },
+        guides: [
+        { href: "/blog/scope-1-2-3-emissions-for-contractors", title: "Scope 1, 2 and 3 for contractors", text: "What counts in each scope on a construction site, and where the data comes from." },
+        { href: "/blog/plant-idling-fuel-and-carbon", title: "Idling plant and fuel", text: "What field research says about fuel burnt for no work, and how to see it." },
+        { href: "/blog/embodied-carbon-data-quality", title: "Embodied carbon data quality", text: "Why the quality of material data is the bottleneck, and what to do about it." },
+      ],
       }}
     />
   );

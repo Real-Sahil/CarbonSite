@@ -1,3 +1,4 @@
+import { GuideLinks } from "@/components/marketing/guide-links";
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import type { ReactNode } from "react";
@@ -5,7 +6,7 @@ import { ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, 
 import { DemoAnalytics } from "@/components/marketing/demo-analytics";
 
 export const metadata: Metadata = withSocial({
-  title: "Platform",
+  title: "Carbon accounting platform for contractors",
   description:
     "Evidence capture, carbon accounting, reporting and assurance, compliance, targets and supply-chain modules in one MetricOra dataset.",
   alternates: { canonical: "/product" },
@@ -226,6 +227,12 @@ export default function ProductPage() {
           ))}
         </div>
       </Section>
+
+      <GuideLinks links={[
+        { href: "/blog/scope-1-2-3-emissions-for-contractors", title: "Scope 1, 2 and 3 for contractors", text: "What counts in each scope and where the data comes from." },
+        { href: "/blog/secr-reporting-guide-for-contractors", title: "SECR reporting", text: "Who must report, what to disclose and how to prepare." },
+        { href: "/blog/spend-based-scope-3-sourced-factors", title: "Spend-based Scope 3", text: "Pricing supplier spend with factors you can source and check." },
+      ]} />
 
       <ClosingCta title="See it with your own records." lead="The trial includes every Growth feature. Import a year of data and publish your first snapshot." />
     </>

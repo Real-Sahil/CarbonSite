@@ -20,10 +20,6 @@ const PAGES: { path: string; priority: number; freq: MetadataRoute.Sitemap[numbe
   { path: "/contact", priority: 0.6, freq: "yearly" },
   { path: "/privacy", priority: 0.2, freq: "yearly" },
   { path: "/terms", priority: 0.2, freq: "yearly" },
-  { path: "/cookies", priority: 0.2, freq: "yearly" },
-  { path: "/dpa", priority: 0.2, freq: "yearly" },
-  { path: "/acceptable-use", priority: 0.2, freq: "yearly" },
-  { path: "/eula", priority: 0.2, freq: "yearly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

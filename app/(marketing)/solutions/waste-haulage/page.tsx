@@ -3,7 +3,7 @@ import { withSocial } from "@/lib/seo/page-meta";
 import { SolutionPage } from "@/components/marketing/solution-page";
 
 export const metadata: Metadata = withSocial({
-  title: "Waste and haulage",
+  title: "Waste and haulage carbon accounting",
   description:
     "Waste tickets, EWC codes, weights and routes captured on the phone, reviewed and turned into Scope 1 and Scope 3 records, with a duty-of-care register.",
   alternates: { canonical: "/solutions/waste-haulage" },
@@ -50,6 +50,11 @@ export default function WasteHaulagePage() {
           media: { kind: "loop", src: "/marketing/loops/record.mp4", label: "Activity record showing its calculations" },
         },
         closing: { title: "Try it on a week of tickets.", lead: "Invite a few drivers to the field app during the trial and review what they send in." },
+        guides: [
+        { href: "/blog/waste-ticket-to-reported-tonne", title: "From a waste ticket to a reported tonne", text: "How a ticket becomes a record with a factor and a formula." },
+        { href: "/blog/uk-ghg-conversion-factors-2026-what-changed", title: "UK conversion factors 2026", text: "What changed and which set to use for which period." },
+        { href: "/blog/why-scope-3-figures-disagree", title: "Why Scope 3 figures disagree", text: "What makes a Scope 3 figure defensible." },
+      ],
       }}
     />
   );

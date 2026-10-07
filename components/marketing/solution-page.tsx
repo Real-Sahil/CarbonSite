@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GuideLinks, type GuideLink } from "@/components/marketing/guide-links";
 import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, ProductShot, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 
 type Media = { kind: "shot"; src: string; alt: string } | { kind: "loop"; src: string; label: string };
@@ -13,6 +14,8 @@ export type SolutionContent = {
   feature: { eyebrow: string; title: string; lead: string; points: ReactNode[]; media: Media };
   detail?: { eyebrow: string; title: string; lead: string; points: ReactNode[]; media: Media };
   closing: { title: string; lead: string };
+  /** Articles that answer the questions behind this page. */
+  guides?: GuideLink[];
 };
 
 function MediaBlock({ media, tone }: { media: Media; tone?: "dark" }) {
@@ -76,6 +79,8 @@ export function SolutionPage({ c }: { c: SolutionContent }) {
           </div>
         </Section>
       ) : null}
+
+      {c.guides?.length ? <GuideLinks links={c.guides} /> : null}
 
       <ClosingCta title={c.closing.title} lead={c.closing.lead} />
     </>

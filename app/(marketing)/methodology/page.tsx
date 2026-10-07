@@ -1,3 +1,4 @@
+import { GuideLinks } from "@/components/marketing/guide-links";
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { METHODOLOGY_CHANGELOG } from "@/lib/calculation/methodology";
@@ -5,7 +6,7 @@ import { Timeline, TimelineContent, TimelineDate, TimelineHeader, TimelineIndica
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, CheckList, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
-  title: "Methodology",
+  title: "DEFRA factors and carbon calculation method",
   description:
     "What you can check in a MetricOra figure: the calculation promises, how to verify a number, factor sources and licences, and how the rules are versioned.",
   alternates: { canonical: "/methodology" },
@@ -157,6 +158,12 @@ export default function MethodologyPage() {
           </Timeline>
         </div>
       </Section>
+
+      <GuideLinks links={[
+        { href: "/blog/uk-ghg-conversion-factors-2026-what-changed", title: "UK conversion factors 2026", text: "What changed and which set to use for which period." },
+        { href: "/blog/location-and-market-based-scope-2", title: "Location-based and market-based Scope 2", text: "The two methods, with one office as the example." },
+        { href: "/blog/spend-based-scope-3-sourced-factors", title: "Spend-based Scope 3", text: "Pricing supplier spend with factors you can source." },
+      ]} />
 
       <ClosingCta title="Check the numbers yourself." lead="Every report ships with a CSV that lists each record, factor and formula used." />
     </>

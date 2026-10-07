@@ -5,6 +5,7 @@ import { LegalShell } from "@/components/marketing/legal-shell";
 export const metadata: Metadata = withSocial({
   title: "End-User Licence Agreement",
   alternates: { canonical: "/eula" },
+  robots: { index: false, follow: true },
   description: "MetricOra mobile application End-User Licence Agreement for iOS and Android.",
 });
 

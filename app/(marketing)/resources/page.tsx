@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
-  title: "Guides",
+  title: "Carbon reporting guides for contractors",
   description: "Practical guides for a first MetricOra reporting period: planning a pilot, keeping evidence, and choosing a Scope 2 method.",
   alternates: { canonical: "/resources" },
 });

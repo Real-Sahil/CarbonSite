@@ -5,6 +5,7 @@ import { LegalShell } from "@/components/marketing/legal-shell";
 export const metadata: Metadata = withSocial({
   title: "Data Processing Agreement",
   alternates: { canonical: "/dpa" },
+  robots: { index: false, follow: true },
   description: "MetricOra Data Processing Agreement under UK GDPR Article 28.",
 });
 

@@ -3,7 +3,7 @@ import { withSocial } from "@/lib/seo/page-meta";
 import { SolutionPage } from "@/components/marketing/solution-page";
 
 export const metadata: Metadata = withSocial({
-  title: "Public-sector suppliers",
+  title: "PPN 006 and PPN 026 software for bidders",
   description:
     "A PPN 006 Carbon Reduction Plan, PPN 026 social value KPIs and National TOMs from one MetricOra dataset, with a bid carbon pack built from published figures.",
   alternates: { canonical: "/solutions/public-sector" },
@@ -63,6 +63,11 @@ export default function PublicSectorPage() {
           media: { kind: "shot", src: "/marketing/screens/crp-baseline.jpg", alt: "Baseline step of the Carbon Reduction Plan comparing each scope with the base year" },
         },
         closing: { title: "Have your next Carbon Reduction Plan ready before the tender lands.", lead: "Publish a year of data in the trial and generate the plan from it." },
+        guides: [
+        { href: "/blog/ppn-006-carbon-reduction-plan-guide", title: "PPN 006 Carbon Reduction Plans", text: "What bidders for UK government contracts need to publish." },
+        { href: "/blog/ppn-006-carbon-reduction-plan-example", title: "A filled PPN 006 plan", text: "An example plan for a civils contractor, section by section." },
+        { href: "/blog/ppn-026-social-value-model-contractors", title: "PPN 026 Social Value Model", text: "What changes from January 2027 and how contractors should prepare." },
+      ],
       }}
     />
   );

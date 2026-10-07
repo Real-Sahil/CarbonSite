@@ -1,3 +1,4 @@
+import { GuideLinks } from "@/components/marketing/guide-links";
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { Check, Minus } from "lucide-react";
@@ -7,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { StripeNote } from "@/components/marketing/brand-marks";
 
 export const metadata: Metadata = withSocial({
-  title: "Pricing",
+  title: "Carbon reporting software pricing",
   description: "Priced per organisation by sites and web users. Essentials £199 a year for a PPN 006 Carbon Reduction Plan, Starter £99 a month, Growth £299 a month, Enterprise from £750 a month. 30-day trial.",
   alternates: { canonical: "/pricing" },
 });
@@ -237,6 +238,12 @@ export default function PricingPage() {
           </dl>
         </div>
       </Section>
+
+      <GuideLinks links={[
+        { href: "/blog/ppn-006-carbon-reduction-plan-guide", title: "PPN 006 Carbon Reduction Plans", text: "What the Essentials plan produces and what bidders must publish." },
+        { href: "/blog/secr-reporting-guide-for-contractors", title: "SECR reporting", text: "Who must report and what to disclose." },
+        { href: "/blog/scope-1-2-3-emissions-for-contractors", title: "Scope 1, 2 and 3 for contractors", text: "What counts in each scope." },
+      ]} />
 
       <ClosingCta title="Try it on your own data." lead="Import a year of meter, fuel and spend data, publish a snapshot and generate a report inside the trial." />
     </>

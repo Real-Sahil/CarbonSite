@@ -5,6 +5,7 @@ import { LegalShell } from "@/components/marketing/legal-shell";
 export const metadata: Metadata = withSocial({
   title: "Acceptable Use Policy",
   alternates: { canonical: "/acceptable-use" },
+  robots: { index: false, follow: true },
   description: "MetricOra Acceptable Use Policy governing permitted and prohibited uses of the platform.",
 });
 
