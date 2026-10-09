@@ -98,7 +98,9 @@ export function toCorporateOwners(json: unknown): CorporateOwner[] {
 }
 
 async function get(path: string): Promise<unknown | null> {
-  const key = process.env.COMPANIES_HOUSE_API_KEY?.trim();
+  // Keep only the characters a Companies House key is made of: a pasted quote, newline or hidden character
+  // would make the Authorization header invalid (the register answers 400 "Invalid Authorization header").
+  const key = process.env.COMPANIES_HOUSE_API_KEY?.replace(/[^A-Za-z0-9_-]/g, "");
   if (!key) throw new CompaniesHouseUnavailable("no_key");
   let res: Response;
   try {
@@ -110,7 +112,7 @@ async function get(path: string): Promise<unknown | null> {
   if (!res.ok) {
     // The register explains most refusals in its body (invalid key, bad parameter); keep a short copy for the log and the page.
     const detail = (await res.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
-    throw new CompaniesHouseUnavailable(`status_${res.status}`, detail || undefined);
+    throw new CompaniesHouseUnavailable(`status_${res.status}`, `${detail}${res.status === 400 || res.status === 401 ? ` [key length ${key.length}]` : ""}`.trim() || undefined);
   }
   return res.json();
 }

@@ -51,3 +51,20 @@ describe("supplier facts", () => {
     expect(toCorporateOwners(null)).toEqual([]);
   });
 });
+
+describe("key handling", () => {
+  it("sends a clean Basic header even when the env value carries quotes or whitespace", async () => {
+    const seen: string[] = [];
+    const orig = globalThis.fetch;
+    globalThis.fetch = (async (_u: unknown, init?: RequestInit) => { seen.push(String((init?.headers as Record<string, string>).Authorization)); return new Response("{}", { status: 200 }); }) as typeof fetch;
+    process.env.COMPANIES_HOUSE_API_KEY = ' "abc-123_DEF"\n';
+    try {
+      const { searchCompanies } = await import("../companies-house");
+      await searchCompanies("tarmac");
+    } finally {
+      globalThis.fetch = orig;
+      delete process.env.COMPANIES_HOUSE_API_KEY;
+    }
+    expect(seen[0]).toBe(`Basic ${Buffer.from("abc-123_DEF:").toString("base64")}`);
+  });
+});
