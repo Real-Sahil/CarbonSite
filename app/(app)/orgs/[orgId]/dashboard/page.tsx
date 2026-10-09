@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { stageTimer } from "@/lib/dashboard/stage-timer";
 import { getFactorLibraries } from "@/lib/cache/reference";
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { outdatedMethodology } from "@/lib/calculation/methodology";
@@ -139,6 +140,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     redirect("/");
   }
   const role = membership!.role;
+  const timer = stageTimer("dashboard");
 
   // Every query below falls back to an empty value so one failure cannot blank
   // the whole dashboard. Counting the failures is what stops a failed query
@@ -211,6 +213,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // Send admins of a brand-new organisation (no activity data yet) to the
   // onboarding wizard. Once records exist the dashboard has something to
   // show, so an unticked checklist step never locks an admin out of it.
+  timer.mark("organisation");
   const hasActivity = counts ? counts.records > 0 : true;
   if (role === "admin" && !onboardingProgress?.isComplete && !hasActivity) {
     redirect(`/orgs/${orgId}/onboarding`);
@@ -317,6 +320,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       }).catch(onLoadFailure(() => null))
     : null;
 
+  timer.mark("groups and totals");
   const liveTotalCo2e = Number(liveTotalAgg._sum.totalCo2e ?? 0);
   const snapshotTotalCo2e = Number(snapshotTotalAgg._sum.totalCo2e ?? 0);
   // 0.5 kg absorbs Decimal rounding without masking a real restatement.
@@ -2333,12 +2337,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     waterfall: changeSteps.length > 1,
     facilities: facilityRows.length > 0,
   };
+  timer.mark("panels");
   const storedLayout = await loadStoredLayout(orgId, session!.user.id).catch(onLoadFailure(() => ({ layout: null, source: "preset" as const })));
   const placedWidgets = resolveLayout(
     widgetsForRole(role).filter((w) => widgetShown[w.id] ?? true),
     storedLayout.layout,
     role,
   ).map((w) => ({ ...w, node: widgetNodes[w.id] }));
+  timer.mark("layout");
+  timer.done({ orgId });
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFB]">
