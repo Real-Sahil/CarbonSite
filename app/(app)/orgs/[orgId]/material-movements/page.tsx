@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -100,7 +101,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
         <CardHeader><CardTitle className="text-base">Loads</CardTitle><CardDescription>Newest first. Each load is checked against the duty of care rules as you fill it in.</CardDescription></CardHeader>
         <CardContent className="overflow-x-auto">
           {movements.length === 0 ? <p className="text-sm text-[#374151]">No loads yet. Classify a material, then plan a load below.</p> : (
-            <table className="w-full min-w-[900px] text-sm tabular-nums">
+            <Table className="text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                   <th className="py-2 pr-3 font-normal">Date</th><th className="py-2 pr-3 font-normal">Material</th><th className="py-2 pr-3 font-normal">To</th>
@@ -147,7 +148,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
                   );
                 })}
               </tbody>
-            </table>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -156,7 +157,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
         <CardHeader><CardTitle className="text-base">Classifications</CardTitle><CardDescription>A load can only be dispatched once its material is classified and approved. Changing an approved classification returns it to draft.</CardDescription></CardHeader>
         <CardContent className="overflow-x-auto">
           {classifications.length === 0 ? <p className="text-sm text-[#374151]">Nothing classified yet.</p> : (
-            <table className="w-full min-w-[760px] text-sm">
+            <Table className="text-sm">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                   <th className="py-2 pr-3 font-normal">Material</th><th className="py-2 pr-3 font-normal">EWC</th><th className="py-2 pr-3 font-normal">Classified by</th><th className="py-2 pr-3 font-normal">Status</th>{canEdit && <th className="py-2 text-right font-normal"><span className="sr-only">Actions</span></th>}
@@ -178,7 +179,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           )}
         </CardContent>
       </Card>

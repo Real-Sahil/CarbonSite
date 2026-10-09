@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -95,7 +96,7 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
               <div><div className="text-xs text-gray-500">Target</div><div className="text-lg font-semibold tabular-nums">{data.plan.targetDiversionPct == null ? "-" : `${n(data.plan.targetDiversionPct, 0)}%`}</div></div>
             </div>
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[520px] text-sm">
+              <Table className="text-sm">
                 <caption className="sr-only">Forecast and recorded waste by type</caption>
                 <thead><tr className="text-left text-xs text-gray-500"><th className="py-1 pr-3">Waste type</th><th className="py-1 pr-3 text-right">Forecast (t)</th><th className="py-1 pr-3 text-right">Recorded (t)</th><th className="py-1 pr-3 text-right">Difference (t)</th><th className="py-1">Planned route</th></tr></thead>
                 <tbody className="divide-y divide-gray-50">
@@ -104,7 +105,7 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
                   ))}
                   {c.unplannedTonnes > 0 && <tr><td className="py-2 pr-3 italic">Not in the forecast</td><td className="py-2 pr-3 text-right">-</td><td className="py-2 pr-3 text-right tabular-nums">{n(c.unplannedTonnes)}</td><td className="py-2 pr-3 text-right tabular-nums text-amber-800">+{n(c.unplannedTonnes)}</td><td /></tr>}
                 </tbody>
-              </table>
+              </Table>
             </div>
           </>
         )}

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -114,7 +115,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
             <p className="text-sm text-[#374151]">No machines registered. Add one below, or send a telematics feed and machines are added as they report.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-sm">
+              <Table className="text-sm">
                 <thead>
                   <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                     <th className="py-2 pr-3 font-normal">Machine</th>
@@ -147,7 +148,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           )}
         </CardContent>
@@ -163,7 +164,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-sm tabular-nums">
+            <Table className="text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                   <th className="py-2 pr-3 font-normal">Site</th>
@@ -184,7 +185,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </CardContent>
         </Card>
       )}

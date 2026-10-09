@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -33,7 +34,7 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
         <p className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">No loads or transfer notes yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-sm">
+          <Table className="text-sm">
             <thead className="border-b border-gray-100">
               <tr>
                 {["Carrier", "Loads", "Tonnes", "Median load", "Notes in / recorded", "Edits per note", "Flags"].map((h) => (
@@ -67,7 +68,7 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       )}
     </div>

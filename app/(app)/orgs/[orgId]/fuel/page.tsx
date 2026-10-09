@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -102,7 +103,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
           {stores.length === 0 ? (
             <p className="text-sm text-[#374151]">No fuel stores yet. Add a bowser or tank below.</p>
           ) : (
-            <table className="w-full min-w-[820px] text-sm tabular-nums">
+            <Table className="text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                   <th className="py-2 pr-3 font-normal">Store</th>
@@ -137,7 +138,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -151,7 +152,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
           {machines.length === 0 ? (
             <p className="text-sm text-[#374151]">Nothing issued this month, and no telematics readings.</p>
           ) : (
-            <table className="w-full min-w-[640px] text-sm tabular-nums">
+            <Table className="text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                   <th className="py-2 pr-3 font-normal">Machine</th>
@@ -174,7 +175,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           )}
         </CardContent>
       </Card>
@@ -189,7 +190,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
             </CardDescription>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[560px] text-sm tabular-nums">
+            <Table className="text-sm tabular-nums">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                   <th className="py-2 pr-3 font-normal">Site</th>
@@ -208,7 +209,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </CardContent>
         </Card>
       )}
@@ -219,7 +220,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
           {entries.length === 0 ? (
             <p className="text-sm text-[#374151]">No deliveries, issues or dips in {month}.</p>
           ) : (
-            <table className="w-full min-w-[560px] text-sm tabular-nums">
+            <Table className="text-sm tabular-nums">
               <tbody>
                 {entries.map((e) => (
                   <tr key={`${e.kind}${e.id}`} className="border-b border-[#F3F4F6]">
@@ -232,7 +233,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           )}
         </CardContent>
       </Card>

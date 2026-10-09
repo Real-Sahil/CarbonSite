@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -73,14 +74,14 @@ export default async function ProjectPackPage({ params, searchParams }: { params
             <h3 id="pk-loads" className="mb-2 text-sm font-semibold text-gray-900">Loads recorded ({pack.loads.length})</h3>
             {pack.loads.length === 0 ? <p className="text-sm text-gray-500">No waste was recorded against this project this month.</p> : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-sm">
+                <Table className="text-sm">
                   <thead><tr className="text-left text-xs text-gray-500"><th className="py-1 pr-3">Date</th><th className="py-1 pr-3">Waste</th><th className="py-1 pr-3">EWC</th><th className="py-1 pr-3 text-right">Tonnes</th><th className="py-1 pr-3">Route</th><th className="py-1">Carrier / note</th></tr></thead>
                   <tbody className="divide-y divide-gray-100">
                     {pack.loads.map((l) => (
                       <tr key={l.id}><td className="py-1.5 pr-3 tabular-nums">{l.recordedAt.toISOString().slice(0, 10)}</td><td className="py-1.5 pr-3">{l.wasteType}{l.hazardous ? " (hazardous)" : ""}</td><td className="py-1.5 pr-3">{l.ewcCode ?? "-"}</td><td className="py-1.5 pr-3 text-right tabular-nums">{n(l.weightTonnes, 2)}</td><td className="py-1.5 pr-3">{DISPOSAL_ROUTES.find((r) => r.value === l.disposalRoute)?.label ?? l.disposalRoute}</td><td className="py-1.5">{[l.carrierName, l.transferNoteReference].filter(Boolean).join(" · ") || "-"}</td></tr>
                     ))}
                   </tbody>
-                </table>
+                </Table>
               </div>
             )}
           </section>
