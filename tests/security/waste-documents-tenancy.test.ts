@@ -89,3 +89,18 @@ describe("contractor upload link", () => {
     expect(store.storeEvidenceFile).not.toHaveBeenCalled();
   });
 });
+
+describe("carrier register check", () => {
+  it("only reads documents inside the organisation and sends nothing else out", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));
+    const look = vi.fn().mockResolvedValue({ status: "not_checked", reason: "x" });
+    vi.doMock("@/lib/waste/carrier-register", async (orig) => ({ ...(await orig<typeof import("@/lib/waste/carrier-register")>()), lookupCarrier: look }));
+    const { POST: CHECK } = await import("@/app/api/orgs/[orgId]/waste/documents/[id]/check-carrier/route");
+    (db.prisma.wasteDocument as Record<string, unknown>).findFirst = vi.fn().mockResolvedValue(null);
+    const res = await CHECK(new NextRequest("http://x/api", { method: "POST" }), { params: Promise.resolve({ orgId: "org-a", id: "doc-of-org-b" }) });
+    expect(res.status).toBe(404);
+    expect(look).not.toHaveBeenCalled();
+    expect(((db.prisma.wasteDocument as Record<string, unknown>).findFirst as ReturnType<typeof vi.fn>).mock.calls[0][0].where).toEqual({ id: "doc-of-org-b", organizationId: "org-a" });
+  });
+});

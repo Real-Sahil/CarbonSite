@@ -58,10 +58,14 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
   );
 }
 
-type Found = { reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
+type RegisterCheck =
+  | { status: "not_checked"; reason: string }
+  | { status: "not_found" | "unavailable"; registration: string; checkedAt: string }
+  | { status: "registered" | "expired"; registration: string; holder: string | null; tier: string | null; expiryDate: string | null; checkedAt: string };
+type Found = { registerCheck?: RegisterCheck; reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
 const LABELS: [keyof Found, string][] = [["reference", "Reference"], ["carrier", "Carrier"], ["carrierRegistration", "Carrier licence"], ["permit", "Permit"], ["ewc", "EWC code"], ["tonnes", "Tonnes"], ["date", "Date"], ["vehicle", "Vehicle"], ["expiry", "Expires"]];
 
-export function DocumentActions({ orgId, id, status, extracted }: { orgId: string; id: string; status: string; extracted: Found | null }) {
+export function DocumentActions({ orgId, id, kind, status, extracted }: { orgId: string; id: string; kind: string; status: string; extracted: Found | null }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [found, setFound] = useState<Found | null>(extracted);
@@ -74,6 +78,16 @@ export function DocumentActions({ orgId, id, status, extracted }: { orgId: strin
     setBusy(false);
     if (res?.ok) setFound(d.reading);
     else setNote(d?.message ?? "Could not read that file.");
+  }
+  const [check, setCheck] = useState<RegisterCheck | null>(extracted?.registerCheck ?? null);
+  async function checkRegister() {
+    setBusy(true);
+    setNote(null);
+    const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}/check-carrier`, { method: "POST" }).catch(() => null);
+    const d = await res?.json().catch(() => null);
+    setBusy(false);
+    if (res?.ok) setCheck(d.result);
+    else setNote(d?.message ?? "Could not check the register.");
   }
   async function apply() {
     const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ apply: true }) });
@@ -89,6 +103,7 @@ export function DocumentActions({ orgId, id, status, extracted }: { orgId: strin
     <div className="space-y-1 text-xs">
     <div className="flex gap-3">
       <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void read()}>{busy ? "Reading…" : found ? "Read again" : "Read file"}</button>
+      {(kind === "carrier_licence" || kind === "transfer_note") && <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void checkRegister()}>Check carrier register</button>}
       {status === "pending" && (
         <>
           <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => void call("PATCH", { status: "accepted" })}>Accept</button>
@@ -106,6 +121,19 @@ export function DocumentActions({ orgId, id, status, extracted }: { orgId: strin
             <button type="button" className="mt-1 font-medium text-teal-700 underline underline-offset-2" onClick={() => void apply()}>Fill empty fields</button>
           </>
         )}
+      </div>
+    )}
+    {check && (
+      <div className="rounded-md border border-gray-200 p-2 text-[11px] text-gray-700">
+        {check.status === "not_checked" && <p>{check.reason}</p>}
+        {check.status === "unavailable" && <p>The register did not answer. That does not mean the carrier is not registered. Try again.</p>}
+        {check.status === "not_found" && <p><span className="font-medium text-amber-800">Not found</span> on the England register: {check.registration}. Check the number, or the carrier may be registered elsewhere or have lapsed.</p>}
+        {(check.status === "registered" || check.status === "expired") && (
+          <p>
+            <span className={`font-medium ${check.status === "registered" ? "text-green-700" : "text-red-700"}`}>{check.status === "registered" ? "On the register" : "Registration expired"}</span>: {check.registration}, {check.holder ?? "holder not shown"}{check.tier ? `, ${check.tier} tier` : ""}{check.expiryDate ? `, expires ${check.expiryDate}` : ""}. Checked {check.checkedAt.slice(0, 10)}. Compare the holder with the carrier named on the document.
+          </p>
+        )}
+        <p className="mt-1 text-gray-500">Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.</p>
       </div>
     )}
     {note && <p role="status" className="text-[11px] text-gray-600">{note}</p>}

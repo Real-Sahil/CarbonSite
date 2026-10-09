@@ -94,6 +94,9 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
           <a href={`/orgs/${orgId}/waste/documents`} className="mt-2 ml-4 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
             Waste documents
           </a>
+          <a href={`/orgs/${orgId}/waste/plan`} className="mt-2 ml-4 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
+            Site waste plan
+          </a>
         </div>
         {canEdit && <WasteAddButtons orgId={orgId} facilities={facilities} periods={rawPeriods} projects={projectList} defaultProjectId={project?.id ?? null} />}
       </div>

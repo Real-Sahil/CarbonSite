@@ -106,7 +106,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                     </td>
                     <td className="px-4 py-3 text-gray-600">{d.uploaderName ? `${d.uploaderName}${d.uploaderCompany ? `, ${d.uploaderCompany}` : ""}` : "Our team"}</td>
                     <td className="px-4 py-3 capitalize text-gray-600">{d.status}</td>
-                    <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} status={d.status} extracted={(d.extracted as never) ?? null} />}</td>
+                    <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} kind={d.kind} status={d.status} extracted={(d.extracted as never) ?? null} />}</td>
                   </tr>
                 );
               })}

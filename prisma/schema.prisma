@@ -426,6 +426,7 @@ model Organization {
   fuelIssues                     FuelIssue[]
   fuelDips                       FuelDip[]
   wasteDocuments                 WasteDocument[]
+  siteWastePlans                 SiteWastePlan[]
 
   @@index([acquisitionSource])
   @@map("organizations")
@@ -8305,4 +8306,35 @@ model WasteDocument {
   @@index([organizationId, status, createdAt])
   @@index([organizationId, kind, validUntil])
   @@map("waste_documents")
+}
+
+/// Site Waste Management Plan: one living plan per project. Forecast lines say what waste is expected
+/// and where it should go; the page sets them beside the project's actual waste records.
+/// projectId is a plain column checked against the organisation in code.
+model SiteWastePlan {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  projectId           String    @map("project_id")
+  responsiblePerson   String?   @map("responsible_person")
+  principalContractor String?   @map("principal_contractor")
+  clientName          String?   @map("client_name")
+  targetDiversionPct  Decimal?  @map("target_diversion_pct") @db.Decimal(5, 2)
+  /// What the team will do to produce less waste and send less to landfill.
+  actions             String?
+  /// [{ wasteType, ewcCode?, forecastTonnes, plannedRoute }], validated by wastePlanLinesSchema.
+  lines               Json      @default("[]")
+  nextReviewOn        DateTime? @map("next_review_on") @db.Date
+  /// draft | approved. Editing an approved plan returns it to draft and raises the version.
+  status              String    @default("draft")
+  version             Int       @default(1)
+  approvedByUserId    String?   @map("approved_by_user_id")
+  approvedAt          DateTime? @map("approved_at") @db.Timestamptz(6)
+  createdByUserId     String?   @map("created_by_user_id")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, projectId])
+  @@map("site_waste_plans")
 }
