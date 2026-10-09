@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getEmissionCategories } from "@/lib/cache/reference";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
@@ -93,10 +94,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
-    prisma.emissionCategory.findMany({
-      select: { id: true, code: true, name: true },
-      orderBy: { name: "asc" },
-    }),
+    getEmissionCategories().then((c) => [...c].sort((a, b) => a.name.localeCompare(b.name))),
     prisma.organization.findUnique({ where: { id: orgId }, select: { reportingCurrency: true } }),
   ]).catch(() => null);
 

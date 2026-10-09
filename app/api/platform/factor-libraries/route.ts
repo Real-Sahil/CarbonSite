@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
+import { REF_TAGS } from "@/lib/cache/reference";
 import { prisma } from "@/lib/db";
 import { requirePlatformMember } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
@@ -50,6 +52,7 @@ export async function POST() {
       }),
     ]);
 
+    revalidateTag(REF_TAGS.libraries, "max");
     return NextResponse.json({ defra, epa });
   } catch (err) {
     return handleRouteError(err);

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 // grading rules and app/api/orgs/[orgId]/completeness/matrix/route.ts for
 // how a period's grid is computed.
 
+import { getEmissionCategories } from "@/lib/cache/reference";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -45,10 +46,7 @@ export default async function CompletenessPage({ params }: Props) {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
-    prisma.emissionCategory.findMany({
-      select: { id: true, code: true, name: true, scope: true },
-      orderBy: [{ scope: "asc" }, { name: "asc" }],
-    }),
+    getEmissionCategories(),
     prisma.organizationMembership.findMany({
       where: { organizationId: orgId },
       select: { user: { select: { id: true, name: true, email: true } } },

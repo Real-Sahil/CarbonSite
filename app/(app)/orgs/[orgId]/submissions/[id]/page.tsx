@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getEmissionCategories } from "@/lib/cache/reference";
 import { fuelLogEntry } from "@/lib/field-submissions/fuel-capture";
 import { HAZARD_LABELS, hazardEntry, inspectionEntry } from "@/lib/field-submissions/safety-capture";
 import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
@@ -119,10 +120,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
         },
       },
     }),
-    prisma.emissionCategory.findMany({
-      select: { id: true, scope: true, name: true },
-      orderBy: [{ scope: "asc" }, { name: "asc" }],
-    }),
+    getEmissionCategories(),
     prisma.facility.findMany({
       where: { organizationId: orgId },
       select: { id: true, name: true },

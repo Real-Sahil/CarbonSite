@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getFactorLibraries } from "@/lib/cache/reference";
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { outdatedMethodology } from "@/lib/calculation/methodology";
 import type { ReactNode } from "react";
@@ -408,10 +409,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         select: { id: true, name: true, gwpVersion: true },
         orderBy: { createdAt: "desc" },
       }).catch(onLoadFailure(() => [])),
-      prisma.factorLibrary.findMany({
-        select: { id: true, name: true, version: true },
-        orderBy: { publishedAt: "desc" },
-      }).catch(onLoadFailure(() => [])),
+      getFactorLibraries().catch(onLoadFailure(() => [])),
       prisma.calculationRun.findMany({
         where: { organizationId: orgId },
         include: {

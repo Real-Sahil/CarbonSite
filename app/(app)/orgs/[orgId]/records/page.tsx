@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getEmissionCategories } from "@/lib/cache/reference";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -60,10 +61,7 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
       select: { id: true, label: true },
       orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
     }),
-    prisma.emissionCategory.findMany({
-      select: { id: true, scope: true, name: true, code: true },
-      orderBy: [{ scope: "asc" }, { name: "asc" }],
-    }),
+    getEmissionCategories(),
     prisma.facility.findMany({
       where: { organizationId: orgId },
       select: { id: true, name: true },

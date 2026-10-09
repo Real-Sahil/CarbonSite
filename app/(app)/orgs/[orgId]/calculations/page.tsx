@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { getFactorLibraries } from "@/lib/cache/reference";
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
@@ -140,10 +141,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
       select: { id: true, name: true, gwpVersion: true },
       orderBy: { createdAt: "desc" },
     }).catch(() => [] as { id: string; name: string; gwpVersion: string }[]),
-    prisma.factorLibrary.findMany({
-      select: { id: true, name: true, version: true },
-      orderBy: { publishedAt: "desc" },
-    }).catch(() => [] as { id: string; name: string; version: string }[]),
+    getFactorLibraries().catch(() => [] as { id: string; name: string; version: string }[]),
     prisma.activityRecord.groupBy({
       by: ["reportingPeriodId"],
       where: { organizationId: orgId, reviewStatus: "approved" },
