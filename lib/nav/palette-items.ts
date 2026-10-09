@@ -63,10 +63,24 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { label: "Settings", path: "settings", keywords: "organisation members billing", roles: ["admin"] },
 ];
 
-/** Items a role may open, matched against a typed query (every word must appear in the label or keywords). */
+/**
+ * Items a role may open, matched against a typed query (every word must appear in the label or
+ * keywords). Label matches come before keyword-only matches, so typing "rec" finds Records before
+ * a task that merely mentions records; ties keep the list order.
+ */
 export function paletteMatches(items: readonly PaletteItem[], role: string, query: string): PaletteItem[] {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const rank = (i: PaletteItem) => {
+    const label = i.label.toLowerCase();
+    if (words.length === 0) return 0;
+    if (label.startsWith(words[0])) return 0;
+    if (words.every((w) => label.includes(w))) return 1;
+    return 2;
+  };
   return items
     .filter((i) => !i.roles || i.roles.includes(role))
-    .filter((i) => words.every((w) => `${i.label} ${i.keywords ?? ""}`.toLowerCase().includes(w)));
+    .filter((i) => words.every((w) => `${i.label} ${i.keywords ?? ""}`.toLowerCase().includes(w)))
+    .map((item, index) => ({ item, index, r: rank(item) }))
+    .sort((a, b) => a.r - b.r || a.index - b.index)
+    .map((x) => x.item);
 }
