@@ -98,7 +98,7 @@ export function toCorporateOwners(json: unknown): CorporateOwner[] {
 }
 
 async function get(path: string): Promise<unknown | null> {
-  const key = process.env.COMPANIES_HOUSE_API_KEY;
+  const key = process.env.COMPANIES_HOUSE_API_KEY?.trim();
   if (!key) throw new CompaniesHouseUnavailable("no_key");
   let res: Response;
   try {

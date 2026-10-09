@@ -28,7 +28,7 @@ export function CompanyFinder({ base, getName, onPick, withOwners = false, label
     const res = await fetch(`${base}?q=${encodeURIComponent(getName().trim())}`).catch(() => null);
     const d = await res?.json().catch(() => null);
     setBusy(false);
-    if (!res?.ok) { setNote(d?.message ?? "Company lookup failed."); setList(null); return; }
+    if (!res?.ok) { setNote(`${d?.message ?? "Company lookup failed."}${d?.details?.reason ? ` (${d.details.reason})` : ""}`); setList(null); return; }
     setList(d.candidates);
     if (d.candidates.length === 0) setNote("No company found. Check the name.");
   }
@@ -37,7 +37,7 @@ export function CompanyFinder({ base, getName, onPick, withOwners = false, label
     const res = await fetch(`${base}?number=${c.number}${withOwners ? "&owners=1" : ""}`).catch(() => null);
     const d = await res?.json().catch(() => null);
     setBusy(false);
-    if (!res?.ok) { setNote(d?.message ?? "Could not read that company."); return; }
+    if (!res?.ok) { setNote(`${d?.message ?? "Could not read that company."}${d?.details?.reason ? ` (${d.details.reason})` : ""}`); return; }
     setList(null);
     onPick(d as CompanyPick);
   }
