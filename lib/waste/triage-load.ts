@@ -12,6 +12,17 @@ export async function loadTriage(orgId: string, docs: Doc[]): Promise<Map<string
   const regs = [...new Set(readings.map((r) => r?.carrierRegistration).filter((x): x is string => !!x))];
   const names = [...new Set(notes.map((d, i) => d.issuer ?? readings[i]?.carrier).filter((x): x is string => !!x))];
   const refs = [...new Set(notes.map((d, i) => d.reference ?? readings[i]?.reference).filter((x): x is string => !!x))];
+  // Every transfer note still waiting, not just the ones on screen: a repeat can hide behind a filter.
+  const waiting = await prisma.wasteDocument.findMany({
+    where: { organizationId: orgId, kind: "transfer_note", wasteRecordId: null, status: "pending" },
+    select: { reference: true, extracted: true },
+    take: 2000,
+  });
+  const waitingCount = new Map<string, number>();
+  for (const w of waiting) {
+    const ref = (w.reference ?? (w.extracted as { reference?: string } | null)?.reference ?? "").toLowerCase();
+    if (ref) waitingCount.set(ref, (waitingCount.get(ref) ?? 0) + 1);
+  }
   const [past, periods, dups] = await Promise.all([
     regs.length + names.length === 0 ? [] : prisma.wasteRecord.findMany({
       where: { organizationId: orgId, OR: [...(regs.length ? [{ carrierRegistration: { in: regs, mode: "insensitive" as const } }] : []), ...(names.length ? [{ carrierName: { in: names, mode: "insensitive" as const } }] : [])] },
@@ -32,6 +43,7 @@ export async function loadTriage(orgId: string, docs: Doc[]): Promise<Map<string
       defaults: r ? carrierDefaults(history, { registration: r.carrierRegistration, name: d.issuer ?? r.carrier }, r.ewc) : null,
       periodId: periodFor(periods, r?.date),
       duplicateReference: !!ref && seen.has(ref.toLowerCase()),
+      duplicatePending: !!ref && (waitingCount.get(ref.toLowerCase()) ?? 0) > 1,
     }));
   });
   return out;

@@ -29,6 +29,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
       if (!t || t.state !== "ready" || !t.body) { skipped.push({ id: d.id, reasons: t?.reasons ?? ["Not read yet"] }); continue; }
       const refs = await orgRefsError(orgId, { facilityId: t.body.facilityId, reportingPeriodId: t.body.reportingPeriodId, projectId: t.body.projectId });
       if (refs) { skipped.push({ id: d.id, reasons: ["A facility, period or project no longer exists"] }); continue; }
+      // The reference is checked again right before the insert, so a record made a moment ago by someone else is seen.
+      if (t.body.transferNoteReference) {
+        const dup = await prisma.wasteRecord.findFirst({ where: { organizationId: orgId, transferNoteReference: { equals: t.body.transferNoteReference, mode: "insensitive" } }, select: { id: true } });
+        if (dup) { skipped.push({ id: d.id, reasons: ["A waste record with this reference already exists"] }); continue; }
+      }
       const rec = await acceptTransferNote(orgId, session.user.id, d.id, t.body, t.suggestion, "bulk");
       if (rec) recorded.push(d.id); else skipped.push({ id: d.id, reasons: ["Already recorded"] });
     }

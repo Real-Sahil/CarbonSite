@@ -33,12 +33,25 @@ describe("triageDocument", () => {
     ["expired registration", { ...read, registerCheck: { status: "expired" } }, "expired"],
     ["register unchecked", { ...read, registerCheck: undefined }, "not checked"],
     ["carrier company dissolved", { ...read, registerCheck: { status: "registered", company: { status: "dissolved" } } }, "dissolved at Companies House"],
+    ["read from a photo", { ...read, method: "ocr" }, "Read from a photo"],
+    ["weight read a thousand times too large", { ...read, tonnes: 7000 }, "too large"],
+    ["weight read a thousand times too small", { ...read, tonnes: 0.007 }, "too small"],
+    ["not a transfer note at all", { reference: "INV-1", date: "2026-10-01", tonnes: 4, found: 3 }, "Does not look like a waste transfer note"],
     ["no weight", { ...read, tonnes: undefined }, "No weight"],
     ["much heavier", { ...read, tonnes: 40 }, "heavier"],
   ])("needs a look: %s", (_n, r, text) => {
     const t = triageDocument({ doc: doc(r), ...base });
     expect(t.state).toBe("review");
     expect(t.reasons.join(" ")).toContain(text);
+  });
+  it("needs a look when another waiting note has the same reference", () => {
+    const t = triageDocument({ doc: doc(), ...base, duplicatePending: true });
+    expect(t.state).toBe("review");
+    expect(t.reasons).toContain("Another note waiting here has the same reference");
+  });
+  it("needs a look for a date in the future", () => {
+    const t = triageDocument({ doc: doc({ ...read, date: "2026-12-30" }), ...base, now: new Date("2026-10-01") });
+    expect(t.reasons).toContain("The date is in the future");
   });
   it("needs a look for a repeat reference, an unknown carrier, a date outside every period, or an unread file", () => {
     expect(triageDocument({ doc: doc(), ...base, duplicateReference: true }).state).toBe("review");

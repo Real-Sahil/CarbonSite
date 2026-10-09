@@ -38,15 +38,23 @@ export function periodFor(periods: Period[], iso: string | undefined): string | 
 
 const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
+/** A single road load: a 44 t artic carries at most about 30 t, so more than 44 t is a misread unit; under 50 kg is not a lorry load. */
+export const MAX_LOAD_TONNES = 44;
+export const MIN_LOAD_TONNES = 0.05;
+
 export type Triage = { state: "ready" | "review" | "unread"; reasons: string[]; suggestion: Partial<AcceptBody>; body: AcceptBody | null };
 
 export function triageDocument(input: {
-  doc: { kind: string; wasteRecordId: string | null; reference: string | null; issuer: string | null; projectId: string | null; extracted: (TransferNoteReading & { registerCheck?: { status: string; company?: { status: string | null } } }) | null };
+  doc: { kind: string; wasteRecordId: string | null; reference: string | null; issuer: string | null; projectId: string | null; extracted: (TransferNoteReading & { method?: string; registerCheck?: { status: string; company?: { status: string | null } } }) | null };
   defaults: CarrierDefaults | null;
   periodId: string | null;
   duplicateReference: boolean;
+  /** Another note still waiting in the inbox carries the same reference, so approving both would count the load twice. */
+  duplicatePending?: boolean;
+  now?: Date;
 }): Triage {
   const { doc, defaults, periodId, duplicateReference } = input;
+  const now = input.now ?? new Date();
   const r = doc.extracted;
   if (!r) return { state: "unread", reasons: ["Not read yet"], suggestion: {}, body: null };
   const reference = doc.reference ?? r.reference;
@@ -57,9 +65,16 @@ export function triageDocument(input: {
     ...(defaults ? { facilityId: defaults.facilityId, wasteType: defaults.wasteType, disposalRoute: defaults.disposalRoute as AcceptBody["disposalRoute"], hazardous: defaults.hazardous, destination: defaults.destination } : {}),
   };
   const reasons: string[] = [];
+  // An invoice or a bill also has a date and a number, so say outright when nothing marks this as a waste transfer note.
+  if (!r.ewc && !r.carrierRegistration) reasons.push("Does not look like a waste transfer note: no waste code or carrier registration found");
+  // Text recognition on a photo swaps look-alike characters (1 and l, D and J), and a wrong figure is worse than a missing one.
+  if (doc.extracted?.method === "ocr") reasons.push("Read from a photo: check every figure against the note");
   if (!reference) reasons.push("No transfer note reference found");
   if (r.tonnes === undefined) reasons.push("No weight found");
+  else if (r.tonnes > MAX_LOAD_TONNES) reasons.push(`Weight of ${r.tonnes} t is too large for one load: check the unit`);
+  else if (r.tonnes < MIN_LOAD_TONNES) reasons.push(`Weight of ${r.tonnes} t is too small for a load: check the unit`);
   if (!r.date) reasons.push("No date found");
+  else if (new Date(`${r.date}T00:00:00Z`).getTime() > now.getTime() + 2 * 86_400_000) reasons.push("The date is in the future");
   else if (!periodId) reasons.push("The date is outside every reporting period");
   if (!r.ewc) reasons.push("No EWC code found");
   if (!r.carrierRegistration) reasons.push("No carrier registration found");
@@ -75,6 +90,7 @@ export function triageDocument(input: {
   else if (!defaults.consistent) reasons.push(defaults.loads === 1 ? "Only one earlier load for this carrier and waste code" : "Earlier loads for this carrier and waste code went different ways");
   if (defaults && r.tonnes !== undefined && defaults.weights.length >= 2 && r.tonnes > 3 * median(defaults.weights)) reasons.push("Much heavier than this carrier's usual load");
   if (duplicateReference) reasons.push("A waste record with this reference already exists");
+  if (input.duplicatePending) reasons.push("Another note waiting here has the same reference");
 
   const complete = suggestion.facilityId && suggestion.reportingPeriodId && suggestion.wasteType && suggestion.disposalRoute && r.tonnes !== undefined && r.date;
   const body = complete

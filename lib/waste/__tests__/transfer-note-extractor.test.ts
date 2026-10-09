@@ -35,6 +35,37 @@ describe("extractTransferNote", () => {
   });
 });
 
+describe("real-world layouts", () => {
+  it("reads thousands as thousands: 4,560 kg is 4.56 t, not 0.005", () => {
+    expect(extractTransferNote("Net weight: 4,560 kg").tonnes).toBe(4.56);
+    expect(extractTransferNote("Quantity 17,430 kg").tonnes).toBe(17.43);
+    expect(extractTransferNote("Net weight 3,5 tonnes").tonnes).toBe(3.5);
+  });
+  it("takes the net figure on a weighbridge ticket, not gross or tare", () => {
+    expect(extractTransferNote("Gross : 18,960 kg\nTare : 14,400 kg\nNet : 4,560 kg").tonnes).toBe(4.56);
+  });
+  it("keeps a WTN token whole", () => {
+    expect(extractTransferNote("Ticket No : WTN-2026-381").reference).toBe("WTN-2026-381");
+    expect(extractTransferNote("Waste Transfer Note\nTransfer note number \tWTN-2026-400\nDate 09.10.26").reference).toBe("WTN-2026-400");
+  });
+  it("reads a value printed on the line below its label", () => {
+    const r = extractTransferNote("Note number\nWTN/5120\nDate of transfer\n04/10/2026\nCarrier\nJ. Patel & Sons\nQuantity\n13.23 tonnes");
+    expect(r).toMatchObject({ reference: "WTN/5120", date: "2026-10-04", carrier: "J. Patel & Sons", tonnes: 13.23 });
+  });
+  it("reads ISO and day-month-name dates and a unit named in the label", () => {
+    expect(extractTransferNote("Collected on 2026-08-08").date).toBe("2026-08-08");
+    expect(extractTransferNote("Date: 27-Feb-2026").date).toBe("2026-02-27");
+    expect(extractTransferNote("Quantity (tonnes): 6.90").tonnes).toBe(6.9);
+  });
+  it("keeps a carrier name that contains Reg, and cuts a trailing registration", () => {
+    expect(extractTransferNote("Carrier: Old Reg Haulage\nCarrier registration CBDU900001").carrier).toBe("Old Reg Haulage");
+    expect(extractTransferNote("Carrier: Castle Plant & Haulage. Registration no. CBDL614757.").carrier).toBe("Castle Plant & Haulage");
+  });
+  it("does not guess a carrier from 'Collected by'", () => {
+    expect(extractTransferNote("Collected by: Bramley Waste Ltd\nEWC 17 09 04").carrier).toBeUndefined();
+  });
+});
+
 describe("parseDate", () => {
   it("is day first", () => expect(parseDate("03/04/2026")).toBe("2026-04-03"));
   it("refuses nonsense", () => expect(parseDate("45/13/2026")).toBeNull());

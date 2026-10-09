@@ -9,7 +9,7 @@ const db = vi.hoisted(() => {
     tx,
     prisma: {
       wasteDocument: { findMany: vi.fn() },
-      wasteRecord: { findMany: vi.fn() },
+      wasteRecord: { findMany: vi.fn(), findFirst: vi.fn().mockResolvedValue(null) },
       reportingPeriod: { findMany: vi.fn() },
       $transaction: vi.fn(async (fn: (t: typeof tx) => unknown) => fn(tx)),
     },
@@ -48,7 +48,7 @@ describe("bulk accept", () => {
   });
 
   it("records a ready note and skips one that needs a look, with the reasons", async () => {
-    db.prisma.wasteDocument.findMany.mockResolvedValue([doc("d1"), doc("d2", { ...reading, registerCheck: { status: "not_found" } })]);
+    db.prisma.wasteDocument.findMany.mockResolvedValue([doc("d1"), doc("d2", { ...reading, reference: "WTN2", registerCheck: { status: "not_found" } })]);
     const body = await (await call(["d1", "d2"])).json();
     expect(body.recorded).toBe(1);
     expect(body.skipped).toHaveLength(1);
@@ -63,6 +63,15 @@ describe("bulk accept", () => {
     db.tx.wasteDocument.updateMany.mockResolvedValue({ count: 0 });
     const body = await (await call(["d1"])).json();
     expect(body.recorded).toBe(0);
+    expect(db.tx.wasteRecord.create).not.toHaveBeenCalled();
+  });
+
+  it("skips a note whose reference became a record a moment ago", async () => {
+    db.prisma.wasteDocument.findMany.mockResolvedValue([doc("d1")]);
+    db.prisma.wasteRecord.findFirst.mockResolvedValueOnce({ id: "wr-other" });
+    const body = await (await call(["d1"])).json();
+    expect(body.recorded).toBe(0);
+    expect(body.skipped[0].reasons).toEqual(["A waste record with this reference already exists"]);
     expect(db.tx.wasteRecord.create).not.toHaveBeenCalled();
   });
 

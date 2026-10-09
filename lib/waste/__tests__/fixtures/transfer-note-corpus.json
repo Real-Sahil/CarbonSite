@@ -1,0 +1,1592 @@
+[
+ {
+  "set": "A",
+  "id": "n01-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN-2026-345\nDate of collection: 3 April 2026\nCarrier: Midlands Aggregates Limited\nCarrier registration CBDU 922444\nDescription of waste: Mixed construction and demolition waste\nEWC code 17 02 01\nNet weight 4,560 kg\nVehicle reg: BP25 VYD\nTel: 01677 105153\nSite: Unit 16, Brookside Road, Reading RG3 7QS\nCharge: £122.49 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-345",
+   "carrier": "Midlands Aggregates Limited",
+   "carrierRegistration": "CBDU922444",
+   "ewc": "17 02 01",
+   "tonnes": 4.56,
+   "date": "2026-04-03",
+   "vehicle": "BP25VYD"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n02-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \tWTN-2026-400\nDate \t09.10.26\nCarrier \tCastle Plant & Haulage\nWaste carrier licence \tCBDU483153\nWaste description \tSoil and stones\nEWC (LoW) code \t17 02 01\nQuantity \t17,430 kg\nVehicle registration \tXP23 LRT\nContact \tTel: 01404 397472\nOrder \tCustomer order no: PO-16599\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-400",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDU483153",
+   "ewc": "17 02 01",
+   "tonnes": 17.43,
+   "date": "2026-10-09",
+   "vehicle": "XP23LRT"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n03-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : WTN-2026-381\nDate \t: 20/08/2026 10:46\nVehicle : HX19 QSH\nCarrier : Brindley Environmental\nLicence : CBDU976599\nEWC \t: 17 03 02\nGross \t: 9,416 kg\nTare \t: 7,796 kg\nNet \t: 1,620 kg\nTel: 01535 251352\nSkip size: 6 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-381",
+   "carrier": "Brindley Environmental",
+   "carrierRegistration": "CBDU976599",
+   "ewc": "17 03 02",
+   "tonnes": 1.62,
+   "date": "2026-08-20",
+   "vehicle": "HX19QSH"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n04-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: OD3015/29138\nPart B. Description of the waste. EWC code 17 05 03* Physical form: solid Quantity 7.51 tonnes\nPart C. Carrier's details. Carrier: Castle Plant & Haulage. Registration no. CBDL614757. Vehicle YE13 EPX.\nDate of collection 8 December 2026.\nSite: Unit 19, Brookside Road, Reading RG5 6BN\nTel: 01320 961970\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "OD3015/29138",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDL614757",
+   "ewc": "17 05 03*",
+   "tonnes": 7.51,
+   "date": "2026-12-08",
+   "vehicle": "YE13EPX"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n05-letterhead",
+  "layout": "letterhead",
+  "text": "CASTLE PLANT & HAULAGE\nSite: Unit 16, Brookside Road, Reading RG5 7HX · Tel: 01774 182318\nWaste Transfer Note\nDocket WTN-2026-750\nTipped: 17-09-2026\nUpper tier carrier licence: CBDL717414\nWaste code: 170405\nLoad: 14.83 tonnes\nWagon: FP14 QXJ\nCharge: £391.23 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-750",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDL717414",
+   "ewc": "17 04 05",
+   "tonnes": 14.83,
+   "date": "2026-09-17",
+   "vehicle": "FP14QXJ"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n06-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN569221\nDate of collection: 20-06-2026\nCarrier: R & J Skip Hire\nCarrier registration CBDL 312171\nDescription of waste: Mixed construction and demolition waste\nEWC code 17 03 02\nNet weight 11,520 kg\nVehicle reg: QY24 CMJ\nTel: 01678 923198\nSite: Unit 12, Brookside Road, Reading RG3 1ZZ\nCharge: £127.91 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN569221",
+   "carrier": "R & J Skip Hire",
+   "carrierRegistration": "CBDL312171",
+   "ewc": "17 03 02",
+   "tonnes": 11.52,
+   "date": "2026-06-20",
+   "vehicle": "QY24CMJ"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n07-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \t745253\nDate \t05.06.26\nCarrier \tThames Valley Recycling\nWaste carrier licence \tCBDU634439\nWaste description \tSoil and stones\nEWC (LoW) code \t20 03 01\nQuantity \t4.89 tonnes\nVehicle registration \tLQ20 MEK\nContact \tTel: 01581 753227\nOrder \tCustomer order no: PO-78575\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "745253",
+   "carrier": "Thames Valley Recycling",
+   "carrierRegistration": "CBDU634439",
+   "ewc": "20 03 01",
+   "tonnes": 4.89,
+   "date": "2026-06-05",
+   "vehicle": "LQ20MEK"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n08-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : 468478\nDate \t: 19.09.26 13:14\nVehicle : TN20 JBU\nCarrier : Castle Plant & Haulage\nLicence : CBDL627445\nEWC \t: 17 01 07\nGross \t: 19,190 kg\nTare \t: 12,140 kg\nNet \t: 7,050 kg\nTel: 01793 798833\nSkip size: 8 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "468478",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDL627445",
+   "ewc": "17 01 07",
+   "tonnes": 7.05,
+   "date": "2026-09-19",
+   "vehicle": "TN20JBU"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n09-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: CZ2153/23959\nPart B. Description of the waste. EWC code 17 06 05* Physical form: solid Quantity 4.56 tonnes\nPart C. Carrier's details. Carrier: Castle Plant & Haulage. Registration no. CBDU542225. Vehicle RD17 AJU.\nDate of collection 08/06/2026.\nSite: Unit 7, Brookside Road, Reading RG1 9VH\nTel: 01395 344256\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "CZ2153/23959",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDU542225",
+   "ewc": "17 06 05*",
+   "tonnes": 4.56,
+   "date": "2026-06-08",
+   "vehicle": "RD17AJU"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n10-letterhead",
+  "layout": "letterhead",
+  "text": "BRINDLEY ENVIRONMENTAL\nSite: Unit 6, Brookside Road, Reading RG5 2LL · Tel: 01229 431549\nWaste Transfer Note\nDocket HC-13776\nTipped: 16-05-2026\nUpper tier carrier licence: CBDU137631\nWaste code: 150106\nLoad: 16.69 tonnes\nWagon: DP14 NHH\nCharge: £72.05 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "HC-13776",
+   "carrier": "Brindley Environmental",
+   "carrierRegistration": "CBDU137631",
+   "ewc": "15 01 06",
+   "tonnes": 16.69,
+   "date": "2026-05-16",
+   "vehicle": "DP14NHH"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n11-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN508827\nDate of collection: 22 April 2026\nCarrier: Haul Ltd\nCarrier registration CBDU 480324\nDescription of waste: Mixed construction and demolition waste\nEWC code 17 02 01\nNet weight 14.90 tonnes\nVehicle reg: BO21 LME\nTel: 01905 260579\nSite: Unit 25, Brookside Road, Reading RG4 4CQ\nCharge: £340.85 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN508827",
+   "carrier": "Haul Ltd",
+   "carrierRegistration": "CBDU480324",
+   "ewc": "17 02 01",
+   "tonnes": 14.9,
+   "date": "2026-04-22",
+   "vehicle": "BO21LME"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n12-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \tT2026339\nDate \t15.06.26\nCarrier \tA1 Muck Away Ltd\nWaste carrier licence \tCBDU344779\nWaste description \tSoil and stones\nEWC (LoW) code \t20 03 01\nQuantity \t3.40 tonnes\nVehicle registration \tBH10 FLB\nContact \tTel: 01798 789023\nOrder \tCustomer order no: PO-97791\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "T2026339",
+   "carrier": "A1 Muck Away Ltd",
+   "carrierRegistration": "CBDU344779",
+   "ewc": "20 03 01",
+   "tonnes": 3.4,
+   "date": "2026-06-15",
+   "vehicle": "BH10FLB"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n13-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : T2026215\nDate \t: 28-04-2026 11:51\nVehicle : XP23 AYL\nCarrier : R & J Skip Hire\nLicence : CBDU713285\nEWC \t: 17 03 02\nGross \t: 33,122 kg\nTare \t: 18,332 kg\nNet \t: 14,790 kg\nTel: 01048 232373\nSkip size: 12 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "T2026215",
+   "carrier": "R & J Skip Hire",
+   "carrierRegistration": "CBDU713285",
+   "ewc": "17 03 02",
+   "tonnes": 14.79,
+   "date": "2026-04-28",
+   "vehicle": "XP23AYL"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n14-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: MQ9266/88757\nPart B. Description of the waste. EWC code 17 06 05* Physical form: solid Quantity 15,220 kg\nPart C. Carrier's details. Carrier: Haul Ltd. Registration no. CBDU275940. Vehicle ZX15 PXQ.\nDate of collection 15th May 2026.\nSite: Unit 27, Brookside Road, Reading RG7 7WC\nTel: 01563 363931\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "MQ9266/88757",
+   "carrier": "Haul Ltd",
+   "carrierRegistration": "CBDU275940",
+   "ewc": "17 06 05*",
+   "tonnes": 15.22,
+   "date": "2026-05-15",
+   "vehicle": "ZX15PXQ"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n15-letterhead",
+  "layout": "letterhead",
+  "text": "CASTLE PLANT & HAULAGE\nSite: Unit 29, Brookside Road, Reading RG6 9DE · Tel: 01015 214814\nWaste Transfer Note\nDocket 823156\nTipped: 11.08.26\nUpper tier carrier licence: CBDU830659\nWaste code: 170405\nLoad: 5.38 tonnes\nWagon: UD13 LJS\nCharge: £170.59 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "823156",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDU830659",
+   "ewc": "17 04 05",
+   "tonnes": 5.38,
+   "date": "2026-08-11",
+   "vehicle": "UD13LJS"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n16-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN325026\nDate of collection: 7th Sep 2026\nCarrier: Midlands Aggregates Limited\nCarrier registration CBDU 983166\nDescription of waste: Mixed construction and demolition waste\nEWC code 17 02 01\nNet weight 16.38 tonnes\nVehicle reg: OY22 UKS\nTel: 01840 573948\nSite: Unit 22, Brookside Road, Reading RG7 3FU\nCharge: £328.39 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN325026",
+   "carrier": "Midlands Aggregates Limited",
+   "carrierRegistration": "CBDU983166",
+   "ewc": "17 02 01",
+   "tonnes": 16.38,
+   "date": "2026-09-07",
+   "vehicle": "OY22UKS"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n17-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \t679658\nDate \t19-06-2026\nCarrier \tCastle Plant & Haulage\nWaste carrier licence \tCBDU646998\nWaste description \tSoil and stones\nEWC (LoW) code \t17 09 04\nQuantity \t5,890 kg\nVehicle registration \tNL22 OMK\nContact \tTel: 01242 388076\nOrder \tCustomer order no: PO-76059\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "679658",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDU646998",
+   "ewc": "17 09 04",
+   "tonnes": 5.89,
+   "date": "2026-06-19",
+   "vehicle": "NL22OMK"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n18-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : T2026462\nDate \t: 13/12/2026 10:51\nVehicle : SG16 JXJ\nCarrier : Greenway Waste Services Ltd\nLicence : CBDU143506\nEWC \t: 17 04 05\nGross \t: 22,844 kg\nTare \t: 13,764 kg\nNet \t: 9,080 kg\nTel: 01191 361751\nSkip size: 16 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "T2026462",
+   "carrier": "Greenway Waste Services Ltd",
+   "carrierRegistration": "CBDU143506",
+   "ewc": "17 04 05",
+   "tonnes": 9.08,
+   "date": "2026-12-13",
+   "vehicle": "SG16JXJ"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n19-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: GZ2298/50748\nPart B. Description of the waste. EWC code 17 06 05* Physical form: solid Quantity 0.48 tonnes\nPart C. Carrier's details. Carrier: Castle Plant & Haulage. Registration no. CBDU201852. Vehicle DV18 NKB.\nDate of collection 16.03.26.\nSite: Unit 27, Brookside Road, Reading RG7 2PF\nTel: 01419 257337\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "GZ2298/50748",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDU201852",
+   "ewc": "17 06 05*",
+   "tonnes": 0.48,
+   "date": "2026-03-16",
+   "vehicle": "DV18NKB"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n20-letterhead",
+  "layout": "letterhead",
+  "text": "R & J SKIP HIRE\nSite: Unit 25, Brookside Road, Reading RG1 2HP · Tel: 01429 695014\nWaste Transfer Note\nDocket HC-84871\nTipped: 19 November 2026\nUpper tier carrier licence: CBDL159011\nWaste code: 200301\nLoad: 1.70 tonnes\nWagon: RX15 AQU\nCharge: £173.50 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "HC-84871",
+   "carrier": "R & J Skip Hire",
+   "carrierRegistration": "CBDL159011",
+   "ewc": "20 03 01",
+   "tonnes": 1.7,
+   "date": "2026-11-19",
+   "vehicle": "RX15AQU"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n21-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: HC-35997\nDate of collection: 6th Oct 2026\nCarrier: Midlands Aggregates Limited\nCarrier registration CBDU 659772\nDescription of waste: Mixed construction and demolition waste\nEWC code 20 03 01\nNet weight 10.00 tonnes\nVehicle reg: BA21 QNR\nTel: 01484 452772\nSite: Unit 14, Brookside Road, Reading RG5 9OX\nCharge: £87.81 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "HC-35997",
+   "carrier": "Midlands Aggregates Limited",
+   "carrierRegistration": "CBDU659772",
+   "ewc": "20 03 01",
+   "tonnes": 10,
+   "date": "2026-10-06",
+   "vehicle": "BA21QNR"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n22-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \tHC-15538\nDate \t7th Jul 2026\nCarrier \tBrindley Environmental\nWaste carrier licence \tCBDL956733\nWaste description \tSoil and stones\nEWC (LoW) code \t20 03 01\nQuantity \t15.71 tonnes\nVehicle registration \tXD25 UBO\nContact \tTel: 01618 966414\nOrder \tCustomer order no: PO-72849\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "HC-15538",
+   "carrier": "Brindley Environmental",
+   "carrierRegistration": "CBDL956733",
+   "ewc": "20 03 01",
+   "tonnes": 15.71,
+   "date": "2026-07-07",
+   "vehicle": "XD25UBO"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n23-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : WTN899979\nDate \t: 4 September 2026 07:43\nVehicle : TY24 PKG\nCarrier : Haul Ltd\nLicence : CBDL710308\nEWC \t: 17 04 05\nGross \t: 11,054 kg\nTare \t: 8,524 kg\nNet \t: 2,530 kg\nTel: 01626 929556\nSkip size: 16 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN899979",
+   "carrier": "Haul Ltd",
+   "carrierRegistration": "CBDL710308",
+   "ewc": "17 04 05",
+   "tonnes": 2.53,
+   "date": "2026-09-04",
+   "vehicle": "TY24PKG"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n24-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: ZB7710/14182\nPart B. Description of the waste. EWC code 17 05 03* Physical form: solid Quantity 5.93 tonnes\nPart C. Carrier's details. Carrier: Midlands Aggregates Limited. Registration no. CBDL888722. Vehicle BP25\nWWJ.\nDate of collection 25.04.26.\nSite: Unit 38, Brookside Road, Reading RG6 5LL\nTel: 01071 793626\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "ZB7710/14182",
+   "carrier": "Midlands Aggregates Limited",
+   "carrierRegistration": "CBDL888722",
+   "ewc": "17 05 03*",
+   "tonnes": 5.93,
+   "date": "2026-04-25",
+   "vehicle": "BP25WWJ"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n25-letterhead",
+  "layout": "letterhead",
+  "text": "BRINDLEY ENVIRONMENTAL\nSite: Unit 18, Brookside Road, Reading RG1 2QL · Tel: 01282 967865\nWaste Transfer Note\nDocket WTN494338\nTipped: 12.10.26\nUpper tier carrier licence: CBDU168012\nWaste code: 150106\nLoad: 820 kg\nWagon: CU25 EWG\nCharge: £419.62 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN494338",
+   "carrier": "Brindley Environmental",
+   "carrierRegistration": "CBDU168012",
+   "ewc": "15 01 06",
+   "tonnes": 0.82,
+   "date": "2026-10-12",
+   "vehicle": "CU25EWG"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n26-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN-2026-985\nDate of collection: 2 April 2026\nCarrier: Midlands Aggregates Limited\nCarrier registration CBDL 332028\nDescription of waste: Mixed construction and demolition waste\nEWC code 17 01 07\nNet weight 18.23 tonnes\nVehicle reg: CY15 VAF\nTel: 01353 919326\nSite: Unit 21, Brookside Road, Reading RG3 6GX\nCharge: £459.60 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-985",
+   "carrier": "Midlands Aggregates Limited",
+   "carrierRegistration": "CBDL332028",
+   "ewc": "17 01 07",
+   "tonnes": 18.23,
+   "date": "2026-04-02",
+   "vehicle": "CY15VAF"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n27-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \t743897\nDate \t2 April 2026\nCarrier \tCastle Plant & Haulage\nWaste carrier licence \tCBDU872434\nWaste description \tSoil and stones\nEWC (LoW) code \t17 02 01\nQuantity \t10,600 kg\nVehicle registration \tEZ24 QAJ\nContact \tTel: 01142 972876\nOrder \tCustomer order no: PO-25286\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "743897",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDU872434",
+   "ewc": "17 02 01",
+   "tonnes": 10.6,
+   "date": "2026-04-02",
+   "vehicle": "EZ24QAJ"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n28-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : WTN-2026-281\nDate \t: 09.12.26 15:14\nVehicle : GJ12 JTL\nCarrier : A1 Muck Away Ltd\nLicence : CBDL788704\nEWC \t: 17 01 07\nGross \t: 39,206 kg\nTare \t: 21,036 kg\nNet \t: 18,170 kg\nTel: 01276 511191\nSkip size: 8 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-281",
+   "carrier": "A1 Muck Away Ltd",
+   "carrierRegistration": "CBDL788704",
+   "ewc": "17 01 07",
+   "tonnes": 18.17,
+   "date": "2026-12-09",
+   "vehicle": "GJ12JTL"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n29-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: US1478/90340\nPart B. Description of the waste. EWC code 17 05 03* Physical form: solid Quantity 17.85 tonnes\nPart C. Carrier's details. Carrier: Castle Plant & Haulage. Registration no. CBDL388125. Vehicle GD10 GEH.\nDate of collection 25/04/2026.\nSite: Unit 17, Brookside Road, Reading RG3 7RV\nTel: 01144 674763\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "US1478/90340",
+   "carrier": "Castle Plant & Haulage",
+   "carrierRegistration": "CBDL388125",
+   "ewc": "17 05 03*",
+   "tonnes": 17.85,
+   "date": "2026-04-25",
+   "vehicle": "GD10GEH"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n30-letterhead",
+  "layout": "letterhead",
+  "text": "BRINDLEY ENVIRONMENTAL\nSite: Unit 39, Brookside Road, Reading RG4 7XY · Tel: 01904 761895\nWaste Transfer Note\nDocket HC-37319\nTipped: 23-08-2026\nUpper tier carrier licence: CBDL385798\nWaste code: 170605*\nLoad: 8.34 tonnes\nWagon: YB24 MNM\nCharge: £409.99 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "HC-37319",
+   "carrier": "Brindley Environmental",
+   "carrierRegistration": "CBDL385798",
+   "ewc": "17 06 05*",
+   "tonnes": 8.34,
+   "date": "2026-08-23",
+   "vehicle": "YB24MNM"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n31-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN735846\nDate of collection: 14 April 2026\nCarrier: Haul Ltd\nCarrier registration CBDL 104636\nDescription of waste: Mixed construction and demolition waste\nEWC code 17 09 04\nNet weight 1.94 tonnes\nVehicle reg: YH23 SYH\nTel: 01476 928703\nSite: Unit 26, Brookside Road, Reading RG9 8NB\nCharge: £190.43 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN735846",
+   "carrier": "Haul Ltd",
+   "carrierRegistration": "CBDL104636",
+   "ewc": "17 09 04",
+   "tonnes": 1.94,
+   "date": "2026-04-14",
+   "vehicle": "YH23SYH"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n32-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \tWTN842501\nDate \t7 October 2026\nCarrier \tHaul Ltd\nWaste carrier licence \tCBDL175363\nWaste description \tSoil and stones\nEWC (LoW) code \t17 01 07\nQuantity \t14.72 tonnes\nVehicle registration \tWR13 LZB\nContact \tTel: 01550 389115\nOrder \tCustomer order no: PO-18151\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN842501",
+   "carrier": "Haul Ltd",
+   "carrierRegistration": "CBDL175363",
+   "ewc": "17 01 07",
+   "tonnes": 14.72,
+   "date": "2026-10-07",
+   "vehicle": "WR13LZB"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n33-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : T2026829\nDate \t: 16th Aug 2026 17:24\nVehicle : BO12 UDU\nCarrier : Midlands Aggregates Limited\nLicence : CBDU736517\nEWC \t: 17 05 04\nGross \t: 37,892 kg\nTare \t: 20,452 kg\nNet \t: 17,440 kg\nTel: 01577 114872\nSkip size: 16 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "T2026829",
+   "carrier": "Midlands Aggregates Limited",
+   "carrierRegistration": "CBDU736517",
+   "ewc": "17 05 04",
+   "tonnes": 17.44,
+   "date": "2026-08-16",
+   "vehicle": "BO12UDU"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n34-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: PT8093/37533\nPart B. Description of the waste. EWC code 17 06 05* Physical form: solid Quantity 17.18 tonnes\nPart C. Carrier's details. Carrier: Haul Ltd. Registration no. CBDU534449. Vehicle YX11 SEG.\nDate of collection 24-09-2026.\nSite: Unit 8, Brookside Road, Reading RG8 4QX\nTel: 01778 135526\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "PT8093/37533",
+   "carrier": "Haul Ltd",
+   "carrierRegistration": "CBDU534449",
+   "ewc": "17 06 05*",
+   "tonnes": 17.18,
+   "date": "2026-09-24",
+   "vehicle": "YX11SEG"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n35-letterhead",
+  "layout": "letterhead",
+  "text": "GREENWAY WASTE SERVICES LTD\nSite: Unit 4, Brookside Road, Reading RG8 5US · Tel: 01136 438445\nWaste Transfer Note\nDocket WTN-2026-263\nTipped: 11-03-2026\nUpper tier carrier licence: CBDU523320\nWaste code: 170107\nLoad: 4,260 kg\nWagon: SJ10 RWG\nCharge: £71.87 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2026-263",
+   "carrier": "Greenway Waste Services Ltd",
+   "carrierRegistration": "CBDU523320",
+   "ewc": "17 01 07",
+   "tonnes": 4.26,
+   "date": "2026-03-11",
+   "vehicle": "SJ10RWG"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n36-paragraph",
+  "layout": "paragraph",
+  "text": "WASTE TRANSFER NOTE\nWTN No: WTN987642\nDate of collection: 13.07.26\nCarrier: Greenway Waste Services Ltd\nCarrier registration CBDL 265106\nDescription of waste: Mixed construction and demolition waste\nEWC code 20 03 01\nNet weight 4.42 tonnes\nVehicle reg: LX19 AGH\nTel: 01401 968805\nSite: Unit 18, Brookside Road, Reading RG9 5JZ\nCharge: £137.20 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN987642",
+   "carrier": "Greenway Waste Services Ltd",
+   "carrierRegistration": "CBDL265106",
+   "ewc": "20 03 01",
+   "tonnes": 4.42,
+   "date": "2026-07-13",
+   "vehicle": "LX19AGH"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n37-table",
+  "layout": "table",
+  "text": "Waste Transfer Note\nTransfer note number \tT2026140\nDate \t06-06-2026\nCarrier \tThames Valley Recycling\nWaste carrier licence \tCBDU629595\nWaste description \tSoil and stones\nEWC (LoW) code \t17 02 01\nQuantity \t8.63 tonnes\nVehicle registration \tCJ22 TMS\nContact \tTel: 01090 729598\nOrder \tCustomer order no: PO-13882\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "T2026140",
+   "carrier": "Thames Valley Recycling",
+   "carrierRegistration": "CBDU629595",
+   "ewc": "17 02 01",
+   "tonnes": 8.63,
+   "date": "2026-06-06",
+   "vehicle": "CJ22TMS"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n38-weighbridge",
+  "layout": "weighbridge",
+  "text": "WEIGHBRIDGE TICKET\nTicket No : WTN719718\nDate \t: 20th Mar 2026 09:32\nVehicle : SY13 MTR\nCarrier : A1 Muck Away Ltd\nLicence : CBDU194386\nEWC \t: 17 05 04\nGross \t: 21,224 kg\nTare \t: 13,044 kg\nNet \t: 8,180 kg\nTel: 01483 481626\nSkip size: 6 yd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN719718",
+   "carrier": "A1 Muck Away Ltd",
+   "carrierRegistration": "CBDU194386",
+   "ewc": "17 05 04",
+   "tonnes": 8.18,
+   "date": "2026-03-20",
+   "vehicle": "SY13MTR"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n39-consignment",
+  "layout": "consignment",
+  "text": "HAZARDOUS WASTE CONSIGNMENT NOTE\nPart A. Consignment note code: DB1563/71104\nPart B. Description of the waste. EWC code 17 06 05* Physical form: solid Quantity 15.50 tonnes\nPart C. Carrier's details. Carrier: R & J Skip Hire. Registration no. CBDL644893. Vehicle YN25 POF.\nDate of collection 25-06-2026.\nSite: Unit 20, Brookside Road, Reading RG1 1PP\nTel: 01629 943506\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DB1563/71104",
+   "carrier": "R & J Skip Hire",
+   "carrierRegistration": "CBDL644893",
+   "ewc": "17 06 05*",
+   "tonnes": 15.5,
+   "date": "2026-06-25",
+   "vehicle": "YN25POF"
+  }
+ },
+ {
+  "set": "A",
+  "id": "n40-letterhead",
+  "layout": "letterhead",
+  "text": "BRINDLEY ENVIRONMENTAL\nSite: Unit 36, Brookside Road, Reading RG9 8XR · Tel: 01338 991666\nWaste Transfer Note\nDocket WTN624405\nTipped: 23.07.26\nUpper tier carrier licence: CBDU474339\nWaste code: 170904\nLoad: 14,980 kg\nWagon: NN19 FJD\nCharge: £185.70 + VAT\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN624405",
+   "carrier": "Brindley Environmental",
+   "carrierRegistration": "CBDU474339",
+   "ewc": "17 09 04",
+   "tonnes": 14.98,
+   "date": "2026-07-23",
+   "vehicle": "NN19FJD"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b01-form-grid",
+  "layout": "form-grid",
+  "text": "Waste Transfer Note\nNote number\nWTN/5120\nDate of transfer\n04/10/2026\nCarrier\nJ. Patel & Sons\nRegistration number\nCBDU827811\nWaste code\n17 01 01\nQuantity\n13.23 tonnes\nVehicle\nMD13 KUF\nNotes\nNone\nVAT Reg No: 986 2338 81 Company No: 08754237\nTel 01844 144140 · Fax 01200 910362\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/5120",
+   "carrier": "J. Patel & Sons",
+   "carrierRegistration": "CBDU827811",
+   "ewc": "17 01 01",
+   "tonnes": 13.23,
+   "date": "2026-10-04",
+   "vehicle": "MD13KUF"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b02-transfer-of",
+  "layout": "transfer-of",
+  "text": "Duty of Care Waste Transfer Note\nNote No. WTN/9680\nDate of transfer: 13/12/2026\nRegistered carrier: Eco-Link Waste Solutions\nUpper tier registration: CBDU157905\nEuropean Waste Catalogue code: 17 09 04\nQuantity (tonnes): 6.90\nVehicle registration number: DJ18 AGT\nVAT Reg No: 146 9650 26 Company No: 03913917\nTel 01244 838284 · Fax 01213 609775\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/9680",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CBDU157905",
+   "ewc": "17 09 04",
+   "tonnes": 6.9,
+   "date": "2026-12-13",
+   "vehicle": "DJ18AGT"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b03-docket",
+  "layout": "docket",
+  "text": "NorthSouth Aggregates Ltd\nVAT Reg No: 671 8307 85 Company No: 05613947\nTel 01035 957479 · Fax 01192 636584\nDELIVERY DOCKET\nDocket No. WTN/7824\nDate: 19/01/26\nWaste: Mixed inert — EWC 17 05 04\nWeight: 7250 kg\nWagon YU25 XBJ · Carrier licence CBDU279384\nPermit EPR/AB7563CD\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/7824",
+   "carrier": "NorthSouth Aggregates Ltd",
+   "carrierRegistration": "CBDU279384",
+   "ewc": "17 05 04",
+   "tonnes": 7.25,
+   "date": "2026-01-19",
+   "vehicle": "YU25XBJ"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b04-iso-dates",
+  "layout": "iso-dates",
+  "text": "WASTE TRANSFER NOTE\nReference: WTN/7741\nCollected on 2026-08-08\nCarrier: Eco-Link Waste Solutions\nCarrier registration number: CBDU482366\nEWC: 20 01 01\nGross weight 28.30 t, tare 9.00 t, net weight 19.30 t\nVehicle: OH24 GBG\nVAT Reg No: 686 5956 82 Company No: 01023568\nTel 01087 958628 · Fax 01031 459386\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/7741",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CBDU482366",
+   "ewc": "20 01 01",
+   "tonnes": 19.3,
+   "date": "2026-08-08",
+   "vehicle": "OH24GBG"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b05-old-reg",
+  "layout": "old-reg",
+  "text": "Waste Transfer Note\nTransfer note ref: DK547418\nDate: 27-Feb-2026\nCarrier: J. Patel & Sons\nWaste carrier registration: CB/YF4876DR\nList of Waste code: 15 01 01\nNet weight: 9.23 tonnes\nVehicle: FX16 YCZ\nVAT Reg No: 304 2947 80 Company No: 05862041\nTel 01214 922480 · Fax 01189 585340\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK547418",
+   "carrier": "J. Patel & Sons",
+   "carrierRegistration": "CB/YF4876DR",
+   "ewc": "15 01 01",
+   "tonnes": 9.23,
+   "date": "2026-02-27",
+   "vehicle": "FX16YCZ"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b06-tons",
+  "layout": "tons",
+  "text": "Transfer Note\nTicket no: WTN/3258\nDate: 06/06/2026\nCarrier: Eco-Link Waste Solutions\nWaste carrier licence no: CBDU739620\nEWC code 17 02 03\nLoad weight 4.7 tons\nTruck ZN20 PDE\nVAT Reg No: 273 7486 21 Company No: 04767380\nTel 01803 882676 · Fax 01333 446184\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/3258",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CBDU739620",
+   "ewc": "17 02 03",
+   "tonnes": 4.7,
+   "date": "2026-06-06",
+   "vehicle": "ZN20PDE"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b07-form-grid",
+  "layout": "form-grid",
+  "text": "Waste Transfer Note\nNote number\n2026-4312\nDate of transfer\n26/05/2026\nCarrier\nKestrel Haulage Ltd\nRegistration number\nCBDU644499\nWaste code\n20 01 01\nQuantity\n16.08 tonnes\nVehicle\nVS20 WAD\nNotes\nNone\nVAT Reg No: 870 8195 65 Company No: 08669551\nTel 01471 175689 · Fax 01038 831462\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-4312",
+   "carrier": "Kestrel Haulage Ltd",
+   "carrierRegistration": "CBDU644499",
+   "ewc": "20 01 01",
+   "tonnes": 16.08,
+   "date": "2026-05-26",
+   "vehicle": "VS20WAD"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b08-transfer-of",
+  "layout": "transfer-of",
+  "text": "Duty of Care Waste Transfer Note\nNote No. 22906\nDate of transfer: 06/05/2026\nRegistered carrier: Ridgeway Skip Hire Limited\nUpper tier registration: CBDU400157\nEuropean Waste Catalogue code: 17 05 03*\nQuantity (tonnes): 11.42\nVehicle registration number: GO23 HAD\nVAT Reg No: 669 5661 48 Company No: 06339434\nTel 01819 937037 · Fax 01269 365712\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "22906",
+   "carrier": "Ridgeway Skip Hire Limited",
+   "carrierRegistration": "CBDU400157",
+   "ewc": "17 05 03*",
+   "tonnes": 11.42,
+   "date": "2026-05-06",
+   "vehicle": "GO23HAD"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b09-docket",
+  "layout": "docket",
+  "text": "NorthSouth Aggregates Ltd\nVAT Reg No: 140 7633 64 Company No: 08306858\nTel 01369 869869 · Fax 01141 354274\nDELIVERY DOCKET\nDocket No. 2026-4609\nDate: 08/06/26\nWaste: Mixed inert — EWC 17 09 04\nWeight: 590 kg\nWagon MR21 ULF · Carrier licence CBDU167829\nPermit EPR/AB2666CD\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-4609",
+   "carrier": "NorthSouth Aggregates Ltd",
+   "carrierRegistration": "CBDU167829",
+   "ewc": "17 09 04",
+   "tonnes": 0.59,
+   "date": "2026-06-08",
+   "vehicle": "MR21ULF"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b10-iso-dates",
+  "layout": "iso-dates",
+  "text": "WASTE TRANSFER NOTE\nReference: DK944634\nCollected on 2026-06-20\nCarrier: Dunmore Transport Services Ltd\nCarrier registration number: CBDU567774\nEWC: 17 05 04\nGross weight 16.25 t, tare 9.00 t, net weight 7.25 t\nVehicle: UZ21 YPV\nVAT Reg No: 210 8669 31 Company No: 03602968\nTel 01013 761661 · Fax 01156 875134\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK944634",
+   "carrier": "Dunmore Transport Services Ltd",
+   "carrierRegistration": "CBDU567774",
+   "ewc": "17 05 04",
+   "tonnes": 7.25,
+   "date": "2026-06-20",
+   "vehicle": "UZ21YPV"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b11-old-reg",
+  "layout": "old-reg",
+  "text": "Waste Transfer Note\nTransfer note ref: 2026-3936\nDate: 15-Dec-2026\nCarrier: J. Patel & Sons\nWaste carrier registration: CB/ZE3355ZD\nList of Waste code: 17 01 01\nNet weight: 19.25 tonnes\nVehicle: EV19 HBV\nVAT Reg No: 868 5202 75 Company No: 04157152\nTel 01781 567026 · Fax 01057 496776\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-3936",
+   "carrier": "J. Patel & Sons",
+   "carrierRegistration": "CB/ZE3355ZD",
+   "ewc": "17 01 01",
+   "tonnes": 19.25,
+   "date": "2026-12-15",
+   "vehicle": "EV19HBV"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b12-tons",
+  "layout": "tons",
+  "text": "Transfer Note\nTicket no: 57344\nDate: 28/10/2026\nCarrier: Ridgeway Skip Hire Limited\nWaste carrier licence no: CBDU985286\nEWC code 17 02 03\nLoad weight 2.7 tons\nTruck NX16 MGP\nVAT Reg No: 599 2114 54 Company No: 09827424\nTel 01961 344273 · Fax 01333 220308\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "57344",
+   "carrier": "Ridgeway Skip Hire Limited",
+   "carrierRegistration": "CBDU985286",
+   "ewc": "17 02 03",
+   "tonnes": 2.7,
+   "date": "2026-10-28",
+   "vehicle": "NX16MGP"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b13-form-grid",
+  "layout": "form-grid",
+  "text": "Waste Transfer Note\nNote number\nDK706421\nDate of transfer\n07/04/2026\nCarrier\nNorthSouth Aggregates Ltd\nRegistration number\nCBDU690907\nWaste code\n17 01 01\nQuantity\n18.75 tonnes\nVehicle\nJM12 GES\nNotes\nNone\nVAT Reg No: 218 1725 22 Company No: 01523299\nTel 01002 604328 · Fax 01718 820871\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK706421",
+   "carrier": "NorthSouth Aggregates Ltd",
+   "carrierRegistration": "CBDU690907",
+   "ewc": "17 01 01",
+   "tonnes": 18.75,
+   "date": "2026-04-07",
+   "vehicle": "JM12GES"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b14-transfer-of",
+  "layout": "transfer-of",
+  "text": "Duty of Care Waste Transfer Note\nNote No. 2026-4238\nDate of transfer: 17/02/2026\nRegistered carrier: Dunmore Transport Services Ltd\nUpper tier registration: CBDU863845\nEuropean Waste Catalogue code: 17 09 04\nQuantity (tonnes): 8.14\nVehicle registration number: EF20 ANS\nVAT Reg No: 513 8213 38 Company No: 06959889\nTel 01188 973130 · Fax 01821 823158\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-4238",
+   "carrier": "Dunmore Transport Services Ltd",
+   "carrierRegistration": "CBDU863845",
+   "ewc": "17 09 04",
+   "tonnes": 8.14,
+   "date": "2026-02-17",
+   "vehicle": "EF20ANS"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b15-docket",
+  "layout": "docket",
+  "text": "J. Patel & Sons\nVAT Reg No: 402 5090 57 Company No: 02358439\nTel 01809 322892 · Fax 01975 163836\nDELIVERY DOCKET\nDocket No. 2026-3998\nDate: 26/01/26\nWaste: Mixed inert — EWC 17 01 01\nWeight: 8950 kg\nWagon AA10 GOR · Carrier licence CBDU594236\nPermit EPR/AB5287CD\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-3998",
+   "carrier": "J. Patel & Sons",
+   "carrierRegistration": "CBDU594236",
+   "ewc": "17 01 01",
+   "tonnes": 8.95,
+   "date": "2026-01-26",
+   "vehicle": "AA10GOR"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b16-iso-dates",
+  "layout": "iso-dates",
+  "text": "WASTE TRANSFER NOTE\nReference: WTN/9970\nCollected on 2026-01-03\nCarrier: Ridgeway Skip Hire Limited\nCarrier registration number: CBDU452203\nEWC: 17 09 04\nGross weight 23.06 t, tare 9.00 t, net weight 14.06 t\nVehicle: AA11 CFU\nVAT Reg No: 264 1127 17 Company No: 01973156\nTel 01843 838385 · Fax 01260 440305\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/9970",
+   "carrier": "Ridgeway Skip Hire Limited",
+   "carrierRegistration": "CBDU452203",
+   "ewc": "17 09 04",
+   "tonnes": 14.06,
+   "date": "2026-01-03",
+   "vehicle": "AA11CFU"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b17-old-reg",
+  "layout": "old-reg",
+  "text": "Waste Transfer Note\nTransfer note ref: DK110532\nDate: 2-Jan-2026\nCarrier: Eco-Link Waste Solutions\nWaste carrier registration: CB/PL3026WM\nList of Waste code: 15 01 01\nNet weight: 15.93 tonnes\nVehicle: GN10 OTG\nVAT Reg No: 559 2817 71 Company No: 08025819\nTel 01057 303191 · Fax 01747 766154\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK110532",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CB/PL3026WM",
+   "ewc": "15 01 01",
+   "tonnes": 15.93,
+   "date": "2026-01-02",
+   "vehicle": "GN10OTG"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b18-tons",
+  "layout": "tons",
+  "text": "Transfer Note\nTicket no: WTN/9401\nDate: 19/12/2026\nCarrier: J. Patel & Sons\nWaste carrier licence no: CBDU695293\nEWC code 17 09 04\nLoad weight 9.1 tons\nTruck KR10 MNK\nVAT Reg No: 851 1176 49 Company No: 02843580\nTel 01259 881519 · Fax 01145 428801\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/9401",
+   "carrier": "J. Patel & Sons",
+   "carrierRegistration": "CBDU695293",
+   "ewc": "17 09 04",
+   "tonnes": 9.1,
+   "date": "2026-12-19",
+   "vehicle": "KR10MNK"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b19-form-grid",
+  "layout": "form-grid",
+  "text": "Waste Transfer Note\nNote number\nWTN/3523\nDate of transfer\n08/04/2026\nCarrier\nEco-Link Waste Solutions\nRegistration number\nCBDU559082\nWaste code\n17 03 02\nQuantity\n14.36 tonnes\nVehicle\nYG12 THN\nNotes\nNone\nVAT Reg No: 617 7389 90 Company No: 09937944\nTel 01277 479357 · Fax 01593 839450\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/3523",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CBDU559082",
+   "ewc": "17 03 02",
+   "tonnes": 14.36,
+   "date": "2026-04-08",
+   "vehicle": "YG12THN"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b20-transfer-of",
+  "layout": "transfer-of",
+  "text": "Duty of Care Waste Transfer Note\nNote No. 71126\nDate of transfer: 18/10/2026\nRegistered carrier: Ridgeway Skip Hire Limited\nUpper tier registration: CBDU918832\nEuropean Waste Catalogue code: 17 04 07\nQuantity (tonnes): 14.92\nVehicle registration number: KJ10 DPL\nVAT Reg No: 942 3698 17 Company No: 06854703\nTel 01388 737013 · Fax 01891 514072\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "71126",
+   "carrier": "Ridgeway Skip Hire Limited",
+   "carrierRegistration": "CBDU918832",
+   "ewc": "17 04 07",
+   "tonnes": 14.92,
+   "date": "2026-10-18",
+   "vehicle": "KJ10DPL"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b21-docket",
+  "layout": "docket",
+  "text": "Dunmore Transport Services Ltd\nVAT Reg No: 236 9137 33 Company No: 01402809\nTel 01755 967368 · Fax 01501 417565\nDELIVERY DOCKET\nDocket No. DK476870\nDate: 08/07/26\nWaste: Mixed inert — EWC 17 05 03*\nWeight: 11670 kg\nWagon TZ20 AXG · Carrier licence CBDU100045\nPermit EPR/AB8216CD\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK476870",
+   "carrier": "Dunmore Transport Services Ltd",
+   "carrierRegistration": "CBDU100045",
+   "ewc": "17 05 03*",
+   "tonnes": 11.67,
+   "date": "2026-07-08",
+   "vehicle": "TZ20AXG"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b22-iso-dates",
+  "layout": "iso-dates",
+  "text": "WASTE TRANSFER NOTE\nReference: DK273168\nCollected on 2026-06-08\nCarrier: Dunmore Transport Services Ltd\nCarrier registration number: CBDU833817\nEWC: 17 09 04\nGross weight 23.94 t, tare 9.00 t, net weight 14.94 t\nVehicle: PJ19 VUN\nVAT Reg No: 846 9258 76 Company No: 07233909\nTel 01503 188418 · Fax 01314 586807\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK273168",
+   "carrier": "Dunmore Transport Services Ltd",
+   "carrierRegistration": "CBDU833817",
+   "ewc": "17 09 04",
+   "tonnes": 14.94,
+   "date": "2026-06-08",
+   "vehicle": "PJ19VUN"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b23-old-reg",
+  "layout": "old-reg",
+  "text": "Waste Transfer Note\nTransfer note ref: 10351\nDate: 26-Sep-2026\nCarrier: Eco-Link Waste Solutions\nWaste carrier registration: CB/CO6542XN\nList of Waste code: 17 02 03\nNet weight: 6.13 tonnes\nVehicle: UG25 NPW\nVAT Reg No: 170 8472 19 Company No: 02184567\nTel 01613 579446 · Fax 01192 933529\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "10351",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CB/CO6542XN",
+   "ewc": "17 02 03",
+   "tonnes": 6.13,
+   "date": "2026-09-26",
+   "vehicle": "UG25NPW"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b24-tons",
+  "layout": "tons",
+  "text": "Transfer Note\nTicket no: 37432\nDate: 21/04/2026\nCarrier: J. Patel & Sons\nWaste carrier licence no: CBDU398466\nEWC code 15 01 01\nLoad weight 6.0 tons\nTruck BC23 JYG\nVAT Reg No: 641 9295 97 Company No: 01716052\nTel 01181 869535 · Fax 01997 389183\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "37432",
+   "carrier": "J. Patel & Sons",
+   "carrierRegistration": "CBDU398466",
+   "ewc": "15 01 01",
+   "tonnes": 6,
+   "date": "2026-04-21",
+   "vehicle": "BC23JYG"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b25-form-grid",
+  "layout": "form-grid",
+  "text": "Waste Transfer Note\nNote number\n2026-3265\nDate of transfer\n27/01/2026\nCarrier\nNorthSouth Aggregates Ltd\nRegistration number\nCBDU801218\nWaste code\n17 03 02\nQuantity\n2.47 tonnes\nVehicle\nCB24 SNO\nNotes\nNone\nVAT Reg No: 891 5765 31 Company No: 01998717\nTel 01199 417165 · Fax 01702 275614\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-3265",
+   "carrier": "NorthSouth Aggregates Ltd",
+   "carrierRegistration": "CBDU801218",
+   "ewc": "17 03 02",
+   "tonnes": 2.47,
+   "date": "2026-01-27",
+   "vehicle": "CB24SNO"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b26-transfer-of",
+  "layout": "transfer-of",
+  "text": "Duty of Care Waste Transfer Note\nNote No. 2026-7152\nDate of transfer: 21/04/2026\nRegistered carrier: NorthSouth Aggregates Ltd\nUpper tier registration: CBDU491893\nEuropean Waste Catalogue code: 17 03 02\nQuantity (tonnes): 9.38\nVehicle registration number: TY24 DCJ\nVAT Reg No: 842 2899 66 Company No: 01791286\nTel 01427 736317 · Fax 01826 318265\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "2026-7152",
+   "carrier": "NorthSouth Aggregates Ltd",
+   "carrierRegistration": "CBDU491893",
+   "ewc": "17 03 02",
+   "tonnes": 9.38,
+   "date": "2026-04-21",
+   "vehicle": "TY24DCJ"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b27-docket",
+  "layout": "docket",
+  "text": "Eco-Link Waste Solutions\nVAT Reg No: 734 4801 45 Company No: 07314432\nTel 01982 958852 · Fax 01149 590291\nDELIVERY DOCKET\nDocket No. WTN/7333\nDate: 01/04/26\nWaste: Mixed inert — EWC 17 05 04\nWeight: 9500 kg\nWagon FM22 BGM · Carrier licence CBDU803720\nPermit EPR/AB6809CD\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/7333",
+   "carrier": "Eco-Link Waste Solutions",
+   "carrierRegistration": "CBDU803720",
+   "ewc": "17 05 04",
+   "tonnes": 9.5,
+   "date": "2026-04-01",
+   "vehicle": "FM22BGM"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b28-iso-dates",
+  "layout": "iso-dates",
+  "text": "WASTE TRANSFER NOTE\nReference: WTN/8686\nCollected on 2026-11-01\nCarrier: NorthSouth Aggregates Ltd\nCarrier registration number: CBDU229019\nEWC: 17 02 03\nGross weight 21.66 t, tare 9.00 t, net weight 12.66 t\nVehicle: ZH25 LXK\nVAT Reg No: 252 6388 49 Company No: 01342837\nTel 01081 329339 · Fax 01003 394088\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN/8686",
+   "carrier": "NorthSouth Aggregates Ltd",
+   "carrierRegistration": "CBDU229019",
+   "ewc": "17 02 03",
+   "tonnes": 12.66,
+   "date": "2026-11-01",
+   "vehicle": "ZH25LXK"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b29-old-reg",
+  "layout": "old-reg",
+  "text": "Waste Transfer Note\nTransfer note ref: DK473772\nDate: 19-Mar-2026\nCarrier: Kestrel Haulage Ltd\nWaste carrier registration: CB/MG5858MW\nList of Waste code: 17 03 02\nNet weight: 0.94 tonnes\nVehicle: WV13 OSH\nVAT Reg No: 376 2444 24 Company No: 07411018\nTel 01258 972027 · Fax 01265 917329\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK473772",
+   "carrier": "Kestrel Haulage Ltd",
+   "carrierRegistration": "CB/MG5858MW",
+   "ewc": "17 03 02",
+   "tonnes": 0.94,
+   "date": "2026-03-19",
+   "vehicle": "WV13OSH"
+  }
+ },
+ {
+  "set": "B",
+  "id": "b30-tons",
+  "layout": "tons",
+  "text": "Transfer Note\nTicket no: DK880161\nDate: 13/02/2026\nCarrier: Dunmore Transport Services Ltd\nWaste carrier licence no: CBDU947127\nEWC code 15 01 01\nLoad weight 17.4 tons\nTruck KV14 ANB\nVAT Reg No: 679 1063 85 Company No: 07411047\nTel 01672 272100 · Fax 01324 157412\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "DK880161",
+   "carrier": "Dunmore Transport Services Ltd",
+   "carrierRegistration": "CBDU947127",
+   "ewc": "15 01 01",
+   "tonnes": 17.4,
+   "date": "2026-02-13",
+   "vehicle": "KV14ANB"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c01-weekday-date",
+  "layout": "weekday-date",
+  "text": "Waste Transfer Note\nNo: WTN-2843\nMonday 18 October 2026\nDate of collection: 18 October 2026\nCarrier: Severn Skips & Recycling\nCarrier reg CBDL681038\nEWC 17 01 01\nNet weight 13.03 tonnes\nVehicle GV12 XUS\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-2843",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL681038",
+   "ewc": "17 01 01",
+   "tonnes": 13.03,
+   "date": "2026-10-18",
+   "vehicle": "GV12XUS"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c02-thousands-kg",
+  "layout": "thousands-kg",
+  "text": "WASTE TRANSFER NOTE\nRef: BW33224\nDate: 10/04/2026\nCarrier: Lakeside Aggregates plc\nRegistration: CBDL700081\nEWC code: 17 05 04\nNet weight: 14,890 kg\nVehicle: CC24 NLZ\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW33224",
+   "carrier": "Lakeside Aggregates plc",
+   "carrierRegistration": "CBDL700081",
+   "ewc": "17 05 04",
+   "tonnes": 14.89,
+   "date": "2026-04-10",
+   "vehicle": "CC24NLZ"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c03-capital-T",
+  "layout": "capital-T",
+  "text": "Waste Transfer Note\nNote ref WTN-1750\nDate 21.07.2026\nCarrier: T. Okafor Haulage\nLicence CBDL896779\nWaste code 17 04 05\nWeight 6.6 T\nVehicle RL10 RNV\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-1750",
+   "carrier": "T. Okafor Haulage",
+   "carrierRegistration": "CBDL896779",
+   "ewc": "17 04 05",
+   "tonnes": 6.6,
+   "date": "2026-07-21",
+   "vehicle": "RL10RNV"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c04-tel-trap",
+  "layout": "tel-trap",
+  "text": "Waste Transfer Note\nTicket: Tel 01844 684123\nTransfer note number BW66371\nDate: 14/07/2026\nCarrier: Orchard Plant Hire Limited\nReg CBDL856256\nEWC 17 02 01\nQuantity: 10.46 tonnes\nVehicle OF14 KTK\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW66371",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL856256",
+   "ewc": "17 02 01",
+   "tonnes": 10.46,
+   "date": "2026-07-14",
+   "vehicle": "OF14KTK"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c05-collected-by",
+  "layout": "collected-by",
+  "text": "Waste Transfer Note\nRef: BW93106\nDate: 18/04/2026\nCollected by: Orchard Plant Hire Limited\nRegistration CBDL230363\nEWC 17 02 01\nWeight: 13.62 tonnes\nVehicle SY12 ZMZ\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW93106",
+   "carrier": null,
+   "carrierRegistration": "CBDL230363",
+   "ewc": "17 02 01",
+   "tonnes": 13.62,
+   "date": "2026-04-18",
+   "vehicle": "SY12ZMZ"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c06-two-codes",
+  "layout": "two-codes",
+  "text": "Waste Transfer Note\nRef: WTN-6770\nDate: 01/07/2026\nCarrier: Orchard Plant Hire Limited\nRegistration CBDL930679\nEWC codes: 17 04 05, 17 05 03*\nNet weight 5.68 tonnes\nVehicle VP11 XYW\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-6770",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL930679",
+   "ewc": "17 04 05",
+   "tonnes": 5.68,
+   "date": "2026-07-01",
+   "vehicle": "VP11XYW"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c07-weekday-date",
+  "layout": "weekday-date",
+  "text": "Waste Transfer Note\nNo: WTN-9785\nThursday 6 August 2026\nDate of collection: 6 August 2026\nCarrier: Orchard Plant Hire Limited\nCarrier reg CBDL834939\nEWC 17 05 03*\nNet weight 17.93 tonnes\nVehicle TP10 VKJ\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-9785",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL834939",
+   "ewc": "17 05 03*",
+   "tonnes": 17.93,
+   "date": "2026-08-06",
+   "vehicle": "TP10VKJ"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c08-thousands-kg",
+  "layout": "thousands-kg",
+  "text": "WASTE TRANSFER NOTE\nRef: BW44213\nDate: 13/04/2026\nCarrier: Orchard Plant Hire Limited\nRegistration: CBDL916644\nEWC code: 17 02 01\nNet weight: 3,330 kg\nVehicle: RS12 OCP\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW44213",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL916644",
+   "ewc": "17 02 01",
+   "tonnes": 3.33,
+   "date": "2026-04-13",
+   "vehicle": "RS12OCP"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c09-capital-T",
+  "layout": "capital-T",
+  "text": "Waste Transfer Note\nNote ref BW72193\nDate 06.12.2026\nCarrier: Orchard Plant Hire Limited\nLicence CBDL936215\nWaste code 17 02 01\nWeight 11.3 T\nVehicle ST16 ELU\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW72193",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL936215",
+   "ewc": "17 02 01",
+   "tonnes": 11.3,
+   "date": "2026-12-06",
+   "vehicle": "ST16ELU"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c10-tel-trap",
+  "layout": "tel-trap",
+  "text": "Waste Transfer Note\nTicket: Tel 01046 836965\nTransfer note number 878559\nDate: 27/03/2026\nCarrier: Orchard Plant Hire Limited\nReg CBDL892646\nEWC 17 09 04\nQuantity: 12.78 tonnes\nVehicle OM10 BKW\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "878559",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL892646",
+   "ewc": "17 09 04",
+   "tonnes": 12.78,
+   "date": "2026-03-27",
+   "vehicle": "OM10BKW"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c11-collected-by",
+  "layout": "collected-by",
+  "text": "Waste Transfer Note\nRef: BW50039\nDate: 28/08/2026\nCollected by: T. Okafor Haulage\nRegistration CBDL204834\nEWC 20 03 01\nWeight: 8.18 tonnes\nVehicle OX18 RGR\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW50039",
+   "carrier": null,
+   "carrierRegistration": "CBDL204834",
+   "ewc": "20 03 01",
+   "tonnes": 8.18,
+   "date": "2026-08-28",
+   "vehicle": "OX18RGR"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c12-two-codes",
+  "layout": "two-codes",
+  "text": "Waste Transfer Note\nRef: WTN-8226\nDate: 05/01/2026\nCarrier: Severn Skips & Recycling\nRegistration CBDL389306\nEWC codes: 17 09 04, 17 05 04\nNet weight 11.45 tonnes\nVehicle DP20 SSJ\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-8226",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL389306",
+   "ewc": "17 09 04",
+   "tonnes": 11.45,
+   "date": "2026-01-05",
+   "vehicle": "DP20SSJ"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c13-weekday-date",
+  "layout": "weekday-date",
+  "text": "Waste Transfer Note\nNo: WTN-1045\nFriday 10 November 2026\nDate of collection: 10 November 2026\nCarrier: Severn Skips & Recycling\nCarrier reg CBDL656531\nEWC 17 09 04\nNet weight 22.54 tonnes\nVehicle CX22 DTD\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-1045",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL656531",
+   "ewc": "17 09 04",
+   "tonnes": 22.54,
+   "date": "2026-11-10",
+   "vehicle": "CX22DTD"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c14-thousands-kg",
+  "layout": "thousands-kg",
+  "text": "WASTE TRANSFER NOTE\nRef: BW76312\nDate: 02/04/2026\nCarrier: T. Okafor Haulage\nRegistration: CBDL592111\nEWC code: 17 02 01\nNet weight: 12,530 kg\nVehicle: BO12 VRP\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW76312",
+   "carrier": "T. Okafor Haulage",
+   "carrierRegistration": "CBDL592111",
+   "ewc": "17 02 01",
+   "tonnes": 12.53,
+   "date": "2026-04-02",
+   "vehicle": "BO12VRP"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c15-capital-T",
+  "layout": "capital-T",
+  "text": "Waste Transfer Note\nNote ref WTN-5957\nDate 02.04.2026\nCarrier: Bramley Waste Ltd\nLicence CBDL394689\nWaste code 17 04 05\nWeight 8.0 T\nVehicle YC12 RTN\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-5957",
+   "carrier": "Bramley Waste Ltd",
+   "carrierRegistration": "CBDL394689",
+   "ewc": "17 04 05",
+   "tonnes": 8,
+   "date": "2026-04-02",
+   "vehicle": "YC12RTN"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c16-tel-trap",
+  "layout": "tel-trap",
+  "text": "Waste Transfer Note\nTicket: Tel 01768 419462\nTransfer note number 336884\nDate: 28/07/2026\nCarrier: Lakeside Aggregates plc\nReg CBDL246741\nEWC 20 03 01\nQuantity: 18.07 tonnes\nVehicle UM20 NTV\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "336884",
+   "carrier": "Lakeside Aggregates plc",
+   "carrierRegistration": "CBDL246741",
+   "ewc": "20 03 01",
+   "tonnes": 18.07,
+   "date": "2026-07-28",
+   "vehicle": "UM20NTV"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c17-collected-by",
+  "layout": "collected-by",
+  "text": "Waste Transfer Note\nRef: BW80454\nDate: 16/02/2026\nCollected by: Severn Skips & Recycling\nRegistration CBDL337583\nEWC 17 09 04\nWeight: 15.40 tonnes\nVehicle WB24 UVC\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW80454",
+   "carrier": null,
+   "carrierRegistration": "CBDL337583",
+   "ewc": "17 09 04",
+   "tonnes": 15.4,
+   "date": "2026-02-16",
+   "vehicle": "WB24UVC"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c18-two-codes",
+  "layout": "two-codes",
+  "text": "Waste Transfer Note\nRef: 565755\nDate: 01/07/2026\nCarrier: Severn Skips & Recycling\nRegistration CBDL230436\nEWC codes: 17 01 01, 17 02 01\nNet weight 16.39 tonnes\nVehicle SD14 FSR\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "565755",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL230436",
+   "ewc": "17 01 01",
+   "tonnes": 16.39,
+   "date": "2026-07-01",
+   "vehicle": "SD14FSR"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c19-weekday-date",
+  "layout": "weekday-date",
+  "text": "Waste Transfer Note\nNo: 226874\nWednesday 3 March 2026\nDate of collection: 3 March 2026\nCarrier: Bramley Waste Ltd\nCarrier reg CBDL320212\nEWC 17 09 04\nNet weight 17.77 tonnes\nVehicle AO13 VXA\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "226874",
+   "carrier": "Bramley Waste Ltd",
+   "carrierRegistration": "CBDL320212",
+   "ewc": "17 09 04",
+   "tonnes": 17.77,
+   "date": "2026-03-03",
+   "vehicle": "AO13VXA"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c20-thousands-kg",
+  "layout": "thousands-kg",
+  "text": "WASTE TRANSFER NOTE\nRef: BW80210\nDate: 21/07/2026\nCarrier: Orchard Plant Hire Limited\nRegistration: CBDL542935\nEWC code: 17 04 05\nNet weight: 9,370 kg\nVehicle: TP23 JDN\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW80210",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL542935",
+   "ewc": "17 04 05",
+   "tonnes": 9.37,
+   "date": "2026-07-21",
+   "vehicle": "TP23JDN"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c21-capital-T",
+  "layout": "capital-T",
+  "text": "Waste Transfer Note\nNote ref 561957\nDate 19.04.2026\nCarrier: Orchard Plant Hire Limited\nLicence CBDL792233\nWaste code 17 04 05\nWeight 16.0 T\nVehicle CL23 EUN\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "561957",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL792233",
+   "ewc": "17 04 05",
+   "tonnes": 16,
+   "date": "2026-04-19",
+   "vehicle": "CL23EUN"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c22-tel-trap",
+  "layout": "tel-trap",
+  "text": "Waste Transfer Note\nTicket: Tel 01242 333465\nTransfer note number BW53937\nDate: 18/08/2026\nCarrier: Bramley Waste Ltd\nReg CBDL735216\nEWC 17 09 04\nQuantity: 6.22 tonnes\nVehicle ZR21 JFM\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW53937",
+   "carrier": "Bramley Waste Ltd",
+   "carrierRegistration": "CBDL735216",
+   "ewc": "17 09 04",
+   "tonnes": 6.22,
+   "date": "2026-08-18",
+   "vehicle": "ZR21JFM"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c23-collected-by",
+  "layout": "collected-by",
+  "text": "Waste Transfer Note\nRef: 430994\nDate: 26/03/2026\nCollected by: Orchard Plant Hire Limited\nRegistration CBDL714137\nEWC 17 04 05\nWeight: 3.24 tonnes\nVehicle MM21 PJJ\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "430994",
+   "carrier": null,
+   "carrierRegistration": "CBDL714137",
+   "ewc": "17 04 05",
+   "tonnes": 3.24,
+   "date": "2026-03-26",
+   "vehicle": "MM21PJJ"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c24-two-codes",
+  "layout": "two-codes",
+  "text": "Waste Transfer Note\nRef: BW94703\nDate: 22/09/2026\nCarrier: T. Okafor Haulage\nRegistration CBDL921166\nEWC codes: 17 05 03*, 17 09 04\nNet weight 7.06 tonnes\nVehicle MD23 WJA\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW94703",
+   "carrier": "T. Okafor Haulage",
+   "carrierRegistration": "CBDL921166",
+   "ewc": "17 05 03*",
+   "tonnes": 7.06,
+   "date": "2026-09-22",
+   "vehicle": "MD23WJA"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c25-weekday-date",
+  "layout": "weekday-date",
+  "text": "Waste Transfer Note\nNo: BW63345\nThursday 14 May 2026\nDate of collection: 14 May 2026\nCarrier: Severn Skips & Recycling\nCarrier reg CBDL895676\nEWC 17 04 05\nNet weight 14.34 tonnes\nVehicle TN17 AON\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW63345",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL895676",
+   "ewc": "17 04 05",
+   "tonnes": 14.34,
+   "date": "2026-05-14",
+   "vehicle": "TN17AON"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c26-thousands-kg",
+  "layout": "thousands-kg",
+  "text": "WASTE TRANSFER NOTE\nRef: WTN-8767\nDate: 17/08/2026\nCarrier: Severn Skips & Recycling\nRegistration: CBDL703700\nEWC code: 17 05 03*\nNet weight: 3,810 kg\nVehicle: TO24 TGE\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-8767",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL703700",
+   "ewc": "17 05 03*",
+   "tonnes": 3.81,
+   "date": "2026-08-17",
+   "vehicle": "TO24TGE"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c27-capital-T",
+  "layout": "capital-T",
+  "text": "Waste Transfer Note\nNote ref WTN-4515\nDate 08.02.2026\nCarrier: Orchard Plant Hire Limited\nLicence CBDL443400\nWaste code 20 03 01\nWeight 9.7 T\nVehicle JU25 RSL\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "WTN-4515",
+   "carrier": "Orchard Plant Hire Limited",
+   "carrierRegistration": "CBDL443400",
+   "ewc": "20 03 01",
+   "tonnes": 9.7,
+   "date": "2026-02-08",
+   "vehicle": "JU25RSL"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c28-tel-trap",
+  "layout": "tel-trap",
+  "text": "Waste Transfer Note\nTicket: Tel 01682 610052\nTransfer note number BW83605\nDate: 22/08/2026\nCarrier: Bramley Waste Ltd\nReg CBDL459722\nEWC 17 02 01\nQuantity: 2.57 tonnes\nVehicle DT23 YED\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW83605",
+   "carrier": "Bramley Waste Ltd",
+   "carrierRegistration": "CBDL459722",
+   "ewc": "17 02 01",
+   "tonnes": 2.57,
+   "date": "2026-08-22",
+   "vehicle": "DT23YED"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c29-collected-by",
+  "layout": "collected-by",
+  "text": "Waste Transfer Note\nRef: BW14268\nDate: 04/07/2026\nCollected by: Lakeside Aggregates plc\nRegistration CBDL587730\nEWC 17 05 03*\nWeight: 13.86 tonnes\nVehicle ZV19 JMH\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW14268",
+   "carrier": null,
+   "carrierRegistration": "CBDL587730",
+   "ewc": "17 05 03*",
+   "tonnes": 13.86,
+   "date": "2026-07-04",
+   "vehicle": "ZV19JMH"
+  }
+ },
+ {
+  "set": "C",
+  "id": "c30-two-codes",
+  "layout": "two-codes",
+  "text": "Waste Transfer Note\nRef: BW21707\nDate: 09/02/2026\nCarrier: Severn Skips & Recycling\nRegistration CBDL611165\nEWC codes: 17 04 05, 17 05 04\nNet weight 2.77 tonnes\nVehicle CZ13 MRX\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": "BW21707",
+   "carrier": "Severn Skips & Recycling",
+   "carrierRegistration": "CBDL611165",
+   "ewc": "17 04 05",
+   "tonnes": 2.77,
+   "date": "2026-02-09",
+   "vehicle": "CZ13MRX"
+  }
+ },
+ {
+  "set": "C",
+  "id": "x1-not-a-note",
+  "layout": "not-a-note",
+  "text": "INVOICE\nInvoice No: INV-85051\nDate: 03/04/2026\nSupplier: Brightside Stationery Ltd\nTotal due £1,240.50 (VAT £206.75)\nAccount ref 887950\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": null,
+   "carrier": null,
+   "carrierRegistration": null,
+   "ewc": null,
+   "tonnes": null,
+   "date": null,
+   "vehicle": null
+  }
+ },
+ {
+  "set": "C",
+  "id": "x2-not-a-note",
+  "layout": "not-a-note",
+  "text": "Electricity bill\nAccount number 7250369\nBill date 28 February 2026\nYou used 4,320 kWh\nAmount to pay £812.44\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": null,
+   "carrier": null,
+   "carrierRegistration": null,
+   "ewc": null,
+   "tonnes": null,
+   "date": null,
+   "vehicle": null
+  }
+ },
+ {
+  "set": "C",
+  "id": "x3-not-a-note",
+  "layout": "not-a-note",
+  "text": "Delivery Note\nDelivery note no 557074\nDate 11/05/2026\nQuantity 24 pallets\nCustomer: Meridian Builders Ltd\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": null,
+   "carrier": null,
+   "carrierRegistration": null,
+   "ewc": null,
+   "tonnes": null,
+   "date": null,
+   "vehicle": null
+  }
+ },
+ {
+  "set": "C",
+  "id": "x4-not-a-note",
+  "layout": "not-a-note",
+  "text": "Meeting minutes\nAttendees: A. Smith, B. Jones\nDate: 02/06/2026\nActions: review skip hire contract by 30 June\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": null,
+   "carrier": null,
+   "carrierRegistration": null,
+   "ewc": null,
+   "tonnes": null,
+   "date": null,
+   "vehicle": null
+  }
+ },
+ {
+  "set": "C",
+  "id": "x5-not-a-note",
+  "layout": "not-a-note",
+  "text": "Method statement\nDocument ref MS-274\nRevision 3 dated 14/01/2026\nHazard: working at height\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": null,
+   "carrier": null,
+   "carrierRegistration": null,
+   "ewc": null,
+   "tonnes": null,
+   "date": null,
+   "vehicle": null
+  }
+ },
+ {
+  "set": "C",
+  "id": "x6-not-a-note",
+  "layout": "not-a-note",
+  "text": "Quote\nQuote reference Q9947\nSkip hire 8 yd at £165.00\nValid until 30 September 2026\n\n-- 1 of 1 --\n\n",
+  "truth": {
+   "reference": null,
+   "carrier": null,
+   "carrierRegistration": null,
+   "ewc": null,
+   "tonnes": null,
+   "date": null,
+   "vehicle": null
+  }
+ }
+]

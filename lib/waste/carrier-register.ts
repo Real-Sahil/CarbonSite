@@ -8,7 +8,8 @@
  */
 export const REGISTER_ATTRIBUTION = "Contains Environment Agency information © Environment Agency and/or database right";
 export const REGISTER_LICENCE_URL = "https://www.gov.uk/government/publications/environment-agency-conditional-licence/environment-agency-conditional-licence";
-const ENDPOINT = "https://environment.data.gov.uk/public-register/waste-carriers-brokers/registration.json";
+// Overridable only so a local stand-in can answer in tests and offline environments; production uses the Environment Agency.
+const ENDPOINT = process.env.CARRIER_REGISTER_URL ?? "https://environment.data.gov.uk/public-register/waste-carriers-brokers/registration.json";
 
 /** "cbdu 564741" → "CBDU564741"; null when it is not an England carrier number (CBDU or CBDL plus digits). */
 export function englandRegistration(raw: string | null | undefined): string | null {
