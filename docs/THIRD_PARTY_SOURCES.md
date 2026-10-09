@@ -31,3 +31,7 @@ Checked on 3 October 2026 from the publishers' own pages and the files they dist
 | Center for Resource Solutions, US residual mix (2025 release, 2023 data) | No licence or terms of use found on resource-solutions.org/2025-residual-mix; the page asks users to cite the rates, and the instrument created from one carries the citation. The "Green-e" mark is CRS's trademark and is not used as a logo. Written permission would settle the licence question. | 27 rates in `lib/factors/us-residual-mix.ts`, offered on the Electricity contracts form, never applied silently. |
 
 Rules for new sources: read the licence or terms first; a tool that redistributes data needs permission that covers commercial redistribution; text of standards is never copied.
+
+## Companies House (supplier lookup)
+
+Local spend → Add a supplier can search the Companies House public register (`api.company-information.service.gov.uk`, free API key in `COMPANIES_HOUSE_API_KEY`). Data is public sector information under the Open Government Licence v3.0; the attribution "Contains public sector information licensed under the Open Government Licence v3.0. Source: Companies House." is shown beside the result. Only the typed company name or number is sent. Nothing is stored beyond what the person saves on the supplier (name, postcode). Companies House's API terms limit the rate to 600 requests per 5 minutes per key; our route allows 30 a minute per user.
