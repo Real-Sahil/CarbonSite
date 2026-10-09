@@ -85,7 +85,7 @@ export function triageDocument(input: {
   else if (englandRegistration(r.carrierRegistration)) {
     const s = r.registerCheck?.status;
     if (s === "expired") reasons.push("Carrier registration has expired on the Environment Agency register");
-    else if (s === "not_found") reasons.push("Carrier registration is not on the Environment Agency register");
+    else if (s === "not_found") reasons.push("Carrier registration is not on the Environment Agency register (Welsh registrations use the same CBDU and CBDL numbers: check Natural Resources Wales)");
     else if (s !== "registered") reasons.push("Carrier registration not checked on the register yet");
     // A registration number copied wrong, or borrowed, belongs to someone else: the register's holder must be the carrier the note names.
     const holder = r.registerCheck?.holder;
