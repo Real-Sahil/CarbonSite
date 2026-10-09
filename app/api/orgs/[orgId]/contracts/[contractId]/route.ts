@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { orgRefsError } from "@/lib/security/org-refs";
 import { updateContractSchema } from "@/lib/validation/project-carbon";
 
 type Params = { params: Promise<{ orgId: string; contractId: string }> };
@@ -39,6 +40,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (!parsed.success) {
       return apiError("VALIDATION_ERROR", "Invalid contract data.", 400, parsed.error.flatten());
     }
+
+    const refs = await orgRefsError(orgId, { businessUnitId: parsed.data.businessUnitId });
+    if (refs) return refs;
 
     const contract = await prisma.contract.update({
       where: { id: contractId },

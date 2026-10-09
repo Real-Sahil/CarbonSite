@@ -11,7 +11,7 @@ export type KpiReportData = { periodId: string | null; periodLabel: string | nul
  * carbon budget. A unit adds up its own contracts (each counted once) and projects.
  */
 export async function loadKpiReport(orgId: string, currency: string, periodId?: string | null): Promise<KpiReportData> {
-  const periods = await prisma.reportingPeriod.findMany({ where: { organizationId: orgId }, orderBy: { endDate: "desc" }, select: { id: true, label: true, revenueAmount: true } });
+  const periods = await prisma.reportingPeriod.findMany({ where: { organizationId: orgId }, orderBy: { endDate: "desc" }, select: { id: true, label: true, revenueAmount: true, revenueCurrency: true } });
   const withWaste = periodId && periods.some((p) => p.id === periodId)
     ? periodId
     : (await prisma.wasteRecord.findFirst({ where: { organizationId: orgId, reportingPeriodId: { in: periods.map((p) => p.id) } }, orderBy: { reportingPeriod: { endDate: "desc" } }, select: { reportingPeriodId: true } }))?.reportingPeriodId ?? null;
@@ -40,7 +40,7 @@ export async function loadKpiReport(orgId: string, currency: string, periodId?: 
     addRecord(a, rec);
     byProject.set(r.projectId, a);
   }
-  company.value = period.revenueAmount != null ? Number(period.revenueAmount) : null;
+  company.value = period.revenueAmount != null && (!period.revenueCurrency || period.revenueCurrency === currency) ? Number(period.revenueAmount) : null;
 
   const rows: KpiRow[] = [{ key: "company", name: `Company, ${period.label}`, level: "company", agg: company }];
 

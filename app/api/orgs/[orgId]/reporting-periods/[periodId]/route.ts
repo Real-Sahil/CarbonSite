@@ -85,6 +85,9 @@ export async function PATCH(
         ...(body.startDate !== undefined && { startDate: new Date(body.startDate) }),
         ...(body.endDate !== undefined && { endDate: new Date(body.endDate) }),
         ...(body.status !== undefined && { status: body.status }),
+        ...(body.revenueAmount !== undefined && { revenueAmount: body.revenueAmount }),
+        ...(body.revenueCurrency !== undefined && { revenueCurrency: body.revenueCurrency }),
+        ...(body.fteCount !== undefined && { fteCount: body.fteCount }),
       },
     });
 

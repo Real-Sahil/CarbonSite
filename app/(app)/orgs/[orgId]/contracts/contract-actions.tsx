@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,10 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [units, setUnits] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    fetch(`/api/orgs/${orgId}/business-units`).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d) setUnits(Array.isArray(d) ? d : (d.data ?? d.businessUnits ?? [])); }).catch(() => null);
+  }, [orgId]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -21,6 +25,7 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
       name: data.get("name") as string,
       clientName: (data.get("clientName") as string) || undefined,
       contractReference: (data.get("contractReference") as string) || undefined,
+      businessUnitId: (data.get("businessUnitId") as string) || undefined,
       status: data.get("status") as string,
       startDate: (data.get("startDate") as string) || undefined,
       endDate: (data.get("endDate") as string) || undefined,
@@ -56,6 +61,14 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
           <FormField label="Contract reference" htmlFor="contract-ref" optional>
             <Input id="contract-ref" name="contractReference" placeholder="REF-001" />
           </FormField>
+          {units.length > 0 && (
+            <FormField label="Business unit" htmlFor="contract-unit" optional hint="Used to compare units in the KPI report.">
+              <select id="contract-unit" name="businessUnitId" defaultValue="" className={fieldClass}>
+                <option value="">None</option>
+                {units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </FormField>
+          )}
           <FormField label="Status" htmlFor="contract-status" optional>
             <select
               id="contract-status"

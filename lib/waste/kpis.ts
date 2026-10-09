@@ -44,7 +44,7 @@ export async function loadWasteKpis(orgId: string, currency: string): Promise<Wa
       take: 20000,
       select: { projectId: true, reportingPeriodId: true, weightTonnes: true, disposalRoute: true },
     }),
-    prisma.reportingPeriod.findMany({ where: { organizationId: orgId }, orderBy: { endDate: "desc" }, select: { id: true, label: true, revenueAmount: true } }),
+    prisma.reportingPeriod.findMany({ where: { organizationId: orgId }, orderBy: { endDate: "desc" }, select: { id: true, label: true, revenueAmount: true, revenueCurrency: true } }),
     prisma.project.findMany({
       where: { organizationId: orgId },
       select: { id: true, name: true, contract: { select: { contractValue: true, currency: true } } },
@@ -58,7 +58,7 @@ export async function loadWasteKpis(orgId: string, currency: string): Promise<Wa
         label: latest.label,
         ...wasteKpi(
           records.filter((r) => r.reportingPeriodId === latest.id).map(row),
-          latest.revenueAmount != null ? Number(latest.revenueAmount) : null,
+          latest.revenueAmount != null && (!latest.revenueCurrency || latest.revenueCurrency === currency) ? Number(latest.revenueAmount) : null,
           `Revenue for ${latest.label}`,
         ),
       }

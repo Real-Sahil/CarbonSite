@@ -110,6 +110,10 @@ export const updateReportingPeriodSchema = createReportingPeriodSchema
   .partial()
   .extend({
     status: z.enum(["draft", "published", "locked"]).optional(),
+    /** For intensity figures (per revenue, per person) and the waste KPIs. */
+    revenueAmount: z.number().min(0).nullable().optional(),
+    revenueCurrency: z.string().length(3).toUpperCase().nullable().optional(),
+    fteCount: z.number().min(0).nullable().optional(),
   });
 
 // ─── InviteLink ──────────────────────────────────────────────────────────────

@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createContractSchema } from "@/lib/validation/project-carbon";
+import { orgRefsError } from "@/lib/security/org-refs";
 import { getOrgFormat } from "@/lib/i18n/org-basics";
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
@@ -36,6 +37,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
       return apiError("VALIDATION_ERROR", "Invalid contract data.", 400, parsed.error.flatten());
     }
     const data = parsed.data;
+    const refs = await orgRefsError(orgId, { businessUnitId: data.businessUnitId });
+    if (refs) return refs;
 
     const contract = await prisma.contract.create({
       data: {
@@ -43,6 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
         name: data.name,
         clientName: data.clientName,
         contractReference: data.contractReference,
+        businessUnitId: data.businessUnitId ?? null,
         contractValue: data.contractValue,
         currency: data.currency ?? (await getOrgFormat(orgId)).currency,
         status: data.status,
