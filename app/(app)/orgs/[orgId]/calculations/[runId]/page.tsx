@@ -21,8 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ArrowLeft } from "lucide-react";
-import { ScopeDonut } from "@/components/charts/scope-donut";
-import { CategoryBar } from "@/components/charts/category-bar";
+import { LazyScopeDonut as ScopeDonut, LazyCategoryBar as CategoryBar } from "@/components/charts/lazy";
 import { PublishSnapshotButton } from "./publish-snapshot-button";
 import { getOrgLocale } from "@/lib/i18n/org-basics";
 

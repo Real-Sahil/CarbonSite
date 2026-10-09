@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ForecastList } from "@/components/analytics/forecast-list";
-import { ForecastResults } from "@/components/analytics/forecast-results";
+import { LazyForecastResults as ForecastResults } from "@/components/analytics/lazy";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 

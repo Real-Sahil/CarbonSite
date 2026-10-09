@@ -2,10 +2,7 @@ import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { BarChart3 } from "lucide-react";
 import { AnalyticsSummary } from "@/components/analytics/AnalyticsSummary";
-import { EmissionsByScopeChart } from "@/components/analytics/EmissionsByScopeChart";
-import { EmissionsTrendChart } from "@/components/analytics/EmissionsTrendChart";
-import { FacilityComparisonChart } from "@/components/analytics/FacilityComparisonChart";
-import { CategoryBreakdownChart } from "@/components/analytics/CategoryBreakdownChart";
+import { LazyEmissionsByScopeChart as EmissionsByScopeChart, LazyEmissionsTrendChart as EmissionsTrendChart, LazyFacilityComparisonChart as FacilityComparisonChart, LazyCategoryBreakdownChart as CategoryBreakdownChart } from "@/components/analytics/lazy";
 
 interface AnalyticsPageProps {
   params: Promise<{ orgId: string }>;

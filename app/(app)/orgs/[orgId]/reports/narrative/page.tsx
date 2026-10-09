@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { aiAssistEnabled } from "@/lib/llm/org-consent";
-import { NarrativeEditor } from "./narrative-editor";
+import { LazyNarrativeEditor as NarrativeEditor } from "./narrative-editor-lazy";
 
 export default async function NarrativePage({
   params,

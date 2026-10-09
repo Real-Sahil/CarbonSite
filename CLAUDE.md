@@ -469,6 +469,7 @@ Use deterministic fixture factor libraries. Do not use real customer evidence fi
 
 - Dashboard load < 3s for orgs with up to 100k activity records → use `DashboardAggregate`, never raw aggregation at request time.
 - Prisma has one connection per function instance (`connection_limit=1`), so queries in a `Promise.all` still run one after another and each costs a database round trip. Cut the number of queries, not their order: the dashboard reads its counts, the latest run's data quality figures and published libraries with one statement each (`lib/dashboard/page-data.ts`, checked against the Prisma queries they replaced by `tests/golden/dashboard-page-data.test.ts`), and `getSession()`/`requireOrgMember()` are wrapped in React `cache()` so a layout and its page share one lookup.
+- Heavy client code loads on demand: charts, the site map (MapLibre) and the report narrative editor (Tiptap) are wrapped in `next/dynamic` with `ssr: false` (`components/analytics/lazy.tsx`, `components/charts/lazy.tsx`, `components/map/site-map-lazy.tsx`, `reports/narrative/narrative-editor-lazy.tsx`). `optimizePackageImports` covers lucide-react, recharts and date-fns. A new chart or editor used below the fold goes behind the same pattern.
 - CSV imports up to 25k rows must process asynchronously.
 - Stream large exports; never load an entire org dataset into memory.
 - Required indexes on `ActivityRecord`: `(organization_id, reporting_period_id, category_id, facility_id, review_status, created_at)`.

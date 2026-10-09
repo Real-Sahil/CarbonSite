@@ -6,7 +6,7 @@ import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { loadSnapshotRefs, loadSnapshotSites } from "@/lib/map/load";
-import { SiteMap } from "@/components/map/site-map";
+import { LazySiteMap as SiteMap } from "@/components/map/site-map-lazy";
 
 export default async function MapPage({ params }: { params: Promise<{ orgId: string }> }) {
   const { orgId } = await params;

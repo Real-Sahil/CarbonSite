@@ -35,6 +35,10 @@ const OCR_FILES = [
 ];
 
 const nextConfig: NextConfig = {
+  // Icon and chart packages ship many modules; this makes the bundler import only the names each file uses.
+  experimental: {
+    optimizePackageImports: ["lucide-react", "recharts", "date-fns"],
+  },
   // Browser Sentry (instrumentation-client.ts) reuses the server DSN.
   env: {
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN ?? process.env.SENTRY_DSN ?? "",
