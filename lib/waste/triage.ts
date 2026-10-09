@@ -8,6 +8,7 @@
 import type { AcceptBody } from "@/lib/waste/accept";
 import type { TransferNoteReading } from "@/lib/waste/transfer-note-extractor";
 import { englandRegistration } from "@/lib/waste/carrier-register";
+import { supplierKey } from "@/lib/social-value/local-spend";
 
 export type PastLoad = { carrierRegistration: string | null; carrierName: string | null; ewcCode: string | null; facilityId: string; wasteType: string; disposalRoute: string; hazardous: boolean; destination: string | null; weightTonnes: number; recordedAt: Date };
 export type CarrierDefaults = { facilityId: string; wasteType: string; disposalRoute: string; hazardous: boolean; destination: string | null; loads: number; consistent: boolean; weights: number[] };
@@ -36,6 +37,9 @@ export function periodFor(periods: Period[], iso: string | undefined): string | 
   return periods.find((p) => p.startDate.getTime() <= t && t <= p.endDate.getTime() + 86_399_000)?.id ?? null;
 }
 
+/** Names compared the way local spend compares suppliers, so "J. Patel & Sons" meets "J PATEL AND SONS LIMITED". A trading name inside the legal name, or the reverse, counts. */
+const sameCompany = (a: string, b: string) => { const x = supplierKey(a), y = supplierKey(b); return !x || !y || x === y || x.includes(y) || y.includes(x); };
+
 const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
 /** A single road load: a 44 t artic carries at most about 30 t, so more than 44 t is a misread unit; under 50 kg is not a lorry load. */
@@ -45,7 +49,7 @@ export const MIN_LOAD_TONNES = 0.05;
 export type Triage = { state: "ready" | "review" | "unread"; reasons: string[]; suggestion: Partial<AcceptBody>; body: AcceptBody | null };
 
 export function triageDocument(input: {
-  doc: { kind: string; wasteRecordId: string | null; reference: string | null; issuer: string | null; projectId: string | null; extracted: (TransferNoteReading & { method?: string; registerCheck?: { status: string; company?: { status: string | null } } }) | null };
+  doc: { kind: string; wasteRecordId: string | null; reference: string | null; issuer: string | null; projectId: string | null; extracted: (TransferNoteReading & { method?: string; registerCheck?: { status: string; holder?: string | null; company?: { status: string | null } } }) | null };
   defaults: CarrierDefaults | null;
   periodId: string | null;
   duplicateReference: boolean;
@@ -83,6 +87,9 @@ export function triageDocument(input: {
     if (s === "expired") reasons.push("Carrier registration has expired on the Environment Agency register");
     else if (s === "not_found") reasons.push("Carrier registration is not on the Environment Agency register");
     else if (s !== "registered") reasons.push("Carrier registration not checked on the register yet");
+    // A registration number copied wrong, or borrowed, belongs to someone else: the register's holder must be the carrier the note names.
+    const holder = r.registerCheck?.holder;
+    if (s === "registered" && holder && carrierName && !sameCompany(holder, carrierName)) reasons.push(`The register holder is ${holder}, not ${carrierName}`);
     const co = r.registerCheck?.company?.status;
     if (co && co.toLowerCase() !== "active") reasons.push(`The carrier's company is ${co.replace(/-/g, " ")} at Companies House`);
   } else reasons.push("Carrier registration is not an England one, so it was not checked");

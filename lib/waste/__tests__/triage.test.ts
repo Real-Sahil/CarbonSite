@@ -28,10 +28,15 @@ describe("triageDocument", () => {
     expect(t.state).toBe("ready");
     expect(t.body?.facilityId).toBe("f1");
   });
+  it("accepts the register's legal name for the name on the note", () => {
+    expect(triageDocument({ doc: doc({ ...read, carrier: "Acme", registerCheck: { status: "registered", holder: "ACME LIMITED" } }), ...base }).state).toBe("ready");
+    expect(triageDocument({ doc: doc({ ...read, carrier: "J. Patel & Sons", registerCheck: { status: "registered", holder: "J PATEL AND SONS LIMITED" } }), ...base }).state).toBe("ready");
+  });
   it.each([
     ["unregistered carrier", { ...read, registerCheck: { status: "not_found" } }, "not on the Environment Agency"],
     ["expired registration", { ...read, registerCheck: { status: "expired" } }, "expired"],
     ["register unchecked", { ...read, registerCheck: undefined }, "not checked"],
+    ["register holder is another company", { ...read, registerCheck: { status: "registered", holder: "BIFFA WASTE SERVICES LIMITED" } }, "register holder is BIFFA WASTE SERVICES LIMITED, not Acme"],
     ["carrier company dissolved", { ...read, registerCheck: { status: "registered", company: { status: "dissolved" } } }, "dissolved at Companies House"],
     ["read from a photo", { ...read, method: "ocr" }, "Read from a photo"],
     ["weight read a thousand times too large", { ...read, tonnes: 7000 }, "too large"],
