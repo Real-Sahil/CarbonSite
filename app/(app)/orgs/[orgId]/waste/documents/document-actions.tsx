@@ -60,6 +60,13 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
   );
 }
 
+// Public search pages only: those registers have no open API or licence we can use, so a person checks by hand.
+const OTHER_REGISTERS: [string, string][] = [
+  ["Scotland (SEPA)", "https://search-the-register.sepa.org.uk/Find-Waste-Transporters-Brokers"],
+  ["Wales (NRW)", "https://naturalresources.wales/permits-and-permissions/waste-carriers-brokers-and-dealers-public-register/?lang=en"],
+  ["Northern Ireland (DAERA)", "https://public-registers.daera-ni.gov.uk"],
+];
+
 type RegisterCheck =
   | { status: "not_checked"; reason: string }
   | { status: "not_found" | "unavailable"; registration: string; checkedAt: string }
@@ -129,7 +136,14 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
     )}
     {check && (
       <div className="rounded-md border border-gray-200 p-2 text-[11px] text-gray-700">
-        {check.status === "not_checked" && <p>{check.reason}</p>}
+        {check.status === "not_checked" && (
+          <p>
+            {check.reason} Check it by hand on the regulator&apos;s own register:{" "}
+            {OTHER_REGISTERS.map(([name, href], i) => (
+              <span key={name}>{i > 0 && ", "}<a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">{name}</a></span>
+            ))}.
+          </p>
+        )}
         {check.status === "unavailable" && <p>The register did not answer. That does not mean the carrier is not registered. Try again.</p>}
         {check.status === "not_found" && <p><span className="font-medium text-amber-800">Not found</span> on the England register: {check.registration}. Check the number, or the carrier may be registered elsewhere or have lapsed.</p>}
         {(check.status === "registered" || check.status === "expired") && (
