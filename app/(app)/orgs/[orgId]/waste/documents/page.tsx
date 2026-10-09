@@ -69,7 +69,10 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Waste documents</h1>
           <p className="mt-1 text-sm text-gray-500">Transfer notes, carrier licences, site permits and exemptions in one place, with expiry dates and who sent them.</p>
-          <Link href={`/orgs/${orgId}/waste`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Back to waste</Link>
+          <div className="mt-2 flex gap-4">
+            <Link href={`/orgs/${orgId}/waste`} className="inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Back to waste</Link>
+            <Link href={`/orgs/${orgId}/waste/carriers`} className="inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Carrier scorecard</Link>
+          </div>
         </div>
         {canEdit && <AddDocument orgId={orgId} projects={projects} defaultProjectId={project?.id ?? null} />}
       </div>
