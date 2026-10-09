@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getSelectedProject } from "@/lib/project/selected";
+import { TaskLauncher } from "@/components/dashboard/task-launcher";
 import { WasteKpisWidget } from "@/components/waste/waste-kpis-widget";
 import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
 import {
@@ -1060,6 +1061,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // organisation, per role) only orders and sizes them, the figures inside are
   // built here, under this viewer's role.
   const widgetNodes: Record<string, ReactNode> = {};
+  widgetNodes["tasks"] = <TaskLauncher orgId={orgId} role={role} />;
   widgetNodes["headline"] = (
     <>
       {/* ── Carbon footprint hero ─────────────────────────────────────────── */}

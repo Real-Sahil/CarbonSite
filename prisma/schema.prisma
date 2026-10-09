@@ -8292,6 +8292,8 @@ model WasteDocument {
   uploaderName     String?   @map("uploader_name")
   uploaderCompany  String?   @map("uploader_company")
   note             String?
+  /// What reading the file found (reference, carrier, licence, EWC code, weight, dates); suggestions only.
+  extracted        Json?
   createdByUserId  String?   @map("created_by_user_id")
   reviewedByUserId String?   @map("reviewed_by_user_id")
   reviewedAt       DateTime? @map("reviewed_at") @db.Timestamptz(6)

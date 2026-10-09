@@ -11,7 +11,7 @@ import {
   Menu, X, Layers, ShieldCheck, Trash2, TrendingDown, LineChart, Truck, Tractor, Fuel,
   Zap, Eye, PackageSearch, CalendarClock, BadgeCheck, BookOpen, Plug, Sliders, GitBranch, Anchor,
   ShieldAlert, Siren, Scale, Sprout, ClipboardCheck, Network, Grid3x3, Compass,
-  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban, Radio, Award,
+  TrendingUp, Droplets, Leaf, CloudSun, AlertTriangle, ClipboardList, Gavel, BarChart3, FolderKanban, Search, Radio, Award,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -141,6 +141,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
     { label: "Impact reports", icon: BarChart2, sections: [
       { items: [
         { label: "Reports", href: `/orgs/${orgId}/reports`, icon: BarChart2, roles: CORE_ROLES },
+        { label: "KPI report", href: `/orgs/${orgId}/kpis`, icon: BarChart3, roles: EXTENDED_VIEW_ROLES },
         { label: "Carbon Reduction Plan", href: `/orgs/${orgId}/carbon-reduction-plan`, icon: ClipboardCheck, roles: CORE_ROLES },
       ]},
       { label: "Compliance", items: [
@@ -348,22 +349,23 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
               <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
               <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
             </div>
-            <button
-              type="button"
-              aria-label="Quick find (Ctrl or Cmd+K)"
-              title="Quick find (Ctrl or Cmd+K)"
-              onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
-              className="rounded-md hover:bg-slate-50"
-            >
-              <KbdGroup>
-                <Kbd>⌘</Kbd>
-                <Kbd>K</Kbd>
-              </KbdGroup>
-            </button>
             <NotificationBell orgId={orgId} />
           </div>
         )}
       </div>
+      {!collapsed && (
+        <div className="border-b border-slate-200 px-4 py-2.5">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
+            className="flex w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-left text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          >
+            <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span className="flex-1">Search pages and tasks</span>
+            <span className="hidden sm:inline"><KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup></span>
+          </button>
+        </div>
+      )}
       {!collapsed && <ProjectSwitcher orgId={orgId} projects={projects} selectedId={selectedProjectId} />}
 
       {/* Nav */}

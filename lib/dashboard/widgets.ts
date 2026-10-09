@@ -12,6 +12,7 @@ const EDITORS = ["admin", "editor", "sustainability_director", "sustainability_m
 
 /** Every widget, in the order the dashboard has always shown them. */
 export const WIDGETS: readonly WidgetDef[] = [
+  { id: "tasks", title: "What do you want to do?", width: "full" },
   { id: "headline", title: "Footprint and key figures", width: "full" },
   { id: "live", title: "Live dashboard", width: "full" },
   { id: "industry", title: "Industry insights", width: "full" },
@@ -54,8 +55,8 @@ export function layoutError(l: Layout): string | null {
 
 // What each kind of person sees first. Everything else stays one click away
 // under "Add widget"; nothing is withheld that the role may read.
-const EXECUTIVE = ["headline", "scope-breakdown", "flow", "waterfall", "facilities", "data-quality", "scope-detail"];
-const REVIEWER = ["headline", "review-queue", "ops-health", "data-quality", "operations", "flow"];
+const EXECUTIVE = ["tasks", "headline", "scope-breakdown", "flow", "waterfall", "facilities", "data-quality", "scope-detail"];
+const REVIEWER = ["tasks", "headline", "review-queue", "ops-health", "data-quality", "operations", "flow"];
 const PRESETS: Record<string, string[] | undefined> = {
   sustainability_director: EXECUTIVE,
   viewer: EXECUTIVE,

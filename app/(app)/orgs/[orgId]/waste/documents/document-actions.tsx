@@ -58,14 +58,37 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
   );
 }
 
-export function DocumentActions({ orgId, id, status }: { orgId: string; id: string; status: string }) {
+type Found = { reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
+const LABELS: [keyof Found, string][] = [["reference", "Reference"], ["carrier", "Carrier"], ["carrierRegistration", "Carrier licence"], ["permit", "Permit"], ["ewc", "EWC code"], ["tonnes", "Tonnes"], ["date", "Date"], ["vehicle", "Vehicle"], ["expiry", "Expires"]];
+
+export function DocumentActions({ orgId, id, status, extracted }: { orgId: string; id: string; status: string; extracted: Found | null }) {
   const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [found, setFound] = useState<Found | null>(extracted);
+  const [note, setNote] = useState<string | null>(null);
+  async function read() {
+    setBusy(true);
+    setNote(null);
+    const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}/read`, { method: "POST" }).catch(() => null);
+    const d = await res?.json().catch(() => null);
+    setBusy(false);
+    if (res?.ok) setFound(d.reading);
+    else setNote(d?.message ?? "Could not read that file.");
+  }
+  async function apply() {
+    const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ apply: true }) });
+    const d = await res.json().catch(() => null);
+    setNote(Object.keys(d?.applied ?? {}).length ? "Filled the empty fields." : "Nothing to fill: those fields already have values.");
+    router.refresh();
+  }
   async function call(method: "PATCH" | "DELETE", body?: unknown) {
     await fetch(`/api/orgs/${orgId}/waste/documents/${id}`, { method, ...(body ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {}) });
     router.refresh();
   }
   return (
-    <div className="flex gap-3 text-xs">
+    <div className="space-y-1 text-xs">
+    <div className="flex gap-3">
+      <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void read()}>{busy ? "Reading…" : found ? "Read again" : "Read file"}</button>
       {status === "pending" && (
         <>
           <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => void call("PATCH", { status: "accepted" })}>Accept</button>
@@ -73,6 +96,19 @@ export function DocumentActions({ orgId, id, status }: { orgId: string; id: stri
         </>
       )}
       <button type="button" className="text-red-700 underline underline-offset-2" onClick={() => { if (confirm("Remove this entry? The file stays in your evidence.")) void call("DELETE"); }}>Remove</button>
+    </div>
+    {found && (
+      <div className="rounded-md bg-gray-50 p-2 text-[11px] text-gray-700">
+        {found.found === 0 ? "Nothing clear found in the file. Fill the details by hand." : (
+          <>
+            <p className="font-medium">Found in the file</p>
+            <p>{LABELS.filter(([k]) => found[k] !== undefined).map(([k, l]) => `${l}: ${found[k]}`).join(" · ")}</p>
+            <button type="button" className="mt-1 font-medium text-teal-700 underline underline-offset-2" onClick={() => void apply()}>Fill empty fields</button>
+          </>
+        )}
+      </div>
+    )}
+    {note && <p role="status" className="text-[11px] text-gray-600">{note}</p>}
     </div>
   );
 }

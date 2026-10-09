@@ -20,7 +20,7 @@ describe("presetLayout", () => {
 
   it("gives an executive the short list first and keeps the rest addable", () => {
     const l = presetLayout("viewer");
-    expect(l.order.slice(0, 3)).toEqual(["headline", "scope-breakdown", "flow"]);
+    expect(l.order.slice(0, 4)).toEqual(["tasks", "headline", "scope-breakdown", "flow"]);
     expect(l.hidden).toContain("review-queue");
     expect(l.hidden).not.toContain("headline");
     expect(new Set(l.order).size).toBe(widgetsForRole("viewer").length);

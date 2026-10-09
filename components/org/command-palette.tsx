@@ -57,7 +57,7 @@ export function CommandPalette({ orgId, role, canUseViews }: { orgId: string; ro
   }, [open, orgId, canUseViews]);
 
   const results = useMemo(() => {
-    const pages = paletteMatches(PALETTE_ITEMS, role, query).map((i) => ({ key: `p:${i.path}`, label: i.label, hint: "Page", href: `/orgs/${orgId}/${i.path}` }));
+    const pages = paletteMatches(PALETTE_ITEMS, role, query).map((i) => ({ key: `p:${i.label}`, label: i.label, hint: i.task ? "Task" : "Page", href: `/orgs/${orgId}/${i.path}` }));
     const words = query.toLowerCase().split(/\s+/).filter(Boolean);
     const saved = views
       .filter((v) => words.every((w) => `${v.name} ${v.surface}`.toLowerCase().includes(w)))

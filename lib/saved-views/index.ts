@@ -15,6 +15,7 @@ export const SURFACES = {
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
   submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },
   calculations: { path: "calculations", filters: ["status", "periodId", "factorLibraryId"] },
+  kpis: { path: "kpis", filters: ["k", "periodId"] },
 } as const;
 
 /** Review statuses a records filter may name (the ReviewStatus enum). */
@@ -27,6 +28,7 @@ export const ENUM_FILTERS: Record<Surface, Record<string, readonly string[]>> = 
   suppliers: { health: ["healthy", "at_risk", "critical"], trend: ["improving", "stable", "declining"] },
   submissions: { status: SUBMISSION_STATUSES, documentType: DOCUMENT_TYPES },
   calculations: { status: RUN_STATUSES },
+  kpis: {},
 };
 
 export type Surface = keyof typeof SURFACES;
