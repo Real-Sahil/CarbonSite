@@ -29,6 +29,11 @@ describe("parseRegister", () => {
   it("reads a live registration", () => {
     expect(parseRegister(live, "CBDU564741", now)).toMatchObject({ status: "registered", holder: "POWERDAY PLC", tier: "Upper", expiryDate: "2028-01-08", companyNumber: "01509382" });
   });
+  it("treats a lower-tier registration, which the register gives no expiry date, as registered", () => {
+    // Live record CBDL73797 (9 Oct 2026): sole trader, "Lower" tier, no expiryDate and no companyNumber.
+    const lower = { items: [{ registrationNumber: "CBDL73797", holder: { name: "Simon Elliott" }, tier: { label: "Lower" }, registrationType: { label: "Carrier, Broker, Dealer" } }] };
+    expect(parseRegister(lower, "CBDL73797", now)).toMatchObject({ status: "registered", tier: "Lower", expiryDate: null, companyNumber: null });
+  });
   it("reports an expired registration as expired", () => {
     expect(parseRegister({ items: [{ ...live.items[0], expiryDate: "2026-10-01" }] }, "CBDU564741", now).status).toBe("expired");
   });
