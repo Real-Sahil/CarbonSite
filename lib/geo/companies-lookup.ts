@@ -22,8 +22,8 @@ export async function companiesReply(params: URLSearchParams): Promise<NextRespo
     return NextResponse.json({ company, flags: companyFlags(company), smeHint: smeHint(company.accountsType), ...(owners && { owners }), attribution: COMPANIES_HOUSE_ATTRIBUTION });
   } catch (err) {
     if (err instanceof CompaniesHouseUnavailable) {
-      console.warn(`[companies-house] ${err.reason}`);
-      return apiError("LOOKUP_UNAVAILABLE", "Company lookup is not available. Type the details instead.", 503, { reason: err.reason });
+      console.warn(`[companies-house] ${err.reason} ${err.detail ?? ""}`);
+      return apiError("LOOKUP_UNAVAILABLE", "Company lookup is not available. Type the details instead.", 503, { reason: err.reason, ...(err.detail && { detail: err.detail }) });
     }
     throw err;
   }

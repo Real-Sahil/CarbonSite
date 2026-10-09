@@ -5,7 +5,7 @@ const BASE = "https://api.company-information.service.gov.uk";
 export const COMPANIES_HOUSE_ATTRIBUTION = "Contains public sector information licensed under the Open Government Licence v3.0. Source: Companies House.";
 
 export class CompaniesHouseUnavailable extends Error {
-  constructor(public reason: "no_key" | "unreachable" | `status_${number}`) {
+  constructor(public reason: "no_key" | "unreachable" | `status_${number}`, public detail?: string) {
     super(`Companies House unavailable: ${reason}`);
   }
 }
@@ -107,7 +107,11 @@ async function get(path: string): Promise<unknown | null> {
     throw new CompaniesHouseUnavailable("unreachable");
   }
   if (res.status === 404) return null;
-  if (!res.ok) throw new CompaniesHouseUnavailable(`status_${res.status}`);
+  if (!res.ok) {
+    // The register explains most refusals in its body (invalid key, bad parameter); keep a short copy for the log and the page.
+    const detail = (await res.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+    throw new CompaniesHouseUnavailable(`status_${res.status}`, detail || undefined);
+  }
   return res.json();
 }
 
