@@ -38,6 +38,9 @@ import { loadSustainabilityReport } from "@/lib/sustainability-report/load";
 import { renderTcfdStatementHtml } from "./templates/tcfd-statement";
 import { loadClimateDisclosure } from "@/lib/climate-disclosure/load";
 import { renderSiteNoticeboardHtml } from "./templates/site-noticeboard";
+import { renderSiteOperationsHtml } from "./templates/site-operations";
+import { loadSiteOperations } from "@/lib/site-operations/load";
+import { orgFormat } from "@/lib/i18n/org-format";
 import { loadSiteNoticeboard } from "@/lib/noticeboard/load";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs: number = 30000): Promise<T> {
@@ -749,6 +752,14 @@ const handlers: Record<string, ReportHandler> = {
   site_noticeboard: async (ctx) => {
     const data = await withQueryTimeout(loadSiteNoticeboard(ctx.orgId, ctx.report.snapshot.id, ctx.report.contractId), 60_000);
     return { html: renderSiteNoticeboardHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
+  },
+
+  site_operations: async (ctx) => {
+    const org = await prisma.organization.findUnique({ where: { id: ctx.orgId }, select: { reportingCurrency: true } });
+    const data = await withQueryTimeout(loadSiteOperations(ctx.orgId, ctx.report.reportingPeriod), 60_000);
+    return {
+      html: renderSiteOperationsHtml({ ...data, orgName: ctx.report.organization.name, format: orgFormat({ hqCountry: ctx.report.organization.hqCountry, reportingCurrency: org?.reportingCurrency }), logoDataUri: ctx.logoDataUri }),
+    };
   },
 
   tcfd_statement: async (ctx) => {

@@ -117,6 +117,7 @@ const REPORT_TYPE_OPTIONS = [
   { value: "bid_carbon_pack",  label: "Bid carbon pack (tender evidence)" },
   { value: "sustainability_report", label: "Annual sustainability report" },
   { value: "site_noticeboard", label: "Site noticeboard (one contract)" },
+  { value: "site_operations", label: "Site operations (fuel, plant, controlled material, waste documents)" },
   { value: "tcfd_statement", label: "Climate disclosure (TCFD structure)" },
   { value: "transition_plan",  label: "Climate transition plan (ESRS E1-1)" },
   { value: "inventory",        label: "Inventory" },

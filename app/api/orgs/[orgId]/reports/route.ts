@@ -46,6 +46,7 @@ const createReportSchema = z.object({
     "sustainability_report",
     "tcfd_statement",
     "site_noticeboard",
+    "site_operations",
   ]),
   contractId: z.string().min(1).optional(),
   options: z.record(z.any()).optional(),
@@ -185,6 +186,20 @@ export async function POST(req: NextRequest, { params }: Params) {
         prisma.caseStudy.count({ where: { organizationId: orgId, contractId: body.contractId, published: true } }),
       ]);
       planVersion = `board@${latest?.updatedAt.toISOString() ?? ""}:${count}:`;
+    }
+
+    // Fuel, plant, material and waste documents change without the snapshot changing.
+    if (body.type === "site_operations") {
+      const latest = await Promise.all([
+        prisma.fuelDelivery.findFirst({ where: { organizationId: orgId }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+        prisma.fuelIssue.findFirst({ where: { organizationId: orgId }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+        prisma.fuelDip.findFirst({ where: { organizationId: orgId }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+        prisma.plantTelematicsReading.findFirst({ where: { organizationId: orgId }, orderBy: { createdAt: "desc" }, select: { createdAt: true } }),
+        prisma.materialMovement.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+        prisma.wasteDocument.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+        prisma.siteWastePlan.findFirst({ where: { organizationId: orgId }, orderBy: { updatedAt: "desc" }, select: { updatedAt: true } }),
+      ]);
+      planVersion = `ops@${latest.map((r) => (r && ("updatedAt" in r ? r.updatedAt : r.createdAt))?.toISOString() ?? "").join(",")}:`;
     }
 
     // The disclosure, the TCFD scenarios and the risk assessments change without the snapshot changing.

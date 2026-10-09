@@ -2187,6 +2187,7 @@ enum ReportType {
   sustainability_report
   tcfd_statement
   site_noticeboard
+  site_operations
 
   @@map("report_type")
 }

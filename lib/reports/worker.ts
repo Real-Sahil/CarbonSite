@@ -453,6 +453,8 @@ async function renderForType(report: ReportWithIncludes): Promise<ReportResult> 
     || report.type === "tcfd_statement"
     // The site noticeboard reads the bid pack's contract evidence and the contract's case studies (lib/noticeboard/load.ts).
     || report.type === "site_noticeboard"
+    // Site operations reads fuel, plant, material and waste document tables for the period (lib/site-operations/load.ts).
+    || report.type === "site_operations"
     // The transition plan reads its own pathway and published totals (lib/transition-plan/load.ts).
     || report.type === "transition_plan";
 
