@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { RegisterResultCard } from "./register-result";
 import { useRouter } from "next/navigation";
 import { FormActions, FormError, FormField, FormSection } from "@/components/forms/form-kit";
 import { Input } from "@/components/ui/input";
@@ -69,12 +70,76 @@ const OTHER_REGISTERS: [string, string][] = [
 
 type RegisterCheck =
   | { status: "not_checked"; reason: string }
-  | { status: "not_found" | "unavailable"; registration: string; checkedAt: string }
+  | { status: "not_found"; registration: string; checkedAt: string }
+  | { status: "unavailable"; registration: string; checkedAt: string }
   | { status: "registered" | "expired"; registration: string; holder: string | null; tier: string | null; expiryDate: string | null; checkedAt: string; company?: { number: string; status: string | null; flags: { level: "red" | "amber"; text: string }[] } };
 type PermitCheck =
   | { status: "not_checked"; reason: string }
-  | { status: "not_found" | "unavailable"; reference: string; checkedAt: string }
+  | { status: "not_found"; reference: string; checkedAt: string }
+  | { status: "unavailable"; reference: string; checkedAt: string }
   | { status: "effective" | "not_effective"; reference: string; holder: string | null; site: string | null; siteType: string | null; registerStatus: string | null; codes: string[]; expiryDate: string | null; checkedAt: string };
+const EA = "Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.";
+const HAND_CHECK = <>Check it by hand on the regulator&apos;s own register: {OTHER_REGISTERS.map(([name, href], i) => (
+  <span key={name}>{i > 0 && ", "}<a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">{name}</a></span>
+))}.</>;
+
+function CarrierResult({ check }: { check: RegisterCheck }) {
+  if (check.status === "not_checked") return <RegisterResultCard tone="idle" title="Not checked" attribution={EA}><p>{check.reason} {HAND_CHECK}</p></RegisterResultCard>;
+  if (check.status === "unavailable") return <RegisterResultCard tone="warn" title="Register did not answer" subtitle={check.registration} attribution={EA}><p>That does not mean the carrier is not registered. Try again.</p></RegisterResultCard>;
+  if (check.status === "not_found") {
+    return (
+      <RegisterResultCard tone="warn" title="Not on the England register" subtitle={check.registration} attribution={EA}>
+        <p>Check the number, or the carrier may have lapsed. Welsh registrations use the same CBDU and CBDL numbers, so also check <a href={OTHER_REGISTERS[1][1]} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">Natural Resources Wales</a>.</p>
+      </RegisterResultCard>
+    );
+  }
+  const inDate = check.status === "registered";
+  const co = check.company;
+  const coBad = !!co && (co.status ?? "").toLowerCase() !== "active";
+  return (
+    <RegisterResultCard
+      tone={!inDate || coBad ? "bad" : "ok"}
+      title={inDate ? "On the register" : "Registration expired"}
+      subtitle={check.registration}
+      facts={[
+        { label: "Holder", value: check.holder ?? "Not shown" },
+        ...(check.tier ? [{ label: "Tier", value: check.tier }] : []),
+        ...(check.expiryDate ? [{ label: "Expires", value: check.expiryDate }] : []),
+        ...(co ? [{ label: "Companies House", value: <span className={coBad ? "text-red-700" : undefined}>{co.number}, {(co.status ?? "status not shown").replace(/-/g, " ")}</span> }] : []),
+        { label: "Checked", value: check.checkedAt.slice(0, 10) },
+      ]}
+      attribution={EA}
+    >
+      <p>Compare the holder with the carrier named on the document.{co && co.flags.length > 0 && ` ${co.flags.map((f) => f.text).join("; ")}.`}</p>
+    </RegisterResultCard>
+  );
+}
+
+function PermitResult({ permit }: { permit: PermitCheck }) {
+  if (permit.status === "not_checked") return <RegisterResultCard tone="idle" title="Not checked" attribution={EA}><p>{permit.reason} Check it by hand on the regulator&apos;s own register.</p></RegisterResultCard>;
+  if (permit.status === "unavailable") return <RegisterResultCard tone="warn" title="Register did not answer" subtitle={permit.reference} attribution={EA}><p>That does not mean there is no permit. Try again.</p></RegisterResultCard>;
+  if (permit.status === "not_found") return <RegisterResultCard tone="warn" title="Not on the England register" subtitle={permit.reference} attribution={EA}><p>Check the number, or the permit may be held elsewhere or have lapsed.</p></RegisterResultCard>;
+  return (
+    <RegisterResultCard
+      tone={permit.status === "effective" ? "ok" : "bad"}
+      title={permit.status === "effective" ? "In force" : "Not in force"}
+      subtitle={permit.reference}
+      facts={[
+        { label: "Holder", value: permit.holder ?? "Not shown" },
+        ...(permit.site ? [{ label: "Site", value: permit.site }] : []),
+        ...(permit.siteType ? [{ label: "Type", value: permit.siteType }] : []),
+        ...(permit.registerStatus ? [{ label: "Register status", value: permit.registerStatus }] : []),
+        ...(permit.codes.length > 0 ? [{ label: "Exemptions", value: permit.codes.join(", ") }] : []),
+        ...(permit.expiryDate ? [{ label: "Expires", value: permit.expiryDate }] : []),
+        { label: "Checked", value: permit.checkedAt.slice(0, 10) },
+      ]}
+      attribution={EA}
+    >
+      <p>The register does not list which waste codes this covers: check the site may take this waste.</p>
+    </RegisterResultCard>
+  );
+}
+
 type Found = { registerCheck?: RegisterCheck; permitCheck?: PermitCheck; reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
 const LABELS: [keyof Found, string][] = [["reference", "Reference"], ["carrier", "Carrier"], ["carrierRegistration", "Carrier licence"], ["permit", "Permit"], ["ewc", "EWC code"], ["tonnes", "Tonnes"], ["date", "Date"], ["vehicle", "Vehicle"], ["expiry", "Expires"]];
 
@@ -149,39 +214,8 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
         )}
       </div>
     )}
-    {check && (
-      <div className="rounded-md border border-gray-200 p-2 text-[11px] text-gray-700">
-        {check.status === "not_checked" && (
-          <p>
-            {check.reason} Check it by hand on the regulator&apos;s own register:{" "}
-            {OTHER_REGISTERS.map(([name, href], i) => (
-              <span key={name}>{i > 0 && ", "}<a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">{name}</a></span>
-            ))}.
-          </p>
-        )}
-        {check.status === "unavailable" && <p>The register did not answer. That does not mean the carrier is not registered. Try again.</p>}
-        {check.status === "not_found" && <p><span className="font-medium text-amber-800">Not found</span> on the England register: {check.registration}. Check the number, or the carrier may have lapsed. Welsh registrations use the same CBDU and CBDL numbers, so also check <a href={OTHER_REGISTERS[1][1]} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">Natural Resources Wales</a>.</p>}
-        {(check.status === "registered" || check.status === "expired") && (
-          <p>
-            <span className={`font-medium ${check.status === "registered" ? "text-green-700" : "text-red-700"}`}>{check.status === "registered" ? "On the register" : "Registration expired"}</span>: {check.registration}, {check.holder ?? "holder not shown"}{check.tier ? `, ${check.tier} tier` : ""}{check.expiryDate ? `, expires ${check.expiryDate}` : ""}. Checked {check.checkedAt.slice(0, 10)}. Compare the holder with the carrier named on the document.{check.company && <> Companies House {check.company.number}: <span className={check.company.status === "active" ? "text-green-700" : "font-medium text-red-700"}>{(check.company.status ?? "status not shown").replace(/-/g, " ")}</span>{check.company.flags.length > 0 && `. ${check.company.flags.map((f) => f.text).join("; ")}`}.</>}
-          </p>
-        )}
-        <p className="mt-1 text-gray-500">Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.</p>
-      </div>
-    )}
-    {permit && (
-      <div className="rounded-md border border-gray-200 p-2 text-[11px] text-gray-700">
-        {permit.status === "not_checked" && <p>{permit.reason} Check it by hand on the regulator&apos;s own register.</p>}
-        {permit.status === "unavailable" && <p>The register did not answer. That does not mean there is no permit. Try again.</p>}
-        {permit.status === "not_found" && <p><span className="font-medium text-amber-800">Not found</span> on the England register: {permit.reference}. Check the number, or the permit may be held elsewhere or have lapsed.</p>}
-        {(permit.status === "effective" || permit.status === "not_effective") && (
-          <p>
-            <span className={`font-medium ${permit.status === "effective" ? "text-green-700" : "text-red-700"}`}>{permit.status === "effective" ? "In force" : "Not in force"}</span>: {permit.reference}, {permit.holder ?? "holder not shown"}{permit.site ? `, ${permit.site}` : ""}{permit.siteType ? ` (${permit.siteType})` : ""}{permit.registerStatus ? `, register status ${permit.registerStatus}` : ""}{permit.codes.length > 0 ? `, exemptions ${permit.codes.join(", ")}` : ""}{permit.expiryDate ? `, expires ${permit.expiryDate}` : ""}. Checked {permit.checkedAt.slice(0, 10)}. The register does not list which waste codes this covers: check the site may take this waste.
-          </p>
-        )}
-        <p className="mt-1 text-gray-500">Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.</p>
-      </div>
-    )}
+    {check && <CarrierResult check={check} />}
+    {permit && <PermitResult permit={permit} />}
     {note && <p role="status" className="text-[11px] text-gray-600">{note}</p>}
     </div>
   );

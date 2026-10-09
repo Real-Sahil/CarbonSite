@@ -44,6 +44,20 @@ interface OrgSidebarProps {
 }
 
 const COLLAPSED_KEY = "metricora:sidebar:collapsed";
+const ALL_PAGES_KEY = "metricora:sidebar:all-pages";
+/** Roles that start on the full menu; everyone else starts on the short, job-based one. */
+const FULL_MENU_ROLES = ["admin", "sustainability_director", "auditor"];
+
+/** The short menu: the jobs most people do, named as jobs. Items are looked up in the full menu so role limits still apply. */
+const SIMPLE_MENU: { label: string; icon: React.ElementType; paths: string[] }[] = [
+  { label: "Add data", icon: Upload, paths: ["imports", "records", "commuting"] },
+  { label: "To review", icon: Inbox, paths: ["checklist", "submissions", "tasks"] },
+  { label: "On site", icon: Tractor, paths: ["waste", "fuel", "plant", "material-movements", "environment/permits", "environment/incidents", "hs-incidents"] },
+  { label: "Contracts and value", icon: Briefcase, paths: ["contracts", "social-value", "tenders"] },
+  { label: "Reports", icon: BarChart2, paths: ["reports", "kpis", "carbon-reduction-plan"] },
+  { label: "Plans and targets", icon: Target, paths: ["targets", "pathway", "offsets"] },
+  { label: "Settings", icon: Settings, paths: ["settings/members", "settings/operations"] },
+];
 
 function getInitials(name?: string | null, email?: string): string {
   if (name) {
@@ -187,7 +201,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
   ];
 
   // Filter by role at every level, then drop empty sections/groups.
-  const navGroups: NavGroup[] = allGroups
+  const fullGroups: NavGroup[] = allGroups
     .map((group) => ({
       ...group,
       sections: group.sections
@@ -195,6 +209,23 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
         .filter((section) => section.items.length > 0),
     }))
     .filter((group) => group.sections.length > 0);
+
+  const [showAll, setShowAll] = useState<boolean>(() => {
+    const byRole = role != null && FULL_MENU_ROLES.includes(role);
+    if (typeof window === "undefined") return byRole;
+    try { const v = localStorage.getItem(ALL_PAGES_KEY); return v === null ? byRole : v === "true"; } catch { return byRole; }
+  });
+  function toggleShowAll() {
+    setShowAll((prev) => {
+      try { localStorage.setItem(ALL_PAGES_KEY, String(!prev)); } catch { /* ignore */ }
+      return !prev;
+    });
+  }
+  const everyItem = fullGroups.flatMap((g) => g.sections.flatMap((sec) => sec.items));
+  const simpleGroups: NavGroup[] = SIMPLE_MENU
+    .map((g) => ({ label: g.label, icon: g.icon, sections: [{ items: g.paths.map((p) => everyItem.find((i) => i.href === `/orgs/${orgId}/${p}`)).filter((i): i is NavItem => !!i) }] }))
+    .filter((g) => g.sections[0].items.length > 0);
+  const navGroups = showAll ? fullGroups : simpleGroups;
 
   function groupIsActive(group: NavGroup): boolean {
     return group.sections.some((s) => s.items.some((item) => pathname === item.href || pathname.startsWith(item.href + "/")));
@@ -270,14 +301,14 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
 
       {navGroups.map((group) => {
         const GroupIcon = group.icon;
-        const isOpen = isCollapsed || openGroup === group.label;
+        const isOpen = isCollapsed || !showAll || openGroup === group.label;
         const isActive = groupIsActive(group);
         return (
           <div key={group.label} className="mt-1">
             {!isCollapsed && (
               <button
                 type="button"
-                onClick={() => setOpenGroup((prev) => (prev === group.label ? null : group.label))}
+                onClick={() => showAll && setOpenGroup((prev) => (prev === group.label ? null : group.label))}
                 aria-expanded={isOpen}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
@@ -286,7 +317,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
               >
                 <GroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span className="flex-1 text-left">{group.label}</span>
-                <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 transition-transform", isOpen && "rotate-180")} aria-hidden="true" />
+                {showAll && <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 transition-transform", isOpen && "rotate-180")} aria-hidden="true" />}
               </button>
             )}
             {isOpen && (
@@ -331,6 +362,16 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
           </div>
         );
       })}
+      {!isCollapsed && (
+        <button
+          type="button"
+          onClick={toggleShowAll}
+          className="mt-3 w-full rounded-lg border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-[12px] text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+        >
+          {showAll ? "Show the short menu" : "Show all pages"}
+          <span className="block text-[11px] text-slate-500">{showAll ? "Only the everyday jobs" : "Everything, including reports and compliance tools"}</span>
+        </button>
+      )}
     </>
   );
 
