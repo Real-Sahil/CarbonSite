@@ -35,6 +35,7 @@ export type AuditAction =
   | "evidence.link_upload"
   | "waste_document.added"
   | "waste_document.reviewed"
+  | "waste_document.carrier_asked"
   | "waste_document.deleted"
   | "waste_plan.saved"
   | "waste_plan.approved"

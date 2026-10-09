@@ -10,6 +10,8 @@ import { DOC_KINDS, KIND_VALUES, documentState, kindLabel } from "@/lib/waste/do
 import { loadTriage } from "@/lib/waste/triage-load";
 import { routeLabel } from "@/lib/waste/routes";
 import { ReadyInbox, type ReadyItem } from "./ready-inbox";
+import { AskCarrier } from "./ask-carrier";
+import { missingFields } from "@/lib/waste/carrier-ask";
 import { SubmissionLinks } from "../../records/submission-links";
 import { AddDocument, DocumentActions } from "./document-actions";
 
@@ -104,7 +106,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
-              <tr>{["Document", "Kind", "Covers", "Valid until", "From", "Status", ""].map((h) => <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{h}</th>)}</tr>
+              <tr>{["Document", "Kind", "Covers", "Valid until", "From", "Status", "Ask carrier", ""].map((h) => <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {docs.map((d) => {
@@ -124,6 +126,11 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                     </td>
                     <td className="px-4 py-3 text-gray-600">{d.uploaderName ? `${d.uploaderName}${d.uploaderCompany ? `, ${d.uploaderCompany}` : ""}` : "Our team"}</td>
                     <td className="px-4 py-3 capitalize text-gray-600">{d.status}</td>
+                    <td className="px-4 py-3">
+                      {canEdit && d.kind === "transfer_note" && !d.wasteRecordId && (
+                        <AskCarrier orgId={orgId} docId={d.id} missing={missingFields(d.extracted as never)} askedAt={((d.extracted as { carrierAsked?: { at?: string } } | null)?.carrierAsked?.at) ?? null} />
+                      )}
+                    </td>
                     <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} kind={d.kind} status={d.status} extracted={(d.extracted as never) ?? null} recorded={!!d.wasteRecordId} prefill={{ reference: d.reference, issuer: d.issuer, projectId: d.projectId, defaults: triage.get(d.id)?.suggestion ? { facilityId: triage.get(d.id)!.suggestion.facilityId, reportingPeriodId: triage.get(d.id)!.suggestion.reportingPeriodId, wasteType: triage.get(d.id)!.suggestion.wasteType, disposalRoute: triage.get(d.id)!.suggestion.disposalRoute, hazardous: triage.get(d.id)!.suggestion.hazardous, destination: triage.get(d.id)!.suggestion.destination } : undefined }} facilities={facilities} periods={periods} />}</td>
                   </tr>
                 );

@@ -108,6 +108,8 @@ export type EmailPayload = {
   subject: string;
   html: string;
   text: string;
+  /** Where a reply goes, when it should reach a person rather than the platform address. */
+  replyTo?: string;
 };
 
 export async function sendEmail(payload: EmailPayload): Promise<void> {
@@ -129,6 +131,7 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
     });
     await transporter.sendMail({
       from: FROM,
+      replyTo: payload.replyTo,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
@@ -142,6 +145,7 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
 
   const { error } = await resend.emails.send({
     from: FROM,
+    replyTo: payload.replyTo,
     to: payload.to,
     subject: payload.subject,
     html: payload.html,
