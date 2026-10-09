@@ -35,7 +35,7 @@ describe("SiteMap", () => {
     expect(rows[1].textContent).toContain("60");
     expect(rows[1].textContent).toContain("60%");
     expect(rows[2].textContent).toContain("Not placed");
-    expect(screen.getByText(/1 site is not placed/)).toBeTruthy();
+    expect(screen.getByText(/of 2 locations are on the map/)).toBeTruthy();
   });
 
   it("scrubbing to an earlier snapshot fetches it once, shows its figures and caches it", async () => {

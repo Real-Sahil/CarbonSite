@@ -21,7 +21,7 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   { label: "Add a bill or receipt", path: "records", keywords: "upload invoice electricity gas fuel pdf photo read", roles: EDITORS, task: { blurb: "Upload a PDF or photo. We read it and you check it.", home: true } },
   { label: "Write a site waste management plan", path: "waste/plan", keywords: "swmp site waste plan forecast target diversion project breeam", roles: LINKERS, task: { blurb: "Forecast waste, set a diversion target and track against it.", home: true } },
   { label: "Make a monthly waste pack for a client", path: "waste/pack", keywords: "project month report pdf client waste kpi loads licences", roles: EXTENDED, task: { blurb: "One project, one month: loads, KPIs and licences, ready to send.", home: true } },
-  { label: "Log waste", path: "waste", keywords: "add waste record skip tipping tonnes disposal", roles: EXTENDED, task: { blurb: "Record what left site and where it went.", home: true } },
+  { label: "Log waste", path: "waste", keywords: "add waste record skip tipping tonnes disposal landfill recycling", roles: EXTENDED, task: { blurb: "Record what left site and where it went.", home: true } },
   { label: "Add a waste transfer note or licence", path: "waste/documents", keywords: "wtn carrier permit exemption expiry upload file", roles: LINKERS, task: { blurb: "Keep notes, licences and permits with their expiry dates.", home: true } },
   { label: "Send a subcontractor an upload link", path: "records", keywords: "invoice delivery note order no login external share link", roles: LINKERS, task: { blurb: "A link they open with no account to send you invoices.", home: true } },
   { label: "Send a contractor a waste documents link", path: "waste/documents", keywords: "carrier haulier wtn licence no login external share link", roles: LINKERS, task: { blurb: "A link for carriers to send transfer notes and licences." } },
@@ -70,19 +70,42 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
  * keywords). Label matches come before keyword-only matches, so typing "rec" finds Records before
  * a task that merely mentions records; ties keep the list order.
  */
+// Words that carry no meaning when someone types a sentence ("how do I add last month's bill").
+const STOP = new Set("a an and are as at be can do does for from get have how i if in is it me my of on or our please should so that the there to us want we what where which who why will with you your need needs find show open go see look make let".split(" "));
+// A few everyday words people use for what the pages call something else.
+const SAME: Record<string, string[]> = { rubbish: ["waste"], skip: ["waste"], skips: ["waste"], tip: ["waste"], tipping: ["waste"], invoice: ["bill"], invoices: ["bill"], receipt: ["bill"], lorry: ["carrier"], haulier: ["carrier"], diesel: ["fuel"], co2: ["emissions"], staff: ["team", "member"], user: ["member"], users: ["member"], pdf: ["report"] };
+
+/** Meaningful words of a typed sentence: lower case, no filler, plurals folded, each with any everyday alternatives. */
+function terms(query: string): string[][] {
+  return query
+    .toLowerCase()
+    .replace(/['’]s\b/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w && !STOP.has(w))
+    .map((w) => [w.length > 3 && w.endsWith("s") ? w.slice(0, -1) : w, ...(SAME[w] ?? [])]);
+}
+
+/**
+ * Pages and tasks that fit what was typed, best first. Typing a few words keeps working as before (every word must
+ * match the label or keywords). Typing a sentence works too: filler words are ignored, and when no page holds every
+ * word, the pages holding at least half of them are offered, the closest first.
+ */
 export function paletteMatches(items: readonly PaletteItem[], role: string, query: string): PaletteItem[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const rank = (i: PaletteItem) => {
-    const label = i.label.toLowerCase();
-    if (words.length === 0) return 0;
-    if (label.startsWith(words[0])) return 0;
-    if (words.every((w) => label.includes(w))) return 1;
-    return 2;
-  };
-  return items
-    .filter((i) => !i.roles || i.roles.includes(role))
-    .filter((i) => words.every((w) => `${i.label} ${i.keywords ?? ""}`.toLowerCase().includes(w)))
-    .map((item, index) => ({ item, index, r: rank(item) }))
-    .sort((a, b) => a.r - b.r || a.index - b.index)
+  const allowed = items.filter((i) => !i.roles || i.roles.includes(role));
+  const words = terms(query);
+  if (words.length === 0) return allowed;
+  const hay = (i: PaletteItem) => `${i.label} ${i.keywords ?? ""}`.toLowerCase();
+  const hit = (i: PaletteItem, alts: string[]) => alts.some((w) => hay(i).includes(w));
+  const labelHit = (i: PaletteItem, alts: string[]) => alts.some((w) => i.label.toLowerCase().includes(w));
+  const score = (i: PaletteItem) => words.reduce((n, alts) => n + (hit(i, alts) ? 1 : 0), 0) * 10 + words.reduce((n, alts) => n + (labelHit(i, alts) ? 1 : 0), 0);
+  const need = (strict: boolean) => (strict ? words.length : Math.ceil(words.length / 2));
+  const matched = (strict: boolean) => allowed.filter((i) => words.reduce((n, alts) => n + (hit(i, alts) ? 1 : 0), 0) >= need(strict));
+  let found = matched(true);
+  // A single stray word never widens the search: "zzz" finds nothing.
+  if (found.length === 0 && words.length >= 3) found = matched(false);
+  const firstWord = words[0][0];
+  return found
+    .map((item, index) => ({ item, index, s: score(item), starts: item.label.toLowerCase().startsWith(firstWord) ? 1 : 0 }))
+    .sort((a, b) => b.starts - a.starts || b.s - a.s || a.index - b.index)
     .map((x) => x.item);
 }

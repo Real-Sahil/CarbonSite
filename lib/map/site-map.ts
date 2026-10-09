@@ -2,7 +2,8 @@
 // the order of published snapshots for the scrubber, and a projection for the
 // schematic view shown when no tile source is configured.
 
-export type SiteTotal = { id: string; name: string; latitude: number | null; longitude: number | null; kg: number; recordCount: number };
+/** A pin: an office or depot (`facility`) or a project site (`site`). Project sites carry their project so the map can link to it. */
+export type SiteTotal = { id: string; name: string; latitude: number | null; longitude: number | null; kg: number; recordCount: number; kind?: "facility" | "site"; projectId?: string | null; detail?: string | null };
 export type SnapshotRef = { id: string; label: string; version: number; publishedAt: string; periodStart: string };
 
 type FacilityRow = { id: string; name: string; latitude: unknown; longitude: unknown };
@@ -20,7 +21,31 @@ export function siteTotals(facilities: FacilityRow[], aggregates: AggregateRow[]
   }
   const num = (v: unknown) => (v == null ? null : Number.isFinite(Number(v)) ? Number(v) : null);
   return facilities
-    .map((f) => ({ id: f.id, name: f.name, latitude: num(f.latitude), longitude: num(f.longitude), kg: totals.get(f.id)?.kg ?? 0, recordCount: totals.get(f.id)?.count ?? 0 }))
+    .map((f) => ({ id: f.id, name: f.name, latitude: num(f.latitude), longitude: num(f.longitude), kg: totals.get(f.id)?.kg ?? 0, recordCount: totals.get(f.id)?.count ?? 0, kind: "facility" as const }))
+    .sort((a, b) => b.kg - a.kg || a.name.localeCompare(b.name));
+}
+
+type ProjectSiteRow = { id: string; name: string; projectId: string; projectName: string | null; postcode: string | null; city: string | null };
+type SliceTotalRow = { siteId: string | null; totalCo2e: unknown; recordCount: number };
+
+/**
+ * Project sites with their totals from the snapshot's slices (zero when none). `positions` maps a normalised
+ * postcode to coordinates; a site without a usable postcode stays unplaced rather than being guessed.
+ */
+export function projectSiteTotals(sites: ProjectSiteRow[], slices: SliceTotalRow[], positionOf: (postcode: string | null) => { latitude: number; longitude: number } | null): SiteTotal[] {
+  const totals = new Map<string, { kg: number; count: number }>();
+  for (const r of slices) {
+    if (!r.siteId) continue;
+    const t = totals.get(r.siteId) ?? { kg: 0, count: 0 };
+    t.kg += Number(r.totalCo2e) || 0;
+    t.count += r.recordCount;
+    totals.set(r.siteId, t);
+  }
+  return sites
+    .map((x) => {
+      const pos = positionOf(x.postcode);
+      return { id: x.id, name: x.name, latitude: pos?.latitude ?? null, longitude: pos?.longitude ?? null, kg: totals.get(x.id)?.kg ?? 0, recordCount: totals.get(x.id)?.count ?? 0, kind: "site" as const, projectId: x.projectId, detail: [x.projectName, x.city].filter(Boolean).join(", ") || null };
+    })
     .sort((a, b) => b.kg - a.kg || a.name.localeCompare(b.name));
 }
 
