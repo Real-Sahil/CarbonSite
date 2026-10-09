@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -136,7 +137,7 @@ export function FactorsPanel({
           <p className="mt-2 text-sm text-[#6B7280]">None yet. Records use the run&apos;s library until you add one.</p>
         ) : (
           <div className="mt-3 overflow-x-auto rounded-[12px] border border-[#E5E7EB] bg-white">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <Table className="w-full text-left text-sm">
               <thead className="border-b border-[#E5E7EB] bg-[#F9FAFB] text-xs uppercase tracking-wide text-[#6B7280]">
                 <tr>
                   <th className="px-4 py-2 font-medium">Category</th>
@@ -162,7 +163,7 @@ export function FactorsPanel({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         )}
       </section>

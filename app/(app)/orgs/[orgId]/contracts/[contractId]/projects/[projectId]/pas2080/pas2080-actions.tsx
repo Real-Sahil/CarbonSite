@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -220,7 +221,7 @@ export function OpportunityLog({
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
+          <Table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
                 <th className="py-2 pr-3 font-normal">Opportunity</th>
@@ -271,7 +272,7 @@ export function OpportunityLog({
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       )}
 

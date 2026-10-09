@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
@@ -144,7 +145,7 @@ export function CarbonPrices({
           </div>
         ) : (
           <div className="overflow-x-auto border-t border-slate-100">
-            <table className="w-full min-w-[640px] text-sm">
+            <Table className="w-full text-sm">
               <thead className="text-left text-xs text-slate-500">
                 <tr>
                   <th className="px-4 py-2 font-medium">Price</th>
@@ -185,7 +186,7 @@ export function CarbonPrices({
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         )}
       </div>

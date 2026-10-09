@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +74,7 @@ export function RegisterWorkspace({
         <p className="rounded-[14px] border border-dashed border-[#E5E7EB] p-6 text-sm text-[#6B7280]">No {config.label.toLowerCase()} recorded yet.</p>
       ) : (
         <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB] bg-white">
-          <table className="w-full text-left text-sm">
+          <Table className="w-full text-left text-sm">
             <thead className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
               <tr>
                 <th className="px-4 py-2.5 font-medium">{fieldBy.get(config.titleField)?.label}</th>
@@ -85,7 +86,7 @@ export function RegisterWorkspace({
                 <RowView key={row.id} orgId={orgId} registerKey={registerKey} row={row} open={open === row.id} onToggle={() => setOpen(open === row.id ? null : row.id)} canEdit={canEdit} lookups={lookups} />
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       )}
     </div>

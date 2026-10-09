@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowUpRight, Award, Zap, FileText, Upload, Calculator, Key, Users, Building2, Check, X as XIcon } from "lucide-react";
@@ -219,7 +220,7 @@ export default function BillingPage() {
           <h2 className="text-sm font-semibold text-gray-900">Available plans</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <Table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="py-3 px-6 text-left font-medium text-gray-500 w-48"></th>
@@ -274,7 +275,7 @@ export default function BillingPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       </div>
 

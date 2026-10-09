@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Save, Trash2, Upload } from "lucide-react";
@@ -527,7 +528,7 @@ function ReportingPeriodsPanel({
           <EmptyRow text="No reporting periods yet." />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <Table className="w-full text-sm">
               <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Label</th>
@@ -543,7 +544,7 @@ function ReportingPeriodsPanel({
                   <ReportingPeriodRow key={period.id} orgId={orgId} period={period} />
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         )}
       </div>

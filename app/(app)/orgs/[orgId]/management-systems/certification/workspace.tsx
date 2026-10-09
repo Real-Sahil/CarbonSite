@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
@@ -108,7 +109,7 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
           {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
           {links.length > 0 && (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <Table className="w-full text-left text-sm">
                 <thead className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
                   <tr><th className="py-2 pr-4">Auditor</th><th className="py-2 pr-4">Frameworks</th><th className="py-2 pr-4">Expires</th><th className="py-2 pr-4">Last used</th><th className="py-2" /></tr>
                 </thead>
@@ -126,7 +127,7 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
                     );
                   })}
                 </tbody>
-              </table>
+              </Table>
             </div>
           )}
         </section>

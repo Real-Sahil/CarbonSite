@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -206,7 +207,7 @@ export default function LineagePage() {
         <section aria-labelledby="cats" className="flex flex-col gap-3">
           <h2 id="cats" className="text-sm font-semibold text-[#111827]">Category totals</h2>
           <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB]">
-            <table className="w-full text-sm">
+            <Table className="w-full text-sm">
               <thead>
                 <tr className="bg-[#F9FAFB] text-left text-xs text-[#374151]">
                   <th className="py-2.5 pl-4 font-normal">Category</th>
@@ -230,7 +231,7 @@ export default function LineagePage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         </section>
       ) : (

@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Plus, Trash2, Copy, Check, Eye } from "lucide-react";
@@ -156,7 +157,7 @@ export default function ApiKeysPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="overflow-x-auto rounded-[10px] border border-[#E5E7EB]">
-        <table className="w-full text-sm">
+        <Table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
               <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Name</th>
@@ -212,7 +213,7 @@ export default function ApiKeysPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
 
       <div className="rounded-[10px] border border-[#E5E7EB] bg-[#f9fafb] p-4 text-sm text-zinc-600">

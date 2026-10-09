@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -115,7 +116,7 @@ export function Ppn026Panel(p: Props) {
           <section key={outcome} className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold text-[#111827]">{rows[0]?.outcomeName}</h3>
             <div className="rounded-[14px] border border-[#E5E7EB] overflow-x-auto">
-              <table className="w-full table-fixed text-sm min-w-[560px]">
+              <Table className="w-full table-fixed text-sm">
                 <thead>
                   <tr className="bg-[#f9fafb] text-left text-xs text-[#374151]">
                     <th className="py-2.5 pl-4 font-normal">Award criterion and KPI</th>
@@ -164,7 +165,7 @@ export function Ppn026Panel(p: Props) {
                     </Fragment>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           </section>
         );

@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -216,7 +217,7 @@ export function TopicEditor({ orgId, assessmentId, canEdit, topics }: { orgId: s
         <p className="px-5 py-6 text-sm text-[#374151]">No topics yet. Add the ESRS starter topics, or your own below.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] text-sm">
+          <Table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#F3F4F6] text-left text-xs text-[#6B7280]">
                 <th className="px-5 py-2 font-medium">Topic</th>
@@ -230,7 +231,7 @@ export function TopicEditor({ orgId, assessmentId, canEdit, topics }: { orgId: s
             <tbody className="divide-y divide-[#F3F4F6]">
               {topics.map((t) => <Row key={t.id} orgId={orgId} assessmentId={assessmentId} topic={t} canEdit={canEdit} />)}
             </tbody>
-          </table>
+          </Table>
         </div>
       )}
       {canEdit && (

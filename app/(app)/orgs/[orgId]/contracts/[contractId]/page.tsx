@@ -373,7 +373,7 @@ export default async function ContractDetailPage({ params }: Props) {
             <EmptyState message="No subcontractor carbon data requested yet." />
           ) : (
             <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden overflow-x-auto">
-              <table className="w-full">
+              <Table className="w-full">
                 <thead>
                   <tr className="bg-[#f9fafb]">
                     <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3 pl-6">Subcontractor</th>
@@ -407,7 +407,7 @@ export default async function ContractDetailPage({ params }: Props) {
                     />
                   ))}
                 </tbody>
-              </table>
+              </Table>
             </div>
           )}
         </CardContent>

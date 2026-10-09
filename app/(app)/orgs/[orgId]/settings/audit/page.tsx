@@ -2,6 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { Table } from "@/components/ui/table";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { Download, RefreshCw, Search } from "lucide-react";
@@ -206,7 +207,7 @@ export default function AuditLogPage() {
       </div>
 
       <div className="overflow-x-auto rounded-[10px] border border-[#E5E7EB]">
-        <table className="w-full text-sm">
+        <Table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#E5E7EB] bg-[#F9FAFB]">
               <th className="px-4 py-2.5 text-left font-normal text-xs text-[#6B7280] tracking-wider">
@@ -261,7 +262,7 @@ export default function AuditLogPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       </div>
 
       <div className="flex items-center justify-between">

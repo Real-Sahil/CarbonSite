@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { CompanyFinder } from "@/components/company/company-finder";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -64,7 +65,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
       <section aria-labelledby="sp-lines" className="space-y-2">
         <h3 id="sp-lines" className="text-sm font-semibold text-zinc-900">Waste expected</h3>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-sm">
+          <Table className="w-full text-sm">
             <thead><tr className="text-left text-xs text-gray-500"><th className="pb-1 pr-2">Waste type</th><th className="pb-1 pr-2">EWC code</th><th className="pb-1 pr-2">Forecast (t)</th><th className="pb-1 pr-2">Planned route</th><th /></tr></thead>
             <tbody>
               {lines.map((l, i) => (
@@ -81,7 +82,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
         {!dis && <button type="button" className="text-sm font-medium text-teal-700 underline underline-offset-2 print:hidden" onClick={() => setLines((ls) => [...ls, { wasteType: "", ewcCode: "", forecastTonnes: 0, plannedRoute: "recycle" }])}>Add a waste type</button>}
       </section>

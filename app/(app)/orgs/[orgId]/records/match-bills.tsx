@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileStack, Loader2, Mail } from "lucide-react";
@@ -223,7 +224,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
 
       {rows.length > 0 && (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <Table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
                 <th className="py-2 pr-3 font-medium">File</th>
@@ -302,7 +303,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         </div>
       )}
 

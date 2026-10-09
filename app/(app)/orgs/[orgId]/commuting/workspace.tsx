@@ -1,5 +1,6 @@
 "use client";
 
+import { Table } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -221,7 +222,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
       </CardHeader>
       <CardContent className="p-0">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <Table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#6B7280]">
                 <th className="px-6 py-2 font-medium">Site</th>
@@ -286,7 +287,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         </div>
       </CardContent>
     </Card>
@@ -324,7 +325,7 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
           <p className="px-6 py-5 text-sm text-[#6B7280]">Nothing imported yet.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <Table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#6B7280]">
                   <th className="px-6 py-2 font-medium">Month</th>
@@ -353,7 +354,7 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           </div>
         )}
       </CardContent>
