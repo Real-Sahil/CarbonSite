@@ -16,3 +16,4 @@ export const DISPOSAL_ROUTES = [
   { value: "anaerobic_digestion",   label: "Anaerobic Digestion",          hierarchy: "recycle" },
   { value: "hazardous_landfill",    label: "Hazardous waste - Landfill",   hierarchy: "landfill" },
 ];
+export const routeLabel = (v: string) => DISPOSAL_ROUTES.find((r) => r.value === v)?.label ?? v;

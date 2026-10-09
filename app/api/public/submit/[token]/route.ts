@@ -1,11 +1,13 @@
 export const dynamic = "force-dynamic";
+export const maxDuration = 120;
 
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { documentFieldsSchema } from "@/lib/waste/documents";
+import { readWasteDocument } from "@/lib/waste/read-document";
 import { storeEvidenceFile } from "@/lib/evidence/store";
 import {
   MAX_FILES_PER_UPLOAD, MAX_LINK_FILE_BYTES, isReadableType, looksLike, resolveSubmissionToken, uploaderSchema,
@@ -39,6 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     }
     const uploadId = crypto.randomUUID();
     const accepted: string[] = [];
+    const toRead: { orgId: string; id: string }[] = [];
     const skipped: string[] = [];
     for (const f of files) {
       const name = f.name.slice(0, 200) || "upload";
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
       if (!looksLike(type, buffer)) { skipped.push(`${name}: not a valid ${type.split("/")[1]}`); continue; }
       const stored = await storeEvidenceFile(link.organizationId, link.createdByUserId, { name, type, buffer });
       if (link.purpose === "waste_documents") {
-        await prisma.wasteDocument.create({
+        const created = await prisma.wasteDocument.create({
           data: {
             organizationId: link.organizationId,
             projectId: link.projectId,
@@ -65,7 +68,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
             uploaderName: who.data.name,
             uploaderCompany: who.data.company ?? null,
           },
+          select: { id: true },
         });
+        if (docFields!.kind === "transfer_note") toRead.push({ orgId: link.organizationId, id: created.id });
         accepted.push(name);
         continue;
       }
@@ -97,6 +102,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
         metadata: { uploader: who.data.name, company: who.data.company ?? null, files: accepted.length, skipped },
       });
     }
+    // Read transfer notes after the response, so the carrier is not kept waiting and the reviewer finds them
+    // already read and checked. Best effort: a note that cannot be read just waits for the Read button.
+    if (toRead.length > 0) after(async () => { for (const t of toRead) await readWasteDocument(t.orgId, t.id).catch(() => null); });
     return NextResponse.json({ ok: accepted.length > 0, accepted: accepted.length, skipped }, { status: accepted.length > 0 ? 201 : 422 });
   } catch (err) {
     return handleRouteError(err);

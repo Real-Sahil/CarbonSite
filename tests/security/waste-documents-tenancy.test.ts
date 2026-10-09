@@ -11,6 +11,8 @@ const db = vi.hoisted(() => ({
   },
 }));
 vi.mock("@/lib/db", () => db);
+vi.mock("next/server", async (orig) => ({ ...(await orig<typeof import("next/server")>()), after: vi.fn() }));
+vi.mock("@/lib/waste/read-document", () => ({ readWasteDocument: vi.fn() }));
 vi.mock("@/lib/db/audit", () => ({ writeAuditLog: vi.fn() }));
 vi.mock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));
 const store = vi.hoisted(() => ({ storeEvidenceFile: vi.fn() }));

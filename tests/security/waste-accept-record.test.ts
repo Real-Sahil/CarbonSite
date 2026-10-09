@@ -12,7 +12,8 @@ const db = vi.hoisted(() => {
     tx,
     prisma: {
       wasteDocument: { findFirst: vi.fn() },
-      wasteRecord: { findFirst: vi.fn() },
+      wasteRecord: { findFirst: vi.fn(), findMany: vi.fn().mockResolvedValue([]) },
+      reportingPeriod: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async (fn: (t: typeof tx) => unknown) => fn(tx)),
     },
   };

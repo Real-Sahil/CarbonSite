@@ -7,6 +7,9 @@ import { requireOrgMember, ROLE_GROUPS, AuthError } from "@/lib/auth/session";
 import { LINK_ISSUERS } from "@/lib/evidence/submission-link";
 import { getSelectedProject } from "@/lib/project/selected";
 import { DOC_KINDS, KIND_VALUES, documentState, kindLabel } from "@/lib/waste/documents";
+import { loadTriage } from "@/lib/waste/triage-load";
+import { routeLabel } from "@/lib/waste/routes";
+import { ReadyInbox, type ReadyItem } from "./ready-inbox";
 import { SubmissionLinks } from "../../records/submission-links";
 import { AddDocument, DocumentActions } from "./document-actions";
 
@@ -43,6 +46,13 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
     prisma.facility.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
     prisma.reportingPeriod.findMany({ where: { organizationId: orgId }, select: { id: true, label: true }, orderBy: { startDate: "desc" }, take: 100 }),
   ]);
+  const triage = await loadTriage(orgId, docs.filter((d) => d.status === "pending"));
+  const facilityName = new Map(facilities.map((f) => [f.id, f.name]));
+  const ready: ReadyItem[] = docs.flatMap((d) => {
+    const t = triage.get(d.id);
+    if (!t || t.state !== "ready" || !t.body) return [];
+    return [{ id: d.id, title: d.title, carrier: t.body.carrierName ?? null, reference: t.body.transferNoteReference ?? null, tonnes: t.body.weightTonnes, ewc: t.body.ewcCode ?? null, date: t.body.recordedAt, route: routeLabel(t.body.disposalRoute), facility: facilityName.get(t.body.facilityId) ?? "" }];
+  });
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
   const pending = docs.filter((d) => d.status === "pending").length;
   const lapsed = docs.filter((d) => d.status === "accepted" && ["expired", "expiring"].includes(documentState(d.kind, d.validUntil))).length;
@@ -81,6 +91,8 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
       </div>
       {lapsed > 0 && <p role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">{lapsed} {lapsed === 1 ? "document has" : "documents have"} expired or expire within 30 days.</p>}
 
+      {canEdit && ready.length > 0 && <ReadyInbox orgId={orgId} items={ready} />}
+
       {canEdit && <div className="mb-6"><SubmissionLinks orgId={orgId} purpose="waste_documents" /></div>}
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -100,6 +112,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                       <a href={`/api/orgs/${orgId}/evidence/${d.evidenceFileId}/download`} className="font-medium text-gray-900 underline underline-offset-2">{d.title}</a>
                       {d.reference && <div className="text-xs text-gray-500">Ref {d.reference}</div>}
                       {d.projectId && <div className="text-xs text-gray-500">{projectName.get(d.projectId) ?? "Project"}</div>}
+                      {triage.get(d.id)?.state === "review" && <ul className="mt-1 list-disc pl-4 text-xs text-amber-800">{triage.get(d.id)!.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
                     </td>
                     <td className="px-4 py-3 text-gray-600">{kindLabel(d.kind)}</td>
                     <td className="px-4 py-3 text-gray-600">{d.issuer ?? "-"}</td>
@@ -108,7 +121,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                     </td>
                     <td className="px-4 py-3 text-gray-600">{d.uploaderName ? `${d.uploaderName}${d.uploaderCompany ? `, ${d.uploaderCompany}` : ""}` : "Our team"}</td>
                     <td className="px-4 py-3 capitalize text-gray-600">{d.status}</td>
-                    <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} kind={d.kind} status={d.status} extracted={(d.extracted as never) ?? null} recorded={!!d.wasteRecordId} prefill={{ reference: d.reference, issuer: d.issuer, projectId: d.projectId }} facilities={facilities} periods={periods} />}</td>
+                    <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} kind={d.kind} status={d.status} extracted={(d.extracted as never) ?? null} recorded={!!d.wasteRecordId} prefill={{ reference: d.reference, issuer: d.issuer, projectId: d.projectId, defaults: triage.get(d.id)?.suggestion ? { facilityId: triage.get(d.id)!.suggestion.facilityId, reportingPeriodId: triage.get(d.id)!.suggestion.reportingPeriodId, wasteType: triage.get(d.id)!.suggestion.wasteType, disposalRoute: triage.get(d.id)!.suggestion.disposalRoute, hazardous: triage.get(d.id)!.suggestion.hazardous, destination: triage.get(d.id)!.suggestion.destination } : undefined }} facilities={facilities} periods={periods} />}</td>
                   </tr>
                 );
               })}
