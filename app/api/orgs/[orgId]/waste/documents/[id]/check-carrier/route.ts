@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { LINK_ISSUERS } from "@/lib/evidence/submission-link";
+import { withCompanyStatus } from "@/lib/waste/carrier-company";
 import { REGISTER_ATTRIBUTION, REGISTER_LICENCE_URL, englandRegistration, lookupCarrier } from "@/lib/waste/carrier-register";
 
 // POST: look the document's carrier registration number up on England's public register and keep the
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ org
     // A licence's reference is the registration; for a transfer note it is the one read from the file.
     const read = (doc.extracted ?? {}) as { carrierRegistration?: string };
     const candidate = doc.kind === "carrier_licence" ? (englandRegistration(doc.reference) ?? read.carrierRegistration) : read.carrierRegistration;
-    const result = await lookupCarrier(candidate ?? "");
+    const result = await withCompanyStatus(await lookupCarrier(candidate ?? ""));
     if (result.status !== "unavailable") {
       await prisma.wasteDocument.update({ where: { id }, data: { extracted: { ...(doc.extracted as object | null), registerCheck: result } } });
     }

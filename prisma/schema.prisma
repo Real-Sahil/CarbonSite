@@ -6889,12 +6889,19 @@ model SvSupplierLocation {
   longitude      Decimal? @db.Decimal(10, 7)
   /// Null when not known; only a person sets it.
   sme            Boolean?
+  /// Companies House number the person picked: the supplier's identity when names vary between records.
+  companyNumber  String?  @map("company_number")
+  /// Other `supplierKey()` spellings that belong to this supplier, so records match however the name is written.
+  aliasKeys      String[] @default([]) @map("alias_keys")
+  /// Register facts read when picked or re-checked: { status, accountsType, accountsOverdue, hasInsolvencyHistory, flags, smeHint, checkedAt }.
+  companyCheck   Json?    @map("company_check")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization Organization @relation("OrgSvSupplierLocations", fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@unique([organizationId, nameKey])
+  @@index([organizationId, companyNumber])
   @@map("sv_supplier_locations")
 }
 

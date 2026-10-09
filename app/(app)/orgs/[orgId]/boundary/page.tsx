@@ -210,7 +210,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                 : `${entities.length} ${entities.length === 1 ? "entity" : "entities"} in the group.`}
             </p>
           </div>
-          {canEdit && <CreateLegalEntityForm orgId={orgId} entities={entities.map((e) => ({ id: e.id, name: e.name }))} />}
+          {canEdit && <CreateLegalEntityForm orgId={orgId} entities={entities.map((e) => ({ id: e.id, name: e.name, registrationNumber: e.registrationNumber }))} />}
         </div>
 
         {entities.length > 0 && (

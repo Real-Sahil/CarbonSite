@@ -32,6 +32,7 @@ describe("triageDocument", () => {
     ["unregistered carrier", { ...read, registerCheck: { status: "not_found" } }, "not on the Environment Agency"],
     ["expired registration", { ...read, registerCheck: { status: "expired" } }, "expired"],
     ["register unchecked", { ...read, registerCheck: undefined }, "not checked"],
+    ["carrier company dissolved", { ...read, registerCheck: { status: "registered", company: { status: "dissolved" } } }, "dissolved at Companies House"],
     ["no weight", { ...read, tonnes: undefined }, "No weight"],
     ["much heavier", { ...read, tonnes: 40 }, "heavier"],
   ])("needs a look: %s", (_n, r, text) => {

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { documentText } from "@/lib/imports/parsers/pdf";
 import { getObject } from "@/lib/storage";
 import { englandRegistration, lookupCarrier } from "@/lib/waste/carrier-register";
+import { withCompanyStatus } from "@/lib/waste/carrier-company";
 import { extractTransferNote, suggestedFill, type TransferNoteReading } from "@/lib/waste/transfer-note-extractor";
 
 /**
@@ -17,7 +18,7 @@ export async function readWasteDocument(orgId: string, id: string) {
   const { text, method } = await documentText(await getObject(file.storageKey), file.mimeType);
   const reading = extractTransferNote(text);
   const registration = englandRegistration(reading.carrierRegistration);
-  const registerCheck = registration ? await lookupCarrier(registration) : undefined;
+  const registerCheck = registration ? await withCompanyStatus(await lookupCarrier(registration)) : undefined;
   const stored = { ...reading, method, ...(registerCheck && registerCheck.status !== "unavailable" ? { registerCheck } : {}) };
   await prisma.wasteDocument.update({ where: { id }, data: { extracted: stored } });
   return { doc, reading: stored as TransferNoteReading & typeof stored, fill: suggestedFill(doc.kind, doc, reading) };

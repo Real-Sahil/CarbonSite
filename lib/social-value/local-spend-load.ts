@@ -54,7 +54,7 @@ export async function loadLocalSpend(
     }),
     prisma.svSupplierLocation.findMany({
       where: { organizationId: orgId },
-      select: { nameKey: true, name: true, latitude: true, longitude: true, sme: true },
+      select: { nameKey: true, aliasKeys: true, name: true, latitude: true, longitude: true, sme: true },
     }),
   ]);
 
@@ -63,13 +63,15 @@ export async function loadLocalSpend(
     amount: Number(r.spendAmount),
     currency: r.spendCurrency,
   }));
-  const locations: SupplierLocation[] = suppliers.map((s) => ({
-    key: s.nameKey,
-    name: s.name,
-    latitude: s.latitude == null ? null : Number(s.latitude),
-    longitude: s.longitude == null ? null : Number(s.longitude),
-    sme: s.sme,
-  }));
+  const locations: SupplierLocation[] = suppliers.flatMap((s) =>
+    [s.nameKey, ...s.aliasKeys].map((key) => ({
+      key,
+      name: s.name,
+      latitude: s.latitude == null ? null : Number(s.latitude),
+      longitude: s.longitude == null ? null : Number(s.longitude),
+      sme: s.sme,
+    })),
+  );
 
   return {
     ok: true,

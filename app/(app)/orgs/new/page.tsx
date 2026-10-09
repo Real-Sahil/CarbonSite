@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { CompanyFinder } from "@/components/company/company-finder";
 import { COUNTRIES, CURRENCIES, currencyForCountry } from "@/lib/i18n/countries";
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -112,6 +113,12 @@ export default function NewOrgPage() {
                   onChange={(e) => setName(e.target.value)}
                   required
                   disabled={loading}
+                />
+                <CompanyFinder
+                  base="/api/companies"
+                  getName={() => name}
+                  label="Find my UK company"
+                  onPick={(p) => { setName(p.company.name); setHqCountry("GB"); setCurrency(currencyForCountry("GB") ?? ""); }}
                 />
                 {fieldErrors.name && (
                   <p className="text-sm text-red-600" role="alert">

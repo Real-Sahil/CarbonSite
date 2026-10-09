@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { CompanyFinder, CompanyFlags } from "@/components/company/company-finder";
 import { FormField, FormActions, FormError, FormSection } from "@/components/forms/form-kit";
 
 interface Submission {
@@ -48,6 +49,8 @@ function formatTco2e(value: string | null) {
 export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; contractId: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [subName, setSubName] = useState("");
+  const [flags, setFlags] = useState<{ level: "red" | "amber"; text: string }[]>([]);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -74,6 +77,8 @@ export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; co
         return;
       }
       form.reset();
+      setSubName("");
+      setFlags([]);
       router.refresh();
     });
   }
@@ -82,8 +87,12 @@ export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; co
     <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
       <FormSection title="Request subcontractor carbon data" cols={2}>
           <FormField label="Subcontractor" htmlFor="sub-name">
-            <Input id="sub-name" name="subcontractorName" required placeholder="Subcontractor name" />
+            <Input id="sub-name" name="subcontractorName" required placeholder="Subcontractor name" value={subName} onChange={(e) => setSubName(e.target.value)} />
           </FormField>
+          <div className="sm:col-span-2">
+            <CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => subName} onPick={(p) => { setSubName(p.company.name); setFlags(p.flags); }} />
+            {flags.length > 0 && <div className="mt-1"><CompanyFlags flags={flags} /></div>}
+          </div>
           <FormField label="Contact email" htmlFor="sub-email" optional>
             <Input id="sub-email" name="contactEmail" type="email" placeholder="contact@example.com" />
           </FormField>

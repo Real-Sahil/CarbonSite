@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { DEFAULT_RADIUS_MILES, MAX_RADIUS_MILES } from "@/lib/social-value/local-spend";
 import { loadLocalSpend } from "@/lib/social-value/local-spend-load";
-import { RemoveSupplierButton, SupplierForm } from "./supplier-form";
+import { CompanyFlags } from "@/components/company/company-finder";
+import { CheckCompanyButton, MatchSupplier, RemoveSupplierButton, SupplierForm } from "./supplier-form";
 
 interface Props {
   params: Promise<{ orgId: string }>;
@@ -51,7 +52,7 @@ export default async function LocalSpendPage({ params, searchParams }: Props) {
     }),
     prisma.svSupplierLocation.findMany({
       where: { organizationId: orgId },
-      select: { id: true, name: true, postcode: true, sme: true },
+      select: { id: true, name: true, postcode: true, sme: true, companyNumber: true, companyCheck: true },
       orderBy: { name: "asc" },
       take: 500,
     }),
@@ -124,7 +125,7 @@ export default async function LocalSpendPage({ params, searchParams }: Props) {
                   <h2 className="text-sm font-medium">Add a postcode for these suppliers</h2>
                   <ul className="mt-2 grid gap-1 text-sm">
                     {result.summary.missingLocations.map((m) => (
-                      <li key={m.name} className="flex justify-between gap-4"><span>{m.name}</span><span className="tabular-nums">{gbp(m.spendGbp)}</span></li>
+                      <li key={m.name} className="flex items-start justify-between gap-4"><span>{m.name}</span><span className="flex items-center gap-3"><span className="tabular-nums">{gbp(m.spendGbp)}</span>{canEdit && <MatchSupplier orgId={orgId} name={m.name} />}</span></li>
                     ))}
                   </ul>
                 </div>
@@ -162,15 +163,23 @@ export default async function LocalSpendPage({ params, searchParams }: Props) {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow><TableHead>Supplier</TableHead><TableHead>Postcode</TableHead><TableHead>SME</TableHead>{canEdit && <TableHead className="w-24"><span className="sr-only">Actions</span></TableHead>}</TableRow>
+                <TableRow><TableHead>Supplier</TableHead><TableHead>Company</TableHead><TableHead>Postcode</TableHead><TableHead>SME</TableHead>{canEdit && <TableHead className="w-36"><span className="sr-only">Actions</span></TableHead>}</TableRow>
               </TableHeader>
               <TableBody>
                 {suppliers.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell>{s.name}</TableCell>
+                    <TableCell className="text-xs">
+                      {s.companyNumber ? (
+                        <span className="space-y-1">
+                          <span className="block text-gray-600">{s.companyNumber}</span>
+                          <CompanyFlags flags={((s.companyCheck as { flags?: { level: "red" | "amber"; text: string }[] } | null)?.flags) ?? []} />
+                        </span>
+                      ) : <span className="text-gray-400">Not matched</span>}
+                    </TableCell>
                     <TableCell>{s.postcode}</TableCell>
                     <TableCell>{s.sme === null ? <Badge variant="outline">Not known</Badge> : s.sme ? "Yes" : "No"}</TableCell>
-                    {canEdit && <TableCell><RemoveSupplierButton orgId={orgId} supplierId={s.id} name={s.name} /></TableCell>}
+                    {canEdit && <TableCell className="whitespace-nowrap">{s.companyNumber && <CheckCompanyButton orgId={orgId} supplierId={s.id} />}<RemoveSupplierButton orgId={orgId} supplierId={s.id} name={s.name} /></TableCell>}
                   </TableRow>
                 ))}
               </TableBody>

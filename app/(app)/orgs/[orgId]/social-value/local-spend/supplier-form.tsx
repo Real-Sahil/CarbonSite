@@ -4,53 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CompanyFinder, CompanyFlags } from "@/components/company/company-finder";
 import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
-
-type Candidate = { number: string; name: string; status: string | null; address: string | null };
-
-/** Finds a supplier on the Companies House register; the person picks the company, nothing is guessed. */
-function CompanyFinder({ orgId, name, onPick }: { orgId: string; name: string; onPick: (c: { name: string; postcode: string | null; sic: string[]; number: string }) => void }) {
-  const [busy, setBusy] = useState(false);
-  const [list, setList] = useState<Candidate[] | null>(null);
-  const [note, setNote] = useState<string | null>(null);
-  async function find() {
-    setBusy(true);
-    setNote(null);
-    const res = await fetch(`/api/orgs/${orgId}/companies?q=${encodeURIComponent(name.trim())}`).catch(() => null);
-    const d = await res?.json().catch(() => null);
-    setBusy(false);
-    if (!res?.ok) { setNote(d?.message ?? "Company lookup failed."); setList(null); return; }
-    setList(d.candidates);
-    if (d.candidates.length === 0) setNote("No company found. Check the name, or type the postcode.");
-  }
-  async function pick(c: Candidate) {
-    setBusy(true);
-    const res = await fetch(`/api/orgs/${orgId}/companies?number=${c.number}`).catch(() => null);
-    const d = await res?.json().catch(() => null);
-    setBusy(false);
-    if (!res?.ok) { setNote(d?.message ?? "Could not read that company."); return; }
-    setList(null);
-    onPick({ name: d.company.name, postcode: d.company.postcode, sic: d.company.sicCodes, number: d.company.number });
-  }
-  return (
-    <div className="sm:col-span-4">
-      <Button type="button" variant="outline" size="sm" disabled={busy || name.trim().length < 3} onClick={() => void find()}>{busy ? "Looking…" : "Find on Companies House"}</Button>
-      {note && <p role="status" className="mt-1 text-xs text-gray-600">{note}</p>}
-      {list && list.length > 0 && (
-        <ul className="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-200 text-sm">
-          {list.map((c) => (
-            <li key={c.number}>
-              <button type="button" className="w-full px-3 py-2 text-left hover:bg-gray-50" onClick={() => void pick(c)}>
-                <span className="font-medium text-gray-900">{c.name}</span> <span className="text-xs text-gray-500">{c.number}{c.status && c.status !== "active" ? ` · ${c.status}` : ""}</span>
-                {c.address && <span className="block text-xs text-gray-500">{c.address}</span>}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 export function SupplierForm({ orgId }: { orgId: string }) {
   const router = useRouter();
@@ -58,7 +13,7 @@ export function SupplierForm({ orgId }: { orgId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [postcode, setPostcode] = useState("");
-  const [found, setFound] = useState<{ number: string; sic: string[] } | null>(null);
+  const [found, setFound] = useState<{ number: string; sic: string[]; flags: { level: "red" | "amber"; text: string }[]; smeHint: string | null } | null>(null);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -72,7 +27,8 @@ export function SupplierForm({ orgId }: { orgId: string }) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         name: data.get("name"),
-        postcode: data.get("postcode"),
+        postcode: data.get("postcode") || undefined,
+        ...(found && { companyNumber: found.number }),
         sme: sme === "yes" ? true : sme === "no" ? false : null,
       }),
     });
@@ -110,10 +66,12 @@ export function SupplierForm({ orgId }: { orgId: string }) {
             <option value="no">No</option>
           </select>
         </FormField>
-        <CompanyFinder orgId={orgId} name={name} onPick={(c) => { setName(c.name); if (c.postcode) setPostcode(c.postcode); setFound({ number: c.number, sic: c.sic }); }} />
+        <CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => name} onPick={(p) => { setName(p.company.name); if (p.company.postcode) setPostcode(p.company.postcode); setFound({ number: p.company.number, sic: p.company.sicCodes, flags: p.flags, smeHint: p.smeHint }); }} />
       </FormSection>
       {found && (
-        <p className="text-xs text-gray-600">
+        <p className="space-y-1 text-xs text-gray-600">
+          <CompanyFlags flags={found.flags} />{found.flags.length > 0 && <br />}
+          {found.smeHint && <>{found.smeHint}<br /></>}
           Companies House {found.number}. {found.sic.length ? `SIC codes: ${found.sic.join(", ")}. Pick the one that matches what you buy when you add the industry code to a spend record.` : "No SIC codes filed."} Contains public sector information licensed under the Open Government Licence v3.0.
         </p>
       )}
@@ -143,5 +101,59 @@ export function RemoveSupplierButton({ orgId, supplierId, name }: { orgId: strin
     >
       Remove
     </Button>
+  );
+}
+
+/** Reads the supplier's Companies House record again and refreshes its flags. */
+export function CheckCompanyButton({ orgId, supplierId }: { orgId: string; supplierId: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          setNote(null);
+          const res = await fetch(`/api/orgs/${orgId}/sv/local-spend/suppliers/${supplierId}/check`, { method: "POST" }).catch(() => null);
+          const d = await res?.json().catch(() => null);
+          setBusy(false);
+          if (!res?.ok) { setNote(d?.message ?? "Check failed."); return; }
+          router.refresh();
+        }}
+      >
+        {busy ? "Checking" : "Check"}
+      </Button>
+      {note && <span role="status" className="text-xs text-red-700">{note}</span>}
+    </>
+  );
+}
+
+/** Matches a supplier named on records to its company: pick it and the place is saved under the name the records use. */
+export function MatchSupplier({ orgId, name }: { orgId: string; name: string }) {
+  const router = useRouter();
+  const [note, setNote] = useState<string | null>(null);
+  return (
+    <span className="inline-flex flex-col items-end">
+      <CompanyFinder
+        base={`/api/orgs/${orgId}/companies`}
+        getName={() => name}
+        label="Match"
+        onPick={async (p) => {
+          setNote(null);
+          const res = await fetch(`/api/orgs/${orgId}/sv/local-spend/suppliers`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ name, companyNumber: p.company.number, ...(p.company.postcode && { postcode: p.company.postcode }) }),
+          });
+          if (!res.ok) { setNote((await res.json().catch(() => null))?.message ?? "Could not save."); return; }
+          router.refresh();
+        }}
+      />
+      {note && <span role="alert" className="text-xs text-red-700">{note}</span>}
+    </span>
   );
 }

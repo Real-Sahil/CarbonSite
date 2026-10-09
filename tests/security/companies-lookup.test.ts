@@ -3,7 +3,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const session = vi.hoisted(() => ({ requireOrgMember: vi.fn(), AuthError: class AuthError extends Error {} }));
+const session = vi.hoisted(() => ({ requireOrgMember: vi.fn(), AuthError: class AuthError extends Error {}, ROLE_GROUPS: { editor: ["admin", "editor"], projectManagers: ["admin", "project_manager"] } }));
 vi.mock("@/lib/auth/session", () => session);
 vi.mock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));
 
@@ -19,7 +19,8 @@ beforeEach(() => {
 describe("GET companies", () => {
   it("checks the role list and the organisation", async () => {
     await call("q=tarmac");
-    expect(session.requireOrgMember.mock.calls[0].slice(0, 2)).toEqual(["org-a", "admin"]);
+    expect(session.requireOrgMember.mock.calls[0][0]).toBe("org-a");
+    expect(session.requireOrgMember.mock.calls[0]).toContain("admin");
     expect(session.requireOrgMember.mock.calls[0]).not.toContain("viewer");
   });
   it("rejects a short name and a malformed number", async () => {

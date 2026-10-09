@@ -1,5 +1,6 @@
 "use client";
 
+import { CompanyFinder } from "@/components/company/company-finder";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
@@ -49,12 +50,15 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
   }
 
   const dis = !canEdit;
+  const valueOf = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value ?? "";
+  const fill = (id: string, v: string) => { const el = document.getElementById(id) as HTMLInputElement | null; if (el) el.value = v; };
+  const finder = (id: string) => !dis && <CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => valueOf(id)} label="Find company" onPick={(p) => fill(id, p.company.name)} />;
   return (
     <form onSubmit={save} className="space-y-6 rounded-xl border border-gray-200 bg-white p-5 print:border-0 print:p-0">
       <FormSection title="Responsibilities" cols={3}>
         <FormField label="Person responsible for the plan" htmlFor="sp-person"><Input id="sp-person" name="responsiblePerson" defaultValue={plan.responsiblePerson ?? ""} maxLength={160} disabled={dis} /></FormField>
-        <FormField label="Principal contractor" htmlFor="sp-pc"><Input id="sp-pc" name="principalContractor" defaultValue={plan.principalContractor ?? ""} maxLength={160} disabled={dis} /></FormField>
-        <FormField label="Client" htmlFor="sp-client" optional><Input id="sp-client" name="clientName" defaultValue={plan.clientName ?? ""} maxLength={160} disabled={dis} /></FormField>
+        <FormField label="Principal contractor" htmlFor="sp-pc"><Input id="sp-pc" name="principalContractor" defaultValue={plan.principalContractor ?? ""} maxLength={160} disabled={dis} />{finder("sp-pc")}</FormField>
+        <FormField label="Client" htmlFor="sp-client" optional><Input id="sp-client" name="clientName" defaultValue={plan.clientName ?? ""} maxLength={160} disabled={dis} />{finder("sp-client")}</FormField>
       </FormSection>
 
       <section aria-labelledby="sp-lines" className="space-y-2">

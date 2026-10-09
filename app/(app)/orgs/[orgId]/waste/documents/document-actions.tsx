@@ -6,6 +6,7 @@ import { FormActions, FormError, FormField, FormSection } from "@/components/for
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DOC_KINDS } from "@/lib/waste/documents";
+import { CompanyFinder } from "@/components/company/company-finder";
 import { AcceptAsRecord } from "./accept-record";
 
 export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: string; projects: { id: string; name: string }[]; defaultProjectId: string | null }) {
@@ -39,7 +40,7 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
         </FormField>
         <FormField label="Title" htmlFor="wd-title" optional hint="Defaults to the file name."><Input id="wd-title" name="title" maxLength={160} /></FormField>
         <FormField label="Reference" htmlFor="wd-ref" optional><Input id="wd-ref" name="reference" maxLength={120} /></FormField>
-        <FormField label="Carrier or site it covers" htmlFor="wd-issuer" optional><Input id="wd-issuer" name="issuer" maxLength={160} /></FormField>
+        <FormField label="Carrier or site it covers" htmlFor="wd-issuer" optional><Input id="wd-issuer" name="issuer" maxLength={160} /><CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => (document.getElementById("wd-issuer") as HTMLInputElement | null)?.value ?? ""} label="Find company" onPick={(p) => { const el = document.getElementById("wd-issuer") as HTMLInputElement | null; if (el) el.value = p.company.name; }} /></FormField>
         <FormField label="Valid until" htmlFor="wd-valid" optional hint="For licences, permits and exemptions."><Input id="wd-valid" name="validUntil" type="date" /></FormField>
         <FormField label="Project" htmlFor="wd-project" optional>
           <select id="wd-project" name="projectId" defaultValue={defaultProjectId ?? ""} className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
@@ -62,7 +63,7 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
 type RegisterCheck =
   | { status: "not_checked"; reason: string }
   | { status: "not_found" | "unavailable"; registration: string; checkedAt: string }
-  | { status: "registered" | "expired"; registration: string; holder: string | null; tier: string | null; expiryDate: string | null; checkedAt: string };
+  | { status: "registered" | "expired"; registration: string; holder: string | null; tier: string | null; expiryDate: string | null; checkedAt: string; company?: { number: string; status: string | null; flags: { level: "red" | "amber"; text: string }[] } };
 type Found = { registerCheck?: RegisterCheck; reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
 const LABELS: [keyof Found, string][] = [["reference", "Reference"], ["carrier", "Carrier"], ["carrierRegistration", "Carrier licence"], ["permit", "Permit"], ["ewc", "EWC code"], ["tonnes", "Tonnes"], ["date", "Date"], ["vehicle", "Vehicle"], ["expiry", "Expires"]];
 
@@ -133,7 +134,7 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
         {check.status === "not_found" && <p><span className="font-medium text-amber-800">Not found</span> on the England register: {check.registration}. Check the number, or the carrier may be registered elsewhere or have lapsed.</p>}
         {(check.status === "registered" || check.status === "expired") && (
           <p>
-            <span className={`font-medium ${check.status === "registered" ? "text-green-700" : "text-red-700"}`}>{check.status === "registered" ? "On the register" : "Registration expired"}</span>: {check.registration}, {check.holder ?? "holder not shown"}{check.tier ? `, ${check.tier} tier` : ""}{check.expiryDate ? `, expires ${check.expiryDate}` : ""}. Checked {check.checkedAt.slice(0, 10)}. Compare the holder with the carrier named on the document.
+            <span className={`font-medium ${check.status === "registered" ? "text-green-700" : "text-red-700"}`}>{check.status === "registered" ? "On the register" : "Registration expired"}</span>: {check.registration}, {check.holder ?? "holder not shown"}{check.tier ? `, ${check.tier} tier` : ""}{check.expiryDate ? `, expires ${check.expiryDate}` : ""}. Checked {check.checkedAt.slice(0, 10)}. Compare the holder with the carrier named on the document.{check.company && <> Companies House {check.company.number}: <span className={check.company.status === "active" ? "text-green-700" : "font-medium text-red-700"}>{(check.company.status ?? "status not shown").replace(/-/g, " ")}</span>{check.company.flags.length > 0 && `. ${check.company.flags.map((f) => f.text).join("; ")}`}.</>}
           </p>
         )}
         <p className="mt-1 text-gray-500">Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.</p>

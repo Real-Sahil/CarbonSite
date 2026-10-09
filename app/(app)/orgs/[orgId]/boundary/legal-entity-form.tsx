@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { CompanyFinder, CompanyFlags, type CompanyPick } from "@/components/company/company-finder";
 import { FormField as Field } from "@/components/forms/form-kit";
 
 export function CreateLegalEntityForm({
@@ -12,7 +13,7 @@ export function CreateLegalEntityForm({
   entities,
 }: {
   orgId: string;
-  entities: Array<{ id: string; name: string }>;
+  entities: Array<{ id: string; name: string; registrationNumber: string | null }>;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -24,6 +25,7 @@ export function CreateLegalEntityForm({
   const [operationalControl, setOperationalControl] = useState(true);
   const [financialControl, setFinancialControl] = useState(true);
   const [acquiredOn, setAcquiredOn] = useState("");
+  const [picked, setPicked] = useState<CompanyPick | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +69,7 @@ export function CreateLegalEntityForm({
       setParentId("");
       setOwnershipPercent("100");
       setAcquiredOn("");
+      setPicked(null);
       router.refresh();
     } catch {
       setError("Network error. Try again.");
@@ -95,6 +98,34 @@ export function CreateLegalEntityForm({
             placeholder="Acme Facilities Ltd"
           />
         </Field>
+        <CompanyFinder
+          base={`/api/orgs/${orgId}/companies`}
+          getName={() => name}
+          withOwners
+          onPick={(p) => {
+            setPicked(p);
+            setName(p.company.name);
+            setRegistrationNumber(p.company.number);
+            setCountry("United Kingdom");
+            // The parent is only suggested when a controlling company is already in this group's structure.
+            const match = p.owners?.map((o) => entities.find((e) => e.registrationNumber && o.number && e.registrationNumber.toUpperCase() === o.number.toUpperCase())).find(Boolean);
+            if (match) setParentId(match.id);
+          }}
+        />
+        {picked && (
+          <div className="space-y-1 text-xs text-zinc-600 sm:col-span-2">
+            <CompanyFlags flags={picked.flags} />
+            <p>Registered office: {picked.company.address ?? "not shown"}. Incorporated {picked.company.incorporated ?? "date not shown"}.</p>
+            {picked.owners && picked.owners.length > 0 ? (
+              <p>
+                Controlled by: {picked.owners.map((o) => `${o.name}${o.number ? ` (${o.number})` : ""}${o.sharesBand ? `, ${o.sharesBand}% of shares` : ""}`).join("; ")}.
+                {" "}If one of these is already in your group, it is chosen as the parent; check the equity share against the band. Only companies are shown, never individuals.
+              </p>
+            ) : (
+              <p>No controlling company on the register (a person may control it, which is not shown here).</p>
+            )}
+          </div>
+        )}
         <Field label="Company number" htmlFor="le-reg">
           <Input
             id="le-reg"

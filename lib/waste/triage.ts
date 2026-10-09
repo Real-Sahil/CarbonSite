@@ -41,7 +41,7 @@ const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); cons
 export type Triage = { state: "ready" | "review" | "unread"; reasons: string[]; suggestion: Partial<AcceptBody>; body: AcceptBody | null };
 
 export function triageDocument(input: {
-  doc: { kind: string; wasteRecordId: string | null; reference: string | null; issuer: string | null; projectId: string | null; extracted: (TransferNoteReading & { registerCheck?: { status: string } }) | null };
+  doc: { kind: string; wasteRecordId: string | null; reference: string | null; issuer: string | null; projectId: string | null; extracted: (TransferNoteReading & { registerCheck?: { status: string; company?: { status: string | null } } }) | null };
   defaults: CarrierDefaults | null;
   periodId: string | null;
   duplicateReference: boolean;
@@ -68,6 +68,8 @@ export function triageDocument(input: {
     if (s === "expired") reasons.push("Carrier registration has expired on the Environment Agency register");
     else if (s === "not_found") reasons.push("Carrier registration is not on the Environment Agency register");
     else if (s !== "registered") reasons.push("Carrier registration not checked on the register yet");
+    const co = r.registerCheck?.company?.status;
+    if (co && co.toLowerCase() !== "active") reasons.push(`The carrier's company is ${co.replace(/-/g, " ")} at Companies House`);
   } else reasons.push("Carrier registration is not an England one, so it was not checked");
   if (!defaults) reasons.push("First time we have seen this carrier and waste code: choose facility and where it went");
   else if (!defaults.consistent) reasons.push(defaults.loads === 1 ? "Only one earlier load for this carrier and waste code" : "Earlier loads for this carrier and waste code went different ways");
