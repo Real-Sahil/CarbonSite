@@ -29,6 +29,9 @@ const OCR_FILES = [
   "./node_modules/.pnpm/zlibjs@*/node_modules/zlibjs/**/*",
   "./node_modules/.pnpm/@tesseract.js-data+eng@*/node_modules/@tesseract.js-data/eng/4.0.0_best_int/**/*",
   "./node_modules/.pnpm/@tesseract.js-data+eng@*/node_modules/@tesseract.js-data/eng/package.json",
+  // A scanned PDF is rendered to page images first (pdf-parse getScreenshot), which needs the native canvas.
+  "./node_modules/.pnpm/@napi-rs+canvas@*/node_modules/@napi-rs/canvas/**/*",
+  "./node_modules/.pnpm/@napi-rs+canvas-linux-x64-gnu@*/node_modules/@napi-rs/canvas-linux-x64-gnu/**/*",
 ];
 
 const nextConfig: NextConfig = {
@@ -55,11 +58,18 @@ const nextConfig: NextConfig = {
     "/api/orgs/*/evidence/bill": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
     "/api/orgs/*/bill-inbox/*": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
     "/api/orgs/*/imports/**/*": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
+    "/api/orgs/*/waste/documents/*/read": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
+    "/api/public/submit/*": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
+    "/api/orgs/*/sv/activities/*/extract": ["./node_modules/**/@tesseract.js-data/eng/4.0.0/**"],
   },
   outputFileTracingIncludes: {
     "/api/orgs/*/evidence/bill": OCR_FILES,
     "/api/orgs/*/bill-inbox/*": OCR_FILES,
     "/api/orgs/*/imports/**/*": OCR_FILES,
+    // Transfer notes are read on arrival (upload route) and on the Read button.
+    "/api/orgs/*/waste/documents/*/read": OCR_FILES,
+    "/api/public/submit/*": OCR_FILES,
+    "/api/orgs/*/sv/activities/*/extract": OCR_FILES,
   },
   serverExternalPackages: ["@sparticuz/chromium-min", "puppeteer-core", "puppeteer", "pdfkit", "sharp", "pdf-parse", "tesseract.js"],
   webpack: (config, { isServer }) => {

@@ -34,6 +34,19 @@ async function pdfParse(buffer: Buffer): Promise<{ text: string }> {
   }
 }
 
+/** The first pages of a PDF as PNG images, for a scan that has no text layer. Two pages: a transfer note or bill is one or two. */
+async function pdfPageImages(buffer: Buffer, pages = 2): Promise<Buffer[]> {
+  const require = createRequire(import.meta.url);
+  const { PDFParse } = require("pdf-parse") as { PDFParse: new (opts: { data: Buffer }) => { getScreenshot(p: object): Promise<{ pages: { data?: Uint8Array }[] }>; destroy(): Promise<void> } };
+  const parser = new PDFParse({ data: buffer });
+  try {
+    const shots = await parser.getScreenshot({ partial: Array.from({ length: pages }, (_, i) => i + 1), scale: 2, imageBuffer: true });
+    return shots.pages.flatMap((p) => (p.data ? [Buffer.from(p.data)] : []));
+  } finally {
+    await parser.destroy();
+  }
+}
+
 // Lazy import so Tesseract's WASM is only loaded when actually needed. The
 // English data ships with the app (@tesseract.js-data/eng, best_int, 2.9 MB)
 // instead of being fetched from a CDN at run time, and worker errors are
@@ -110,7 +123,14 @@ export async function documentText(buffer: Buffer, mimeType: string): Promise<{ 
       throw new DocumentReadError("UNREADABLE", "This PDF could not be opened (it may be password protected). Upload a photo or screenshot of the bill instead.");
     }
     if (text.trim().length > 40) return { text, method: "pdf-text" };
-    throw new DocumentReadError("SCANNED_PDF", "This PDF is a scan with no text in it. Upload a photo or screenshot of the page instead, and it will be read with text recognition.");
+    // A scan has no text layer: render its first pages to images and read those. Tesseract reads images, never PDF bytes.
+    const scanned = await within(OCR_BUDGET_MS, (async () => {
+      const out: string[] = [];
+      for (const page of await pdfPageImages(buffer).catch(() => [])) out.push(await ocrText(page));
+      return out.join("\n");
+    })(), () => new DocumentReadError("READ_TIMEOUT", "Reading this scan took too long. Try a photo of the page instead."));
+    if (scanned.trim().length > 40) return { text: scanned, method: "ocr" };
+    throw new DocumentReadError("SCANNED_PDF", "This PDF is a scan and its text could not be read. Upload a clearer photo of the page instead.");
   }
   const text = await within(OCR_BUDGET_MS, ocrText(buffer), () => new DocumentReadError("READ_TIMEOUT", "Reading this photo took too long. Try a sharper, cropped photo of the bill."));
   return { text, method: "ocr" };

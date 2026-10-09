@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+export const maxDuration = 300; // the background read runs inside this lifetime; same as the Read button's route
 
 import { after, NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
@@ -104,7 +104,16 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     }
     // Read transfer notes after the response, so the carrier is not kept waiting and the reviewer finds them
     // already read and checked. Best effort: a note that cannot be read just waits for the Read button.
-    if (toRead.length > 0) after(async () => { for (const t of toRead) await readWasteDocument(t.orgId, t.id).catch(() => null); });
+    if (toRead.length > 0) {
+      after(async () => {
+        const started = Date.now();
+        // A photo can take a minute: stop starting new reads near the end of the function's life; the rest wait for the Read button.
+        for (const t of toRead) {
+          if (Date.now() - started > 200_000) break;
+          await readWasteDocument(t.orgId, t.id).catch(() => null);
+        }
+      });
+    }
     return NextResponse.json({ ok: accepted.length > 0, accepted: accepted.length, skipped }, { status: accepted.length > 0 ? 201 : 422 });
   } catch (err) {
     return handleRouteError(err);
