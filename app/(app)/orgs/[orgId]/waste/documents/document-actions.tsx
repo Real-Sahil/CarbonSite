@@ -71,7 +71,11 @@ type RegisterCheck =
   | { status: "not_checked"; reason: string }
   | { status: "not_found" | "unavailable"; registration: string; checkedAt: string }
   | { status: "registered" | "expired"; registration: string; holder: string | null; tier: string | null; expiryDate: string | null; checkedAt: string; company?: { number: string; status: string | null; flags: { level: "red" | "amber"; text: string }[] } };
-type Found = { registerCheck?: RegisterCheck; reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
+type PermitCheck =
+  | { status: "not_checked"; reason: string }
+  | { status: "not_found" | "unavailable"; reference: string; checkedAt: string }
+  | { status: "effective" | "not_effective"; reference: string; holder: string | null; site: string | null; siteType: string | null; registerStatus: string | null; codes: string[]; expiryDate: string | null; checkedAt: string };
+type Found = { registerCheck?: RegisterCheck; permitCheck?: PermitCheck; reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
 const LABELS: [keyof Found, string][] = [["reference", "Reference"], ["carrier", "Carrier"], ["carrierRegistration", "Carrier licence"], ["permit", "Permit"], ["ewc", "EWC code"], ["tonnes", "Tonnes"], ["date", "Date"], ["vehicle", "Vehicle"], ["expiry", "Expires"]];
 
 export function DocumentActions({ orgId, id, kind, status, extracted, recorded, prefill, facilities, periods }: { orgId: string; id: string; kind: string; status: string; extracted: Found | null; recorded: boolean; prefill: React.ComponentProps<typeof AcceptAsRecord>["prefill"]; facilities: { id: string; name: string }[]; periods: { id: string; label: string }[] }) {
@@ -98,6 +102,16 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
     if (res?.ok) setCheck(d.result);
     else setNote(d?.message ?? "Could not check the register.");
   }
+  const [permit, setPermit] = useState<PermitCheck | null>(extracted?.permitCheck ?? null);
+  async function checkPermit() {
+    setBusy(true);
+    setNote(null);
+    const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}/check-permit`, { method: "POST" }).catch(() => null);
+    const d = await res?.json().catch(() => null);
+    setBusy(false);
+    if (res?.ok) setPermit(d.result);
+    else setNote(d?.message ?? "Could not check the register.");
+  }
   async function apply() {
     const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ apply: true }) });
     const d = await res.json().catch(() => null);
@@ -113,6 +127,7 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
     <div className="flex gap-3">
       <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void read()}>{busy ? "Reading…" : found ? "Read again" : "Read file"}</button>
       {(kind === "carrier_licence" || kind === "transfer_note") && <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void checkRegister()}>Check carrier register</button>}
+      {(kind === "site_permit" || kind === "exemption") && <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void checkPermit()}>Check permit register</button>}
       {kind === "transfer_note" && !recorded && facilities.length > 0 && periods.length > 0 && <AcceptAsRecord orgId={orgId} docId={id} prefill={{ ...prefill, carrierRegistration: extracted?.carrierRegistration, ewc: extracted?.ewc, tonnes: extracted?.tonnes, date: extracted?.date, vehicle: extracted?.vehicle }} facilities={facilities} periods={periods} />}
       {kind === "transfer_note" && recorded && <span className="text-green-700">Recorded as waste</span>}
       {status === "pending" && (
@@ -149,6 +164,19 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
         {(check.status === "registered" || check.status === "expired") && (
           <p>
             <span className={`font-medium ${check.status === "registered" ? "text-green-700" : "text-red-700"}`}>{check.status === "registered" ? "On the register" : "Registration expired"}</span>: {check.registration}, {check.holder ?? "holder not shown"}{check.tier ? `, ${check.tier} tier` : ""}{check.expiryDate ? `, expires ${check.expiryDate}` : ""}. Checked {check.checkedAt.slice(0, 10)}. Compare the holder with the carrier named on the document.{check.company && <> Companies House {check.company.number}: <span className={check.company.status === "active" ? "text-green-700" : "font-medium text-red-700"}>{(check.company.status ?? "status not shown").replace(/-/g, " ")}</span>{check.company.flags.length > 0 && `. ${check.company.flags.map((f) => f.text).join("; ")}`}.</>}
+          </p>
+        )}
+        <p className="mt-1 text-gray-500">Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.</p>
+      </div>
+    )}
+    {permit && (
+      <div className="rounded-md border border-gray-200 p-2 text-[11px] text-gray-700">
+        {permit.status === "not_checked" && <p>{permit.reason} Check it by hand on the regulator&apos;s own register.</p>}
+        {permit.status === "unavailable" && <p>The register did not answer. That does not mean there is no permit. Try again.</p>}
+        {permit.status === "not_found" && <p><span className="font-medium text-amber-800">Not found</span> on the England register: {permit.reference}. Check the number, or the permit may be held elsewhere or have lapsed.</p>}
+        {(permit.status === "effective" || permit.status === "not_effective") && (
+          <p>
+            <span className={`font-medium ${permit.status === "effective" ? "text-green-700" : "text-red-700"}`}>{permit.status === "effective" ? "In force" : "Not in force"}</span>: {permit.reference}, {permit.holder ?? "holder not shown"}{permit.site ? `, ${permit.site}` : ""}{permit.siteType ? ` (${permit.siteType})` : ""}{permit.registerStatus ? `, register status ${permit.registerStatus}` : ""}{permit.codes.length > 0 ? `, exemptions ${permit.codes.join(", ")}` : ""}{permit.expiryDate ? `, expires ${permit.expiryDate}` : ""}. Checked {permit.checkedAt.slice(0, 10)}. The register does not list which waste codes this covers: check the site may take this waste.
           </p>
         )}
         <p className="mt-1 text-gray-500">Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.</p>

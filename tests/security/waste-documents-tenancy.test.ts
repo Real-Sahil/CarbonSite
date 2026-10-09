@@ -106,3 +106,22 @@ describe("carrier register check", () => {
     expect(((db.prisma.wasteDocument as Record<string, unknown>).findFirst as ReturnType<typeof vi.fn>).mock.calls[0][0].where).toEqual({ id: "doc-of-org-b", organizationId: "org-a" });
   });
 });
+
+describe("permit register check", () => {
+  it("only reads documents inside the organisation, and only permits and exemptions", async () => {
+    vi.resetModules();
+    vi.doMock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));
+    const look = vi.fn().mockResolvedValue({ status: "not_checked", reason: "x" });
+    vi.doMock("@/lib/waste/permit-register", async (orig) => ({ ...(await orig<typeof import("@/lib/waste/permit-register")>()), lookupPermit: look }));
+    const { POST: CHECK } = await import("@/app/api/orgs/[orgId]/waste/documents/[id]/check-permit/route");
+    const find = vi.fn().mockResolvedValue(null);
+    (db.prisma.wasteDocument as Record<string, unknown>).findFirst = find;
+    const other = await CHECK(new NextRequest("http://x/api", { method: "POST" }), { params: Promise.resolve({ orgId: "org-a", id: "doc-of-org-b" }) });
+    expect(other.status).toBe(404);
+    expect(find.mock.calls[0][0].where).toEqual({ id: "doc-of-org-b", organizationId: "org-a" });
+    find.mockResolvedValue({ id: "d1", kind: "transfer_note", reference: "WTN1", extracted: null });
+    const wrongKind = await CHECK(new NextRequest("http://x/api", { method: "POST" }), { params: Promise.resolve({ orgId: "org-a", id: "d1" }) });
+    expect(wrongKind.status).toBe(422);
+    expect(look).not.toHaveBeenCalled();
+  });
+});
