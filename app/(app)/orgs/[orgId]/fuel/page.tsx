@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { selectedProjectScope } from "@/lib/project/scope";
 import { prisma } from "@/lib/db";
 import { loadFuel } from "@/lib/fuel/load";
 import { monthRange } from "@/lib/fuel/schemas";
@@ -39,9 +40,10 @@ export default async function FuelPage({ params, searchParams }: Props) {
   }
   const canEdit = PLANT_EDITORS.includes(role);
   const { month, from, to } = monthRange(sp.month);
-  const sites = await prisma.site.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" } });
+  const scope = await selectedProjectScope(orgId);
+  const sites = await prisma.site.findMany({ where: { organizationId: orgId, ...(scope ? { id: { in: scope.siteIds } } : {}) }, select: { id: true, name: true }, orderBy: { name: "asc" } });
   const siteId = sites.some((s) => s.id === sp.siteId) ? sp.siteId! : null;
-  const { stores, machines, sites: siteRows, entries, assets } = await loadFuel(orgId, from, to, siteId);
+  const { stores, machines, sites: siteRows, entries, assets } = await loadFuel(orgId, from, to, siteId, scope?.siteIds ?? null);
   const storeName = new Map(stores.map((s) => [s.store.id, s.store.name]));
   const qs = (m: string) => `?month=${m}${siteId ? `&siteId=${siteId}` : ""}`;
   const totalIn = stores.reduce((t, s) => t + s.litresIn, 0);
@@ -51,6 +53,11 @@ export default async function FuelPage({ params, searchParams }: Props) {
 
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-[42px]">
+      {scope && (
+        <p className="rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+          Showing <span className="font-medium">{scope.project.name}</span> only{scope.siteIds.length === 0 ? ", which has no sites yet. Add a site to the project to see its fuel, machines and loads here" : ""}. Choose All projects in the sidebar to see everything.
+        </p>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Fuel</h1>

@@ -382,6 +382,15 @@ export async function processNotification(data: NotificationJobData): Promise<vo
       });
     })
 
+    .with({ type: "waste_document_expiry" }, async (d) => {
+      const stage = d.metadata?.stage === "expired" ? "has expired" : "expires soon";
+      await sendPushToUser(d.recipientUserId, {
+        title: `Waste document ${stage}`,
+        body: `${(d.metadata?.title as string) ?? "A licence or permit"} ${d.metadata?.stage === "expired" ? "expired on" : "expires on"} ${(d.metadata?.validUntil as string) ?? "its end date"}.`,
+        data: { type: "waste_document_expiry", orgId: d.orgId },
+      });
+    })
+
     .with({ type: "payment_failed" }, async (d) => {
       await sendPushToUser(d.recipientUserId, {
         title: "MetricOra payment failed",

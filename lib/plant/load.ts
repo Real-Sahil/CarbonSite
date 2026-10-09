@@ -1,3 +1,4 @@
+import { siteScope } from "@/lib/project/scope";
 import { prisma } from "@/lib/db";
 import { convertBetween, CUBIC_METRE_UNITS } from "@/lib/calculation/units";
 
@@ -46,15 +47,16 @@ export async function recordedFuelBySite(orgId: string, siteIds: string[], from:
   return recordedBySite;
 }
 
-export async function loadPlant(orgId: string, from: Date, to: Date) {
+export async function loadPlant(orgId: string, from: Date, to: Date, projectSiteIds?: string[] | null) {
+  const scope = siteScope(null, projectSiteIds);
   const [assets, readings, factors] = await Promise.all([
     prisma.plantAsset.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, ...scope },
       include: { site: { select: { id: true, name: true } } },
       orderBy: [{ active: "desc" }, { name: "asc" }],
     }),
     prisma.plantTelematicsReading.findMany({
-      where: { organizationId: orgId, periodEnd: { gt: from, lte: to } },
+      where: { organizationId: orgId, periodEnd: { gt: from, lte: to }, ...(Object.keys(scope).length ? { asset: scope } : {}) },
       select: { assetId: true, operatingHours: true, idleHours: true, fuelLitres: true, idleFuelLitres: true },
     }),
     plantFactors(to),

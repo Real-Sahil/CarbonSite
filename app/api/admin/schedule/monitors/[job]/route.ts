@@ -15,6 +15,7 @@ import {
 import { processCarbonBudgetAlerts } from "@/lib/project-carbon/burndown-alerts";
 import { runTenderWatches } from "@/lib/tenders/watch";
 import { processManagementSystemReminders } from "@/lib/management-systems/reminders";
+import { processWasteDocumentReminders } from "@/lib/waste/reminders";
 import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,11 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   },
   // The 3rd of each month: editors told what is outstanding for the month just ended
   // (migration 20261005000076); one notification per person per month.
+  // Mondays: licences and permits ending soon or just lapsed (migration 20261008000088).
+  "waste-documents": async () => {
+    await processWasteDocumentReminders();
+    return "processed";
+  },
   "monthly-checklist": async () => {
     await processMonthlyChecklistReminders();
     return "processed";

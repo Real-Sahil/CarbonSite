@@ -33,3 +33,20 @@ export function documentState(kind: string, validUntil: Date | null, now = new D
   const days = Math.floor((validUntil.getTime() - now.getTime()) / 86_400_000);
   return days < 0 ? "expired" : days <= 30 ? "expiring" : "ok";
 }
+
+export type ReminderStage = "30" | "7" | "expired";
+
+/**
+ * Which reminder a licence, permit or exemption needs today, or null: "30" from 30 days out,
+ * "7" from 7 days out, "expired" for up to 30 days after the end date (older ones were already
+ * flagged on the page and are not chased again). A transfer note never lapses.
+ */
+export function reminderStage(kind: string, validUntil: Date | null, now = new Date()): ReminderStage | null {
+  if (kind === "transfer_note" || !validUntil) return null;
+  const days = Math.floor((validUntil.getTime() - now.getTime()) / 86_400_000);
+  if (days < -30) return null;
+  if (days < 0) return "expired";
+  if (days <= 7) return "7";
+  if (days <= 30) return "30";
+  return null;
+}

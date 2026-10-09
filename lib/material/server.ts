@@ -1,3 +1,4 @@
+import { siteScope } from "@/lib/project/scope";
 import { prisma } from "@/lib/db";
 import { apiError } from "@/lib/validation/api";
 import { PLANT_EDITORS } from "@/lib/plant/roles";
@@ -19,17 +20,18 @@ export function classificationFacts(c: { status: string; materialKind: string; e
   return { status: c.status, materialKind: c.materialKind, ewcCode: c.ewcCode, hazardous: c.hazardous, labReference: c.labReference, evidenceCount: c.evidenceFileIds.length, classifiedBy: c.classifiedBy, classifiedOn: c.classifiedOn };
 }
 
-export async function loadMaterial(orgId: string, filters: { siteId?: string | null; status?: string | null } = {}) {
+export async function loadMaterial(orgId: string, filters: { siteId?: string | null; siteIds?: string[] | null; status?: string | null } = {}) {
+  const scope = siteScope(filters.siteId, filters.siteIds);
   const [classifications, movements, profiles, sites] = await Promise.all([
-    prisma.materialClassification.findMany({ where: { organizationId: orgId, ...(filters.siteId ? { siteId: filters.siteId } : {}) }, orderBy: [{ status: "asc" }, { createdAt: "desc" }] }),
+    prisma.materialClassification.findMany({ where: { organizationId: orgId, ...scope }, orderBy: [{ status: "asc" }, { createdAt: "desc" }] }),
     prisma.materialMovement.findMany({
-      where: { organizationId: orgId, ...(filters.siteId ? { siteId: filters.siteId } : {}), ...(filters.status ? { status: filters.status } : {}) },
+      where: { organizationId: orgId, ...scope, ...(filters.status ? { status: filters.status } : {}) },
       include: { classification: true },
       orderBy: [{ plannedOn: "desc" }, { createdAt: "desc" }],
       take: 300,
     }),
     prisma.supplierProfile.findMany({ where: { organizationId: orgId, wasteCarrierRegistration: { not: null } }, select: { wasteCarrierRegistration: true, wasteCarrierExpiresAt: true, supplierName: true } }),
-    prisma.site.findMany({ where: { organizationId: orgId }, select: { id: true, name: true } }),
+    prisma.site.findMany({ where: { organizationId: orgId, ...(filters.siteIds ? { id: { in: filters.siteIds } } : {}) }, select: { id: true, name: true } }),
   ]);
   const known: KnownCarrier[] = profiles.map((p) => ({ registration: p.wasteCarrierRegistration!, expiresAt: p.wasteCarrierExpiresAt, name: p.supplierName }));
   const siteName = new Map(sites.map((s) => [s.id, s.name]));

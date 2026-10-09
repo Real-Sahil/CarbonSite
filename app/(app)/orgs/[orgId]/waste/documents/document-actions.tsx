@@ -6,6 +6,7 @@ import { FormActions, FormError, FormField, FormSection } from "@/components/for
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DOC_KINDS } from "@/lib/waste/documents";
+import { AcceptAsRecord } from "./accept-record";
 
 export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: string; projects: { id: string; name: string }[]; defaultProjectId: string | null }) {
   const router = useRouter();
@@ -65,7 +66,7 @@ type RegisterCheck =
 type Found = { registerCheck?: RegisterCheck; reference?: string; carrier?: string; carrierRegistration?: string; permit?: string; ewc?: string; tonnes?: number; date?: string; vehicle?: string; expiry?: string; found: number };
 const LABELS: [keyof Found, string][] = [["reference", "Reference"], ["carrier", "Carrier"], ["carrierRegistration", "Carrier licence"], ["permit", "Permit"], ["ewc", "EWC code"], ["tonnes", "Tonnes"], ["date", "Date"], ["vehicle", "Vehicle"], ["expiry", "Expires"]];
 
-export function DocumentActions({ orgId, id, kind, status, extracted }: { orgId: string; id: string; kind: string; status: string; extracted: Found | null }) {
+export function DocumentActions({ orgId, id, kind, status, extracted, recorded, prefill, facilities, periods }: { orgId: string; id: string; kind: string; status: string; extracted: Found | null; recorded: boolean; prefill: React.ComponentProps<typeof AcceptAsRecord>["prefill"]; facilities: { id: string; name: string }[]; periods: { id: string; label: string }[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [found, setFound] = useState<Found | null>(extracted);
@@ -76,7 +77,7 @@ export function DocumentActions({ orgId, id, kind, status, extracted }: { orgId:
     const res = await fetch(`/api/orgs/${orgId}/waste/documents/${id}/read`, { method: "POST" }).catch(() => null);
     const d = await res?.json().catch(() => null);
     setBusy(false);
-    if (res?.ok) setFound(d.reading);
+    if (res?.ok) { setFound(d.reading); if (d.reading.registerCheck) setCheck(d.reading.registerCheck); }
     else setNote(d?.message ?? "Could not read that file.");
   }
   const [check, setCheck] = useState<RegisterCheck | null>(extracted?.registerCheck ?? null);
@@ -104,6 +105,8 @@ export function DocumentActions({ orgId, id, kind, status, extracted }: { orgId:
     <div className="flex gap-3">
       <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void read()}>{busy ? "Reading…" : found ? "Read again" : "Read file"}</button>
       {(kind === "carrier_licence" || kind === "transfer_note") && <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void checkRegister()}>Check carrier register</button>}
+      {kind === "transfer_note" && !recorded && facilities.length > 0 && periods.length > 0 && <AcceptAsRecord orgId={orgId} docId={id} prefill={{ ...prefill, carrierRegistration: extracted?.carrierRegistration, ewc: extracted?.ewc, tonnes: extracted?.tonnes, date: extracted?.date, vehicle: extracted?.vehicle }} facilities={facilities} periods={periods} />}
+      {kind === "transfer_note" && recorded && <span className="text-green-700">Recorded as waste</span>}
       {status === "pending" && (
         <>
           <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => void call("PATCH", { status: "accepted" })}>Accept</button>

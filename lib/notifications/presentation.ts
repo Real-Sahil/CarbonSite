@@ -169,6 +169,16 @@ export function notificationPresentation(data: NotificationJobData): Notificatio
         link: `${orgBase}/settings/billing`,
       };
     }
+    case "waste_document_expiry": {
+      const expired = data.metadata?.stage === "expired";
+      const title = str(data.metadata?.title, "A licence or permit");
+      const on = str(data.metadata?.validUntil, "");
+      return {
+        title: `${title} ${expired ? "has expired" : "expires soon"}`,
+        body: expired ? `${title} expired on ${on}. Ask the carrier or site for the renewed document and upload it.` : `${title} expires on ${on}. Ask for the renewed document in good time.`,
+        link: `${orgBase}/waste/documents`,
+      };
+    }
     case "monthly_checklist": {
       const count = num(data.metadata?.count, 0);
       const label = str(data.metadata?.monthLabel, "last month");

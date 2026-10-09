@@ -46,3 +46,13 @@ describe("wastePlanSchema", () => {
     expect(wastePlanSchema.safeParse({ lines: [{ wasteType: "x", forecastTonnes: 1, plannedRoute: "burn" }] }).success).toBe(false);
   });
 });
+
+import { siteScope } from "@/lib/project/scope";
+describe("siteScope", () => {
+  it("prefers a chosen site, then the project's sites, else no restriction", () => {
+    expect(siteScope("s1", ["s1", "s2"])).toEqual({ siteId: "s1" });
+    expect(siteScope(null, ["s1", "s2"])).toEqual({ siteId: { in: ["s1", "s2"] } });
+    expect(siteScope(null, [])).toEqual({ siteId: { in: [] } });
+    expect(siteScope(null, null)).toEqual({});
+  });
+});

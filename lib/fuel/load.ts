@@ -1,3 +1,4 @@
+import { siteScope } from "@/lib/project/scope";
 import { prisma } from "@/lib/db";
 import { recordedFuelBySite } from "@/lib/plant/load";
 import { summariseMachines, summariseSites, summariseStores } from "./rollup";
@@ -5,9 +6,10 @@ import { summariseMachines, summariseSites, summariseStores } from "./rollup";
 const num = (d: { toString(): string }) => Number(d);
 
 /** One month of fuel for an organisation, optionally narrowed to a site. Every read is inside the organisation. */
-export async function loadFuel(orgId: string, from: Date, to: Date, siteId?: string | null) {
+export async function loadFuel(orgId: string, from: Date, to: Date, siteId?: string | null, projectSiteIds?: string[] | null) {
+  const scope = siteScope(siteId, projectSiteIds);
   const storeRows = await prisma.fuelStore.findMany({
-    where: { organizationId: orgId, ...(siteId ? { siteId } : {}) },
+    where: { organizationId: orgId, ...scope },
     orderBy: [{ active: "desc" }, { name: "asc" }],
   });
   const storeIds = storeRows.map((s) => s.id);
@@ -20,9 +22,9 @@ export async function loadFuel(orgId: string, from: Date, to: Date, siteId?: str
     prisma.fuelDelivery.findMany({ where: { ...inScope, deliveredOn: { gte: back, lt: to } }, orderBy: { deliveredOn: "desc" } }),
     prisma.fuelIssue.findMany({ where: { ...inScope, issuedOn: { gte: back, lt: to } }, orderBy: { issuedOn: "desc" } }),
     prisma.fuelDip.findMany({ where: { ...inScope, dippedOn: { gte: back, lt: to } }, orderBy: { dippedOn: "desc" } }),
-    prisma.plantAsset.findMany({ where: { organizationId: orgId, ...(siteId ? { siteId } : {}) }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    prisma.plantAsset.findMany({ where: { organizationId: orgId, ...scope }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
     prisma.plantTelematicsReading.findMany({
-      where: { organizationId: orgId, periodEnd: { gt: from, lte: to }, ...(siteId ? { asset: { siteId } } : {}) },
+      where: { organizationId: orgId, periodEnd: { gt: from, lte: to }, ...(Object.keys(scope).length ? { asset: scope } : {}) },
       select: { assetId: true, operatingHours: true, idleHours: true, fuelLitres: true },
     }),
     recordedFuelBySite(orgId, siteIds, new Date(from.getTime() - 1), new Date(to.getTime() - 1)),

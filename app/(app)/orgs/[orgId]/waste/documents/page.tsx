@@ -33,13 +33,15 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
   const status = sp.status && ["pending", "accepted", "rejected"].includes(sp.status) ? sp.status : null;
   const project = await getSelectedProject(orgId);
 
-  const [docs, projects] = await Promise.all([
+  const [docs, projects, facilities, periods] = await Promise.all([
     prisma.wasteDocument.findMany({
       where: { organizationId: orgId, ...(kind ? { kind } : {}), ...(status ? { status } : {}), ...(project ? { projectId: project.id } : {}) },
       orderBy: { createdAt: "desc" },
       take: 300,
     }),
     prisma.project.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
+    prisma.facility.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" }, take: 500 }),
+    prisma.reportingPeriod.findMany({ where: { organizationId: orgId }, select: { id: true, label: true }, orderBy: { startDate: "desc" }, take: 100 }),
   ]);
   const projectName = new Map(projects.map((p) => [p.id, p.name]));
   const pending = docs.filter((d) => d.status === "pending").length;
@@ -106,7 +108,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                     </td>
                     <td className="px-4 py-3 text-gray-600">{d.uploaderName ? `${d.uploaderName}${d.uploaderCompany ? `, ${d.uploaderCompany}` : ""}` : "Our team"}</td>
                     <td className="px-4 py-3 capitalize text-gray-600">{d.status}</td>
-                    <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} kind={d.kind} status={d.status} extracted={(d.extracted as never) ?? null} />}</td>
+                    <td className="px-4 py-3">{canEdit && <DocumentActions orgId={orgId} id={d.id} kind={d.kind} status={d.status} extracted={(d.extracted as never) ?? null} recorded={!!d.wasteRecordId} prefill={{ reference: d.reference, issuer: d.issuer, projectId: d.projectId }} facilities={facilities} periods={periods} />}</td>
                   </tr>
                 );
               })}

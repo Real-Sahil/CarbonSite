@@ -33,3 +33,18 @@ describe("documentState", () => {
     expect(documentState("exemption", null, now)).toBe("no_date");
   });
 });
+
+import { reminderStage } from "../documents";
+describe("reminderStage", () => {
+  const now = new Date("2026-10-08T00:00:00Z");
+  const d = (days: number) => new Date(now.getTime() + days * 86_400_000);
+  it("chases a lapsing licence at 30 days, 7 days and once expired, and never a transfer note", () => {
+    expect(reminderStage("carrier_licence", d(25), now)).toBe("30");
+    expect(reminderStage("carrier_licence", d(5), now)).toBe("7");
+    expect(reminderStage("site_permit", d(-3), now)).toBe("expired");
+    expect(reminderStage("site_permit", d(-60), now)).toBeNull();
+    expect(reminderStage("carrier_licence", d(90), now)).toBeNull();
+    expect(reminderStage("transfer_note", d(5), now)).toBeNull();
+    expect(reminderStage("exemption", null, now)).toBeNull();
+  });
+});

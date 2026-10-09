@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { selectedProjectScope } from "@/lib/project/scope";
 import { prisma } from "@/lib/db";
 import { formatEwc, normaliseEwc } from "@/lib/waste/duty-of-care";
 import { MATERIAL_KIND_LABELS, MATERIAL_KINDS } from "@/lib/material/schemas";
@@ -39,9 +40,10 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
   const canEdit = MATERIAL_EDITORS.includes(role);
   const status = STATUSES.find((s) => s === sp.status) ?? null;
   const facilities = await prisma.facility.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" } });
-  const siteOk = sp.siteId ? await prisma.site.findFirst({ where: { id: sp.siteId, organizationId: orgId }, select: { id: true } }) : null;
+  const scope = await selectedProjectScope(orgId);
+  const siteOk = sp.siteId ? await prisma.site.findFirst({ where: { organizationId: orgId, AND: [{ id: sp.siteId }, ...(scope ? [{ id: { in: scope.siteIds } }] : [])] }, select: { id: true } }) : null;
   const siteId = siteOk?.id ?? null;
-  const { sites, classifications, movements } = await loadMaterial(orgId, { siteId, status });
+  const { sites, classifications, movements } = await loadMaterial(orgId, { siteId, siteIds: scope?.siteIds ?? null, status });
 
   const open = movements.filter((m) => m.status === "planned" || m.status === "dispatched");
   const received = movements.filter((m) => m.status === "received");
@@ -58,6 +60,11 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
 
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-[42px]">
+      {scope && (
+        <p className="rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+          Showing <span className="font-medium">{scope.project.name}</span> only{scope.siteIds.length === 0 ? ", which has no sites yet. Add a site to the project to see its fuel, machines and loads here" : ""}. Choose All projects in the sidebar to see everything.
+        </p>
+      )}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Material movements</h1>
         <p className="mt-2 max-w-[70ch] text-sm text-[#374151]">

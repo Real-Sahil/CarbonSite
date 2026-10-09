@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { selectedProjectScope } from "@/lib/project/scope";
 import { prisma } from "@/lib/db";
 import { loadPlant } from "@/lib/plant/load";
 import { PLANT_EDITORS } from "@/lib/plant/roles";
@@ -36,15 +37,21 @@ export default async function PlantPage({ params, searchParams }: Props) {
   const days = WINDOWS.includes(Number(daysParam)) ? Number(daysParam) : 30;
   const to = new Date();
   const from = new Date(to.getTime() - days * 86_400_000);
+  const scope = await selectedProjectScope(orgId);
   const [plant, sites] = await Promise.all([
-    loadPlant(orgId, from, to),
-    prisma.site.findMany({ where: { organizationId: orgId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    loadPlant(orgId, from, to, scope?.siteIds ?? null),
+    prisma.site.findMany({ where: { organizationId: orgId, ...(scope ? { id: { in: scope.siteIds } } : {}) }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
   const { totals, assets, reconciliation, factors } = plant;
   const hasReadings = totals.hours > 0 || totals.fuelLitres > 0;
 
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-[42px]">
+      {scope && (
+        <p className="rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+          Showing <span className="font-medium">{scope.project.name}</span> only{scope.siteIds.length === 0 ? ", which has no sites yet. Add a site to the project to see its fuel, machines and loads here" : ""}. Choose All projects in the sidebar to see everything.
+        </p>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Plant</h1>

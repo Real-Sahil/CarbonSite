@@ -20,6 +20,7 @@ export const PALETTE_ITEMS: readonly PaletteItem[] = [
   // Things people want to do, in their own words.
   { label: "Add a bill or receipt", path: "records", keywords: "upload invoice electricity gas fuel pdf photo read", roles: EDITORS, task: { blurb: "Upload a PDF or photo. We read it and you check it.", home: true } },
   { label: "Write a site waste management plan", path: "waste/plan", keywords: "swmp site waste plan forecast target diversion project breeam", roles: LINKERS, task: { blurb: "Forecast waste, set a diversion target and track against it.", home: true } },
+  { label: "Make a monthly waste pack for a client", path: "waste/pack", keywords: "project month report pdf client waste kpi loads licences", roles: EXTENDED, task: { blurb: "One project, one month: loads, KPIs and licences, ready to send.", home: true } },
   { label: "Log waste", path: "waste", keywords: "add waste record skip tipping tonnes disposal", roles: EXTENDED, task: { blurb: "Record what left site and where it went.", home: true } },
   { label: "Add a waste transfer note or licence", path: "waste/documents", keywords: "wtn carrier permit exemption expiry upload file", roles: LINKERS, task: { blurb: "Keep notes, licences and permits with their expiry dates.", home: true } },
   { label: "Send a subcontractor an upload link", path: "records", keywords: "invoice delivery note order no login external share link", roles: LINKERS, task: { blurb: "A link they open with no account to send you invoices.", home: true } },

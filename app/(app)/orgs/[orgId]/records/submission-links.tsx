@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 type LinkRow = {
-  id: string; label: string; purpose: string; projectName: string | null; expiresAt: string; revokedAt: string | null; lastUsedAt: string | null; uploadCount: number;
+  id: string; label: string; purpose: string; createdAt: string; projectName: string | null; expiresAt: string; revokedAt: string | null; lastUsedAt: string | null; uploadCount: number;
 };
 type Project = { id: string; name: string };
 
@@ -99,7 +99,8 @@ export function SubmissionLinks({ orgId, purpose = "bills" }: { orgId: string; p
                   <li key={l.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
                     <span className="font-medium text-[#111827]">{l.label}</span>
                     {l.projectName && <span>{l.projectName}</span>}
-                    <span>{l.uploadCount} {l.uploadCount === 1 ? "file" : "files"}</span>
+                    <span>{l.uploadCount} {l.uploadCount === 1 ? "file" : "files"}{l.lastUsedAt ? `, last on ${new Date(l.lastUsedAt).toLocaleDateString("en-GB")}` : ""}</span>
+                    {!dead && Date.now() - new Date(l.lastUsedAt ?? l.createdAt).getTime() > 30 * 86_400_000 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">Nothing received in 30 days</span>}
                     <span>{l.revokedAt ? "Withdrawn" : dead ? "Expired" : `Until ${new Date(l.expiresAt).toLocaleDateString("en-GB")}`}</span>
                     {!dead && <button type="button" onClick={() => void revoke(l.id)} className="ml-auto text-red-700 underline underline-offset-2">Withdraw</button>}
                   </li>

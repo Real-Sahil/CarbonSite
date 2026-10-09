@@ -8287,6 +8287,8 @@ model WasteDocument {
   issuer           String?
   validUntil       DateTime? @map("valid_until") @db.Date
   evidenceFileId   String    @map("evidence_file_id")
+  /// The waste record a reviewer made from this document (a transfer note), checked against the organisation in code.
+  wasteRecordId    String?   @unique @map("waste_record_id")
   /// pending | accepted | rejected
   status           String    @default("accepted")
   submissionLinkId String?   @map("submission_link_id")

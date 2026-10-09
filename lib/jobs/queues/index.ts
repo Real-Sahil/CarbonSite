@@ -30,6 +30,7 @@ export type NotificationJobData = {
     | "carbon_budget_forecast"
     | "ms_reminder"
     | "monthly_checklist"
+    | "waste_document_expiry"
     | "payment_failed";
   recipientUserId: string;
   orgId: string;
