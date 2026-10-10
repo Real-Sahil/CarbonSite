@@ -25,7 +25,8 @@
     "worker": "tsx workers/index.ts",
     "prisma": "prisma",
     "screenshots": "node scripts/appetize-screenshots.mjs",
-    "tokens": "node scripts/dev-tools/token-report.mjs"
+    "tokens": "node scripts/dev-tools/token-report.mjs",
+    "seed:demo": "tsx scripts/seed-demo-org.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
