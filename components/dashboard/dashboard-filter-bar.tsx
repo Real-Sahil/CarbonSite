@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 const FIELD =
-  "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full min-w-0 rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
 
 /**
  * Supplier, month range and scope filters for the dashboard. The URL is the
@@ -39,7 +39,7 @@ export function DashboardFilterBar({
   }
 
   const input = (key: string, label: string, props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <div className="space-y-1">
+    <div className="min-w-0 space-y-1">
       <Label htmlFor={`dashboard-filter-${key}`} className="text-xs text-[#6B7280]">{label}</Label>
       <input
         key={filters[key] ?? ""}
@@ -62,7 +62,7 @@ export function DashboardFilterBar({
         {input("supplier", "Supplier", { type: "search", placeholder: "Part of a name", maxLength: 64 })}
         {input("from", "From month", { type: "month" })}
         {input("to", "To month", { type: "month" })}
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <Label htmlFor="dashboard-filter-scope" className="text-xs text-[#6B7280]">Scope</Label>
           <select id="dashboard-filter-scope" className={FIELD} value={filters.scope ?? ""} onChange={(e) => set("scope", e.target.value)}>
             <option value="">All scopes</option>
@@ -73,9 +73,13 @@ export function DashboardFilterBar({
         </div>
         <div className="flex items-end pb-2">
           <label className="flex items-center gap-2 text-sm text-[#111827]">
+            {/* Uncontrolled and keyed on the URL value, like the text fields: the tick
+                shows at once, and the page's transition can't snap it back while it loads. */}
             <input
+              key={filters.sv ?? ""}
               type="checkbox"
-              checked={filters.sv === "1"}
+              className="h-4 w-4 cursor-pointer accent-[#c2410c]"
+              defaultChecked={filters.sv === "1"}
               onChange={(e) => set("sv", e.target.checked ? "1" : "")}
             />
             Contracts with social value commitments
