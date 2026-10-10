@@ -7,6 +7,7 @@
 #   - context7  (MCP server, current library docs on demand; MIT client, hosted index.
 #                Queries name a library and a question, never repo code.
 #                Set CONTEXT7_API_KEY (free, context7.com/dashboard) for higher limits)
+#   - squeez    (Bash-output compressor, hooks; needs npm; see the squeez block below)
 #   - graphify  (knowledge graph CLI + MCP server; rebuilds the graph of any git
 #                repo at session start and after each commit)
 # Self-contained and idempotent: safe to run again, and safe to paste into a
@@ -121,5 +122,16 @@ if command -v claude >/dev/null 2>&1 && ! claude mcp get context7 >/dev/null 2>&
     claude mcp add --scope user --transport http context7 https://mcp.context7.com/mcp >/dev/null 2>&1
   fi && log "context7 MCP server added (user scope)" || log "could not add context7 MCP server"
 fi
+
+# ── squeez: compresses Bash output before it enters the context ───────────────
+# Hook-based, Apache-2.0, no runtime dependencies, no network use at run time. It stashes the verbatim
+# original of any compressed output, so the model can fetch what was dropped (squeez_retrieve).
+# Only one Bash-output compressor should be active: do not add RTK beside it.
+# Measure before and after with `pnpm tokens`; the saving is the project's own claim until you do.
+if command -v npm >/dev/null 2>&1 && ! command -v squeez >/dev/null 2>&1 && [ ! -x "$HOME/.claude/squeez/bin/squeez" ]; then
+  npm install -g squeez >/dev/null 2>&1 || log "squeez install failed"
+fi
+SQUEEZ="$(command -v squeez || echo "$HOME/.claude/squeez/bin/squeez")"
+[ -x "$SQUEEZ" ] && { "$SQUEEZ" setup --host=claude-code >/dev/null 2>&1 && log "squeez hooks registered" || log "squeez setup failed"; }
 
 log "done. Start a new Claude Code session; ponytail installs from its marketplace on first start."
