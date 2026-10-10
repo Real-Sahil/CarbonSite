@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth/client";
 import { acquisitionFromParams, referrerSource } from "@/lib/marketing/acquisition";
 import { ArrowRight, Building2 } from "lucide-react";
 import { COUNTRIES, CURRENCIES, currencyForCountry } from "@/lib/i18n/countries";
+import { TERMS_VERSION } from "@/lib/legal/terms";
 
 type Step = "account" | "org";
 
@@ -22,6 +23,8 @@ function mapSignUpError(err: { code?: string; message?: string } | null | undefi
     case "INVALID_PASSWORD":
     case "PASSWORD_TOO_SHORT":
       return "Password must be at least 8 characters.";
+    case "TERMS_NOT_ACCEPTED":
+      return "Accept the Terms of Service and Privacy Policy to create an account.";
     case "TOO_MANY_REQUESTS":
     case "RATE_LIMIT_EXCEEDED":
       return "Too many attempts. Please wait a moment and try again.";
@@ -42,6 +45,7 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [orgName, setOrgName] = useState("");
   const [industry, setIndustry] = useState("");
   const [hqCountry, setHqCountry] = useState("");
@@ -55,6 +59,7 @@ export default function SignUpPage() {
     setError("");
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     if (password.length > 128) { setError("Password must not exceed 128 characters."); return; }
+    if (!acceptedTerms) { setError("Accept the Terms of Service and Privacy Policy to continue."); return; }
     setStep("org");
   }
 
@@ -65,7 +70,9 @@ export default function SignUpPage() {
     if (!hqCountry) { setError("Choose the country your organisation is based in."); return; }
     setLoading(true);
     try {
-      const result = await authClient.signUp.email({ name: name.trim(), email: email.trim().toLowerCase(), password });
+// The server refuses the sign-up unless these two fields are sent (lib/auth/index.ts); the client's types do not list them.
+      const terms = { acceptedTerms: true, termsVersion: TERMS_VERSION };
+      const result = await authClient.signUp.email({ name: name.trim(), email: email.trim().toLowerCase(), password, ...terms } as Parameters<typeof authClient.signUp.email>[0]);
       if (result.error) { setStep("account"); setError(mapSignUpError(result.error)); return; }
       if (result.data?.token === null) { setError("Check your email to verify your account, then sign in."); return; }
 
@@ -228,6 +235,12 @@ export default function SignUpPage() {
             <span>{error}</span>
           </div>
         )}
+        <div className="flex items-start gap-2.5">
+          <input id="acceptedTerms" type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} required disabled={loading} className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 bg-white/6 accent-amber-500" />
+          <label htmlFor="acceptedTerms" className="text-xs leading-5 text-white/70">
+            I accept the <Link href="/terms" target="_blank" className="text-amber-400 underline underline-offset-2">Terms of Service</Link> and the <Link href="/privacy" target="_blank" className="text-amber-400 underline underline-offset-2">Privacy Policy</Link>.
+          </label>
+        </div>
         <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2410c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:bg-[#9a3412] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
           Continue
           <ArrowRight className="h-4 w-4" />

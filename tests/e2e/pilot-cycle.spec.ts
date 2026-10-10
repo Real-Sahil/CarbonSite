@@ -27,6 +27,8 @@ let orgId = "";
 let periodId = "";
 let facilityId = "";
 let snapshotId = "";
+import { TERMS_VERSION } from "@/lib/legal/terms";
+
 const cat: Record<string, string> = {};
 
 // Better Auth allows a few sign-ups per address every ten seconds.
@@ -35,7 +37,7 @@ const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 async function signUp(browserCtx: BrowserContext, name: string): Promise<Actor> {
   const email = `pilot.${name}.${run}@example.test`;
   const res = await browserCtx.request.post("/api/auth/sign-up/email", {
-    data: { name, email, password: PASSWORD },
+    data: { name, email, password: PASSWORD, acceptedTerms: true, termsVersion: TERMS_VERSION },
   });
   expect(res.status(), `sign-up ${name}`).toBeLessThan(300);
   const user = await db.user.findUniqueOrThrow({ where: { email } });

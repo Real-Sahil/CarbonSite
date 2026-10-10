@@ -1,7 +1,12 @@
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db";
 import { sendTransactionalEmail } from "@/lib/notifications/email";
+import { TERMS_VERSION, termsAcceptedIn } from "@/lib/legal/terms";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("auth");
 
 const isNextBuild = process.env.NEXT_PHASE === "phase-production-build";
 // Email verification disabled until a sending domain is configured.
@@ -35,6 +40,30 @@ const roleMapping = process.env.OIDC_ROLE_MAPPING
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
+  hooks: {
+    // Refuse account creation without the Terms accepted, whatever the form shows.
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-up/email") return;
+      if (!termsAcceptedIn(ctx.body)) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Accept the Terms of Service and Privacy Policy to create an account.",
+          code: "TERMS_NOT_ACCEPTED",
+        });
+      }
+    }),
+    // Keep when and which version was accepted, on the account itself. A failure here is logged, not thrown: the
+    // account already exists and the gate above has passed.
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-up/email") return;
+      const email = String((ctx.body as Record<string, unknown> | undefined)?.email ?? "").trim().toLowerCase();
+      if (!email) return;
+      try {
+        await prisma.user.updateMany({ where: { email }, data: { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION } });
+      } catch (err) {
+        log.error("could not record terms acceptance", { error: err instanceof Error ? err.message : String(err) });
+      }
+    }),
+  },
   secret:
     process.env.BETTER_AUTH_SECRET ||
     (isNextBuild ? "metricora-build-time-secret-not-used-at-runtime" : undefined),
