@@ -24,7 +24,6 @@ import {
   Inbox,
   Layers,
   LayoutDashboard,
-  Leaf,
   LineChart,
   ListChecks,
   PieChart,
@@ -80,6 +79,7 @@ import { resolveLayout, widgetsForRole } from "@/lib/dashboard/widgets";
 import { ActiveCrossFilters, LinkedSankey, LinkedWaterfall } from "@/components/dashboard/cross-filter";
 import { buildWaterfall } from "@/lib/charts/waterfall";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
+import { KpiStatRow } from "@/components/dashboard/kpi-stat-row";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { activeFilters } from "@/lib/saved-views";
@@ -1071,67 +1071,43 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const widgetNodes: Record<string, ReactNode> = {};
   widgetNodes["tasks"] = <TaskLauncher orgId={orgId} role={role} />;
   widgetNodes["headline"] = (
-    <>
-      {/* ── Carbon footprint hero ─────────────────────────────────────────── */}
-      <section
-        aria-label="Carbon footprint summary"
-        className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4"
-      >
-        <div className="rounded-[14px] border border-[#c2410c] bg-[#c2410c] p-[21px] text-white md:col-span-2 xl:col-span-1">
-          <div className="flex items-center gap-2">
-            <Leaf aria-hidden="true" className="h-4 w-4 text-white" />
-            <p className="text-xs font-normal uppercase tracking-wide text-white">
-              Total footprint
-            </p>
-          </div>
-          <p className="mt-3 text-4xl font-normal tracking-[-0.4px]">
-            {currentFootprint > 0 ? formatKgCo2e(L, currentFootprint) : "—"}
-          </p>
-          <p className="mt-1 text-xs text-white tracking-[-0.36px]">
-            {currentFootprint > 0
-              ? `Scopes 1–3 · ${currentPeriod?.label ?? "current period"}`
-              : sliceFilter
-                ? "No calculated emissions match these filters"
-                : "Run a calculation to populate your footprint"}
-          </p>
-        </div>
-
-        <HeroStat
-          icon={periodDeltaPct !== null && periodDeltaPct <= 0 ? TrendingDown : TrendingUp}
-          label="Period change"
-          value={
-            periodDeltaPct !== null
-              ? `${periodDeltaPct > 0 ? "+" : ""}${periodDeltaPct.toFixed(1)}%`
-              : "—"
-          }
-          detail={
-            periodDeltaPct !== null
-              ? sliceFilter
-                ? "vs previous reporting period, same filters"
-                : "vs previous reporting period"
-              : scoped
-                ? "Clear the filters to compare"
-                : "Calculate a second period to compare"
-          }
-          tone={periodDeltaPct === null ? "neutral" : periodDeltaPct <= 0 ? "good" : "bad"}
+    /* Carbon footprint summary */
+    <section aria-label="Carbon footprint summary" className="mt-2 space-y-4">
+        <KpiStatRow
+          stats={[
+            {
+              label: "Total footprint",
+              value: currentFootprint > 0 ? currentFootprint : null,
+              format: (n) => formatKgCo2e(L, n),
+            },
+            {
+              label: "Period change",
+              value: periodDeltaPct,
+              format: (n) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`,
+              delta:
+                periodDeltaPct !== null
+                  ? { value: periodDeltaPct, label: sliceFilter ? "vs previous period, same filters" : "vs previous period" }
+                  : undefined,
+              goodUp: false,
+            },
+            {
+              label: "Scope coverage",
+              value: scopesWithActivity,
+              format: (n) => `${Math.round(n)}/3`,
+            },
+            ...(targetCount > 0
+              ? [
+                  {
+                    label: "Target ambition",
+                    value: targetReductionTotal,
+                    format: (n: number) => formatKgCo2e(L, n),
+                    href: `/orgs/${orgId}/targets`,
+                  },
+                ]
+              : []),
+          ]}
         />
-
-        <HeroStat
-          icon={Gauge}
-          label="Scope coverage"
-          value={`${scopesWithActivity}/3`}
-          detail={`${currentCalculatedRecords.toLocaleString(L)} calculated records`}
-        />
-
-        {targetCount > 0 ? (
-          <HeroStat
-            icon={Target}
-            label="Target ambition"
-            value={formatKgCo2e(L, targetReductionTotal)}
-            detail={`${targetCount.toLocaleString(L)} active reduction target${targetCount !== 1 ? "s" : ""}`}
-            href={`/orgs/${orgId}/targets`}
-          />
-        ) : (
+        {targetCount === 0 && (
           <Link
             href={`/orgs/${orgId}/targets`}
             className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
@@ -1153,9 +1129,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </Link>
         )}
-      </section>
-
-    </>
+    </section>
   );
   widgetNodes["live"] = (
     <>
@@ -2635,48 +2609,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       <DashboardGrid orgId={orgId} widgets={placedWidgets} isAdmin={role === "admin"} source={storedLayout.source} />
       </div>
     </div>
-  );
-}
-
-function HeroStat({
-  icon: Icon,
-  label,
-  value,
-  detail,
-  tone = "neutral",
-  href,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  detail: string;
-  tone?: "good" | "bad" | "neutral";
-  href?: string;
-}) {
-  const valueColor =
-    tone === "good" ? "text-emerald-600" : tone === "bad" ? "text-red-600" : "text-[#111827]";
-  const inner = (
-    <>
-      <div className="flex items-center gap-2">
-        <Icon aria-hidden="true" className="h-4 w-4 text-[#374151]" />
-        <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">{label}</p>
-      </div>
-      <p className={`mt-3 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
-      <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">{detail}</p>
-    </>
-  );
-  if (href) {
-    return (
-      <Link
-        href={href}
-        className="block rounded-[14px] border border-[#E5E7EB] bg-white p-[21px] transition-colors hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
-      >
-        {inner}
-      </Link>
-    );
-  }
-  return (
-    <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-[21px]">{inner}</div>
   );
 }
 
