@@ -24,7 +24,8 @@
     "check:rls-bypass": "tsx scripts/check-rls-bypass.ts",
     "worker": "tsx workers/index.ts",
     "prisma": "prisma",
-    "screenshots": "node scripts/appetize-screenshots.mjs"
+    "screenshots": "node scripts/appetize-screenshots.mjs",
+    "tokens": "node scripts/dev-tools/token-report.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
