@@ -53,6 +53,8 @@ export async function POST(req: NextRequest, { params }: Params) {
         addressLine1: data.addressLine1,
         city: data.city,
         country: data.country,
+        latitude: data.latitude,
+        longitude: data.longitude,
       },
     });
 

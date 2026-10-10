@@ -6,6 +6,8 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormActions, FormError, FormSection } from "@/components/forms/form-kit";
+import { AddressPicker } from "@/components/address/address-picker";
+import type { AddressSuggestion } from "@/lib/geo/address";
 
 export function CreateSiteForm({
   orgId,
@@ -19,6 +21,16 @@ export function CreateSiteForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  // Choosing a search result fills the address fields and gives the site its own position for the map.
+  const [search, setSearch] = useState("");
+  const [picked, setPicked] = useState<AddressSuggestion | null>(null);
+  const [fields, setFields] = useState({ addressLine1: "", city: "", postcode: "", country: "GB" });
+
+  function pick(s: AddressSuggestion) {
+    setPicked(s);
+    setSearch(s.label);
+    setFields({ addressLine1: s.addressLine, city: s.city ?? "", postcode: s.postcode ?? "", country: s.country ?? "GB" });
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,6 +44,7 @@ export function CreateSiteForm({
       addressLine1: (data.get("addressLine1") as string) || undefined,
       city: (data.get("city") as string) || undefined,
       country: (data.get("country") as string) || "GB",
+      ...(picked ? { latitude: picked.latitude, longitude: picked.longitude } : {}),
     };
     startTransition(async () => {
       const res = await fetch(
@@ -48,6 +61,9 @@ export function CreateSiteForm({
         return;
       }
       form.reset();
+      setPicked(null);
+      setSearch("");
+      setFields({ addressLine1: "", city: "", postcode: "", country: "GB" });
       router.refresh();
     });
   }
@@ -61,17 +77,20 @@ export function CreateSiteForm({
           <FormField label="Site code" htmlFor="site-code" optional>
             <Input id="site-code" name="siteCode" placeholder="SITE-001" />
           </FormField>
+          <FormField label="Find the address" htmlFor="site-search" span={3} optional hint="Choosing a result fills the fields below and places the site on the dashboard map, even without a UK postcode.">
+            <AddressPicker id="site-search" orgId={orgId} country={fields.country.length === 2 ? fields.country : null} value={search} onChange={(t) => { setSearch(t); setPicked(null); }} onSelect={pick} disabled={isPending} />
+          </FormField>
           <FormField label="Postcode" htmlFor="site-postcode" optional>
-            <Input id="site-postcode" name="postcode" placeholder="SW1A 1AA" />
+            <Input id="site-postcode" name="postcode" placeholder="SW1A 1AA" value={fields.postcode} onChange={(e) => setFields({ ...fields, postcode: e.target.value })} />
           </FormField>
           <FormField label="Address line 1" htmlFor="site-address" span={2} optional>
-            <Input id="site-address" name="addressLine1" placeholder="1 Example Street" />
+            <Input id="site-address" name="addressLine1" placeholder="1 Example Street" value={fields.addressLine1} onChange={(e) => setFields({ ...fields, addressLine1: e.target.value })} />
           </FormField>
           <FormField label="City" htmlFor="site-city" optional>
-            <Input id="site-city" name="city" placeholder="London" />
+            <Input id="site-city" name="city" placeholder="London" value={fields.city} onChange={(e) => setFields({ ...fields, city: e.target.value })} />
           </FormField>
           <FormField label="Country" htmlFor="site-country" optional>
-            <Input id="site-country" name="country" defaultValue="GB" placeholder="GB" />
+            <Input id="site-country" name="country" placeholder="GB" maxLength={2} value={fields.country} onChange={(e) => setFields({ ...fields, country: e.target.value })} />
           </FormField>
         </FormSection>
       <FormError>{error}</FormError>

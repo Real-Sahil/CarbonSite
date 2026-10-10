@@ -2555,6 +2555,9 @@ model Site {
   addressLine1   String?  @map("address_line1")
   city           String?
   country        String?  @default("GB")
+  /// Chosen from address search; wins over the postcode when the map places the site.
+  latitude       Float?
+  longitude      Float?
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 

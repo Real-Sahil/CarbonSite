@@ -25,7 +25,7 @@ export function siteTotals(facilities: FacilityRow[], aggregates: AggregateRow[]
     .sort((a, b) => b.kg - a.kg || a.name.localeCompare(b.name));
 }
 
-type ProjectSiteRow = { id: string; name: string; projectId: string; projectName: string | null; postcode: string | null; city: string | null };
+type ProjectSiteRow = { id: string; name: string; projectId: string; projectName: string | null; postcode: string | null; city: string | null; latitude?: number | null; longitude?: number | null };
 type SliceTotalRow = { siteId: string | null; totalCo2e: unknown; recordCount: number };
 
 /**
@@ -43,7 +43,8 @@ export function projectSiteTotals(sites: ProjectSiteRow[], slices: SliceTotalRow
   }
   return sites
     .map((x) => {
-      const pos = positionOf(x.postcode);
+      // A position chosen from address search wins over the postcode.
+      const pos = x.latitude != null && x.longitude != null ? { latitude: x.latitude, longitude: x.longitude } : positionOf(x.postcode);
       return { id: x.id, name: x.name, latitude: pos?.latitude ?? null, longitude: pos?.longitude ?? null, kg: totals.get(x.id)?.kg ?? 0, recordCount: totals.get(x.id)?.count ?? 0, kind: "site" as const, projectId: x.projectId, detail: [x.projectName, x.city].filter(Boolean).join(", ") || null };
     })
     .sort((a, b) => b.kg - a.kg || a.name.localeCompare(b.name));

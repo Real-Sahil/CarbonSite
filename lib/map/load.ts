@@ -67,7 +67,7 @@ async function loadSites(orgId: string, scope: SiteScope) {
       where: { organizationId: orgId, ...owner, ...FACILITY_BREAKDOWN_DIMENSIONS },
       select: { facilityId: true, totalCo2e: true, recordCount: true },
     }),
-    prisma.site.findMany({ where: { organizationId: orgId }, select: { id: true, name: true, projectId: true, postcode: true, city: true, project: { select: { name: true } } } }),
+    prisma.site.findMany({ where: { organizationId: orgId }, select: { id: true, name: true, projectId: true, postcode: true, city: true, latitude: true, longitude: true, project: { select: { name: true } } } }),
     // One slice row per scope, method, category and month, so pin the Scope 2 method to count each calculation once.
     prisma.dashboardSlice.groupBy({
       by: ["siteId"],
@@ -76,7 +76,7 @@ async function loadSites(orgId: string, scope: SiteScope) {
     }),
   ]);
   // A facility keeps the position a person chose; one with only a postcode is placed from it, as are project sites.
-  const position = await positionsFor([...facilities.filter((f) => f.latitude == null || f.longitude == null).map((f) => f.postcode), ...projectSites.map((x) => x.postcode)]);
+  const position = await positionsFor([...facilities.filter((f) => f.latitude == null || f.longitude == null).map((f) => f.postcode), ...projectSites.filter((x) => x.latitude == null || x.longitude == null).map((x) => x.postcode)]);
   const placedFacilities = facilities.map((f) => {
     if (f.latitude != null && f.longitude != null) return f;
     const p = position(f.postcode);
@@ -85,7 +85,7 @@ async function loadSites(orgId: string, scope: SiteScope) {
   return [
     ...siteTotals(placedFacilities, aggregates),
     ...projectSiteTotals(
-      projectSites.map((x) => ({ id: x.id, name: x.name, projectId: x.projectId, projectName: x.project?.name ?? null, postcode: x.postcode, city: x.city })),
+      projectSites.map((x) => ({ id: x.id, name: x.name, projectId: x.projectId, projectName: x.project?.name ?? null, postcode: x.postcode, city: x.city, latitude: x.latitude, longitude: x.longitude })),
       slices.map((r) => ({ siteId: r.siteId, totalCo2e: r._sum.totalCo2e, recordCount: r._sum.recordCount ?? 0 })),
       position,
     ),

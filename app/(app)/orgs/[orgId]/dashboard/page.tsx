@@ -726,10 +726,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     : [null, null];
   const trendAggregates = slicedTrend ?? liveTrendAggregates;
   const priorScopeAggregates = slicedPrior ?? livePriorScopeAggregates;
+  // A chosen project site is named from the organisation's own sites; an id that is not theirs gets no chip.
+  const chosenSite = selectedSiteId && /^[A-Za-z0-9_-]{1,64}$/.test(selectedSiteId)
+    ? await prisma.site.findFirst({ where: { id: selectedSiteId, organizationId: orgId }, select: { name: true } }).catch(onLoadFailure(() => null))
+    : null;
   const crossChips = [
     selectedScope && ["1", "2", "3"].includes(selectedScope) ? { key: "scope", label: `Scope ${selectedScope}` } : null,
     selectedCategoryId ? { key: "categoryId", label: sliceView?.names.categories[selectedCategoryId] ?? "Category" } : null,
     selectedFacilityId ? { key: "facilityId", label: sliceView?.names.facilities[selectedFacilityId] ?? "Site" } : null,
+    chosenSite && selectedSiteId ? { key: "siteId", label: chosenSite.name } : null,
   ].filter((c): c is { key: string; label: string } => c !== null);
   const recordsQuery = new URLSearchParams();
   if (currentPeriod) recordsQuery.set("periodId", currentPeriod.id);

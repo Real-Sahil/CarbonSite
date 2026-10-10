@@ -79,6 +79,8 @@ export const createSiteSchema = z.object({
   addressLine1: z.string().max(200).optional(),
   city: z.string().max(100).optional(),
   country: z.string().max(2).default("GB"),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
 });
 
 export const updateSiteSchema = z.object({
@@ -88,6 +90,8 @@ export const updateSiteSchema = z.object({
   addressLine1: z.string().max(200).nullable().optional(),
   city: z.string().max(100).nullable().optional(),
   country: z.string().max(2).optional(),
+  latitude: z.number().min(-90).max(90).nullable().optional(),
+  longitude: z.number().min(-180).max(180).nullable().optional(),
 });
 
 export const carbonBudgetPhaseInputSchema = z.object({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fitProjection, hasPosition, radiusFor, siteTotals, snapshotOrder } from "../site-map";
+import { fitProjection, hasPosition, projectSiteTotals, radiusFor, siteTotals, snapshotOrder } from "../site-map";
 
 describe("siteTotals", () => {
   it("sums the per-scope rows of a facility, keeps facilities with none, and biggest first", () => {
@@ -42,5 +42,18 @@ describe("radiusFor and fitProjection", () => {
     for (const q of [a, b]) { expect(q.x).toBeGreaterThanOrEqual(0); expect(q.x).toBeLessThanOrEqual(400); expect(q.y).toBeGreaterThanOrEqual(0); expect(q.y).toBeLessThanOrEqual(300); }
     const one = fitProjection([pts[0]], 400, 300)(pts[0]);
     expect(one).toEqual({ x: 200, y: 150 });
+  });
+});
+
+describe("projectSiteTotals positions", () => {
+  const site = { id: "s1", name: "Yard", projectId: "p1", projectName: "Bridge", postcode: "LS1 1AA", city: null };
+  const fromPostcode = () => ({ latitude: 53.8, longitude: -1.55 });
+  it("uses the position chosen from address search over the postcode", () => {
+    const [t] = projectSiteTotals([{ ...site, latitude: 51.5, longitude: -0.12 }], [], fromPostcode);
+    expect([t.latitude, t.longitude]).toEqual([51.5, -0.12]);
+  });
+  it("falls back to the postcode, and leaves a site with neither unplaced", () => {
+    expect(projectSiteTotals([site], [], fromPostcode)[0].latitude).toBe(53.8);
+    expect(projectSiteTotals([{ ...site, postcode: null }], [], () => null)[0].latitude).toBeNull();
   });
 });

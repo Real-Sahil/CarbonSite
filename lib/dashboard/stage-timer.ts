@@ -23,7 +23,8 @@ export function stageTimer(page: string, slowAfterMs = DEFAULT_SLOW_MS) {
     /** Logs the stages when the load took at least `slowAfterMs`, and returns the total. */
     done(context: { orgId: string }): number {
       const total = Math.round(performance.now() - start);
-      if (total >= slowAfterMs) log.warn(`${page} was slow`, { ...context, totalMs: total, stages });
+      // Slow loads are logged at info; only a very slow one (3x the threshold) is a warning, which also reaches Sentry.
+      if (total >= slowAfterMs) (total >= slowAfterMs * 3 ? log.warn : log.info).call(log, `${page} was slow`, { ...context, totalMs: total, stages });
       return total;
     },
   };
