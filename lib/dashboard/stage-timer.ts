@@ -6,7 +6,10 @@ import { createLogger } from "@/lib/logger";
 
 const log = createLogger("page-timing");
 
-export function stageTimer(page: string, slowAfterMs = 1500) {
+// PAGE_TIMING_SLOW_MS lowers (or raises) the threshold without a deploy, for finding the slow stage on a real tenant.
+const DEFAULT_SLOW_MS = Number(process.env.PAGE_TIMING_SLOW_MS) || 1500;
+
+export function stageTimer(page: string, slowAfterMs = DEFAULT_SLOW_MS) {
   const start = performance.now();
   let last = start;
   const stages: Record<string, number> = {};
