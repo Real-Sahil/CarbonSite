@@ -46,7 +46,9 @@ describe("DashboardFilterBar", () => {
   it("leaves the project choice to the site hero and writes the social value switch to the URL", () => {
     render(<DashboardFilterBar filters={{}} />);
     expect(screen.queryByLabelText("Project")).toBeNull();
-    fireEvent.click(screen.getByLabelText("Contracts with social value commitments"));
+    const sv = screen.getByLabelText("Contracts with social value commitments") as HTMLInputElement;
+    fireEvent.click(sv);
+    expect(sv.checked).toBe(true);
     expect(nav.replace).toHaveBeenLastCalledWith("/orgs/o/dashboard?sv=1");
   });
 
