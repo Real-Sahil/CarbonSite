@@ -1,6 +1,8 @@
 # Policy drafts for solicitor review
 
-Status: **draft, not published.** Nothing here is live on the marketing site or in `SECURITY.md` until a UK solicitor has reviewed it and the owner has approved the wording. Placeholders in `[square brackets]` need a real value first. This is a drafting aid, not legal advice.
+Status: **draft, not published.** Nothing here is live on the marketing site or in `SECURITY.md` until a UK solicitor has reviewed it and the owner has approved the wording. Placeholders in `[square brackets]` need a real value first. Decisions taken for the owner are marked **Decided**; items still open are marked **Open**. This is a drafting aid, not legal advice.
+
+**ICO position (blocks go-live as a controller).** MetricOra has not yet paid the ICO data protection fee. Anything that says MetricOra is registered with the ICO must stay out until it is. Register at ico.org.uk before taking paying customers, and fill in the reference only once issued. The drafts below never claim registration.
 
 Each section says what it replaces or adds, so the reviewer can see the change against the live pages.
 
@@ -52,14 +54,14 @@ Each section says what it replaces or adds, so the reviewer can see the change a
 
 ## 3. Vulnerability disclosure and safe harbour (add to `SECURITY.md`)
 
-**Reporting a vulnerability.** Please report security issues to **[security contact email, to be confirmed]**. Include the affected URL or feature, steps to reproduce, and the impact you believe it has. Do not include real customer data in a report; use a test organisation you control.
+**Reporting a vulnerability.** Please report security issues to **hello@metricora.co.uk** (**Decided**: the general address until a dedicated `security@` alias exists; add it at `/.well-known/security.txt` when ready). Include the affected URL or feature, steps to reproduce, and the impact you believe it has. Do not include real customer data in a report; use a test organisation you control.
 
-**Our commitments.** We will acknowledge a report within **[2 working days]**, keep you informed of progress, and credit you if you wish. We will tell you when a fix is released.
+**Our commitments.** We will acknowledge a report within **2 working days** (**Decided**: common practice, ISO/IEC 29147), keep you informed of progress, and credit you if you wish. We will tell you when a fix is released.
 
 **Good-faith research.** We will not take legal action against, and will not ask law enforcement to act against, anyone who:
 - tests only accounts and organisations they own or have written permission to test;
 - avoids privacy violations, data destruction and service disruption, and stops and reports as soon as they access another person's data;
-- does not use automated scanning at a rate that affects other users (for example, no more than [N] requests per second); and
+- does not use automated scanning at a rate that affects other users (for example, no more than 10 requests per second (**Decided**)); and
 - gives us a reasonable chance to fix the issue before publishing details.
 
 This is not permission to test our production service beyond the above. Denial-of-service testing, social engineering of staff and physical attacks are out of scope.
@@ -74,15 +76,15 @@ The current table is incomplete and in places vague ("5 years, anonymised after 
 
 | Data | Retention | Basis | Deleted or anonymised by |
 |---|---|---|---|
-| Account details | Life of the account, then 30 days after closure | Contract | Account closure request, or the scheduled job [confirm the job exists] |
-| Activity records and calculations | 7 years after the period ends | Customer's reporting and audit needs; set in Terms | Customer deletion or closure; the retention job [confirm] |
+| Account details | Life of the account, then 30 days after closure (**Decided**) | Contract | Closure request; scheduled job **Open** |
+| Activity records and calculations | 7 years after the period ends (**Decided**, as the Privacy page already states) | Customer's reporting and audit needs; set in Terms | Customer deletion or closure; retention job **Open** |
 | Evidence files (bills, tickets, photographs) | Same as the record they support | As above | As above |
-| Audit log | [5 years], then the personal fields are removed and the hash chain is kept | Security and accountability | Scheduled anonymisation [confirm it is built; it is not yet] |
-| Backups | Daily dumps 35 days; monthly dumps [12 months, confirm] | Recovery | Automatic pruning in `backup.yml` |
+| Audit log | 6 years (**Decided**: matches the limitation period for contract claims). Personal fields are removed after 6 years; the hash chain is kept | Security and accountability | Scheduled anonymisation **Open**: not yet built |
+| Backups | Daily dumps 35 days; monthly dumps 12 months (**Decided**) | Recovery | Automatic pruning in `backup.yml` |
 | Sessions | 7 days (web) | Security | Expiry |
-| Field-worker names and PINs | Life of the invitation and assignment, then removed | Contract | Removal on unassignment [confirm] |
-| Health and safety data (incidents, toolbox talk attendance) | [Confirm retention period with the customer's legal basis; often 3 years or longer under HSE rules] | Legal obligation or legitimate interest | Customer-controlled; see the DPA addendum |
-| Support emails and marketing contact | [12 months] / until withdrawal | Legitimate interest / consent | [Confirm] |
+| Field-worker names and PINs | Until unassignment, then removed within 30 days (**Decided**) | Contract | Removal job **Open**: not yet built |
+| Health and safety data (incidents, toolbox talk attendance) | Customer's choice, default 3 years after the record closes (**Decided** as default; the customer may set longer under its own HSE duties; solicitor to confirm) | Legal obligation or legitimate interest | Customer-controlled; see the DPA addendum |
+| Support emails and marketing contact | 12 months after last contact (support); until withdrawal (marketing) | Legitimate interest / consent | **Decided** |
 
 Also state what happens to data after a DSAR erasure request: the data is deleted from live systems and from backups when those backups expire, and the audit record that the request was made is kept.
 
@@ -100,11 +102,13 @@ Also state what happens to data after a DSAR erasure request: the data is delete
 4. On the Customer's instruction, MetricOra will delete or export these records, including from backups as they expire.
 5. Notices and photographs must not include people who have not agreed to appear. The product states this at the point of entry.
 
-**Confirm with a solicitor:** whether a separate DPIA is needed for the field app, and whether the Customer or MetricOra is the controller for the health and safety registers.
+**Decided:** the Article 9 condition is employment and health and safety obligations under DPA 2018, Schedule 1, Part 1 (where the customer is the employer). **Confirm with a solicitor:** whether a separate DPIA is needed for the field app, and whether the Customer or MetricOra is the controller for the health and safety registers.
 
 ---
 
 ## 6. Process notes for the owner
+
+- **ICO fee.** Pay the data protection fee before taking paying customers. The Privacy page must then name MetricOra's ICO reference once issued (placeholder until then).
 
 - **Changing the Terms** means bumping `TERMS_VERSION` in `lib/legal/terms.ts`. Every account is then sent to `/accept-terms` once. Do this for any change customers would reasonably care about, not for typos.
 - **Insurance and liability cap.** The Terms already cap liability (section 6). Confirm the cap amount and whether it covers the customer's own losses from the Terms' carve-outs, with your insurance broker. Professional indemnity and cyber cover are commercial decisions, not drafting ones.
