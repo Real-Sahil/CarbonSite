@@ -86,11 +86,11 @@
     "kysely": "0.28.17",
     "lenis": "^1.3.26",
     "lucide-react": "^1.17.0",
-    "maplibre-gl": "^5.24.0",
+    "maplibre-gl": "^6.13.0",
     "mermaid": "^11.17.2",
     "motion": "^12.40.0",
     "nanoid": "^3.3.18",
-    "next": "16.2.11",
+    "next": "16.3.8",
     "next-intl": "^4.14.9",
     "next-mdx-remote": "^6.0.0",
     "nodemailer": "^10.0.1",
@@ -151,7 +151,8 @@
       "deepmerge-ts": ">=8.0.0",
       "browserslist": ">=4.28.7",
       "form-data": ">=2.5.6",
-      "sharp": ">=0.35.0"
+      "sharp": ">=0.35.0",
+      "tinypool": ">=2.1.2"
     },
     "auditConfig": {
       "ignoreCves": [
