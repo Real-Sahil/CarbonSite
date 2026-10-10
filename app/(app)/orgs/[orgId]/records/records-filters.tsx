@@ -22,12 +22,14 @@ export function RecordsFilters({
   categories,
   facilities,
   contracts,
+  sites,
 }: {
   filters: Record<string, string>;
   periods: Option[];
   categories: Option[];
   facilities: Option[];
   contracts: Option[];
+  sites: Option[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -68,6 +70,7 @@ export function RecordsFilters({
         {select("reviewStatus", "Status", Object.entries(REVIEW_STATUS_LABELS).map(([id, label]) => ({ id, label })))}
         {select("facilityId", "Facility", facilities)}
         {select("contractId", "Contract", contracts)}
+        {select("siteId", "Project site", sites)}
         <div className="space-y-1">
           <Label htmlFor="records-filter-supplier" className="text-xs text-[#6B7280]">Supplier</Label>
           <input

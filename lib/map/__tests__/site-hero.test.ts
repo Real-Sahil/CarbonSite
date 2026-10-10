@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filtersAfterPin, filtersAfterProject, pinFilter, spreadCoincident, toQuery } from "../site-hero";
+import { compareRows, filtersAfterPin, filtersAfterProject, pinFilter, spreadCoincident, toQuery } from "../site-hero";
 
 const office = { kind: "facility" as const, id: "f1", projectId: null };
 const site = { kind: "site" as const, id: "s1", projectId: "p1" };
@@ -62,5 +62,21 @@ describe("spreadCoincident", () => {
     expect(d(out[0], out[1])).toBeGreaterThan(20);
     expect(d(out[1], out[2])).toBeGreaterThan(20);
     expect(d(out[0], { x: 360, y: 150 })).toBeCloseTo(26, 0);
+  });
+});
+
+describe("compareRows", () => {
+  const a = { id: "a", name: "Alpha", kind: "site" as const, kg: 300, recordCount: 2, latitude: null, longitude: null };
+  const b = { id: "b", name: "Bravo", kind: "site" as const, kg: 100, recordCount: 9, latitude: null, longitude: null };
+  const o = { id: "o", name: "Depot", kind: "facility" as const, kg: 500, recordCount: 1, latitude: null, longitude: null };
+  it("shares are within the same kind, never across kinds", () => {
+    const rows = compareRows([a, b, o], "kg", "desc");
+    expect(rows.map((r) => r.site.id)).toEqual(["o", "a", "b"]);
+    expect(rows.find((r) => r.site.id === "a")!.share).toBeCloseTo(0.75);
+    expect(rows.find((r) => r.site.id === "o")!.share).toBe(1);
+  });
+  it("sorts by name and records in either direction", () => {
+    expect(compareRows([b, a], "name", "asc").map((r) => r.site.id)).toEqual(["a", "b"]);
+    expect(compareRows([a, b], "recordCount", "desc").map((r) => r.site.id)).toEqual(["b", "a"]);
   });
 });

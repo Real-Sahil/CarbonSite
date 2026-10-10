@@ -20,6 +20,7 @@ const listFilters = z.object({
   reviewStatus: z.enum(REVIEW_STATUSES).optional(),
   facilityId: z.string().min(1).max(64).optional(),
   contractId: z.string().min(1).max(64).optional(),
+  siteId: z.string().min(1).max(64).optional(),
   supplier: z.string().trim().min(1).max(64).optional(),
 });
 
@@ -49,6 +50,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       ...(f.reviewStatus ? { reviewStatus: f.reviewStatus } : {}),
       ...(f.facilityId ? { facilityId: f.facilityId } : {}),
       ...(f.contractId ? { contractId: f.contractId } : {}),
+      ...(f.siteId ? { siteId: f.siteId } : {}),
       ...(f.supplier ? { supplierName: { contains: f.supplier, mode: "insensitive" as const } } : {}),
     };
 

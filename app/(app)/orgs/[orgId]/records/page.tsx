@@ -86,6 +86,11 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    prisma.site.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]).catch(() => null);
 
   if (!dbResult) {
@@ -93,7 +98,7 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
       <div className="p-8"><p className="text-red-600 text-sm">Failed to load records. The database may be updating — try refreshing in a moment.</p></div>
     );
   }
-  const [periods, categories, facilities, businessUnits, draftGroups, totalCount, approvedCount, draftCount, contracts] = dbResult;
+  const [periods, categories, facilities, businessUnits, draftGroups, totalCount, approvedCount, draftCount, contracts, sites] = dbResult;
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (
@@ -239,6 +244,7 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
               categories={categories.map((c) => ({ id: c.id, label: `Scope ${c.scope}: ${c.name}` }))}
               facilities={facilities.map((f) => ({ id: f.id, label: f.name }))}
               contracts={contracts.map((c) => ({ id: c.id, label: c.name }))}
+              sites={sites.map((x) => ({ id: x.id, label: x.name }))}
             />
             <RecordsTable orgId={orgId} canManageRecords={canManageRecords} filters={filters} />
           </CardContent>

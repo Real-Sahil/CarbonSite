@@ -36,7 +36,7 @@ describe("records list filters", () => {
   });
 
   it("narrows by each filter inside the organisation", async () => {
-    await get("?periodId=p1&categoryId=c1&reviewStatus=approved&facilityId=f1&contractId=k1&supplier=Acme");
+    await get("?periodId=p1&categoryId=c1&reviewStatus=approved&facilityId=f1&contractId=k1&siteId=s1&supplier=Acme");
     expect(whereOf()).toEqual({
       organizationId: "org-a",
       reportingPeriodId: "p1",
@@ -44,6 +44,7 @@ describe("records list filters", () => {
       reviewStatus: "approved",
       facilityId: "f1",
       contractId: "k1",
+      siteId: "s1",
       supplierName: { contains: "Acme", mode: "insensitive" },
     });
     expect(db.prisma.activityRecord.count.mock.calls[0][0].where).toEqual(whereOf());

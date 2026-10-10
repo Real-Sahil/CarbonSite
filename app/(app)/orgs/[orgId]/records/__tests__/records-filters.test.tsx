@@ -14,6 +14,7 @@ const props = {
   categories: [{ id: "c1", label: "Scope 1: Fuel" }],
   facilities: [{ id: "f1", label: "Depot" }],
   contracts: [{ id: "k1", label: "Bridge" }],
+  sites: [{ id: "s1", label: "Bridge works" }],
 };
 
 beforeEach(() => nav.replace.mockClear());

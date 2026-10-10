@@ -11,7 +11,7 @@ import { RUN_STATUSES } from "@/lib/calculation/run-list-filters";
  */
 export const SURFACES = {
   dashboard: { path: "dashboard", filters: ["facilityId", "contractId", "entityId", "country", "supplier", "from", "to", "scope", "projectId", "sv", "categoryId", "siteId"] },
-  records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "supplier"] },
+  records: { path: "records", filters: ["periodId", "categoryId", "reviewStatus", "facilityId", "contractId", "siteId", "supplier"] },
   suppliers: { path: "suppliers", filters: ["q", "health", "trend"] },
   submissions: { path: "submissions", filters: ["status", "documentType", "facilityId", "contractId", "periodId"] },
   calculations: { path: "calculations", filters: ["status", "periodId", "factorLibraryId"] },

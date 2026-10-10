@@ -6,10 +6,11 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { fitProjection, hasPosition, radiusFor, type SiteTotal } from "@/lib/map/site-map";
-import { filtersAfterPin, filtersAfterProject, pinFilter, spreadCoincident, toQuery } from "@/lib/map/site-hero";
+import { compareRows, filtersAfterPin, filtersAfterProject, pinFilter, spreadCoincident, toQuery, type CompareKey } from "@/lib/map/site-hero";
 import { SCOPE_COLORS } from "@/components/charts/palette";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
 const FIELD = "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
@@ -34,6 +35,7 @@ export function SiteHero({
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
+  const [sort, setSort] = useState<{ key: CompareKey; dir: "asc" | "desc" }>({ key: "kg", dir: "desc" });
   const placed = sites.filter(hasPosition);
   const selectedProject = filters.projectId ?? "";
   const selectedFacility = filters.facilityId ?? "";
@@ -183,6 +185,40 @@ export function SiteHero({
           </div>
         </div>
       )}
+      {!failed && sites.length > 1 ? (
+        <details className="border-t border-[#E5E7EB] px-5 py-3">
+          <summary className="cursor-pointer text-sm font-medium text-[#111827]">Compare all {sites.length} sites</summary>
+          <div className="mt-3">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {([["name", "Site"], ["kg", "Emissions"], ["share", "Share of its kind"], ["recordCount", "Records"]] as [CompareKey, string][]).map(([key, label]) => (
+                    <TableHead key={key} aria-sort={sort.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}>
+                      <button type="button" className="font-medium underline-offset-2 hover:underline" onClick={() => setSort((c) => ({ key, dir: c.key === key && c.dir === "desc" ? "asc" : "desc" }))}>
+                        {label}{sort.key === key ? (sort.dir === "asc" ? " ↑" : " ↓") : ""}
+                      </button>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {compareRows(sites, sort.key, sort.dir).map(({ site: s, share }) => (
+                  <TableRow key={`${s.kind}-${s.id}`}>
+                    <TableCell>
+                      <button type="button" aria-pressed={isOn(s)} disabled={pending} className="text-left font-medium hover:underline" onClick={() => pick(s)}>{s.name}</button>
+                      <span className="block text-xs text-[#6B7280]">{s.kind === "site" ? "Project site" : "Office or depot"}</span>
+                    </TableCell>
+                    <TableCell className="tabular-nums">{tonnes(s.kg, locale)}</TableCell>
+                    <TableCell className="tabular-nums">{share == null ? "-" : `${(share * 100).toLocaleString(locale, { maximumFractionDigits: 0 })}%`}</TableCell>
+                    <TableCell className="tabular-nums">{s.recordCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <p className="mt-2 text-xs text-[#6B7280]">Shares are within offices and depots, or within project sites; the two kinds overlap, so they are never added together.</p>
+          </div>
+        </details>
+      ) : null}
     </section>
   );
 }

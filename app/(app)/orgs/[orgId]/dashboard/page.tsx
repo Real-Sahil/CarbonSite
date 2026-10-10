@@ -733,8 +733,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   ].filter((c): c is { key: string; label: string } => c !== null);
   const recordsQuery = new URLSearchParams();
   if (currentPeriod) recordsQuery.set("periodId", currentPeriod.id);
-  for (const [k, v] of Object.entries({ categoryId: selectedCategoryId, facilityId: selectedFacilityId, contractId: selectedContractId, supplier: selectedSupplier })) if (v) recordsQuery.set(k, v);
-  const recordsHref = selectedCategoryId || selectedFacilityId || selectedContractId || selectedSupplier ? `/orgs/${orgId}/records?${recordsQuery.toString()}` : null;
+  for (const [k, v] of Object.entries({ categoryId: selectedCategoryId, facilityId: selectedFacilityId, contractId: selectedContractId, siteId: selectedSiteId, supplier: selectedSupplier })) if (v) recordsQuery.set(k, v);
+  const recordsHref = selectedCategoryId || selectedFacilityId || selectedContractId || selectedSiteId || selectedSupplier ? `/orgs/${orgId}/records?${recordsQuery.toString()}` : null;
   const scopeAggregates = sliced?.scopeAggregates ?? liveScopeAggregates;
   const topCategoryAggregates = sliced?.topCategoryAggregates ?? liveTopCategoryAggregates;
   const facilityAggregates = sliced?.facilityAggregates ?? liveFacilityAggregates;

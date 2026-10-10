@@ -55,3 +55,20 @@ export function spreadCoincident<T extends { x: number; y: number }>(points: T[]
   }
   return out;
 }
+
+export type CompareKey = "name" | "kg" | "recordCount" | "share";
+
+/** Rows for the compare table. A share is of the same kind's total (offices and project sites overlap, so kinds are never added). */
+export function compareRows(sites: SiteTotal[], key: CompareKey, dir: "asc" | "desc") {
+  const kindTotal = (kind: string) => sites.filter((s) => (s.kind ?? "facility") === kind).reduce((a, s) => a + s.kg, 0);
+  const rows = sites.map((s) => {
+    const total = kindTotal(s.kind ?? "facility");
+    return { site: s, share: total > 0 ? s.kg / total : null };
+  });
+  const value = (r: (typeof rows)[number]) => (key === "name" ? r.site.name.toLowerCase() : key === "kg" ? r.site.kg : key === "recordCount" ? r.site.recordCount : (r.share ?? -1));
+  const sign = dir === "asc" ? 1 : -1;
+  return rows.sort((a, b) => {
+    const x = value(a), y = value(b);
+    return (x < y ? -1 : x > y ? 1 : a.site.name.localeCompare(b.site.name)) * sign;
+  });
+}
