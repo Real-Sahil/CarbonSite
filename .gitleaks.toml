@@ -28,3 +28,7 @@ regexes = [
   '''iot_sk_4a5b6c''',
   '''csk_your_key_here''',
 ]
+
+[[allowlists]]
+description = "UUID API code used as a fixture in the Defra receipt tests"
+paths = ['''^lib/defra-dwt/__tests__/receipt\.test\.ts$''']
