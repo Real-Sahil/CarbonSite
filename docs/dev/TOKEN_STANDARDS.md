@@ -31,3 +31,11 @@ These names exist in Claude Code 2.1.296; the ranges below come from the CLI's o
 - `ENABLE_TOOL_SEARCH`: keeps rarely used tool definitions out of the prompt until needed. Already on in practice here.
 
 Trade-off: earlier compaction loses detail from the early part of a session. Compact at task boundaries, with a handoff note, rather than mid-task.
+
+## Found on 11 October 2026: an environment override is already set
+
+The cloud environment for this repo sets `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=80` in the `claude` process (not in any repo or user settings file). With a 1M-token window that is 800k, which matches the measured session: compactions happened at about 800k and the largest context was 835k. That, not the cache, is why contexts grew so large.
+
+- It lives in the cloud environment settings (session title bar, then Edit), so a repo change cannot remove it.
+- `autoCompactWindow` (250000) is now set in `.claude/settings.json`. Whether the 80% then applies to the 250k window (about 200k) or to the 1M default is **not verified**: it needs a long session to see. After the next one, run `pnpm tokens` and read the median and max context. About 200k to 250k means the setting works; 700k to 800k means the environment override wins.
+- If the override wins, edit or remove the variable in the cloud environment settings, or set it to 25 (25% of 1M) as a stop-gap.
