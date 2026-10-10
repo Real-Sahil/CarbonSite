@@ -82,5 +82,6 @@
     "founder@emotix": true,
     "ponytail@ponytail": true,
     "superpowers@superpowers-marketplace": true
-  }
+  },
+  "autoCompactWindow": 250000
 }

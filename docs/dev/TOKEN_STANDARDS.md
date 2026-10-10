@@ -13,7 +13,7 @@ Measured from one long session (3,684 model calls, 16 compactions) with `pnpm to
 
 ## Rules
 
-1. **Keep a working context under 200k.** Finish a task, then `/compact` (or start a fresh session with a handoff note) before the next unrelated one. Never let a session drift to 500k+ because it is "still going".
+1. **Keep a working context under about 250k.** The project setting `autoCompactWindow` is 250000 (valid range 100k to 1M tokens; the same value can be set per machine with `CLAUDE_CODE_AUTO_COMPACT_WINDOW`), so Claude Code compacts on its own near that size. On the measured session that would have removed about 47% of cache reads; 200k removes 57% but compacts so often that, with a floor of about 68k, only about 100k is left for work between compactions. Finish a task, then `/compact` (or start a fresh session with a handoff note) before the next unrelated one. Never let a session drift to 500k+ because it is "still going".
 2. **Do not switch models mid-session.** Each `/model` change rewrote about 500k tokens. Pick the model at the start. For cheap side work, use a subagent with its own model (`CLAUDE_CODE_SUBAGENT_MODEL` or the agent's `model`), which has a small context of its own.
 3. **Compact before you walk away.** The cache lasts about an hour. After a longer idle the whole context is rewritten at the higher write price, so compact first and the rewrite is small. Do not "ping to keep warm": a ping reads the entire context.
 4. **Do not edit the prompt prefix mid-task.** Editing CLAUDE.md, adding or removing an MCP server, or changing the tool list rewrites the cache from that point. Batch CLAUDE.md edits and do them at a task boundary.
@@ -23,9 +23,9 @@ Measured from one long session (3,684 model calls, 16 compactions) with `pnpm to
 
 ## Settings worth setting
 
-These names exist in Claude Code 2.1.296. Check the exact value range in `/config` or the Claude Code docs before relying on a value.
+These names exist in Claude Code 2.1.296; the ranges below come from the CLI's own help and validation text.
 
-- `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`: percentage of the context window at which auto-compact runs. A lower number compacts earlier. This is the lever for rule 1.
+- `autoCompactWindow` (settings) or `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (environment): the auto-compact window in tokens, 100k to 1M. **Set to 250000 in `.claude/settings.json`.** This is the lever for rule 1. (`--autocompact <auto|tokens>` does the same for one run.)
 - `MAX_MCP_OUTPUT_TOKENS`: caps any single MCP tool result (rule 5).
 - `CLAUDE_CODE_SUBAGENT_MODEL`: the model subagents use (rule 2).
 - `ENABLE_TOOL_SEARCH`: keeps rarely used tool definitions out of the prompt until needed. Already on in practice here.
