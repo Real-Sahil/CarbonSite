@@ -1095,7 +1095,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   {
                     label: "Target ambition",
                     value: targetReductionTotal,
-                    format: { kind: "co2e", locale: L },
+                    format: { kind: "co2e" as const, locale: L },
                     href: `/orgs/${orgId}/targets`,
                   },
                 ]
