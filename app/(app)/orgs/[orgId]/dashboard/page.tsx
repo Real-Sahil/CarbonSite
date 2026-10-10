@@ -88,7 +88,7 @@ import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from 
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; siteId?: string }>;
 }
 
 function formatKgCo2e(locale: string, value: unknown): string {
@@ -123,8 +123,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     const chosen = await getSelectedProject(orgId);
     if (chosen) redirect(`/orgs/${orgId}/dashboard?projectId=${encodeURIComponent(chosen.id)}`);
   }
-  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId } = rawParams;
-  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, facilityId: selectedFacilityId });
+  const { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, siteId: selectedSiteId } = rawParams;
+  const sliceFilter = parseSliceFilter({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, facilityId: selectedFacilityId, siteId: selectedSiteId });
   let session: Awaited<ReturnType<typeof requireOrgMember>>["session"];
   let membership: Awaited<ReturnType<typeof requireOrgMember>>["membership"];
   let dashAuthErr: AuthError | null = null;
@@ -252,7 +252,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const scoped = scopeFacilityIds !== null || sliceFilter !== null;
   const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
     const q = new URLSearchParams();
-    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId })) if (v) q.set(k, v);
+    for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, siteId: selectedSiteId })) if (v) q.set(k, v);
     if (p.contractId) q.set("contractId", p.contractId);
     if (p.entityId) q.set("entityId", p.entityId);
     if (p.country) q.set("country", p.country);
@@ -260,7 +260,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
   };
 
-  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId });
+  const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, siteId: selectedSiteId });
   const currentPeriod = reportingPeriods[0] ?? null;
   const priorPeriod = reportingPeriods[1] ?? null;
 

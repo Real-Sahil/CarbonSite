@@ -10,7 +10,7 @@ import { buildFlows } from "@/lib/charts/sankey";
 import { supplierKey } from "@/lib/social-value/local-spend";
 import { MONTH_PATTERN } from "@/lib/saved-views";
 
-export type SliceFilter = { supplierKey?: string; from?: Date; to?: Date; scope?: 1 | 2 | 3; projectId?: string; socialValue?: boolean; categoryId?: string; facilityId?: string };
+export type SliceFilter = { supplierKey?: string; from?: Date; to?: Date; scope?: 1 | 2 | 3; projectId?: string; socialValue?: boolean; categoryId?: string; facilityId?: string; siteId?: string };
 
 /** Ids the filters resolve to inside the organisation: a project's sites, and the contracts that carry social value commitments. */
 export type SliceRefs = { siteIds?: string[]; contractIds?: string[] };
@@ -21,7 +21,7 @@ const monthStart = (v: string | undefined) =>
   v && MONTH_PATTERN.test(v) ? new Date(Date.UTC(Number(v.slice(0, 4)), Number(v.slice(5, 7)) - 1, 1)) : undefined;
 
 /** The slice filters a request names; malformed values are dropped, none set gives null. */
-export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; facilityId?: string }): SliceFilter | null {
+export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; facilityId?: string; siteId?: string }): SliceFilter | null {
   const f: SliceFilter = {};
   const supplier = raw.supplier?.trim().slice(0, 64);
   const key = supplier ? supplierKey(supplier) : "";
@@ -36,6 +36,8 @@ export function parseSliceFilter(raw: { supplier?: string; from?: string; to?: s
   // Clicking a chart element sets these (cross-filtering): plain ids only.
   if (raw.categoryId && PLAIN_ID.test(raw.categoryId)) f.categoryId = raw.categoryId;
   if (raw.facilityId && PLAIN_ID.test(raw.facilityId)) f.facilityId = raw.facilityId;
+  // One project site, from a hero pin. Plain id; another organisation's id matches nothing (every read is inside the organisation).
+  if (raw.siteId && PLAIN_ID.test(raw.siteId)) f.siteId = raw.siteId;
   return Object.keys(f).length ? f : null;
 }
 
@@ -84,7 +86,12 @@ export function sliceWhere(
         : {}),
     ...(f.scope ? { scope: f.scope } : {}),
     ...(f.categoryId ? { emissionCategoryId: f.categoryId } : {}),
-    ...(refs.siteIds ? { siteId: { in: refs.siteIds } } : {}),
+    // A chosen site narrows inside a project's sites, never beyond them.
+    ...(f.siteId
+      ? { siteId: refs.siteIds ? { in: refs.siteIds.filter((id) => id === f.siteId) } : f.siteId }
+      : refs.siteIds
+        ? { siteId: { in: refs.siteIds } }
+        : {}),
     ...(refs.contractIds ? { contractId: { in: refs.contractIds } } : {}),
     ...(f.supplierKey ? { supplierKey: { contains: f.supplierKey } } : {}),
     // A record with no date has no month, so a date filter leaves it out.

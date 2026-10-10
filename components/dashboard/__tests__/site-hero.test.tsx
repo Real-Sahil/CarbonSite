@@ -34,11 +34,10 @@ describe("SiteHero", () => {
     expect(screen.getByText(/Live figures for FY2026/)).toBeTruthy();
   });
 
-  it("choosing a project site sets the project filter, keeps other filters and saves the sidebar choice", () => {
+  it("choosing a project site filters by that one site and keeps other filters", () => {
     render(<SiteHero {...base} sites={[site]} filters={{ scope: "1" }} />);
     fireEvent.click(within(screen.getByRole("list", { name: "Sites by emissions" })).getByRole("button", { name: /Bridge works/ }));
-    expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard?scope=1&projectId=p1");
-    expect(fetch).toHaveBeenCalledWith("/api/orgs/o/selected-project", expect.objectContaining({ method: "PUT", body: JSON.stringify({ projectId: "p1" }) }));
+    expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard?scope=1&siteId=s1");
   });
 
   it("choosing the active site clears it, and the Clear control does the same", () => {
@@ -48,11 +47,12 @@ describe("SiteHero", () => {
     expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard");
   });
 
-  it("keeps a site with no project in the list but does not let it filter", () => {
+  it("lets a site with no project be chosen too", () => {
     render(<SiteHero {...base} sites={[noProject]} />);
     const row = within(screen.getByRole("list", { name: "Sites by emissions" })).getByRole("button", { name: /Unassigned yard/ });
-    expect((row as HTMLButtonElement).disabled).toBe(true);
-    expect(row.textContent).toContain("no project to filter by");
+    expect((row as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(row);
+    expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard?siteId=s9");
   });
 
   it("keeps the project fallback working without any placed site", () => {

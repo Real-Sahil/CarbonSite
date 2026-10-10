@@ -37,10 +37,13 @@ export function SiteHero({
   const placed = sites.filter(hasPosition);
   const selectedProject = filters.projectId ?? "";
   const selectedFacility = filters.facilityId ?? "";
-  const active = selectedProject || selectedFacility;
-  const activeLabel = selectedProject
-    ? projects.find((p) => p.id === selectedProject)?.label ?? "Selected project"
-    : sites.find((s) => s.id === selectedFacility)?.name ?? "Selected site";
+  const selectedSite = filters.siteId ?? "";
+  const active = selectedProject || selectedFacility || selectedSite;
+  const activeLabel = selectedSite
+    ? sites.find((s) => s.kind === "site" && s.id === selectedSite)?.name ?? "Selected site"
+    : selectedProject
+      ? projects.find((p) => p.id === selectedProject)?.label ?? "Selected project"
+      : sites.find((s) => s.kind !== "site" && s.id === selectedFacility)?.name ?? "Selected site";
 
   // The sidebar's project choice follows the dashboard, so a project change is saved as the sidebar's choice too.
   function go(next: Record<string, string>) {
@@ -62,12 +65,9 @@ export function SiteHero({
   const unplaced = sites.length - placed.length;
   const isOn = (s: SiteTotal) => {
     const pin = pinFilter(s);
-    return pin !== null && filters[pin.key] === pin.value;
+    return filters[pin.key] === pin.value;
   };
-  const pick = (s: SiteTotal) => {
-    if (!pinFilter(s)) return;
-    go(filtersAfterPin(filters, s));
-  };
+  const pick = (s: SiteTotal) => go(filtersAfterPin(filters, s));
 
   return (
     <section aria-labelledby="site-hero-title" className="mb-6 overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white">
@@ -118,10 +118,9 @@ export function SiteHero({
                 {spots.map(({ x, y, site: s }) => {
                   const r = radiusFor(s.kg, max);
                   const on = isOn(s);
-                  const clickable = pinFilter(s) !== null;
                   const colour = s.kind === "site" ? SCOPE_COLORS[0] : SCOPE_COLORS[1];
                   return (
-                    <g key={s.id} role={clickable ? "button" : undefined} tabIndex={clickable ? 0 : -1} aria-pressed={clickable ? on : undefined} aria-label={`${s.name}, ${tonnes(s.kg, locale)}`} className={clickable ? "cursor-pointer outline-none focus-visible:[&>circle]:stroke-[#111827]" : undefined} onClick={() => pick(s)} onKeyDown={(e) => { if (clickable && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(s); } }}>
+                    <g key={s.id} role="button" tabIndex={0} aria-pressed={on} aria-label={`${s.name}, ${tonnes(s.kg, locale)}`} className="cursor-pointer outline-none focus-visible:[&>circle]:stroke-[#111827]" onClick={() => pick(s)} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(s); } }}>
                       <circle cx={x} cy={y} r={r} fill={colour} fillOpacity={on ? 0.85 : 0.5} stroke={on ? "#111827" : colour} strokeWidth={on ? 3 : 1.5}>
                         <title>{`${s.name}: ${tonnes(s.kg, locale)}`}</title>
                       </circle>
@@ -141,20 +140,19 @@ export function SiteHero({
           <div>
             <ul className="divide-y divide-[#E5E7EB]" aria-label="Sites by emissions">
               {top.map((s) => {
-                const clickable = pinFilter(s) !== null;
                 const on = isOn(s);
                 return (
                   <li key={`${s.kind}-${s.id}`}>
                     <button
                       type="button"
-                      disabled={!clickable || pending}
-                      aria-pressed={clickable ? on : undefined}
+                      disabled={pending}
+                      aria-pressed={on}
                       onClick={() => pick(s)}
                       className={`flex w-full items-center justify-between gap-3 px-2 py-2 text-left text-sm disabled:cursor-default ${on ? "bg-[#FFF7ED]" : "hover:bg-[#F9FAFB]"}`}
                     >
                       <span className="min-w-0">
                         <span className="block truncate font-medium text-[#111827]">{s.name}</span>
-                        <span className="block text-xs text-[#6B7280]">{s.kind === "site" ? "Project site" : "Office or depot"}{!clickable ? " · no project to filter by" : ""}</span>
+                        <span className="block text-xs text-[#6B7280]">{s.kind === "site" ? "Project site" : "Office or depot"}</span>
                       </span>
                       <span className="shrink-0 tabular-nums text-[#111827]">{tonnes(s.kg, locale)}</span>
                     </button>

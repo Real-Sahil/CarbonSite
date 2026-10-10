@@ -28,6 +28,15 @@ describe("dashboard project and social value filters stay inside the organisatio
     expect(sliceWhere("org1", "p1", { projectId: "x" }, null, refs)).toMatchObject({ organizationId: "org1", siteId: { in: [] } });
   });
 
+  it("filters by one site inside the organisation and inside a chosen project, never beyond it", () => {
+    expect(sliceWhere("org1", "p1", { siteId: "s1" }, null)).toMatchObject({ organizationId: "org1", siteId: "s1" });
+    expect(sliceWhere("org1", "p1", { siteId: "s1" }, null, { siteIds: ["s1", "s2"] })).toMatchObject({ siteId: { in: ["s1"] } });
+    // A site outside the project's sites matches nothing.
+    expect(sliceWhere("org1", "p1", { siteId: "s9" }, null, { siteIds: ["s1", "s2"] })).toMatchObject({ siteId: { in: [] } });
+    expect(parseSliceFilter({ siteId: "a b;--" })).toBeNull();
+    expect(parseSliceFilter({ siteId: "cm123" })).toEqual({ siteId: "cm123" });
+  });
+
   it("reads social value contracts inside the organisation and leaves cancelled commitments out", async () => {
     db.svCommitment.findMany.mockResolvedValue([{ contractId: "k1" }]);
     const refs = await resolveSliceRefs("org1", { socialValue: true });

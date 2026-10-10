@@ -1,15 +1,13 @@
-// What a pin on the dashboard hero does to the filters. A project site filters by its project (the same `projectId`
-// the Project control always set); an office or depot filters by its facility. Choosing a pin replaces any earlier
+// What a pin on the dashboard hero does to the filters. A project site filters by that one site (`siteId`); an office or depot filters by its facility. Choosing a pin replaces any earlier
 // site choice, and choosing the pin already chosen clears it, so one site is shown at a time.
 
 import type { SiteTotal } from "./site-map";
 
-export const SITE_FILTER_KEYS = ["projectId", "facilityId"] as const;
+export const SITE_FILTER_KEYS = ["siteId", "facilityId"] as const;
 
-/** The filter this pin sets, or null when a project site has no project (it cannot be filtered, so it is not offered). */
-export function pinFilter(site: Pick<SiteTotal, "kind" | "id" | "projectId">): { key: "projectId" | "facilityId"; value: string } | null {
-  if (site.kind === "site") return site.projectId ? { key: "projectId", value: site.projectId } : null;
-  return { key: "facilityId", value: site.id };
+/** The filter this pin sets: a project site filters by that one site, an office or depot by its facility. */
+export function pinFilter(site: Pick<SiteTotal, "kind" | "id" | "projectId">): { key: "siteId" | "facilityId"; value: string } {
+  return site.kind === "site" ? { key: "siteId", value: site.id } : { key: "facilityId", value: site.id };
 }
 
 /** The filters after a pin is chosen. Choosing the active pin again clears the site choice. */
@@ -17,7 +15,6 @@ export function filtersAfterPin(current: Record<string, string>, site: Pick<Site
   const pin = pinFilter(site);
   const next = { ...current };
   for (const key of SITE_FILTER_KEYS) delete next[key];
-  if (!pin) return next;
   const active = current[pin.key] === pin.value;
   if (!active) next[pin.key] = pin.value;
   return next;
@@ -27,6 +24,7 @@ export function filtersAfterPin(current: Record<string, string>, site: Pick<Site
 export function filtersAfterProject(current: Record<string, string>, projectId: string): Record<string, string> {
   const next = { ...current };
   delete next.facilityId;
+  delete next.siteId;
   if (projectId) next.projectId = projectId;
   else delete next.projectId;
   return next;
