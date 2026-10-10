@@ -87,8 +87,9 @@ export default function TermsPage() {
               4. Calculation Methodology & Disclaimers
             </h2>
             <p>
-              MetricOra uses published emission factors (DEFRA 2025, EPA GHG Hub
-              2025, SustainMetrics) and the GHG Protocol framework. However:
+              MetricOra uses published emission factors (DEFRA 2025.2 and 2026.1,
+              US EPA GHG Hub 2025, EPA USEEIO 1.3, ADEME Base Carbone and Defra
+              UK spend multipliers) and the GHG Protocol framework. However:
             </p>
             <ul>
               <li>
