@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import React from "react";
+import { needsTermsAcceptance } from "@/lib/legal/terms";
 
 export default async function AppLayout({
   children,
@@ -13,6 +14,13 @@ export default async function AppLayout({
 
   if (!session) {
     redirect("/sign-in");
+  }
+
+  // Invited, SSO, supplier and bulk-created accounts never saw the sign-up checkbox. Until they accept the current
+  // Terms they go no further in the web app; the API is unchanged, so installed mobile builds keep working.
+  const terms = await prisma.user.findUnique({ where: { id: session.user.id }, select: { termsVersion: true } });
+  if (needsTermsAcceptance(terms?.termsVersion)) {
+    redirect("/accept-terms");
   }
 
   // Apply white-label branding when accessed via a tenant subdomain.

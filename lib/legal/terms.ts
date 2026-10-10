@@ -7,3 +7,8 @@ export function termsAcceptedIn(body: unknown): boolean {
   const b = (body ?? {}) as Record<string, unknown>;
   return b.acceptedTerms === true && b.termsVersion === TERMS_VERSION;
 }
+
+/** True when an account still has to accept the current Terms before using the web app. */
+export function needsTermsAcceptance(termsVersion: string | null | undefined): boolean {
+  return termsVersion !== TERMS_VERSION;
+}

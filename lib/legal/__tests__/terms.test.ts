@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TERMS_VERSION, termsAcceptedIn } from "../terms";
+import { TERMS_VERSION, needsTermsAcceptance, termsAcceptedIn } from "../terms";
 
 describe("termsAcceptedIn", () => {
   it("accepts a sign-up that ticks the box for the current Terms version", () => {
@@ -19,5 +19,17 @@ describe("termsAcceptedIn", () => {
   it("refuses a missing or non-object body", () => {
     expect(termsAcceptedIn(undefined)).toBe(false);
     expect(termsAcceptedIn("x")).toBe(false);
+  });
+});
+
+describe("needsTermsAcceptance", () => {
+  it("asks for acceptance when none is recorded or an older version was accepted", () => {
+    expect(needsTermsAcceptance(null)).toBe(true);
+    expect(needsTermsAcceptance(undefined)).toBe(true);
+    expect(needsTermsAcceptance("2025-01")).toBe(true);
+  });
+
+  it("does not ask once the current version is recorded", () => {
+    expect(needsTermsAcceptance(TERMS_VERSION)).toBe(false);
   });
 });
