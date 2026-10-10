@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   calculateSupplierScore,
   forecastSupplierEmissions,
@@ -6,6 +6,9 @@ import {
   getSupplierAnalytics,
   updateSupplierAnalytics,
 } from '../supplier-analytics';
+
+// Each spy's queued once-values belong to one test only; a leftover from an earlier test would answer this one.
+afterEach(() => vi.restoreAllMocks());
 import { prisma } from '@/lib/db';
 
 // Mock data helpers

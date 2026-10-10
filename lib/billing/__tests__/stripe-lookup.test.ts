@@ -4,7 +4,7 @@ import type Stripe from "stripe";
 
 const list = vi.fn();
 vi.mock("stripe", () => ({
-  default: vi.fn().mockImplementation(() => ({ prices: { list } })),
+  default: vi.fn().mockImplementation(function () { return { prices: { list } }; }),
 }));
 
 const sub = (priceId: string, lookupKey: string | null) =>

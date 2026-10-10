@@ -35,3 +35,10 @@ That said, RLS still matters as a second, independent surface: this project's Po
 ## Open items
 
 See the MetricOra UK regulatory/security compliance plan (Track A) for the full roadmap: DSAR export/erasure, MFA, account lockout, CSP nonce migration, field-level encryption for GPS/postcode data, monitoring/alerting, and the documentation/DPA workstream this file will absorb over time.
+
+## Known advisories accepted without a fix
+
+Checked with `pnpm audit --prod`. These have no patched release yet; re-check each month.
+
+- **node-forge <=1.4.0 (high), via `@signpdf/signer-p12`:** RSA PKCS#1 v1.5 signature verification accepts extra nested DigestAlgorithm data. The app uses it only to sign acknowledgment PDFs with the organisation's own certificate, never to verify signatures from others. Revisit when a patched node-forge or a signpdf release that drops it lands.
+- **sprintf-js <=1.1.3 (moderate), via `gray-matter` > `js-yaml` > `argparse`:** only parses front matter from our own files. Revisit when argparse drops it.
