@@ -39,8 +39,10 @@ export function SiteHero({
   const selectedFacility = filters.facilityId ?? "";
   const selectedSite = filters.siteId ?? "";
   const active = selectedProject || selectedFacility || selectedSite;
+  const projectLabel = projects.find((p) => p.id === selectedProject)?.label;
+  const siteName = sites.find((s) => s.kind === "site" && s.id === selectedSite)?.name ?? "Selected site";
   const activeLabel = selectedSite
-    ? sites.find((s) => s.kind === "site" && s.id === selectedSite)?.name ?? "Selected site"
+    ? selectedProject && projectLabel ? `${siteName} in ${projectLabel}` : siteName
     : selectedProject
       ? projects.find((p) => p.id === selectedProject)?.label ?? "Selected project"
       : sites.find((s) => s.kind !== "site" && s.id === selectedFacility)?.name ?? "Selected site";
@@ -67,7 +69,20 @@ export function SiteHero({
     const pin = pinFilter(s);
     return filters[pin.key] === pin.value;
   };
-  const pick = (s: SiteTotal) => go(filtersAfterPin(filters, s));
+  // A project site also becomes the sidebar's project, so the two controls agree.
+  const pick = (s: SiteTotal) => {
+    const next = filtersAfterPin(filters, s);
+    if (s.kind === "site" && s.projectId && next.siteId && !next.projectId) {
+      void fetch(`/api/orgs/${orgId}/selected-project`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: s.projectId }),
+      }).catch(() => null);
+    }
+    go(next);
+  };
+  // Names show on the three biggest pins only; the rest give theirs on hover and in the list.
+  const labelled = new Set([...placed].sort((a, b) => b.kg - a.kg).slice(0, 3).map((s) => s.id));
 
   return (
     <section aria-labelledby="site-hero-title" className="mb-6 overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white">
@@ -124,7 +139,7 @@ export function SiteHero({
                       <circle cx={x} cy={y} r={r} fill={colour} fillOpacity={on ? 0.85 : 0.5} stroke={on ? "#111827" : colour} strokeWidth={on ? 3 : 1.5}>
                         <title>{`${s.name}: ${tonnes(s.kg, locale)}`}</title>
                       </circle>
-                      <text x={x} y={y - r - 6} textAnchor="middle" fontSize={11} fill="#374151">{s.name}</text>
+                      {labelled.has(s.id) ? <text x={x} y={y - r - 6} textAnchor="middle" fontSize={11} fill="#374151">{s.name}</text> : null}
                     </g>
                   );
                 })}

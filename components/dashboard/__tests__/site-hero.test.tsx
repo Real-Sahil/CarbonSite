@@ -38,6 +38,7 @@ describe("SiteHero", () => {
     render(<SiteHero {...base} sites={[site]} filters={{ scope: "1" }} />);
     fireEvent.click(within(screen.getByRole("list", { name: "Sites by emissions" })).getByRole("button", { name: /Bridge works/ }));
     expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard?scope=1&siteId=s1");
+    expect(fetch).toHaveBeenCalledWith("/api/orgs/o/selected-project", expect.objectContaining({ body: JSON.stringify({ projectId: "p1" }) }));
   });
 
   it("choosing the active site clears it, and the Clear control does the same", () => {
