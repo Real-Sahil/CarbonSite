@@ -80,6 +80,7 @@ import { ActiveCrossFilters, LinkedSankey, LinkedWaterfall } from "@/components/
 import { buildWaterfall } from "@/lib/charts/waterfall";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { KpiStatRow } from "@/components/dashboard/kpi-stat-row";
+import { formatKgCo2e } from "@/components/dashboard/kpi-format";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { activeFilters } from "@/lib/saved-views";
@@ -91,12 +92,6 @@ interface DashboardPageProps {
   searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; siteId?: string }>;
 }
 
-function formatKgCo2e(locale: string, value: unknown): string {
-  const numeric = Number(value ?? 0);
-  if (!Number.isFinite(numeric) || numeric === 0) return "0 kgCO₂e";
-  if (numeric >= 1000) return `${(numeric / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO₂e`;
-  return `${numeric.toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kgCO₂e`;
-}
 
 
 function formatCurrency(locale: string, value: unknown, currency = "GBP"): string {
@@ -1078,12 +1073,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {
               label: "Total footprint",
               value: currentFootprint > 0 ? currentFootprint : null,
-              format: (n) => formatKgCo2e(L, n),
+              format: { kind: "co2e", locale: L },
             },
             {
               label: "Period change",
               value: periodDeltaPct,
-              format: (n) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`,
+              format: { kind: "percent" },
               delta:
                 periodDeltaPct !== null
                   ? { value: periodDeltaPct, label: sliceFilter ? "vs previous period, same filters" : "vs previous period" }
@@ -1093,14 +1088,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {
               label: "Scope coverage",
               value: scopesWithActivity,
-              format: (n) => `${Math.round(n)}/3`,
+              format: { kind: "scopes", of: 3 },
             },
             ...(targetCount > 0
               ? [
                   {
                     label: "Target ambition",
                     value: targetReductionTotal,
-                    format: (n: number) => formatKgCo2e(L, n),
+                    format: { kind: "co2e", locale: L },
                     href: `/orgs/${orgId}/targets`,
                   },
                 ]

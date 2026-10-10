@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { formatKpi, type KpiFormat } from "@/components/dashboard/kpi-format";
+
+export type { KpiFormat };
 
 export type KpiStat = {
   label: string;
   value: number | null;
-  /** Formats a number for display; the caller passes formatters() output, so locale and currency stay in one place. */
-  format: (value: number) => string;
+  format: KpiFormat;
   /** Change against the comparison period. Omit when there is no comparison. */
   delta?: { value: number; label: string };
   /** True when a rise is good (e.g. diversion), false when a rise is bad (e.g. emissions). */
@@ -76,7 +78,7 @@ export function KpiStatRow({ stats }: { stats: KpiStat[] }) {
 
 function KpiCard({ stat }: { stat: KpiStat }) {
   const shown = useCountUp(stat.value);
-  const text = shown === null ? "No data" : stat.format(shown);
+  const text = shown === null ? "No data" : formatKpi(stat.format, shown);
   const body = (
     <>
       <p className="text-xs text-[#6B7280]">{stat.label}</p>
