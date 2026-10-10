@@ -97,10 +97,10 @@ export async function writeRecordBundle(archive: Archiver, orgId: string, record
     where: { organizationId: orgId, resourceId: { in: resourceIds } },
     orderBy: { chainSeq: "asc" },
     take: 2000,
-    select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true },
+    select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true, redactedAt: true },
   });
-  let audit = csvLine(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version"]);
-  for (const a of rows) audit += csvLine([a.chainSeq.toString(), a.createdAt, a.actorUserId, a.action, a.resourceType, a.resourceId, a.metadata, a.previousHash, a.hash, a.hashVersion]);
+  let audit = csvLine(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version", "redacted_at"]);
+  for (const a of rows) audit += csvLine([a.chainSeq.toString(), a.createdAt, a.actorUserId, a.action, a.resourceType, a.resourceId, a.metadata, a.previousHash, a.hash, a.hashVersion, a.redactedAt]);
   archive.append(audit, { name: "audit-log.csv" });
   archive.append(VERIFY_EVIDENCE_SCRIPT, { name: "verify-evidence.mjs" });
 

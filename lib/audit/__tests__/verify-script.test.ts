@@ -9,7 +9,7 @@ import { CHAIN_VERSION, ChainVerifier, rowHash, type ChainRow } from "../chain";
 import { VERIFY_AUDIT_LOG_SCRIPT } from "../verify-script";
 
 const ORG = "org-9";
-const HEADER = ["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version"];
+const HEADER = ["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version", "redacted_at"];
 
 function build(n: number): ChainRow[] {
   const rows: ChainRow[] = [];
@@ -36,7 +36,7 @@ function csv(rows: ChainRow[]): string {
   for (const r of rows) {
     const meta = r.metadata as Record<string, unknown>;
     const reordered = Object.fromEntries(Object.entries(meta).reverse());
-    out += csvLine([r.chainSeq, (r.createdAt as Date).toISOString(), r.actorUserId, r.action, r.resourceType, r.resourceId, reordered, r.previousHash, r.hash, r.hashVersion]);
+    out += csvLine([r.chainSeq, (r.createdAt as Date).toISOString(), r.actorUserId, r.action, r.resourceType, r.resourceId, reordered, r.previousHash, r.hash, r.hashVersion, r.redactedAt ? new Date(r.redactedAt).toISOString() : ""]);
   }
   return out;
 }
@@ -97,5 +97,21 @@ describe("verify-audit-log.mjs agrees with the library", () => {
     const mixed = runScript(csv([legacy, ...rows.slice(0, 1).map((x) => ({ ...x, previousHash: "old", hash: rowHash({ ...x, previousHash: "old", organizationId: ORG }) }))]));
     expect(mixed.out).toContain("Older rows (links only): 1");
     expect(mixed.out).toContain("Recomputed and matching: 1");
+  });
+
+  it("counts anonymised rows by their links and still catches a break after them", () => {
+    const rows = build(6);
+    const redact = (r: ChainRow): ChainRow => ({ ...r, actorUserId: null, metadata: { redacted: true }, redactedAt: new Date("2033-01-01T00:00:00Z") });
+    const mixed = [redact(rows[0]), redact(rows[1]), ...rows.slice(2)];
+    expect(lib(mixed)).toMatchObject({ status: "intact", redacted: 2, verified: 4 });
+    const r = runScript(csv(mixed));
+    expect(r.code).toBe(0);
+    expect(r.out).toContain("Anonymised (links only):  2");
+    expect(r.out).toContain("Recomputed and matching: 4");
+    const bad = mixed.map((x, i) => (i === 4 ? { ...x, action: "record.deleted" } : x));
+    expect(runScript(csv(bad)).code).toBe(1);
+    const gap = mixed.filter((_, i) => i !== 1);
+    expect(lib(gap).firstBreak?.reason).toBe("link");
+    expect(runScript(csv(gap)).code).toBe(1);
   });
 });

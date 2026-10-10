@@ -35,7 +35,7 @@ MetricOra retains personal data only for as long as necessary to provide the ser
 
 ---
 
-## 3. Audit Logs (5 Years)
+## 3. Audit Logs (6 Years; the 5-year figures in this section are superseded by the decided 6 years, see docs/legal/POLICY_DRAFTS.md)
 
 | Data Type | Retention Period | Anonymization Policy | Deletion Method | Notes |
 |--|--|--|--|--|

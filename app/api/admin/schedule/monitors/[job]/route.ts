@@ -16,6 +16,7 @@ import { processCarbonBudgetAlerts } from "@/lib/project-carbon/burndown-alerts"
 import { runTenderWatches } from "@/lib/tenders/watch";
 import { processManagementSystemReminders } from "@/lib/management-systems/reminders";
 import { processWasteDocumentReminders } from "@/lib/waste/reminders";
+import { anonymiseExpiredAuditRows } from "@/lib/audit/anonymise";
 import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,11 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   // Mondays: licences and permits ending soon or just lapsed (migration 20261008000088).
   "waste-documents": async () => {
     await processWasteDocumentReminders();
+    return "processed";
+  },
+  // Monthly: personal fields removed from audit rows past six years (migration 20261012000093).
+  "audit-anonymise": async () => {
+    await anonymiseExpiredAuditRows();
     return "processed";
   },
   "monthly-checklist": async () => {

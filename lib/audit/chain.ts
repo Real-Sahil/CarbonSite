@@ -52,6 +52,8 @@ export interface ChainRow {
   previousHash: string | null;
   hash: string | null;
   hashVersion: number | null;
+  /** Personal fields removed by the retention job; the stored hash stays, so only the link can be checked. */
+  redactedAt?: Date | string | null;
 }
 
 export type BreakReason = "link" | "content" | "missing_hash";
@@ -65,6 +67,8 @@ export interface ChainResult {
   legacy: number;
   /** Legacy rows whose link to the row before did not match (the old writer could fork under load). */
   legacyLinkBreaks: number;
+  /** Rows anonymised after the retention period: links checked, contents not. */
+  redacted: number;
   headSeq: string | null;
   headHash: string | null;
   firstBreak?: { chainSeq: string; reason: BreakReason };
@@ -77,7 +81,7 @@ export interface ChainResult {
  */
 export class ChainVerifier {
   private last: string | null | undefined;
-  private res: ChainResult = { status: "empty", rows: 0, verified: 0, legacy: 0, legacyLinkBreaks: 0, headSeq: null, headHash: null };
+  private res: ChainResult = { status: "empty", rows: 0, verified: 0, legacy: 0, legacyLinkBreaks: 0, redacted: 0, headSeq: null, headHash: null };
 
   constructor(private readonly organizationId: string, anchor?: string | null) {
     this.last = anchor;
@@ -93,7 +97,13 @@ export class ChainVerifier {
     r.rows++;
     const seq = String(row.chainSeq);
     const linked = this.last === undefined || (row.previousHash ?? null) === (this.last ?? null);
-    if (row.hashVersion === CHAIN_VERSION) {
+    if (row.redactedAt) {
+      // Anonymised: the stored hash was kept so the next row still follows it, but the fields it
+      // covered are gone. A redacted row must still carry a hash and sit in the chain.
+      if (!row.hash) r.firstBreak = { chainSeq: seq, reason: "missing_hash" };
+      else if (!linked) r.firstBreak = { chainSeq: seq, reason: "link" };
+      else r.redacted++;
+    } else if (row.hashVersion === CHAIN_VERSION) {
       if (!row.hash) r.firstBreak = { chainSeq: seq, reason: "missing_hash" };
       else if (!linked) r.firstBreak = { chainSeq: seq, reason: "link" };
       else if (rowHash({ ...row, organizationId: this.organizationId }) !== row.hash) r.firstBreak = { chainSeq: seq, reason: "content" };

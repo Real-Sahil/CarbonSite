@@ -10,7 +10,9 @@ export const VERIFY_AUDIT_LOG_SCRIPT = String.raw`#!/usr/bin/env node
 //
 // Each row's hash covers the row before it and the row's own fields, so changing, removing or
 // reordering a row breaks every hash after it. Rows with an empty hash_version were written
-// before the hash could be recomputed: their links are checked, their contents are not.
+// before the hash could be recomputed: their links are checked, their contents are not. Rows with a
+// redacted_at value had their personal fields removed after the retention period: the stored hash is
+// kept so the chain still links, but their contents cannot be rechecked.
 // The first row of this file may start part-way through the organisation's chain, so its
 // previous_hash is taken as given. Removing the newest rows leaves a shorter chain that is still
 // consistent: compare the head hash printed below with a copy you hold from earlier.
@@ -65,14 +67,21 @@ const col = (name) => {
   return i;
 };
 const C = Object.fromEntries(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version"].map((n) => [n, col(n)]));
+// Packs written before anonymisation existed have no redacted_at column.
+const REDACTED = head.indexOf("redacted_at");
 
-let last, verified = 0, legacy = 0, legacyLinkBreaks = 0, headSeq = "", headHash = "", broken = null;
+let last, verified = 0, redacted = 0, legacy = 0, legacyLinkBreaks = 0, headSeq = "", headHash = "", broken = null;
 for (const f of table) {
   const seq = f[C.chain_seq];
   const hash = f[C.hash] || null;
   const previousHash = f[C.previous_hash] || null;
   const linked = last === undefined || previousHash === last;
-  if (f[C.hash_version] === "2") {
+  if (REDACTED >= 0 && f[REDACTED]) {
+    if (!hash) broken = { seq, reason: "hash missing" };
+    else if (!linked) broken = { seq, reason: "does not follow the row before it (a row was removed, added or reordered)" };
+    else redacted++;
+    if (broken) break;
+  } else if (f[C.hash_version] === "2") {
     let metadata;
     try { metadata = JSON.parse(f[C.metadata] || "{}"); } catch { metadata = undefined; }
     const row = { previousHash, actor: clean(f[C.actor_user_id]) || null, action: clean(f[C.action]), resourceType: clean(f[C.resource_type]), resourceId: clean(f[C.resource_id]) || null, metadata, createdAt: f[C.created_at] };
@@ -92,6 +101,7 @@ for (const f of table) {
 
 console.log("Rows read:               " + table.length);
 console.log("Recomputed and matching: " + verified);
+console.log("Anonymised (links only):  " + redacted);
 console.log("Older rows (links only): " + legacy + (legacyLinkBreaks ? " (" + legacyLinkBreaks + " with a link mismatch)" : ""));
 console.log("Last row checked:        " + (headSeq || "-") + (headHash ? "  hash " + headHash : ""));
 if (broken) {

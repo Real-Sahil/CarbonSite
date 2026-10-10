@@ -274,7 +274,7 @@ export async function writeAssurancePack(
   }
 
   // audit-log.csv, oldest first so the hash chain reads in order
-  let auditCsv = csvLine(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version"]);
+  let auditCsv = csvLine(["chain_seq", "created_at", "actor_user_id", "action", "resource_type", "resource_id", "metadata", "previous_hash", "hash", "hash_version", "redacted_at"]);
   let auditRows = 0;
   let seq: bigint | undefined;
   while (auditRows < MAX_AUDIT_ROWS) {
@@ -282,10 +282,10 @@ export async function writeAssurancePack(
       where: { organizationId: opts.orgId, createdAt: { gte: snapshot.reportingPeriod.startDate }, ...(seq != null ? { chainSeq: { gt: seq } } : {}) },
       orderBy: { chainSeq: "asc" },
       take: PAGE,
-      select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true },
+      select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true, redactedAt: true },
     });
     if (!rows.length) break;
-    for (const a of rows) auditCsv += csvLine([a.chainSeq.toString(), a.createdAt, a.actorUserId, a.action, a.resourceType, a.resourceId, a.metadata, a.previousHash, a.hash, a.hashVersion]);
+    for (const a of rows) auditCsv += csvLine([a.chainSeq.toString(), a.createdAt, a.actorUserId, a.action, a.resourceType, a.resourceId, a.metadata, a.previousHash, a.hash, a.hashVersion, a.redactedAt]);
     auditRows += rows.length;
     seq = rows[rows.length - 1].chainSeq;
   }

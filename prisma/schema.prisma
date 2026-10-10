@@ -2434,6 +2434,9 @@ model AuditLog {
   /// be recomputed from them. Null = a row written before that: its links are
   /// checked, its contents cannot be.
   hashVersion    Int?     @map("hash_version")
+  /// Set by the retention job (lib/audit/anonymise.ts) when the row's personal fields were removed
+  /// after the retention period. The stored hash is kept, so links still check; contents cannot.
+  redactedAt     DateTime? @map("redacted_at")
   createdAt      DateTime @default(now()) @map("created_at")
 
   organization  Organization   @relation(fields: [organizationId], references: [id])

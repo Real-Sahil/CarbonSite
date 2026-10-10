@@ -79,7 +79,7 @@ The current table is incomplete and in places vague ("5 years, anonymised after 
 | Account details | Life of the account, then 30 days after closure (**Decided**) | Contract | Closure request; scheduled job **Open** |
 | Activity records and calculations | 7 years after the period ends (**Decided**, as the Privacy page already states) | Customer's reporting and audit needs; set in Terms | Customer deletion or closure; retention job **Open** |
 | Evidence files (bills, tickets, photographs) | Same as the record they support | As above | As above |
-| Audit log | 6 years (**Decided**: matches the limitation period for contract claims). Personal fields are removed after 6 years; the hash chain is kept | Security and accountability | Scheduled anonymisation **Open**: not yet built |
+| Audit log | 6 years (**Decided**: matches the limitation period for contract claims). Personal fields are removed after 6 years; the hash chain is kept | Security and accountability | Monthly job `audit-anonymise` (`lib/audit/anonymise.ts`) built: nulls actor, IP and user agent, replaces metadata with `{"redacted":true}`, keeps the stored hash; verifiers then check links only for those rows |
 | Backups | Daily dumps 35 days; monthly dumps 12 months (**Decided**) | Recovery | Automatic pruning in `backup.yml` |
 | Sessions | 7 days (web) | Security | Expiry |
 | Field-worker names and PINs | Until unassignment, then removed within 30 days (**Decided**) | Contract | Removal job **Open**: not yet built |

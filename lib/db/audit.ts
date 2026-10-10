@@ -523,7 +523,7 @@ export async function verifyAuditChain(organizationId: string): Promise<ChainRes
       where: { organizationId, ...(after !== undefined ? { chainSeq: { gt: after } } : {}) },
       orderBy: { chainSeq: "asc" },
       take: 2_000,
-      select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true },
+      select: { chainSeq: true, createdAt: true, actorUserId: true, action: true, resourceType: true, resourceId: true, metadata: true, previousHash: true, hash: true, hashVersion: true, redactedAt: true },
     });
     if (!rows.length) break;
     for (const r of rows) verifier.feed(r);

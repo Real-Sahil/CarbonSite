@@ -97,6 +97,17 @@ describe("ChainVerifier", () => {
     expect(run([legacy, rows[0]]).firstBreak?.reason).toBe("link"); // v2 row ignoring the legacy hash
     expect(run([{ ...legacy, hash: null }, { ...first, previousHash: null }]).status).toBe("intact"); // unhashed legacy row
   });
+  it("counts anonymised rows without claiming their contents were verified", () => {
+    const rows = chain(4, () => ({ secret: "name" }));
+    const redact = (r: ChainRow): ChainRow => ({ ...r, actorUserId: null, metadata: { redacted: true }, redactedAt: new Date() });
+    const r = run([redact(rows[0]), redact(rows[1]), rows[2], rows[3]]);
+    expect(r).toMatchObject({ status: "intact", redacted: 2, verified: 2 });
+    // links still checked: a removed row or a stripped hash breaks the chain
+    expect(run([redact(rows[0]), rows[2]]).firstBreak?.reason).toBe("link");
+    expect(run([{ ...redact(rows[0]), hash: null }]).firstBreak?.reason).toBe("missing_hash");
+    // a changed row after a redacted one is still caught
+    expect(run([redact(rows[0]), { ...rows[1], action: "x" }]).firstBreak?.reason).toBe("content");
+  });
   it("counts a legacy link mismatch without failing the chain", () => {
     const l = (seq: number, prev: string | null, hash: string): ChainRow => ({ chainSeq: seq, createdAt: t0, actorUserId: null, action: "x", resourceType: "t", resourceId: "x", metadata: {}, previousHash: prev, hash, hashVersion: null });
     const r = run([l(1, null, "h1"), l(2, "h1", "h2"), l(3, "h1", "h3")]);
