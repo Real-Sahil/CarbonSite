@@ -4,7 +4,8 @@ import { stageTimer } from "@/lib/dashboard/stage-timer";
 import { getFactorLibraries } from "@/lib/cache/reference";
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { outdatedMethodology } from "@/lib/calculation/methodology";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { SiteHeroSection } from "./site-hero-section";
 import Link from "next/link";
 import {
   Activity,
@@ -2482,7 +2483,18 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
-      <DashboardFilterBar filters={dashboardFilters} projects={projectOptions} socialValue={socialValueNote} />
+      <Suspense fallback={<div aria-hidden="true" className="mb-6 h-72 animate-pulse rounded-[14px] bg-slate-100" />}>
+        <SiteHeroSection
+          orgId={orgId}
+          periodId={currentPeriod?.id ?? null}
+          periodLabel={currentPeriod?.label ?? ""}
+          filters={dashboardFilters}
+          projects={projectOptions}
+          locale={L}
+        />
+      </Suspense>
+
+      <DashboardFilterBar filters={dashboardFilters} socialValue={socialValueNote} />
       <ActiveCrossFilters chips={crossChips} recordsHref={recordsHref} />
 
       {/* Saved views: personal and shared sets of the filters below */}

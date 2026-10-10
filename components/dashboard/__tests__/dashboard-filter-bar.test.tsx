@@ -43,10 +43,9 @@ describe("DashboardFilterBar", () => {
     expect(screen.queryByText(/organisation-wide/)).toBeNull();
   });
 
-  it("offers projects and the social value switch, and writes both to the URL", () => {
-    render(<DashboardFilterBar filters={{}} projects={[{ id: "pr1", label: "Bridge (Network Rail)" }]} />);
-    fireEvent.change(screen.getByLabelText("Project"), { target: { value: "pr1" } });
-    expect(nav.replace).toHaveBeenCalledWith("/orgs/o/dashboard?projectId=pr1");
+  it("leaves the project choice to the site hero and writes the social value switch to the URL", () => {
+    render(<DashboardFilterBar filters={{}} />);
+    expect(screen.queryByLabelText("Project")).toBeNull();
     fireEvent.click(screen.getByLabelText("Contracts with social value commitments"));
     expect(nav.replace).toHaveBeenLastCalledWith("/orgs/o/dashboard?sv=1");
   });

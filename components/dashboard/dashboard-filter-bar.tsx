@@ -17,11 +17,9 @@ export type SocialValueBeside = { contracts: number; commitments: number; gbpVal
 
 export function DashboardFilterBar({
   filters,
-  projects = [],
   socialValue = null,
 }: {
   filters: Record<string, string>;
-  projects?: { id: string; label: string }[];
   socialValue?: SocialValueBeside | null;
 }) {
   const router = useRouter();
@@ -29,16 +27,6 @@ export function DashboardFilterBar({
   const [pending, startTransition] = useTransition();
 
   function set(key: string, value: string) {
-    // The sidebar's project choice follows this control, so "All projects" sticks. Clearing
-    // waits for the cookie, or a bare dashboard URL would send the person back to the project.
-    if (key === "projectId") {
-      const saved = fetch(`/api/orgs/${pathname.split("/")[2]}/selected-project`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: value || null }),
-      }).catch(() => null);
-      if (!value) return void saved.then(() => go(key, value));
-    }
     go(key, value);
   }
 
@@ -83,17 +71,6 @@ export function DashboardFilterBar({
             <option value="3">Scope 3</option>
           </select>
         </div>
-        {projects.length > 0 && (
-          <div className="space-y-1">
-            <Label htmlFor="dashboard-filter-projectId" className="text-xs text-[#6B7280]">Project</Label>
-            <select id="dashboard-filter-projectId" className={FIELD} value={filters.projectId ?? ""} onChange={(e) => set("projectId", e.target.value)}>
-              <option value="">All projects</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.label}</option>
-              ))}
-            </select>
-          </div>
-        )}
         <div className="flex items-end pb-2">
           <label className="flex items-center gap-2 text-sm text-[#111827]">
             <input

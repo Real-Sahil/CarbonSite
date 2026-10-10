@@ -45,17 +45,33 @@ export async function loadSnapshotRefs(orgId: string): Promise<SnapshotRef[]> {
 export async function loadSnapshotSites(orgId: string, snapshotId: string) {
   const snap = await prisma.publishedSnapshot.findFirst({ where: { id: snapshotId, organizationId: orgId }, select: { id: true } });
   if (!snap) return null;
+  return loadSites(orgId, { snapshotId: snap.id });
+}
+
+/**
+ * Per-site totals of the live (unpublished) figures for one reporting period, for the dashboard hero. These move
+ * as records change, so the hero says so; the published view stays on the Site map.
+ */
+export async function loadLiveSites(orgId: string, periodId: string) {
+  return loadSites(orgId, { periodId });
+}
+
+type SiteScope = { snapshotId: string } | { periodId: string };
+
+async function loadSites(orgId: string, scope: SiteScope) {
+  // Live rows have no snapshot; published rows are tied to one. Either way the organisation is in the where.
+  const owner = "snapshotId" in scope ? { snapshotId: scope.snapshotId } : { snapshotId: null, reportingPeriodId: scope.periodId };
   const [facilities, aggregates, projectSites, slices] = await Promise.all([
     prisma.facility.findMany({ where: { organizationId: orgId }, select: { id: true, name: true, postcode: true, latitude: true, longitude: true } }),
     prisma.dashboardAggregate.findMany({
-      where: { organizationId: orgId, snapshotId: snap.id, ...FACILITY_BREAKDOWN_DIMENSIONS },
+      where: { organizationId: orgId, ...owner, ...FACILITY_BREAKDOWN_DIMENSIONS },
       select: { facilityId: true, totalCo2e: true, recordCount: true },
     }),
     prisma.site.findMany({ where: { organizationId: orgId }, select: { id: true, name: true, projectId: true, postcode: true, city: true, project: { select: { name: true } } } }),
     // One slice row per scope, method, category and month, so pin the Scope 2 method to count each calculation once.
     prisma.dashboardSlice.groupBy({
       by: ["siteId"],
-      where: { organizationId: orgId, snapshotId: snap.id, siteId: { not: null }, ...PRIMARY_SCOPE2_METHOD },
+      where: { organizationId: orgId, ...owner, siteId: { not: null }, ...PRIMARY_SCOPE2_METHOD },
       _sum: { totalCo2e: true, recordCount: true },
     }),
   ]);
