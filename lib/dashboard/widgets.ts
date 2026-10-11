@@ -9,6 +9,11 @@ export type WidgetWidth = "half" | "full";
 export type WidgetDef = { id: string; title: string; width: WidgetWidth; roles?: readonly string[] };
 
 const EDITORS = ["admin", "editor", "sustainability_director", "sustainability_manager", "operations_manager"] as const;
+// Same roles that may open Carbon Intelligence (app/(app)/orgs/[orgId]/carbon-intelligence/page.tsx).
+const INTELLIGENCE_VIEWERS = [
+  "admin", "sustainability_director", "sustainability_manager",
+  "editor", "reviewer", "viewer", "auditor",
+] as const;
 
 /** Every widget, in the order the dashboard has always shown them. */
 export const WIDGETS: readonly WidgetDef[] = [
@@ -26,6 +31,7 @@ export const WIDGETS: readonly WidgetDef[] = [
   { id: "scope-detail", title: "Scopes, year-on-year and readiness", width: "full" },
   { id: "data-quality", title: "Data quality", width: "full" },
   { id: "analytics-reporting", title: "Analytics and reporting", width: "full" },
+  { id: "carbon-intelligence", title: "Carbon intelligence", width: "full", roles: INTELLIGENCE_VIEWERS },
   { id: "social-evidence", title: "Social value and evidence", width: "full" },
   { id: "ops-health", title: "Operations health", width: "half" },
   { id: "review-queue", title: "Review task queue", width: "half" },
@@ -55,7 +61,7 @@ export function layoutError(l: Layout): string | null {
 
 // What each kind of person sees first. Everything else stays one click away
 // under "Add widget"; nothing is withheld that the role may read.
-const EXECUTIVE = ["tasks", "headline", "scope-breakdown", "flow", "waterfall", "facilities", "data-quality", "scope-detail"];
+const EXECUTIVE = ["tasks", "headline", "carbon-intelligence", "scope-breakdown", "flow", "waterfall", "facilities", "data-quality", "scope-detail"];
 const REVIEWER = ["tasks", "headline", "review-queue", "ops-health", "data-quality", "operations", "flow"];
 const PRESETS: Record<string, string[] | undefined> = {
   sustainability_director: EXECUTIVE,

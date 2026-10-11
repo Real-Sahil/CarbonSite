@@ -39,6 +39,7 @@ import { redirect } from "next/navigation";
 import { getSelectedProject } from "@/lib/project/selected";
 import { TaskLauncher } from "@/components/dashboard/task-launcher";
 import { WasteKpisWidget } from "@/components/waste/waste-kpis-widget";
+import { CarbonIntelligenceWidget } from "@/components/carbon-intelligence/intelligence-widget";
 import { requireOrgMember, AuthError, ROLE_GROUPS } from "@/lib/auth/session";
 import {
   CATEGORY_BY_FACILITY_DIMENSIONS,
@@ -2022,6 +2023,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
     </>
   );
+  widgetNodes["carbon-intelligence"] = <CarbonIntelligenceWidget orgId={orgId} role={role} />;
   widgetNodes["social-evidence"] = (
     <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
