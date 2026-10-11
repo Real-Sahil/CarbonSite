@@ -15,7 +15,7 @@ import { AXIS_TICK, GRID_STROKE, NEUTRAL_SERIES_COLOR, formatTonnesValue } from 
 
 export function EmissionsTrendChart({
   orgId,
-  days = 30,
+  days,
 }: {
   orgId: string;
   days?: number;
@@ -23,9 +23,8 @@ export function EmissionsTrendChart({
   const { data, isLoading, error } = useQuery({
     queryKey: ["emissions-trend", orgId, days],
     queryFn: async () => {
-      const res = await fetch(
-        `/api/orgs/${orgId}/analytics/emissions-trend?days=${days}`
-      );
+      const query = days ? `?days=${days}` : "";
+      const res = await fetch(`/api/orgs/${orgId}/analytics/emissions-trend${query}`);
       if (!res.ok) throw new Error("Failed to fetch emissions trend");
       return res.json();
     },

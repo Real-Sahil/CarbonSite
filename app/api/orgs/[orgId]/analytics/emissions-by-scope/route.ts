@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
+import { loadAnalyticsPeriod } from "@/lib/analytics/period";
 import { handleRouteError } from "@/lib/validation/api";
 
 export async function GET(
@@ -13,22 +15,19 @@ export async function GET(
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
-    // Use DashboardAggregate — pre-computed totals per scope.
-    // Join to the latest published snapshot so recalculations don't double-count.
-    const latestSnapshot = await prisma.publishedSnapshot.findFirst({
-      where: { organizationId: orgId },
-      orderBy: { publishedAt: "desc" },
-      select: { id: true },
-    });
+    // Same rows the dashboard reads: live aggregates of the latest period, rollup rows only,
+    // location-based Scope 2 (aggregate-filters.ts says why each pin is needed).
+    const period = await loadAnalyticsPeriod(orgId);
+    if (!period) return NextResponse.json({ data: [] });
 
     const aggregates = await prisma.dashboardAggregate.groupBy({
       by: ["scope"],
       where: {
         organizationId: orgId,
-        ...(latestSnapshot ? { snapshotId: latestSnapshot.id } : {}),
-        emissionCategoryId: null,
+        reportingPeriodId: period.id,
+        snapshotId: null,
+        ...SCOPE_ROLLUP_DIMENSIONS,
         facilityId: null,
-        businessUnitId: null,
       },
       _sum: { totalCo2e: true },
       orderBy: { scope: "asc" },

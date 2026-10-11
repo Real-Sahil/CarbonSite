@@ -3,6 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
+import { loadAnalyticsPeriod } from "@/lib/analytics/period";
 import { handleRouteError } from "@/lib/validation/api";
 
 export async function GET(
@@ -13,19 +15,15 @@ export async function GET(
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
-    const latestSnapshot = await prisma.publishedSnapshot.findFirst({
-      where: { organizationId: orgId },
-      orderBy: { publishedAt: "desc" },
-      select: { id: true },
-    });
+    const period = await loadAnalyticsPeriod(orgId);
+    if (!period) return NextResponse.json({ data: [] });
 
     const aggregates = await prisma.dashboardAggregate.findMany({
       where: {
         organizationId: orgId,
-        ...(latestSnapshot ? { snapshotId: latestSnapshot.id } : {}),
-        emissionCategoryId: { not: null },
-        facilityId: null,
-        businessUnitId: null,
+        reportingPeriodId: period.id,
+        snapshotId: null,
+        ...CATEGORY_BREAKDOWN_DIMENSIONS,
       },
       select: {
         scope: true,
