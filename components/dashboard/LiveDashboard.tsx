@@ -38,12 +38,16 @@ export function LiveDashboard({
   const [data, setData] = useState<DashboardData | null>(null);
   const [connected, setConnected] = useState(false);
   const [reconnectCount, setReconnectCount] = useState(0);
+  // Off until the person asks for it: no stream, and no database polling on
+  // the server, unless this is true.
+  const [live, setLive] = useState(false);
 
   const esRef = useRef<EventSource | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
+    if (!live) return;
     mountedRef.current = true;
 
     function clearTimer() {
@@ -125,7 +129,31 @@ export function LiveDashboard({
       clearTimer();
       closeEs();
     };
-  }, [orgId, onUpdate]);
+  }, [live, orgId, onUpdate]);
+
+  function stopLive() {
+    setLive(false);
+    setConnected(false);
+    setData(null);
+    setReconnectCount(0);
+  }
+
+  if (!live) {
+    return (
+      <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-gray-600">
+          Live updates are off. Turn them on to stream figures as calculations complete.
+        </p>
+        <button
+          type="button"
+          onClick={() => setLive(true)}
+          className="self-start rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-100 sm:self-auto"
+        >
+          Turn on live updates
+        </button>
+      </div>
+    );
+  }
 
   const statusIndicator = (
     <div className="flex items-center gap-2">
@@ -142,6 +170,13 @@ export function LiveDashboard({
           </span>
         </>
       )}
+      <button
+        type="button"
+        onClick={stopLive}
+        className="ml-2 text-xs text-gray-600 underline underline-offset-2 hover:text-gray-900"
+      >
+        Turn off
+      </button>
     </div>
   );
 
