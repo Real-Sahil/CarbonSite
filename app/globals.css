@@ -29,12 +29,15 @@
   /* Teal + Blue dual system — analytical, clean, enterprise BI */
 
   /* Primary: teal brand */
-  --color-primary:        #0F766E;
-  --color-primary-hover:  #0B5F59;
-  --color-primary-light:  #E6F4F1;
-  --color-primary-border: #A7D4CF;
-  --color-primary-dark:   #0B3B38;
-  --color-primary-mid:    #F4F8F7;
+  /* Product primary is the marketing ember (#C2410C), the same orange the
+     product screens hard-code. Tenant colours override it through
+     lib/branding/css-vars.ts only when they pass contrast. */
+  --color-primary:        #C2410C;
+  --color-primary-hover:  #9A3412;
+  --color-primary-light:  #FFF7ED;
+  --color-primary-border: #FED7AA;
+  --color-primary-dark:   #7C2D12;
+  --color-primary-mid:    #FDEBDD;
 
   /* Info: blue */
   --color-info:           #1D4ED8;
@@ -87,7 +90,7 @@
   --color-scope-3: #3B6FD4;
 
   /* Legacy aliases (keeps old var() references working) */
-  --color-forest-ink:    #0F766E;
+  --color-forest-ink:    #C2410C;
   --color-sage-wash:     #E6F4F1;
   --color-mist-blue:     #EAF1FF;
   --color-mint-veil:     #EAF7EE;
@@ -96,14 +99,14 @@
   --color-hairline-gray: #E2ECEA;
   --color-charcoal:      #17201D;
   --color-graphite:      #5F6F68;
-  --color-brand-primary: #0F766E;
+  --color-brand-primary: #C2410C;
   --color-brand-accent:  #15803D;
 
   /* Brand palette */
   --color-brand-forest: #15803D;
   --color-sky-blue:     #1D4ED8;
   --color-sky-light:    #EAF1FF;
-  --color-cta-orange:   #0F766E;
+  --color-cta-orange:   #C2410C;
   --color-surface-var:  #F4F8F7;
 
   /* Font */
@@ -295,7 +298,7 @@
 /* ── Button & interaction utilities ──────────────────────────────────────── */
 .btn-primary {
   @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: #0F766E;
+  background-color: #C2410C;
   color: #ffffff;
   font-weight: 500;
   font-size: 0.875rem;
@@ -304,9 +307,9 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #0B5F59;
+  background-color: #9A3412;
   transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 8px 24px rgba(194, 65, 12, 0.25);
 }
 
 .btn-primary:active:not(:disabled) {

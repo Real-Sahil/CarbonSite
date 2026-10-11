@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import React from "react";
 import { needsTermsAcceptance } from "@/lib/legal/terms";
+import { brandingVars } from "@/lib/branding/css-vars";
 import { TermsGate } from "./terms-gate";
 
 export default async function AppLayout({
@@ -36,11 +37,10 @@ export default async function AppLayout({
     });
 
     if (branding) {
-      brandingStyle = {
-        "--brand-primary": branding.primaryHex,
-        "--brand-accent": branding.accentHex,
-        "--brand-font": branding.fontFamily,
-      } as React.CSSProperties;
+      const vars = brandingVars(branding);
+      if (Object.keys(vars).length > 0) {
+        brandingStyle = vars as React.CSSProperties;
+      }
     }
   }
 

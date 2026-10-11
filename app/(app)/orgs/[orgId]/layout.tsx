@@ -11,27 +11,7 @@ import { getOrgBasics } from "@/lib/i18n/org-basics";
 import { localeForCountry, orgFormat } from "@/lib/i18n/org-format";
 import { OrgLocaleProvider } from "@/components/org/org-locale";
 import { getSelectedProject } from "@/lib/project/selected";
-
-function buildBrandingCssVars(branding: {
-  primaryHex: string | null;
-  accentHex: string | null;
-  fontFamily: string | null;
-} | null): string {
-  if (!branding) return "";
-  const parts: string[] = [];
-  if (branding.primaryHex) {
-    parts.push(`--color-forest-ink: #${branding.primaryHex.replace(/^#/, "")};`);
-    parts.push(`--color-brand-primary: #${branding.primaryHex.replace(/^#/, "")};`);
-  }
-  if (branding.accentHex) {
-    parts.push(`--color-mist-blue: #${branding.accentHex.replace(/^#/, "")};`);
-    parts.push(`--color-brand-accent: #${branding.accentHex.replace(/^#/, "")};`);
-  }
-  if (branding.fontFamily) {
-    parts.push(`--font-sans: "${branding.fontFamily}", system-ui, sans-serif;`);
-  }
-  return parts.join(" ");
-}
+import { brandingCss, brandingVars } from "@/lib/branding/css-vars";
 
 interface OrgLayoutProps {
   children: React.ReactNode;
@@ -171,7 +151,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     email: session!.user.email,
   };
 
-  const cssVars = buildBrandingCssVars(branding);
+  const cssVars = brandingCss(brandingVars(branding));
 
   // Failed renewal: admins see the grace period, or that new work is blocked.
   const payment =
@@ -191,7 +171,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
 
   return (
     <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8F9FA]">
-      {cssVars && <style>{`:root { ${cssVars} }`}</style>}
+      {cssVars && <style>{cssVars}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} />
       <CommandPalette orgId={orgId} role={membership!.role} canUseViews={viewRoles().includes(membership!.role)} />
       <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
