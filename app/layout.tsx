@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { MotionProvider } from "@/components/motion-provider";
+import { ScrollProvider } from "@/components/scroll-provider";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 import "@designcodeio/threeui/style.css";
@@ -54,7 +55,9 @@ export default function RootLayout({
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <Providers>
-          <MotionProvider>{children}</MotionProvider>
+          <ScrollProvider>
+            <MotionProvider>{children}</MotionProvider>
+          </ScrollProvider>
         </Providers>
         <SpeedInsights />
       </body>
