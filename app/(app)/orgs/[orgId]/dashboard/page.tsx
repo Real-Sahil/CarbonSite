@@ -1914,6 +1914,18 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 detail="Records included in current scope totals"
               />
               <InsightCard
+                icon={BarChart3}
+                label="Current footprint"
+                value={formatKgCo2e(L, currentFootprint)}
+                detail="Scope 1, 2, and 3 combined"
+              />
+              <InsightCard
+                icon={PieChart}
+                label="Scope coverage"
+                value={`${scopeRows.filter((row) => Number(row.records) > 0).length}/3`}
+                detail="Scopes with calculated activity"
+              />
+              <InsightCard
                 icon={PieChart}
                 label="Largest category share"
                 value={currentFootprint > 0 && maxCategoryTotal > 0 ? `${Math.round((maxCategoryTotal / currentFootprint) * 100)}%` : "No data"}
