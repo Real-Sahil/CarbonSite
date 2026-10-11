@@ -1,6 +1,6 @@
 /**
  * Scheduled monitoring jobs. Called by the Supabase pg_cron schedule in
- * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045 and 20260927000050 (daily), 20261005000076 (monthly). Each job only alerts once per record or per
+ * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045, 20260927000050 and 20261015000099 (daily), 20261005000076 (monthly). Each job only alerts once per record or per
  * threshold day, so a repeated or late call is safe.
  */
 
@@ -17,6 +17,7 @@ import { runTenderWatches } from "@/lib/tenders/watch";
 import { processManagementSystemReminders } from "@/lib/management-systems/reminders";
 import { processWasteDocumentReminders } from "@/lib/waste/reminders";
 import { anonymiseExpiredAuditRows } from "@/lib/audit/anonymise";
+import { anchorAllAuditChains } from "@/lib/audit/anchor";
 import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,12 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   // Monthly: personal fields removed from audit rows past six years (migration 20261012000093).
   "audit-anonymise": async () => {
     await anonymiseExpiredAuditRows();
+    return "processed";
+  },
+  // Daily: each organisation's audit-chain head copied to storage outside the database
+  // (migration 20261015000099). Skipped on the db and local drivers.
+  "audit-anchor": async () => {
+    await anchorAllAuditChains();
     return "processed";
   },
   "monthly-checklist": async () => {

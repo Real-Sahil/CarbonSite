@@ -50,6 +50,14 @@ function resolveDriver(): "supabase" | "r2" | "db" | "local" {
 }
 
 const DRIVER = resolveDriver();
+
+/**
+ * True when objects live outside the app database (Supabase or R2). The db and local drivers keep
+ * their bytes beside the audit rows, so a copy there cannot anchor the chain.
+ */
+export function isExternalStorageDriver(): boolean {
+  return DRIVER === "supabase" || DRIVER === "r2";
+}
 const PRESIGN_TTL = 60 * 60; // 1 hour (increased from 15 minutes for slow/interrupted downloads)
 
 // Absolute origin for db-driver URLs — mobile clients and redirects need a
@@ -170,6 +178,11 @@ export const keys = {
     `org/${orgId}/reports/${reportId}/report.xml`,
   brandingLogo: (orgId: string, filename: string) =>
     `org/${orgId}/branding/${filename}`,
+  // Audit-chain head copied out of the database (lib/audit/anchor.ts): one file per head
+  // sequence, plus latest.json for the check.
+  auditAnchor: (orgId: string, headSeq: string) =>
+    `org/${orgId}/audit-anchors/${headSeq}.json`,
+  auditAnchorLatest: (orgId: string) => `org/${orgId}/audit-anchors/latest.json`,
   pilotKitPdf: (orgId: string, filename: string) =>
     `org/${orgId}/pilot-kit/${filename}`,
   // A DSAR subject's data spans every org they belong to, not one tenant —
@@ -201,7 +214,7 @@ export function isValidStorageKey(key: string) {
   if (segments.length < 4) return false;
 
   if (segments[0] === "org") {
-    if (!["evidence", "imports", "reports", "branding", "pilot-kit"].includes(segments[2])) return false;
+    if (!["evidence", "imports", "reports", "branding", "pilot-kit", "audit-anchors"].includes(segments[2])) return false;
   } else if (segments[0] === "user") {
     // DSAR exports — not tenant-scoped, see keys.dsarExport().
     if (segments[2] !== "dsar") return false;
