@@ -215,15 +215,13 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
 interface SidebarInnerProps {
   orgId: string;
   orgName: string;
-  user: OrgSidebarProps["user"];
   projects: { id: string; name: string }[];
   selectedProjectId: string | null;
   collapsed: boolean;
   nav: SidebarNav;
-  onSignOut: () => void;
 }
 
-function SidebarInner({ orgId, orgName, user, projects, selectedProjectId, collapsed, nav, onSignOut }: SidebarInnerProps) {
+function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, nav }: SidebarInnerProps) {
   return (
     <>
       {/* Logo */}
@@ -239,7 +237,6 @@ function SidebarInner({ orgId, orgName, user, projects, selectedProjectId, colla
               <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
               <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
             </div>
-            <NotificationBell orgId={orgId} />
           </div>
         )}
       </div>
@@ -262,54 +259,6 @@ function SidebarInner({ orgId, orgName, user, projects, selectedProjectId, colla
       <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto overflow-x-hidden" aria-label="Organisation navigation">
         <NavContent nav={nav} isCollapsed={collapsed} />
       </nav>
-
-      {/* User footer */}
-      <div className={cn("border-t border-slate-200 px-2 py-3", collapsed && "flex justify-center")}>
-        {collapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 transition-colors" onClick={onSignOut} title="Sign out">
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-[10px] font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
-                </Avatar>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">
-              {user.name ?? user.email}<br /><span className="text-slate-500">Click to sign out</span>
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  {user.name && <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>}
-                  <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
-                </div>
-                <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-slate-200 shadow-lg">
-              <DropdownMenuItem asChild>
-                <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
-                  <Users aria-hidden="true" className="h-4 w-4 mr-2" />
-                  Members and settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-slate-200" />
-              <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={onSignOut}>
-                <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
     </>
   );
 }
@@ -602,12 +551,10 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
             <SidebarInner
               orgId={orgId}
               orgName={orgName}
-              user={user}
               projects={projects}
               selectedProjectId={selectedProjectId}
               collapsed={collapsed}
               nav={nav}
-              onSignOut={handleSignOut}
             />
           </div>
         </aside>

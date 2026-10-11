@@ -83,6 +83,7 @@ import { buildWaterfall } from "@/lib/charts/waterfall";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { KpiStatRow } from "@/components/dashboard/kpi-stat-row";
 import { formatKgCo2e } from "@/components/dashboard/kpi-format";
+import { heroFacts } from "@/lib/dashboard/hero-facts";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { activeFilters } from "@/lib/saved-views";
@@ -1081,9 +1082,23 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // built here, under this viewer's role.
   const widgetNodes: Record<string, ReactNode> = {};
   widgetNodes["tasks"] = <TaskLauncher orgId={orgId} role={role} />;
+  // The opening sentence, from figures already loaded. A filtered view skips it: the comparison is org-wide.
+  const hero =
+    currentPeriod && !scoped && currentFootprint > 0
+      ? heroFacts(
+          { periodLabel: currentPeriod.label, totalKg: currentFootprint, priorLabel: priorPeriod?.label ?? null, deltaPct: periodDeltaPct, steps: changeSteps },
+          (kg) => formatKgCo2e(L, kg),
+        )
+      : null;
   widgetNodes["headline"] = (
     /* Carbon footprint summary */
     <section aria-label="Carbon footprint summary" className="mt-2 space-y-4">
+      {hero ? (
+        <p className="text-lg font-normal tracking-[-0.2px] text-[#111827]">
+          {hero.headline}
+          {hero.detail ? <span className="mt-1 block text-sm text-[#6B7280]">{hero.detail}</span> : null}
+        </p>
+      ) : null}
         <KpiStatRow
           stats={[
             {

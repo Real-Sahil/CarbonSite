@@ -3,6 +3,7 @@ import { requireOrgMember, AuthError } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { CommandPalette } from "@/components/org/command-palette";
+import { OrgTopBar } from "@/components/org/org-topbar";
 import { viewRoles } from "@/lib/saved-views/roles";
 import { paymentState } from "@/lib/billing/dunning";
 import { PageTransition } from "@/components/page-transition";
@@ -174,23 +175,27 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
       {cssVars && <style>{cssVars}</style>}
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} />
       <CommandPalette orgId={orgId} role={membership!.role} canUseViews={viewRoles().includes(membership!.role)} />
-      <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
-        {payment.state !== "ok" ? (
-          <div role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-2.5 text-sm sm:px-8 ${payment.state === "blocked" ? "border-red-200 bg-red-50 text-red-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
-            <span>
-              {payment.state === "blocked"
-                ? "The latest payment has not gone through, so adding records, calculating and generating reports are paused. Your data stays readable."
-                : `The latest payment did not go through. Update the card by ${payment.blocksOn.toLocaleDateString("en-GB", { day: "numeric", month: "long" })} to keep adding and calculating data.`}
-            </span>
-            <a href={`/orgs/${orgId}/settings/billing`} className="font-medium underline underline-offset-2">
-              Update payment details
-            </a>
-          </div>
-        ) : null}
-        <OrgLocaleProvider locale={localeForCountry(org?.hqCountry)} currency={orgFormat(org ?? {}).currency}>
-          <PageTransition>{children}</PageTransition>
-        </OrgLocaleProvider>
-      </main>
+      {/* The column wraps the top bar and main so the bar sticks to the viewport, not to main (which never scrolls on its own). */}
+      <div className="flex flex-1 min-w-0 flex-col">
+        <OrgTopBar orgId={orgId} user={user} />
+        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
+          {payment.state !== "ok" ? (
+            <div role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-2.5 text-sm sm:px-8 ${payment.state === "blocked" ? "border-red-200 bg-red-50 text-red-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
+              <span>
+                {payment.state === "blocked"
+                  ? "The latest payment has not gone through, so adding records, calculating and generating reports are paused. Your data stays readable."
+                  : `The latest payment did not go through. Update the card by ${payment.blocksOn.toLocaleDateString("en-GB", { day: "numeric", month: "long" })} to keep adding and calculating data.`}
+              </span>
+              <a href={`/orgs/${orgId}/settings/billing`} className="font-medium underline underline-offset-2">
+                Update payment details
+              </a>
+            </div>
+          ) : null}
+          <OrgLocaleProvider locale={localeForCountry(org?.hqCountry)} currency={orgFormat(org ?? {}).currency}>
+            <PageTransition>{children}</PageTransition>
+          </OrgLocaleProvider>
+        </main>
+      </div>
     </div>
   );
 }
