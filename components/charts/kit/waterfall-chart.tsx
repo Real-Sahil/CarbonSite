@@ -89,9 +89,11 @@ export function WaterfallChart({ steps, locale = "en-GB", onSelect, selected }: 
       }}
       footnote="Live figures for both periods. Increases are ember, decreases teal, totals slate; every bar is also labelled with its sign."
     >
-      <div className="h-80">
+      {(expanded) => (
+      <div className={expanded ? "h-[70vh]" : "h-80"}>
         <ParentSize debounceTime={10}>{({ width, height }) => (width > 0 ? <Plot steps={steps} width={width} height={height} locale={locale} onSelect={onSelect} selected={selected} /> : null)}</ParentSize>
       </div>
+      )}
     </ChartFrame>
   );
 }

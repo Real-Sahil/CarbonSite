@@ -125,9 +125,11 @@ export function SankeyChart({ flows, locale = "en-GB", period, onSelect, selecte
       }}
       footnote={`Total ${tonnes(flows.totalKg, locale)} across ${scopes.length} ${scopes.length === 1 ? "scope" : "scopes"}. Small categories and sites are grouped under Other; nothing is dropped.`}
     >
-      <div className="h-[420px]">
+      {(expanded) => (
+      <div className={expanded ? "h-[70vh]" : "h-[420px]"}>
         <ParentSize debounceTime={10}>{({ width, height }) => (width > 0 ? <Diagram flows={flows} width={width} height={height} locale={locale} onSelect={onSelect} selected={selected} /> : null)}</ParentSize>
       </div>
+      )}
     </ChartFrame>
   );
 }
