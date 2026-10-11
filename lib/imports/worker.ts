@@ -5,14 +5,19 @@ import { parseSpreadsheet } from "./parser";
 import { mapColumns, validateRow, buildErrorCsv, type ValidatedRow } from "./validator";
 import { applyProfile, profileSpecSchema, PROFILED_COLUMN_MAP } from "./profiles";
 import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/lib/data-quality/duplicates";
-import { enqueueNotification } from "@/lib/jobs/queues/index";
+import { dispatchNotification } from "@/lib/jobs/dispatch";
+import { attemptsExhausted } from "./retry";
 
 export async function processImportBatch(importBatchId: string, orgId: string): Promise<void> {
-  // Mark as parsing
-  await prisma.importBatch.update({
-    where: { id: importBatchId },
-    data: { state: "parsing" },
+  // Mark as parsing and count this attempt. A retry starts again from row one,
+  // so it first clears what an earlier attempt staged; staged rows are only
+  // committed by a later step, never here, so clearing them loses nothing.
+  const claimed = await prisma.importBatch.updateMany({
+    where: { id: importBatchId, organizationId: orgId },
+    data: { state: "parsing", processingAttempts: { increment: 1 }, lastProcessedRowIndex: null },
   });
+  if (claimed.count !== 1) throw new Error("Import batch not found for this organisation.");
+  await prisma.stagedActivityRecord.deleteMany({ where: { importBatchId, organizationId: orgId } });
 
   try {
     const batch = await prisma.importBatch.findUniqueOrThrow({
@@ -247,21 +252,31 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
       select: { createdByUserId: true },
     });
 
-    // Notify the uploader if the batch needs attention or failed
+    // Notify the uploader if the batch needs attention or failed. Through
+    // dispatchNotification so inline deployments send it; enqueueNotification
+    // alone is never drained on a Vercel-only deployment.
     if ((newState === "needs_attention" || newState === "failed") && updatedBatch.createdByUserId) {
-      enqueueNotification({
+      await dispatchNotification({
         type: "import_failed",
         recipientUserId: updatedBatch.createdByUserId,
         orgId,
         resourceId: importBatchId,
-      }).catch((err) => console.error("[imports] Failed to enqueue notification:", err));
+      }).catch((err) => console.error("[imports] Failed to send notification:", err));
     }
   } catch (err) {
     console.error(`[imports] Error processing batch ${importBatchId}:`, err);
-    await prisma.importBatch.update({
-      where: { id: importBatchId },
-      data: { state: "failed" },
+    // With attempts left the batch stays "parsing" and the import-batches sweep
+    // retries it once it has been quiet long enough. Only the last attempt fails it.
+    const batch = await prisma.importBatch.findFirst({
+      where: { id: importBatchId, organizationId: orgId },
+      select: { processingAttempts: true },
     });
+    if (!batch || attemptsExhausted(batch.processingAttempts)) {
+      await prisma.importBatch.updateMany({
+        where: { id: importBatchId, organizationId: orgId },
+        data: { state: "failed" },
+      });
+    }
     throw err;
   }
 }

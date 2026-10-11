@@ -850,6 +850,8 @@ model ImportBatch {
   errorCsvStorageKey    String?     @map("error_csv_storage_key")
   idempotencyKey        String?     @unique @map("idempotency_key")
   lastProcessedRowIndex Int?        @map("last_processed_row_index")
+  /// Times the batch has started parsing. A stalled or failed parse is retried by the import-batches sweep up to MAX_IMPORT_ATTEMPTS (lib/imports/retry.ts).
+  processingAttempts    Int         @default(0) @map("processing_attempts")
   createdByUserId       String?     @map("created_by_user_id")
   /// ERP export profile the file was read with; the snapshot is what was applied.
   importProfileId       String?     @map("import_profile_id")

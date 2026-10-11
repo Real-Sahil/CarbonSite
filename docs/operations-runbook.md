@@ -54,6 +54,8 @@ Only switch the web app to worker mode after the worker runtime is deployed with
 
 Imports:
 
+A batch that stops parsing (a function timeout, or a transient storage or database error) stays in `parsing`. The `import-batches` schedule (every 5 minutes, pg_cron) parses it again once it has been quiet for 10 minutes, up to 3 starts in total. The last failed start sets `failed` and notifies the uploader. Nothing needs doing while a batch is still `parsing` with attempts left. Check `processing_attempts` on `import_batches` if a batch sits in `parsing` for longer.
+
 1. Open the Imports page for the affected organisation.
 2. Find batches in `failed` or `needs_attention`.
 3. Download the error CSV where available.
