@@ -90,7 +90,8 @@ export function middleware(req: NextRequest) {
   res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   res.headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), payment=()",
+    // geolocation is for this site only: the site map's Locate me button.
+    "camera=(), microphone=(), geolocation=(self), payment=()",
   );
   if (process.env.NODE_ENV === "production") {
     res.headers.set(

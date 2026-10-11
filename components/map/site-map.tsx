@@ -13,7 +13,9 @@ const colourOf = (s: SiteTotal) => (s.kind === "site" ? SITE_MARKER : MARKER);
 const kindLabel = (s: SiteTotal) => (s.kind === "site" ? "Project site" : "Office or depot");
 
 /** Real map tiles, loaded only when a style is configured (see NEXT_PUBLIC_MAP_STYLE_URL). */
-function TileMap({ sites, styleUrl, locale, selectedId, locateKey, onSelect }: { sites: SiteTotal[]; styleUrl: string; locale: string; selectedId: string | null; locateKey: number; onSelect: (id: string) => void }) {
+type Me = { latitude: number; longitude: number };
+
+function TileMap({ sites, styleUrl, locale, selectedId, locateKey, me, onSelect }: { sites: SiteTotal[]; styleUrl: string; locale: string; selectedId: string | null; locateKey: number; me: Me | null; onSelect: (id: string) => void }) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const [failed, setFailed] = useState(false);
@@ -112,6 +114,24 @@ function TileMap({ sites, styleUrl, locale, selectedId, locateKey, onSelect }: {
     src?.setData(features());
   }, [features]);
 
+  // Locate me: a blue dot at the viewer's position, then fly there.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !me) return;
+    const place = () => {
+      const data = { type: "FeatureCollection" as const, features: [{ type: "Feature" as const, geometry: { type: "Point" as const, coordinates: [me.longitude, me.latitude] }, properties: {} }] };
+      const src = map.getSource("me") as import("maplibre-gl").GeoJSONSource | undefined;
+      if (src) src.setData(data);
+      else {
+        map.addSource("me", { type: "geojson", data });
+        map.addLayer({ id: "me", type: "circle", source: "me", paint: { "circle-radius": 7, "circle-color": "#2563EB", "circle-stroke-color": "#FFFFFF", "circle-stroke-width": 2 } });
+      }
+      map.flyTo({ center: [me.longitude, me.latitude], zoom: Math.max(map.getZoom(), 10), duration: 600 });
+    };
+    if (map.isStyleLoaded()) place();
+    else map.once("load", place);
+  }, [me]);
+
   // The container stays mounted even when tiles fail, so the map never disappears from the page.
   return (
     <div>
@@ -172,6 +192,9 @@ export function SiteMap({
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [locateKey, setLocateKey] = useState(0);
+  const [me, setMe] = useState<Me | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [geoError, setGeoError] = useState<string | null>(null);
   const cache = useRef(new Map<string, SiteTotal[]>([[initialSnapshotId, initialSites]]));
   const mapSection = useRef<HTMLDivElement>(null);
   const snap = snapshots[index];
@@ -181,6 +204,30 @@ export function SiteMap({
     setSelectedId(id);
     setLocateKey((k) => k + 1);
     mapSection.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  // Locate me: ask the browser once for the viewer's position. Nothing is sent to the server.
+  const locateMe = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      setGeoError("This browser cannot share a location.");
+      return;
+    }
+    setLocating(true);
+    setGeoError(null);
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setLocating(false);
+        setMe({ latitude: p.coords.latitude, longitude: p.coords.longitude });
+        mapSection.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      },
+      (err) => {
+        setLocating(false);
+        setGeoError(err.code === err.PERMISSION_DENIED
+          ? "Location access is blocked for this site. Allow it in the browser's site settings, then press Locate me again."
+          : "Could not find your location. Try again.");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 },
+    );
   };
 
   useEffect(() => {
@@ -245,8 +292,17 @@ export function SiteMap({
         </div>
       ) : null}
 
-      <div ref={mapSection} className="scroll-mt-6">
-        {styleUrl ? <TileMap sites={sites} styleUrl={styleUrl} locale={locale} selectedId={selectedId} locateKey={locateKey} onSelect={setSelectedId} /> : <Schematic sites={sites} locale={locale} selectedId={selectedId} onSelect={setSelectedId} />}
+      <div ref={mapSection} className="scroll-mt-6 space-y-2">
+        {styleUrl ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <button type="button" onClick={locateMe} disabled={locating} className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#F9FAFB] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">
+              {locating ? "Finding you..." : "Locate me"}
+            </button>
+            {me ? <span className="text-xs text-[#6B7280]">Blue dot: your position when you pressed Locate me.</span> : null}
+            {geoError ? <span role="status" className="text-sm text-red-700">{geoError}</span> : null}
+          </div>
+        ) : null}
+        {styleUrl ? <TileMap sites={sites} styleUrl={styleUrl} locale={locale} selectedId={selectedId} locateKey={locateKey} me={me} onSelect={setSelectedId} /> : <Schematic sites={sites} locale={locale} selectedId={selectedId} onSelect={setSelectedId} />}
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#374151]" aria-label="Map key">
