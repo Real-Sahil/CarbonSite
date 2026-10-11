@@ -1,5 +1,6 @@
 "use client";
 
+import { ExpandChart } from "./expand-chart";
 import { RingChart } from "./ring-chart";
 import { RingCenter } from "./ring-center";
 import { Ring } from "./ring";
@@ -18,7 +19,14 @@ interface BklitScopeRingProps {
   height?: number;
 }
 
+/** Scope ring with an expand button; the full-screen view is taller. */
 export function BklitScopeRing({ data, height = 280 }: BklitScopeRingProps) {
+  const hasRows = data.some((d) => d.value > 0);
+  if (!hasRows) return <BklitScopeRingBody data={data} height={height} />;
+  return <ExpandChart title="Emissions by scope">{(expanded) => <BklitScopeRingBody data={data} height={expanded ? Math.max(height, 480) : height} />}</ExpandChart>;
+}
+
+function BklitScopeRingBody({ data, height }: BklitScopeRingProps) {
   const rows = data.filter((d) => d.value > 0);
   const total = rows.reduce((s, d) => s + d.value, 0);
 

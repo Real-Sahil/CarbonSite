@@ -1,7 +1,38 @@
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CategoryBar } from "../category-bar";
 import { ExpandChart } from "../expand-chart";
+import { ScopeDonut } from "../scope-donut";
+import { BklitScopeRing } from "../bklit-scope-ring";
+import { BklitDataGauge } from "../bklit-data-gauge";
+
+// jsdom has no ResizeObserver; visx ParentSize needs one to measure.
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+describe("ring and gauge expand", () => {
+  beforeAll(() => {
+    vi.stubGlobal("ResizeObserver", ResizeObserverStub);
+  });
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("gives the scope donut, scope ring and data gauge an expand button", () => {
+    cleanup();
+    const { unmount } = render(<ScopeDonut data={[{ scope: 1, label: "Scope 1", value: 500 }]} />);
+    expect(screen.getByRole("button", { name: "Expand Emissions by scope" })).toBeTruthy();
+    unmount();
+    const ring = render(<BklitScopeRing data={[{ scope: 1, label: "Scope 1", value: 500 }]} />);
+    expect(screen.getByRole("button", { name: "Expand Emissions by scope" })).toBeTruthy();
+    ring.unmount();
+    render(<BklitDataGauge value={72} label="Data confidence" />);
+    expect(screen.getByRole("button", { name: "Expand Data confidence" })).toBeTruthy();
+  });
+});
 
 describe("ExpandChart", () => {
   it("opens the chart full screen with expanded set", () => {

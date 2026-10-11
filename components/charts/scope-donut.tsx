@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { ExpandChart } from "./expand-chart";
 import { formatTonnes, scopeColor } from "./palette";
 
 export interface ScopeDonutDatum {
@@ -24,7 +25,14 @@ interface ScopeDonutProps {
   height?: number;
 }
 
+/** Scope donut with an expand button; the full-screen view is taller. */
 export function ScopeDonut({ data, height = 260 }: ScopeDonutProps) {
+  const hasRows = data.some((row) => Number.isFinite(row.value) && row.value > 0);
+  if (!hasRows) return <ScopeDonutBody data={data} height={height} />;
+  return <ExpandChart title="Emissions by scope">{(expanded) => <ScopeDonutBody data={data} height={expanded ? Math.max(height, 480) : height} />}</ExpandChart>;
+}
+
+function ScopeDonutBody({ data, height }: ScopeDonutProps) {
   const rows = data.filter((row) => Number.isFinite(row.value) && row.value > 0);
 
   if (rows.length === 0) {
