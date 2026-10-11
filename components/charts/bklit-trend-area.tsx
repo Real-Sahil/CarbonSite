@@ -1,8 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { BarChart } from "./bar-chart";
 import { Bar } from "./bar";
-import { SCOPE_COLORS } from "./palette";
+import { SCOPE_COLORS, formatTonnes } from "./palette";
 
 export interface TrendLineDatum {
   label: string;
@@ -21,6 +22,34 @@ const SCOPE_SERIES = [
   { key: "scope2" as const, label: "Scope 2", color: SCOPE_COLORS[2] },
   { key: "scope3" as const, label: "Scope 3", color: SCOPE_COLORS[3] },
 ];
+
+/** Hover or arrow-key readout: the period, each scope in tonnes, and the stacked total. */
+function trendReadout(point: Record<string, unknown>): ReactNode {
+  const rows = SCOPE_SERIES.map((s) => ({
+    label: s.label,
+    color: s.color,
+    kg: Number(point[s.key]) || 0,
+  }));
+  const total = rows.reduce((sum, r) => sum + r.kg, 0);
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="font-medium text-slate-900">{String(point.name ?? "")}</span>
+      {rows.map((r) => (
+        <div key={r.label} className="flex items-center justify-between gap-4">
+          <span className="flex items-center gap-1.5 text-slate-600">
+            <span className="inline-block h-2 w-2 rounded-full shrink-0" style={{ background: r.color }} />
+            {r.label}
+          </span>
+          <span className="tabular-nums text-slate-900">{formatTonnes(r.kg)}</span>
+        </div>
+      ))}
+      <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-1">
+        <span className="text-slate-600">Total</span>
+        <span className="tabular-nums font-medium text-slate-900">{formatTonnes(total)}</span>
+      </div>
+    </div>
+  );
+}
 
 export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
   if (data.length === 0) {
@@ -44,12 +73,11 @@ export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
   }));
 
   return (
-    <div
-      role="img"
-      aria-label="Emissions trend across reporting periods"
-    >
+    <div>
       <BarChart
         expandTitle="Emissions trend"
+        ariaLabel="Emissions trend across reporting periods"
+        readout={trendReadout}
         data={chartData}
         xDataKey="name"
         orientation="vertical"

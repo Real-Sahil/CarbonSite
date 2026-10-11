@@ -98,6 +98,43 @@ export interface BarChartProps {
   status?: ChartStatus;
   /** When set, the chart gets an expand button and opens full screen under this title. */
   expandTitle?: string;
+  /**
+   * Crosshair readout. When set, the hovered period is highlighted and `readout`
+   * renders its values. A tap or click pins the period, arrow keys step through
+   * periods, and Escape clears. Returns the readout content for one data point.
+   */
+  readout?: (point: Record<string, unknown>) => ReactNode;
+  /** Accessible name for the chart group when `readout` is set. */
+  ariaLabel?: string;
+}
+
+/**
+ * Next active period for the crosshair keyboard controls.
+ * Returns the new index, `null` to clear, or `undefined` when the key is not handled.
+ */
+export function stepCrosshairIndex(
+  current: number | null,
+  key: string,
+  length: number
+): number | null | undefined {
+  if (length < 1) return undefined;
+  const last = length - 1;
+  switch (key) {
+    case "ArrowRight":
+    case "ArrowDown":
+      return current === null ? 0 : Math.min(last, current + 1);
+    case "ArrowLeft":
+    case "ArrowUp":
+      return current === null ? last : Math.max(0, current - 1);
+    case "Home":
+      return 0;
+    case "End":
+      return last;
+    case "Escape":
+      return null;
+    default:
+      return undefined;
+  }
 }
 
 const DEFAULT_MARGIN: Margin = { top: 40, right: 40, bottom: 40, left: 40 };
@@ -166,6 +203,8 @@ interface ChartInnerProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   onPhaseChange?: (phase: ChartPhase) => void;
   status: ChartStatus;
+  readout?: (point: Record<string, unknown>) => ReactNode;
+  ariaLabel?: string;
 }
 
 function ChartInner(props: ChartInnerProps) {
@@ -174,6 +213,34 @@ function ChartInner(props: ChartInnerProps) {
     return null;
   }
   return <ChartCore {...props} />;
+}
+
+/** Keyboard-focusable group around the chart when the crosshair is on; renders children as-is otherwise. */
+function CrosshairFrame({
+  enabled,
+  label,
+  onKeyDown,
+  children,
+}: {
+  enabled: boolean;
+  label: string;
+  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  children: ReactNode;
+}): ReactNode {
+  if (!enabled) {
+    return children;
+  }
+  return (
+    <div
+      aria-label={label}
+      className="relative rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      onKeyDown={onKeyDown}
+      role="group"
+      tabIndex={0}
+    >
+      {children}
+    </div>
+  );
 }
 
 const ChartCore = memo(function ChartCore({
@@ -196,12 +263,23 @@ const ChartCore = memo(function ChartCore({
   containerRef,
   onPhaseChange,
   status,
+  readout,
+  ariaLabel,
 }: ChartInnerProps) {
   const { tooltipData, setTooltipData, scheduleTooltip, clearTooltip } =
     useScheduledTooltip<TooltipData>();
   const [isLoaded, setIsLoaded] = useState(false);
   const [revealEpoch, setRevealEpoch] = useState(0);
   const hoveredBarIndex = tooltipData?.index ?? null;
+  // Crosshair: a tap or click pins a period; arrow keys set keyIndex. Pin wins over keys, keys over hover.
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
+  const [keyIndex, setKeyIndex] = useState<number | null>(null);
+  const crosshairOn = readout !== undefined;
+  const rawActiveIndex = pinnedIndex ?? keyIndex ?? hoveredBarIndex;
+  const readoutIndex =
+    crosshairOn && rawActiveIndex !== null && rawActiveIndex < data.length
+      ? rawActiveIndex
+      : null;
 
   const isHorizontal = orientation === "horizontal";
 
@@ -392,6 +470,20 @@ const ChartCore = memo(function ChartCore({
     onPhaseChange?.(isLoaded ? "ready" : "revealing");
   }, [isLoaded, onPhaseChange]);
 
+  // Index of the period under a pointer, clamped to the data range
+  const indexAt = useCallback(
+    (event: React.MouseEvent<SVGGElement>): number | null => {
+      const point = localPoint(event);
+      if (!point) {
+        return null;
+      }
+      const pos = isHorizontal ? point.y - margin.top : point.x - margin.left;
+      const bandIndex = Math.floor(pos / columnWidth);
+      return Math.max(0, Math.min(data.length - 1, bandIndex));
+    },
+    [columnWidth, data.length, isHorizontal, margin.left, margin.top]
+  );
+
   // Mouse move handler
   const handleMouseMove = useCallback(
     (event: React.MouseEvent<SVGGElement>) => {
@@ -551,6 +643,32 @@ const ChartCore = memo(function ChartCore({
 
   const canInteract = isLoaded;
 
+  // Tap or click pins the period under the pointer; tapping it again unpins
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent<SVGGElement>) => {
+      const index = indexAt(event);
+      if (index === null) {
+        return;
+      }
+      setKeyIndex(null);
+      setPinnedIndex((prev) => (prev === index ? null : index));
+    },
+    [indexAt]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      const next = stepCrosshairIndex(readoutIndex, event.key, data.length);
+      if (next === undefined) {
+        return;
+      }
+      event.preventDefault();
+      setPinnedIndex(null);
+      setKeyIndex(next);
+    },
+    [readoutIndex, data.length]
+  );
+
   // Separate children into defs, pre-overlay, and post-overlay
   const defsChildren: ReactElement[] = [];
   const clipExcludedChildren: ReactElement[] = [];
@@ -625,49 +743,74 @@ const ChartCore = memo(function ChartCore({
 
   return (
     <ChartProvider value={contextValue}>
-      <svg
-        aria-hidden="true"
-        className="overflow-visible"
-        height={height}
-        width={width}
+      <CrosshairFrame
+        enabled={crosshairOn}
+        label={`${ariaLabel ?? "Chart"}. Arrow keys move between periods, Escape clears.`}
+        onKeyDown={handleKeyDown}
       >
-        {/* Gradient and pattern definitions */}
-        {defsChildren.length > 0 && <defs>{defsChildren}</defs>}
-
-        <rect fill="transparent" height={height} width={width} x={0} y={0} />
-
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: Chart interaction area */}
-        <g
-          onMouseLeave={canInteract ? handleMouseLeave : undefined}
-          onMouseMove={canInteract ? handleMouseMove : undefined}
-          style={{ cursor: canInteract ? "crosshair" : "default" }}
-          transform={`translate(${margin.left},${margin.top})`}
+        <svg
+          aria-hidden="true"
+          className="overflow-visible"
+          height={height}
+          width={width}
         >
-          {/* Background rect for mouse event detection */}
-          <rect
-            fill="transparent"
-            height={innerHeight}
-            width={innerWidth}
-            x={0}
-            y={0}
-          />
+          {/* Gradient and pattern definitions */}
+          {defsChildren.length > 0 && <defs>{defsChildren}</defs>}
 
-          {renderKeyedChartLayers(clipExcludedChildren)}
-          {renderKeyedChartLayers(underlayChildren)}
-          {status === "loading" ? (
-            <BarLoadingSkeleton
-              barCount={data.length || FALLBACK_LOADING_BARS}
-              innerHeight={innerHeight}
-              innerWidth={innerWidth}
+          <rect fill="transparent" height={height} width={width} x={0} y={0} />
+
+          {/* biome-ignore lint/a11y/noStaticElementInteractions: Chart interaction area */}
+          <g
+            onMouseLeave={canInteract ? handleMouseLeave : undefined}
+            onMouseMove={canInteract ? handleMouseMove : undefined}
+            onPointerDown={crosshairOn && canInteract ? handlePointerDown : undefined}
+            style={{ cursor: canInteract ? "crosshair" : "default" }}
+            transform={`translate(${margin.left},${margin.top})`}
+          >
+            {/* Background rect for mouse event detection */}
+            <rect
+              fill="transparent"
+              height={innerHeight}
+              width={innerWidth}
+              x={0}
+              y={0}
             />
-          ) : (
-            renderKeyedChartLayers(preOverlayChildren)
-          )}
 
-          {/* Markers rendered last so they're on top for interaction */}
-          {renderKeyedChartLayers(postOverlayChildren)}
-        </g>
-      </svg>
+            {/* Crosshair band behind the bars: one column step per period */}
+            {readoutIndex !== null ? (
+              <rect
+                fill="#0f172a"
+                fillOpacity={0.06}
+                height={isHorizontal ? columnWidth : innerHeight}
+                pointerEvents="none"
+                width={isHorizontal ? innerWidth : columnWidth}
+                x={isHorizontal ? 0 : readoutIndex * columnWidth}
+                y={isHorizontal ? readoutIndex * columnWidth : 0}
+              />
+            ) : null}
+
+            {renderKeyedChartLayers(clipExcludedChildren)}
+            {renderKeyedChartLayers(underlayChildren)}
+            {status === "loading" ? (
+              <BarLoadingSkeleton
+                barCount={data.length || FALLBACK_LOADING_BARS}
+                innerHeight={innerHeight}
+                innerWidth={innerWidth}
+              />
+            ) : (
+              renderKeyedChartLayers(preOverlayChildren)
+            )}
+
+            {/* Markers rendered last so they're on top for interaction */}
+            {renderKeyedChartLayers(postOverlayChildren)}
+          </g>
+        </svg>
+        {readoutIndex !== null && readout && data[readoutIndex] ? (
+          <div className="pointer-events-none absolute left-2 top-1 z-10 rounded-md border border-slate-200 bg-white/95 px-2.5 py-1.5 text-xs shadow-sm">
+            {readout(data[readoutIndex])}
+          </div>
+        ) : null}
+      </CrosshairFrame>
     </ChartProvider>
   );
 });
@@ -708,6 +851,8 @@ function BarChartBody({
   children,
   onPhaseChange,
   status = "ready",
+  readout,
+  ariaLabel,
 }: Omit<BarChartProps, "expandTitle">) {
   const containerRef = useRef<HTMLDivElement>(null);
   const margin = { ...DEFAULT_MARGIN, ...marginProp };
@@ -732,6 +877,8 @@ function BarChartBody({
             margin={margin}
             onPhaseChange={onPhaseChange}
             orientation={orientation}
+            readout={readout}
+            ariaLabel={ariaLabel}
             revealSignature={revealSignature}
             squareSnap={squareSnap}
             stacked={stacked}
