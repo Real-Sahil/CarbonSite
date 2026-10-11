@@ -11,14 +11,17 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       lerp: 0.1,
     });
 
+    // Keep the frame id so the loop stops on unmount; an uncancelled loop kept calling a destroyed instance.
+    let frame = 0;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      frame = requestAnimationFrame(raf);
     }
 
-    requestAnimationFrame(raf);
+    frame = requestAnimationFrame(raf);
 
     return () => {
+      cancelAnimationFrame(frame);
       lenis.destroy();
     };
   }, []);

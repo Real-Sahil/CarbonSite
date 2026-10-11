@@ -690,6 +690,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       ? await loadPeriodCategoryTotals(orgId, currentPeriod.id, priorPeriod.id).catch(onLoadFailure(() => null))
       : null;
   const waterfallAi = periodCategoryTotals ? await aiAssistEnabled(orgId).catch(() => false) : false;
+  timer.mark("slice view and waterfall");
   const changeSteps =
     periodCategoryTotals && (periodCategoryTotals.previous.length > 0 || periodCategoryTotals.current.length > 0)
       ? buildWaterfall(periodCategoryTotals.previous, periodCategoryTotals.current, { previous: priorPeriod!.label, current: currentPeriod!.label })
@@ -726,6 +727,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const chosenSite = selectedSiteId && /^[A-Za-z0-9_-]{1,64}$/.test(selectedSiteId)
     ? await prisma.site.findFirst({ where: { id: selectedSiteId, organizationId: orgId }, select: { name: true } }).catch(onLoadFailure(() => null))
     : null;
+  timer.mark("sliced trend and site");
   const crossChips = [
     selectedScope && ["1", "2", "3"].includes(selectedScope) ? { key: "scope", label: `Scope ${selectedScope}` } : null,
     selectedCategoryId ? { key: "categoryId", label: sliceView?.names.categories[selectedCategoryId] ?? "Category" } : null,
@@ -768,6 +770,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // corrected (DEFRA 2025.1 was replaced by 2025.2). Every tenant sees this
   // for its own snapshots until it recalculates and republishes.
   const publishedLibraries = await loadPublishedLibraries(orgId).catch(onLoadFailure(() => []));
+  timer.mark("published libraries");
   const seenPeriods = new Set<string>();
   const staleSnapshots = publishedLibraries.flatMap((snap) => {
     if (seenPeriods.has(snap.reportingPeriodId)) return [];
@@ -840,6 +843,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   } catch (err) {
     console.error("Failed to fetch pilot kit documents:", err);
   }
+  timer.mark("pilot kit");
 
   // Water & waste (ESRS E3/E5) — derived from the pre-fetched batch result
   const environmentalTotals = Object.fromEntries(
@@ -920,6 +924,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // Internal carbon price (Settings > Carbon price) applied to this page's
   // location-based scope totals. Informational: nothing is charged here.
   const carbonPrice = appraisalPrice(await loadCarbonPrices(orgId).catch(onLoadFailure(() => [])), new Date());
+  timer.mark("carbon price");
   const carbonPriceCost = carbonPrice && hasAggregates
     ? coveredCost(scopeRows.map((r) => ({ scope: r.scope, tco2e: Number(r.total) / 1000 })), carbonPrice)
     : null;
@@ -1008,6 +1013,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       }).catch(onLoadFailure(() => null)),
     ),
   );
+  timer.mark("review targets");
   const reviewTasks = myReviewTasks.flatMap((task, index) => {
     const target = reviewTaskTargets[index];
     if (!target) return [];

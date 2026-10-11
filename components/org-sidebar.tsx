@@ -68,6 +68,252 @@ function getInitials(name?: string | null, email?: string): string {
   return (email ?? "?").slice(0, 2).toUpperCase();
 }
 
+/** True on the item's own page and on any page nested under it. */
+function isActivePath(href: string, pathname: string): boolean {
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
+function groupIsActive(group: NavGroup, pathname: string): boolean {
+  return group.sections.some((s) => s.items.some((item) => isActivePath(item.href, pathname)));
+}
+
+const sectionKey = (group: NavGroup, idx: number) => `${group.label}/${group.sections[idx].label ?? idx}`;
+
+/**
+ * Everything the nav reads from OrgSidebar's state, passed down as one object.
+ * The nav components live at module scope; declaring them inside OrgSidebar
+ * made each render a new component type, which remounted the whole sidebar
+ * (notification bell, project switcher, account menu) and dropped keyboard focus.
+ */
+interface SidebarNav {
+  pathname: string;
+  dashboardItem: NavItem;
+  groups: NavGroup[];
+  showAll: boolean;
+  openGroup: string | null;
+  openSections: Set<string>;
+  onToggleGroup: (label: string) => void;
+  onToggleSection: (key: string) => void;
+  onToggleShowAll: () => void;
+}
+
+function NavLink({ item, pathname, onClick, indent, isCollapsed }: { item: NavItem; pathname: string; onClick?: () => void; indent?: boolean; isCollapsed: boolean }) {
+  const Icon = item.icon;
+  const isActive = isActivePath(item.href, pathname);
+  return (
+    <Link
+      href={item.href}
+      prefetch={true}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-normal tracking-tight transition-all",
+        isCollapsed ? "justify-center px-2" : indent ? "ml-1" : "",
+        isActive
+          ? "bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]"
+          : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
+      )}
+    >
+      <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2410c]" : "text-slate-500")} aria-hidden="true" />
+      {!isCollapsed && item.label}
+    </Link>
+  );
+}
+
+/** Renders the full nav: ungrouped Dashboard link, then one collapsible product group per accordion panel. */
+function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavClick?: () => void; isCollapsed: boolean }) {
+  const { pathname, showAll, openGroup, openSections } = nav;
+  return (
+    <>
+      <div className="mb-1">
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>{<NavLink item={nav.dashboardItem} pathname={pathname} onClick={onNavClick} isCollapsed={isCollapsed} />}</TooltipTrigger>
+            <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{nav.dashboardItem.label}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <NavLink item={nav.dashboardItem} pathname={pathname} onClick={onNavClick} isCollapsed={isCollapsed} />
+        )}
+      </div>
+
+      {nav.groups.map((group) => {
+        const GroupIcon = group.icon;
+        const isOpen = isCollapsed || !showAll || openGroup === group.label;
+        const isActive = groupIsActive(group, pathname);
+        return (
+          <div key={group.label} className="mt-1">
+            {!isCollapsed && (
+              <button
+                type="button"
+                onClick={() => showAll && nav.onToggleGroup(group.label)}
+                aria-expanded={isOpen}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
+                  isActive ? "text-[#c2410c]" : "text-slate-500 hover:text-slate-600",
+                )}
+              >
+                <GroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="flex-1 text-left">{group.label}</span>
+                {showAll && <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 transition-transform", isOpen && "rotate-180")} aria-hidden="true" />}
+              </button>
+            )}
+            {isOpen && (
+              <div className={cn("flex flex-col gap-0.5", !isCollapsed && "mt-0.5")}>
+                {group.sections.map((section, sIdx) => {
+                  const key = sectionKey(group, sIdx);
+                  const sectionOpen = isCollapsed || !section.label || openSections.has(key);
+                  return (
+                  <div key={key} className={cn(sIdx > 0 && !isCollapsed && "mt-1")}>
+                    {section.label && !isCollapsed && (
+                      <button
+                        type="button"
+                        onClick={() => nav.onToggleSection(key)}
+                        aria-expanded={sectionOpen}
+                        className="flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] font-semibold text-slate-500 hover:text-slate-700"
+                      >
+                        <span className="flex-1 text-left">{section.label}</span>
+                        <ChevronRight className={cn("h-3 w-3 shrink-0 transition-transform", sectionOpen && "rotate-90")} aria-hidden="true" />
+                      </button>
+                    )}
+                    {sectionOpen && (
+                    <div className="flex flex-col gap-0.5">
+                      {section.items.map((item) => {
+                        const link = <NavLink key={item.href} item={item} pathname={pathname} onClick={onNavClick} indent isCollapsed={isCollapsed} />;
+                        if (isCollapsed) {
+                          return (
+                            <Tooltip key={item.href}>
+                              <TooltipTrigger asChild>{link}</TooltipTrigger>
+                              <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{item.label}</TooltipContent>
+                            </Tooltip>
+                          );
+                        }
+                        return link;
+                      })}
+                    </div>
+                    )}
+                  </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {!isCollapsed && (
+        <button
+          type="button"
+          onClick={nav.onToggleShowAll}
+          className="mt-3 w-full rounded-lg border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-[12px] text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+        >
+          {showAll ? "Show the short menu" : "Show all pages"}
+          <span className="block text-[11px] text-slate-500">{showAll ? "Only the everyday jobs" : "Everything, including reports and compliance tools"}</span>
+        </button>
+      )}
+    </>
+  );
+}
+
+interface SidebarInnerProps {
+  orgId: string;
+  orgName: string;
+  user: OrgSidebarProps["user"];
+  projects: { id: string; name: string }[];
+  selectedProjectId: string | null;
+  collapsed: boolean;
+  nav: SidebarNav;
+  onSignOut: () => void;
+}
+
+function SidebarInner({ orgId, orgName, user, projects, selectedProjectId, collapsed, nav, onSignOut }: SidebarInnerProps) {
+  return (
+    <>
+      {/* Logo */}
+      <div className={cn("flex items-center border-b border-slate-200 overflow-hidden", collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4")}>
+        {collapsed ? (
+          <span title={orgName}>
+            <LogoMark size={28} />
+          </span>
+        ) : (
+          <div className="flex items-center gap-2.5 min-w-0 w-full">
+            <LogoMark size={28} className="shrink-0" />
+            <div className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
+              <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
+            </div>
+            <NotificationBell orgId={orgId} />
+          </div>
+        )}
+      </div>
+      {!collapsed && (
+        <div className="border-b border-slate-200 px-4 py-2.5">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
+            className="flex w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-left text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+          >
+            <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <span className="flex-1">Search pages and tasks</span>
+            <span className="hidden sm:inline"><KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup></span>
+          </button>
+        </div>
+      )}
+      {!collapsed && <ProjectSwitcher orgId={orgId} projects={projects} selectedId={selectedProjectId} />}
+
+      {/* Nav */}
+      <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto overflow-x-hidden" aria-label="Organisation navigation">
+        <NavContent nav={nav} isCollapsed={collapsed} />
+      </nav>
+
+      {/* User footer */}
+      <div className={cn("border-t border-slate-200 px-2 py-3", collapsed && "flex justify-center")}>
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 transition-colors" onClick={onSignOut} title="Sign out">
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarImage src={undefined} alt={user.name ?? user.email} />
+                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-[10px] font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
+                </Avatar>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">
+              {user.name ?? user.email}<br /><span className="text-slate-500">Click to sign out</span>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarImage src={undefined} alt={user.name ?? user.email} />
+                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  {user.name && <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>}
+                  <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                </div>
+                <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-slate-200 shadow-lg">
+              <DropdownMenuItem asChild>
+                <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
+                  <Users aria-hidden="true" className="h-4 w-4 mr-2" />
+                  Members and settings
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-200" />
+              <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={onSignOut}>
+                <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    </>
+  );
+}
+
 export function OrgSidebar({ orgId, orgName, user, role, projects = [], selectedProjectId = null }: OrgSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -227,25 +473,23 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
     .filter((g) => g.sections[0].items.length > 0);
   const navGroups = showAll ? fullGroups : simpleGroups;
 
-  function groupIsActive(group: NavGroup): boolean {
-    return group.sections.some((s) => s.items.some((item) => pathname === item.href || pathname.startsWith(item.href + "/")));
+  const [openGroup, setOpenGroup] = useState<string | null>(() => navGroups.find((g) => groupIsActive(g, pathname))?.label ?? navGroups[0]?.label ?? null);
+  function toggleGroup(label: string) {
+    setOpenGroup((prev) => (prev === label ? null : label));
   }
-
-  const [openGroup, setOpenGroup] = useState<string | null>(() => navGroups.find(groupIsActive)?.label ?? navGroups[0]?.label ?? null);
 
   // Keep the accordion in sync with the active route (e.g. after clicking a link elsewhere).
   useEffect(() => {
-    const active = navGroups.find(groupIsActive);
+    const active = navGroups.find((g) => groupIsActive(g, pathname));
     if (active && active.label !== openGroup) setOpenGroup(active.label);
   }, [pathname]);
 
   // Sections inside a group fold too, so a long group (MetricOra has five)
   // shows only the part in use. Open by default: the section holding the
   // current page, else the group's first section.
-  const sectionKey = (group: NavGroup, idx: number) => `${group.label}/${group.sections[idx].label ?? idx}`;
   function activeSectionKeys(): string[] {
     return navGroups.map((group) => {
-      const idx = group.sections.findIndex((sec) => sec.items.some((item) => pathname === item.href || pathname.startsWith(item.href + "/")));
+      const idx = group.sections.findIndex((sec) => sec.items.some((item) => isActivePath(item.href, pathname)));
       return sectionKey(group, idx >= 0 ? idx : 0);
     });
   }
@@ -263,206 +507,17 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
 
   async function handleSignOut() { await authClient.signOut(); router.push("/sign-in"); }
 
-  const NavLink = ({ item, onClick, indent, isCollapsed = collapsed }: { item: NavItem; onClick?: () => void; indent?: boolean; isCollapsed?: boolean }) => {
-    const Icon = item.icon;
-    const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-    return (
-      <Link
-        href={item.href}
-        prefetch={true}
-        onClick={onClick}
-        className={cn(
-          "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-normal tracking-tight transition-all",
-          isCollapsed ? "justify-center px-2" : indent ? "ml-1" : "",
-          isActive
-            ? "bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]"
-            : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
-        )}
-      >
-        <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2410c]" : "text-slate-500")} aria-hidden="true" />
-        {!isCollapsed && item.label}
-      </Link>
-    );
+  const nav: SidebarNav = {
+    pathname,
+    dashboardItem,
+    groups: navGroups,
+    showAll,
+    openGroup,
+    openSections,
+    onToggleGroup: toggleGroup,
+    onToggleSection: toggleSection,
+    onToggleShowAll: toggleShowAll,
   };
-
-  /** Renders the full nav: ungrouped Dashboard link, then one collapsible product group per accordion panel. */
-  const NavContent = ({ onNavClick, isCollapsed = collapsed }: { onNavClick?: () => void; isCollapsed?: boolean }) => (
-    <>
-      <div className="mb-1">
-        {isCollapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>{<NavLink item={dashboardItem} onClick={onNavClick} isCollapsed={isCollapsed} />}</TooltipTrigger>
-            <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{dashboardItem.label}</TooltipContent>
-          </Tooltip>
-        ) : (
-          <NavLink item={dashboardItem} onClick={onNavClick} isCollapsed={isCollapsed} />
-        )}
-      </div>
-
-      {navGroups.map((group) => {
-        const GroupIcon = group.icon;
-        const isOpen = isCollapsed || !showAll || openGroup === group.label;
-        const isActive = groupIsActive(group);
-        return (
-          <div key={group.label} className="mt-1">
-            {!isCollapsed && (
-              <button
-                type="button"
-                onClick={() => showAll && setOpenGroup((prev) => (prev === group.label ? null : group.label))}
-                aria-expanded={isOpen}
-                className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                  isActive ? "text-[#c2410c]" : "text-slate-500 hover:text-slate-600",
-                )}
-              >
-                <GroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="flex-1 text-left">{group.label}</span>
-                {showAll && <ChevronDown className={cn("h-3.5 w-3.5 shrink-0 transition-transform", isOpen && "rotate-180")} aria-hidden="true" />}
-              </button>
-            )}
-            {isOpen && (
-              <div className={cn("flex flex-col gap-0.5", !isCollapsed && "mt-0.5")}>
-                {group.sections.map((section, sIdx) => {
-                  const key = sectionKey(group, sIdx);
-                  const sectionOpen = isCollapsed || !section.label || openSections.has(key);
-                  return (
-                  <div key={key} className={cn(sIdx > 0 && !isCollapsed && "mt-1")}>
-                    {section.label && !isCollapsed && (
-                      <button
-                        type="button"
-                        onClick={() => toggleSection(key)}
-                        aria-expanded={sectionOpen}
-                        className="flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] font-semibold text-slate-500 hover:text-slate-700"
-                      >
-                        <span className="flex-1 text-left">{section.label}</span>
-                        <ChevronRight className={cn("h-3 w-3 shrink-0 transition-transform", sectionOpen && "rotate-90")} aria-hidden="true" />
-                      </button>
-                    )}
-                    {sectionOpen && (
-                    <div className="flex flex-col gap-0.5">
-                      {section.items.map((item) => {
-                        const link = <NavLink key={item.href} item={item} onClick={onNavClick} indent isCollapsed={isCollapsed} />;
-                        if (isCollapsed) {
-                          return (
-                            <Tooltip key={item.href}>
-                              <TooltipTrigger asChild>{link}</TooltipTrigger>
-                              <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{item.label}</TooltipContent>
-                            </Tooltip>
-                          );
-                        }
-                        return link;
-                      })}
-                    </div>
-                    )}
-                  </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      })}
-      {!isCollapsed && (
-        <button
-          type="button"
-          onClick={toggleShowAll}
-          className="mt-3 w-full rounded-lg border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-[12px] text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
-        >
-          {showAll ? "Show the short menu" : "Show all pages"}
-          <span className="block text-[11px] text-slate-500">{showAll ? "Only the everyday jobs" : "Everything, including reports and compliance tools"}</span>
-        </button>
-      )}
-    </>
-  );
-
-  const SidebarInner = ({ onNavClick }: { onNavClick?: () => void }) => (
-    <>
-      {/* Logo */}
-      <div className={cn("flex items-center border-b border-slate-200 overflow-hidden", collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4")}>
-        {collapsed ? (
-          <span title={orgName}>
-            <LogoMark size={28} />
-          </span>
-        ) : (
-          <div className="flex items-center gap-2.5 min-w-0 w-full">
-            <LogoMark size={28} className="shrink-0" />
-            <div className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
-              <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
-            </div>
-            <NotificationBell orgId={orgId} />
-          </div>
-        )}
-      </div>
-      {!collapsed && (
-        <div className="border-b border-slate-200 px-4 py-2.5">
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
-            className="flex w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-left text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
-          >
-            <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className="flex-1">Search pages and tasks</span>
-            <span className="hidden sm:inline"><KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup></span>
-          </button>
-        </div>
-      )}
-      {!collapsed && <ProjectSwitcher orgId={orgId} projects={projects} selectedId={selectedProjectId} />}
-
-      {/* Nav */}
-      <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto overflow-x-hidden" aria-label="Organisation navigation">
-        <NavContent onNavClick={onNavClick} />
-      </nav>
-
-      {/* User footer */}
-      <div className={cn("border-t border-slate-200 px-2 py-3", collapsed && "flex justify-center")}>
-        {collapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 transition-colors" onClick={handleSignOut} title="Sign out">
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-[10px] font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
-                </Avatar>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">
-              {user.name ?? user.email}<br /><span className="text-slate-500">Click to sign out</span>
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
-                <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                  <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  {user.name && <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>}
-                  <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
-                </div>
-                <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-slate-200 shadow-lg">
-              <DropdownMenuItem asChild>
-                <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
-                  <Users aria-hidden="true" className="h-4 w-4 mr-2" />
-                  Members and settings
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-slate-200" />
-              <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={handleSignOut}>
-                <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
-    </>
-  );
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -504,7 +559,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
               </button>
             </div>
             <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto" aria-label="Organisation navigation">
-              <NavContent onNavClick={() => setMobileOpen(false)} isCollapsed={false} />
+              <NavContent nav={nav} onNavClick={() => setMobileOpen(false)} isCollapsed={false} />
             </nav>
             <div className="border-t border-slate-200 px-2 py-3">
               <DropdownMenu>
@@ -544,7 +599,16 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
       <div className="relative hidden md:flex shrink-0">
         <aside className={cn("sticky top-0 flex flex-col h-[100dvh] bg-white border-r border-slate-200 transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
           <div className="relative z-10 flex flex-col flex-1">
-            <SidebarInner />
+            <SidebarInner
+              orgId={orgId}
+              orgName={orgName}
+              user={user}
+              projects={projects}
+              selectedProjectId={selectedProjectId}
+              collapsed={collapsed}
+              nav={nav}
+              onSignOut={handleSignOut}
+            />
           </div>
         </aside>
         {/* Collapse toggle — outside overflow-hidden so it renders past the sidebar edge */}
