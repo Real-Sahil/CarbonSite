@@ -82,7 +82,8 @@ export async function processReport(reportId: string, orgId: string): Promise<vo
       return;
     }
 
-    await prisma.report.update({ where: { id: reportId }, data: { status: "generating" } });
+    // Counts each start so the reports sweep can stop after MAX_REPORT_ATTEMPTS (lib/reports/retry.ts).
+    await prisma.report.update({ where: { id: reportId }, data: { status: "generating", processingAttempts: { increment: 1 } } });
     reportLogger.info("Report status updated to generating", { reportId });
 
     let pdfKey: string | null = null;

@@ -32,13 +32,23 @@ const MAX_RUNS_PER_SWEEP = 3;
 
 async function advanceStalledRuns() {
   const staleBefore = new Date(Date.now() - LOCK_STALE_MS);
+  const inline = process.env.JOB_PROCESSING_MODE !== "worker";
   const stalled = await prisma.calculationRun.findMany({
     where: {
-      status: "running",
-      OR: [{ processingLockedAt: null }, { processingLockedAt: { lt: staleBefore } }],
+      OR: [
+        // Running, and nothing is actively working on it.
+        {
+          status: "running",
+          OR: [{ processingLockedAt: null }, { processingLockedAt: { lt: staleBefore } }],
+        },
+        // Queued, and its start never happened (the dispatch failed or the
+        // function was killed before the first chunk). Inline only: in worker
+        // mode pg-boss already holds these.
+        ...(inline ? [{ status: "queued" as const, createdAt: { lt: staleBefore } }] : []),
+      ],
     },
     select: { id: true, organizationId: true },
-    orderBy: { lastProgressAt: "asc" },
+    orderBy: { createdAt: "asc" },
     take: MAX_RUNS_PER_SWEEP,
   });
 

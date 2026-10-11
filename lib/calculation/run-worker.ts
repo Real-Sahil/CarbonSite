@@ -33,6 +33,7 @@ import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
 import type { ActivityRecord } from "@prisma/client";
 import { industryMissingWarning, isNaicsFactor, isNafFactor, isUkSicFactor, isUnverifiedFactor, nafDivision, naicsCode, ukSicDigits, UNVERIFIED_FACTOR_WARNING, type IndustryScheme } from "./industry-code";
 import { selectSpendSupplement } from "./spend-supplement";
+import { MAX_INTERRUPTED_ATTEMPTS, interruptionsExhausted } from "./interruption";
 
 /** How this library prices the category's spend by industry, if it does. */
 function libraryPricesByIndustry(cache: FactorCache, libraryId: string, categoryId: string): IndustryScheme | null {
@@ -78,17 +79,45 @@ type ChunkResult = { done: boolean };
 // Fails (returns false) when the run is already terminal (succeeded/failed/
 // cancelled), or another invocation holds a still-fresh claim — the two
 // cases where this invocation must not touch the run's records.
+//
+// A claim that is still set but stale means the invocation that held it died
+// mid-chunk (a pause releases its claim, see processCalculationRun). Each such
+// reclaim is counted in interruptedAttempts; a run that keeps killing its
+// invocation fails at MAX_INTERRUPTED_ATTEMPTS instead of being retried forever.
 async function claimRun(calculationRunId: string): Promise<boolean> {
-  const staleBefore = new Date(Date.now() - LOCK_STALE_MS);
-  const result = await prisma.calculationRun.updateMany({
-    where: {
-      id: calculationRunId,
-      status: { in: ["queued", "running"] },
-      OR: [{ processingLockedAt: null }, { processingLockedAt: { lt: staleBefore } }],
-    },
-    data: { processingLockedAt: new Date() },
+  const now = new Date();
+  const staleBefore = new Date(now.getTime() - LOCK_STALE_MS);
+  const runnable = { id: calculationRunId, status: { in: ["queued" as const, "running" as const] } };
+
+  const reclaimed = await prisma.calculationRun.updateMany({
+    where: { ...runnable, processingLockedAt: { lt: staleBefore } },
+    data: { processingLockedAt: now, interruptedAttempts: { increment: 1 } },
   });
-  return result.count === 1;
+  if (reclaimed.count === 1) {
+    const run = await prisma.calculationRun.findUnique({
+      where: { id: calculationRunId },
+      select: { interruptedAttempts: true },
+    });
+    if (run && interruptionsExhausted(run.interruptedAttempts)) {
+      await prisma.calculationRun.updateMany({
+        where: runnable,
+        data: {
+          status: "failed",
+          finishedAt: now,
+          processingLockedAt: null,
+          errorMessage: `Interrupted ${MAX_INTERRUPTED_ATTEMPTS} times before finishing. Start a new calculation run.`,
+        },
+      });
+      return false;
+    }
+    return true;
+  }
+
+  const fresh = await prisma.calculationRun.updateMany({
+    where: { ...runnable, processingLockedAt: null },
+    data: { processingLockedAt: now },
+  });
+  return fresh.count === 1;
 }
 
 // Entry point used by dispatch.ts (inline mode) and by the explicit
@@ -113,12 +142,12 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
       if (result.factorCache) cachedFactors = result.factorCache;
       if (result.done) return { done: true };
       if (Date.now() >= overallDeadline) {
-        // More work remains but this invocation is out of budget. Refresh
-        // the heartbeat so the claim doesn't look instantly stale, then
-        // return normally (not an error) — safe to resume later.
+        // More work remains but this invocation is out of budget. Release
+        // the claim, so the next invocation takes it without counting as an
+        // interruption, then return normally (not an error) — safe to resume later.
         await prisma.calculationRun.update({
           where: { id: calculationRunId },
-          data: { processingLockedAt: new Date(), lastProgressAt: new Date() },
+          data: { processingLockedAt: null, lastProgressAt: new Date() },
         });
         return { done: false };
       }

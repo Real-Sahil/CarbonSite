@@ -6,6 +6,7 @@
  * attempts remain (lib/imports/retry.ts), and fails the last attempt.
  *
  * Scheduled by Supabase pg_cron (migration 20261014000096), every 5 minutes.
+ * In worker mode pg-boss owns the queue and its retries, so this sweep does nothing.
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -19,6 +20,11 @@ import { IMPORT_STALE_MS, decideStalledImport } from "@/lib/imports/retry";
 const MAX_BATCHES_PER_SWEEP = 1;
 
 async function sweepStalledImports() {
+  // In worker mode pg-boss owns the queue and its retries; a second parse here would duplicate it.
+  if (process.env.JOB_PROCESSING_MODE === "worker") {
+    return { checked: 0, results: [], skipped: "worker mode: pg-boss owns retries" };
+  }
+
   const now = new Date();
   const staleBefore = new Date(now.getTime() - IMPORT_STALE_MS);
   const stalled = await prisma.importBatch.findMany({

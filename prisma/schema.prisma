@@ -1655,6 +1655,10 @@ model CalculationRun {
   /// invocations (e.g. a client poll and the stalled-run sweep both firing
   /// at once) from loading and double-processing the same chunk of records.
   processingLockedAt   DateTime?            @map("processing_locked_at")
+  /// Times a processing claim was found stale, meaning the invocation that
+  /// held it died mid-chunk. Once it reaches MAX_INTERRUPTED_ATTEMPTS the run
+  /// fails instead of being reclaimed again (lib/calculation/run-worker.ts).
+  interruptedAttempts  Int                  @default(0) @map("interrupted_attempts")
   createdAt            DateTime             @default(now()) @map("created_at")
 
   organization       Organization                  @relation(fields: [organizationId], references: [id])
@@ -2215,6 +2219,9 @@ model Report {
   snapshotId        String       @map("snapshot_id")
   type              ReportType
   status            ReportStatus @default(queued)
+  /// Times rendering has started. A render killed mid-run is started again by
+  /// the reports sweep up to MAX_REPORT_ATTEMPTS (lib/reports/retry.ts).
+  processingAttempts Int         @default(0) @map("processing_attempts")
   version           Int          @default(1)
   errorMessage      String?      @map("error_message") @db.Text
   pdfStorageKey     String?      @map("pdf_storage_key")
