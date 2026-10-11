@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import React from "react";
 import { needsTermsAcceptance } from "@/lib/legal/terms";
+import { TermsGate } from "./terms-gate";
 
 export default async function AppLayout({
   children,
@@ -18,9 +19,10 @@ export default async function AppLayout({
 
   // Invited, SSO, supplier and bulk-created accounts never saw the sign-up checkbox. Until they accept the current
   // Terms they go no further in the web app; the API is unchanged, so installed mobile builds keep working.
+  // The gate is rendered here, not on its own route, because Vercel's Hobby plan caps functions per deployment.
   const terms = await prisma.user.findUnique({ where: { id: session.user.id }, select: { termsVersion: true } });
   if (needsTermsAcceptance(terms?.termsVersion)) {
-    redirect("/accept-terms");
+    return <TermsGate />;
   }
 
   // Apply white-label branding when accessed via a tenant subdomain.
