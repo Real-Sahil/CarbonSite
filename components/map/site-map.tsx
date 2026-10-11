@@ -13,7 +13,7 @@ const colourOf = (s: SiteTotal) => (s.kind === "site" ? SITE_MARKER : MARKER);
 const kindLabel = (s: SiteTotal) => (s.kind === "site" ? "Project site" : "Office or depot");
 
 /** Real map tiles, loaded only when a style is configured (see NEXT_PUBLIC_MAP_STYLE_URL). */
-function TileMap({ sites, styleUrl, locale, selectedId, onSelect }: { sites: SiteTotal[]; styleUrl: string; locale: string; selectedId: string | null; onSelect: (id: string) => void }) {
+function TileMap({ sites, styleUrl, locale, selectedId, locateKey, onSelect }: { sites: SiteTotal[]; styleUrl: string; locale: string; selectedId: string | null; locateKey: number; onSelect: (id: string) => void }) {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<import("maplibre-gl").Map | null>(null);
   const [failed, setFailed] = useState(false);
@@ -39,6 +39,7 @@ function TileMap({ sites, styleUrl, locale, selectedId, onSelect }: { sites: Sit
 
   useEffect(() => {
     let cancelled = false;
+    let loaded = false;
     let map: import("maplibre-gl").Map | null = null;
     (async () => {
       try {
@@ -47,8 +48,10 @@ function TileMap({ sites, styleUrl, locale, selectedId, onSelect }: { sites: Sit
         map = new maplibre.Map({ container: el.current, style: styleUrl, center: [-2, 54], zoom: 4.5, attributionControl: { compact: true } });
         mapRef.current = map;
         map.addControl(new maplibre.NavigationControl({ showCompass: false }), "top-right");
-        map.on("error", () => setFailed(true));
+        // Only a style that never loaded counts as failed. A later error is one tile or sprite, and must not take the map away.
+        map.on("error", () => { if (!loaded) setFailed(true); });
         map.on("load", () => {
+          loaded = true;
           map!.addSource("sites", { type: "geojson", data: features() });
           map!.addLayer({
             id: "sites",
@@ -101,15 +104,21 @@ function TileMap({ sites, styleUrl, locale, selectedId, onSelect }: { sites: Sit
     map.setFilter("sites-selected", ["==", ["get", "id"], selectedId ?? ""]);
     const hit = placed.find((s) => s.id === selectedId);
     if (hit) map.flyTo({ center: [hit.longitude, hit.latitude], zoom: Math.max(map.getZoom(), 9), duration: 600 });
-  }, [selectedId, placed]);
+    // locateKey changes on every Locate press, so pressing Locate on the selected site flies there again.
+  }, [selectedId, placed, locateKey]);
 
   useEffect(() => {
     const src = mapRef.current?.getSource("sites") as import("maplibre-gl").GeoJSONSource | undefined;
     src?.setData(features());
   }, [features]);
 
-  if (failed) return <p role="status" className="rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">The map tiles could not be loaded. The table below has the same figures.</p>;
-  return <div ref={el} className="h-[420px] w-full overflow-hidden rounded-[12px] border border-[#E5E7EB]" role="img" aria-label="Map of sites sized by emissions. The table below lists the same figures." />;
+  // The container stays mounted even when tiles fail, so the map never disappears from the page.
+  return (
+    <div>
+      {failed ? <p role="status" className="mb-2 rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">The map tiles could not be loaded. The table below has the same figures.</p> : null}
+      <div ref={el} className="h-[420px] w-full overflow-hidden rounded-[12px] border border-[#E5E7EB]" role="img" aria-label="Map of sites sized by emissions. The table below lists the same figures." />
+    </div>
+  );
 }
 
 /** No tile source: the same positions on a plain grid, with no request leaving the page. */
@@ -162,8 +171,17 @@ export function SiteMap({
   const [sites, setSites] = useState(initialSites);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [locateKey, setLocateKey] = useState(0);
   const cache = useRef(new Map<string, SiteTotal[]>([[initialSnapshotId, initialSites]]));
+  const mapSection = useRef<HTMLDivElement>(null);
   const snap = snapshots[index];
+
+  // Locate: select the site, bring the map into view and fly to its pin (TileMap reads locateKey).
+  const locate = (id: string) => {
+    setSelectedId(id);
+    setLocateKey((k) => k + 1);
+    mapSection.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   useEffect(() => {
     if (!snap) return;
@@ -227,7 +245,9 @@ export function SiteMap({
         </div>
       ) : null}
 
-      {styleUrl ? <TileMap sites={sites} styleUrl={styleUrl} locale={locale} selectedId={selectedId} onSelect={setSelectedId} /> : <Schematic sites={sites} locale={locale} selectedId={selectedId} onSelect={setSelectedId} />}
+      <div ref={mapSection} className="scroll-mt-6">
+        {styleUrl ? <TileMap sites={sites} styleUrl={styleUrl} locale={locale} selectedId={selectedId} locateKey={locateKey} onSelect={setSelectedId} /> : <Schematic sites={sites} locale={locale} selectedId={selectedId} onSelect={setSelectedId} />}
+      </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#374151]" aria-label="Map key">
         <span className="inline-flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full" style={{ background: MARKER, opacity: 0.7 }} aria-hidden="true" />Offices and depots</span>
@@ -281,7 +301,14 @@ export function SiteMap({
                   <td className="px-4 py-2 text-right tabular-nums">{(s.kg / 1000).toLocaleString(locale, { maximumFractionDigits: 2 })}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{g.total > 0 ? `${((s.kg / g.total) * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%` : "-"}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{s.recordCount}</td>
-                  <td className="px-4 py-2 text-[#6B7280]">{hasPosition(s) ? `${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}` : "Not placed"}</td>
+                  <td className="px-4 py-2 text-[#6B7280]">
+                    {hasPosition(s) ? (
+                      <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span className="tabular-nums">{`${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}`}</span>
+                        <button type="button" onClick={() => locate(s.id)} aria-label={`Locate ${s.name} on the map`} className="rounded-md border border-[#E5E7EB] px-2 py-0.5 text-xs font-medium text-[#374151] hover:bg-[#F9FAFB] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">Locate</button>
+                      </span>
+                    ) : "Not placed"}
+                  </td>
                 </tr>
               ))}
             </tbody>
