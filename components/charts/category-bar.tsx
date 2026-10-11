@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ExpandChart } from "./expand-chart";
 import {
   AXIS_TICK,
   GRID_STROKE,
@@ -33,11 +34,22 @@ interface CategoryBarProps {
   ariaLabel?: string;
 }
 
+/** Horizontal bars with an expand button; the full-screen view is taller so the labels breathe. */
 export function CategoryBar({
   data,
   height = 260,
   ariaLabel = "Emissions horizontal bar chart",
 }: CategoryBarProps) {
+  const hasRows = data.some((row) => Number.isFinite(row.value) && row.value > 0);
+  if (!hasRows) return <CategoryBarBody data={data} height={height} ariaLabel={ariaLabel} />;
+  return (
+    <ExpandChart title={ariaLabel}>
+      {(expanded) => <CategoryBarBody data={data} height={expanded ? Math.max(height, 520) : height} ariaLabel={ariaLabel} />}
+    </ExpandChart>
+  );
+}
+
+function CategoryBarBody({ data, height, ariaLabel }: Required<Pick<CategoryBarProps, "data" | "height" | "ariaLabel">>) {
   const rows = data.filter((row) => Number.isFinite(row.value) && row.value > 0);
 
   if (rows.length === 0) {
