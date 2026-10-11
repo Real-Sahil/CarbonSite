@@ -110,6 +110,6 @@ Also state what happens to data after a DSAR erasure request: the data is delete
 
 - **ICO fee.** Pay the data protection fee before taking paying customers. The Privacy page must then name MetricOra's ICO reference once issued (placeholder until then).
 
-- **Changing the Terms** means bumping `TERMS_VERSION` in `lib/legal/terms.ts`. Every account is then sent to `/accept-terms` once. Do this for any change customers would reasonably care about, not for typos.
+- **Changing the Terms** means bumping `TERMS_VERSION` in `lib/legal/terms.ts`. Every account is then shown the accept page in place of the app once. Do this for any change customers would reasonably care about, not for typos.
 - **Insurance and liability cap.** The Terms already cap liability (section 6). Confirm the cap amount and whether it covers the customer's own losses from the Terms' carve-outs, with your insurance broker. Professional indemnity and cyber cover are commercial decisions, not drafting ones.
 - **Before publishing:** solicitor review of sections 1 to 5; the owner approves the placeholders; then edit `app/(marketing)/terms`, `privacy`, `dpa` and add `/ai` and the security disclosure text to `SECURITY.md`.
