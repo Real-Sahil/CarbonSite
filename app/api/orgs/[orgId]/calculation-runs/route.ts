@@ -16,7 +16,7 @@ import { recordUsage } from "@/lib/billing/usage";
 // Allow up to 60s for Pro plans; Hobby plan caps at 10s regardless.
 // In inline mode the entire calculation runs inside this request.
 // If your plan caps functions at 10s, switch to JOB_PROCESSING_MODE=worker.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 type Params = { params: Promise<{ orgId: string }> };
 

@@ -13,7 +13,7 @@ import { parseSpreadsheet } from "@/lib/imports/parser";
 import { applyProfile, profileSpecSchema, resolveColumns, SOURCE_SYSTEMS, summariseProfile, type SourceSystem } from "@/lib/imports/profiles";
 import { templateFor } from "@/lib/imports/profile-templates";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {

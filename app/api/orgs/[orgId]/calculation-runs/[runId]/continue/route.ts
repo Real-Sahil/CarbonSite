@@ -9,7 +9,7 @@ import { dispatchCalculation } from "@/lib/jobs/dispatch";
 // Allow enough headroom for one more inline chunk pass (see
 // lib/calculation/run-worker.ts's REQUEST_TIME_BUDGET_MS) within Vercel's
 // function limit.
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 type Params = { params: Promise<{ orgId: string; runId: string }> };
 
