@@ -1,8 +1,9 @@
 import { requireOrgMember } from '@/lib/auth/session';
+import { mintApiKey } from '@/lib/auth/api-key';
 import { prisma } from '@/lib/db';
+import { writeAuditLog } from '@/lib/db/audit';
 import { handleRouteError, apiError } from '@/lib/validation/api';
 import { NextRequest, NextResponse } from 'next/server';
-import { randomBytes } from 'crypto';
 
 export async function GET(
   req: NextRequest,
@@ -35,23 +36,31 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, 'admin');
+    const { session } = await requireOrgMember(orgId, 'admin');
 
     const { name } = await req.json();
     if (!name || typeof name !== 'string') {
       return apiError('INVALID_NAME', 'Name is required', 400);
     }
 
-    const keySecret = `sk_${randomBytes(32).toString('hex')}`;
-    const prefix = keySecret.substring(0, 8);
+    const minted = mintApiKey();
 
     const apiKey = await prisma.apiKey.create({
       data: {
         organizationId: orgId,
         name,
-        prefix,
-        keyHash: Buffer.from(keySecret).toString('base64'),
+        prefix: minted.prefix,
+        keyHash: minted.keyHash,
       },
+    });
+
+    await writeAuditLog({
+      organizationId: orgId,
+      actorUserId: session.user.id,
+      action: 'api_key.created',
+      resourceType: 'ApiKey',
+      resourceId: apiKey.id,
+      metadata: { name },
     });
 
     return NextResponse.json(
@@ -59,7 +68,7 @@ export async function POST(
         success: true,
         data: {
           id: apiKey.id,
-          key: keySecret,
+          key: minted.secret,
           warning: 'Save this key securely. It will not be shown again.',
         },
       },

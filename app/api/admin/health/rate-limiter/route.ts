@@ -2,10 +2,12 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requirePlatformMember } from "@/lib/auth/session";
 import { securityLogger } from "@/lib/logger";
+import { handleRouteError } from "@/lib/validation/api";
 
 /**
- * GET /api/admin/health/rate-limiter
+ * GET /api/admin/health/rate-limiter (platform staff only)
  *
  * Returns Postgres rate-limiter bucket table connectivity.
  * Response:
@@ -17,6 +19,12 @@ import { securityLogger } from "@/lib/logger";
  * }
  */
 export async function GET() {
+  try {
+    await requirePlatformMember();
+  } catch (error) {
+    return handleRouteError(error);
+  }
+
   try {
     const rows = await prisma.$queryRaw<Array<{ count: bigint }>>`
       SELECT COUNT(*) AS count FROM rate_limit_buckets

@@ -1,5 +1,21 @@
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
+
+const KEY_PREFIX = "csk_";
+
+export function hashApiKey(rawKey: string): string {
+  return createHash("sha256").update(rawKey).digest("hex");
+}
+
+/**
+ * Mint a new organisation API key. Only the SHA-256 hash is stored, so the
+ * secret cannot be read back from the database. `prefix` is the first eight
+ * characters, kept for display in settings.
+ */
+export function mintApiKey(): { secret: string; prefix: string; keyHash: string } {
+  const secret = `${KEY_PREFIX}${randomBytes(32).toString("base64url")}`;
+  return { secret, prefix: secret.slice(0, 8), keyHash: hashApiKey(secret) };
+}
 
 /**
  * Validate an API key from the Authorization header.
@@ -17,11 +33,11 @@ export async function validateApiKey(authHeader: string | null): Promise<string>
   }
 
   const rawKey = match[1];
-  if (!rawKey.startsWith("csk_")) {
+  if (!rawKey.startsWith(KEY_PREFIX)) {
     throw new Error("Invalid API key format");
   }
 
-  const keyHash = createHash("sha256").update(rawKey).digest("hex");
+  const keyHash = hashApiKey(rawKey);
 
   const apiKey = await prisma.apiKey.findUnique({
     where: { keyHash },
