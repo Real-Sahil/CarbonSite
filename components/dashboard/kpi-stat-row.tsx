@@ -17,6 +17,10 @@ export type KpiStat = {
   goodUp?: boolean;
   /** Makes the whole card a link. */
   href?: string;
+  /** Says what the figure is built from, e.g. "Live, unpublished" or "Matches published v1". */
+  basis?: string;
+  /** Says why there is no figure yet and where to fix it. Shown only when there is no value. */
+  note?: string;
 };
 
 const DURATION_MS = 900;
@@ -82,9 +86,11 @@ function KpiCard({ stat }: { stat: KpiStat }) {
   const body = (
     <>
       <p className="text-xs text-[#6B7280]">{stat.label}</p>
+      {stat.basis && <p className="text-[11px] text-[#9CA3AF]">{stat.basis}</p>}
       <p className="mt-1 text-2xl font-semibold tabular-nums text-[#111827]" aria-live="off">
         {text}
       </p>
+      {shown === null && stat.note && <p className="mt-1 text-xs text-[#6B7280]">{stat.note}</p>}
       {stat.delta && (
         <div className="mt-2">
           <DeltaChip delta={stat.delta} goodUp={stat.goodUp ?? false} />

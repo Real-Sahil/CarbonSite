@@ -25,7 +25,8 @@ export function TaskLauncher({ orgId, role }: { orgId: string; role: string }) {
   return (
     <section aria-labelledby="task-launcher-title" className="mt-8">
       <h2 id="task-launcher-title" className="mb-3 text-base font-semibold tracking-tight text-slate-900">What do you want to do?</h2>
-      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Two columns on a phone, with the one-line blurb hidden there so eight jobs fit in about four rows. */}
+      <ul className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {tasks.map((t) => {
           const Icon = ICONS[t.path] ?? Sparkles;
           return (
@@ -42,7 +43,7 @@ export function TaskLauncher({ orgId, role }: { orgId: string; role: string }) {
                 </span>
                 <span>
                   <span className="block text-sm font-semibold tracking-tight text-slate-900">{t.label}</span>
-                  <span className="mt-1 block text-xs leading-relaxed text-slate-500">{t.task!.blurb}</span>
+                  <span className="mt-1 hidden text-xs leading-relaxed text-slate-500 sm:block">{t.task!.blurb}</span>
                 </span>
               </Link>
             </li>

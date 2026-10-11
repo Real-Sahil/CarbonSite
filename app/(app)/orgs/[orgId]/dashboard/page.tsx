@@ -56,6 +56,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Table } from "@/components/ui/table";
 import { CalculationControls } from "./calculation-controls";
 import { ReviewTaskPanel, type ReviewTaskPanelCandidate } from "./review-task-panel";
 import { resolveReviewTarget } from "@/lib/review-tasks/targets";
@@ -1074,6 +1075,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               label: "Total footprint",
               value: currentFootprint > 0 ? currentFootprint : null,
               format: { kind: "co2e", locale: L },
+              basis: !latestSnapshot
+                ? "Live, nothing published yet"
+                : snapshotDiverges
+                  ? `Live, unpublished changes since v${latestSnapshot.version}`
+                  : `Live, matches published v${latestSnapshot.version}`,
             },
             {
               label: "Period change",
@@ -1084,6 +1090,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   ? { value: periodDeltaPct, label: sliceFilter ? "vs previous period, same filters" : "vs previous period" }
                   : undefined,
               goodUp: false,
+              note: "Needs records in an earlier period. Add them in Imports.",
             },
             {
               label: "Scope coverage",
@@ -1446,7 +1453,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </CardHeader>
           <CardContent>
             <div className="overflow-hidden rounded-[14px] border border-[#E5E7EB]">
-              <table className="w-full text-sm">
+              <Table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
                     <th className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">
@@ -1502,7 +1509,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     );
                   })}
                 </tbody>
-              </table>
+              </Table>
             </div>
           </CardContent>
         </Card>
@@ -1883,16 +1890,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 detail="Records included in current scope totals"
               />
               <InsightCard
-                icon={BarChart3}
-                label="Current footprint"
-                value={formatKgCo2e(L, currentFootprint)}
-                detail="Scope 1, 2, and 3 combined"
-              />
-              <InsightCard
                 icon={PieChart}
-                label="Scope coverage"
-                value={`${scopeRows.filter((row) => Number(row.records) > 0).length}/3`}
-                detail="Scopes with calculated activity"
+                label="Largest category share"
+                value={currentFootprint > 0 && maxCategoryTotal > 0 ? `${Math.round((maxCategoryTotal / currentFootprint) * 100)}%` : "No data"}
+                detail={topCategoryAggregates[0]?.emissionCategory?.name ?? "Needs a calculation run"}
               />
             </div>
           </CardContent>

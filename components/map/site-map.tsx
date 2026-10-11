@@ -145,7 +145,13 @@ function TileMap({ sites, styleUrl, locale, selectedId, locateKey, me, onSelect 
 function Schematic({ sites, locale, selectedId, onSelect }: { sites: SiteTotal[]; locale: string; selectedId: string | null; onSelect: (id: string) => void }) {
   const placed = sites.filter(hasPosition);
   const W = 720, H = 360;
-  if (placed.length === 0) return <p className="rounded-[10px] border border-[#E5E7EB] p-4 text-sm text-[#374151]">No site has a position yet. Add an address in Settings, Operations, and choose a suggestion to place it.</p>;
+  // Keep the map frame when nothing is placed yet, so the page still reads as a map and says where to add a pin.
+  if (placed.length === 0)
+    return (
+      <div role="img" aria-label="Site map with no positioned sites yet" className="flex aspect-[2/1] w-full items-center justify-center rounded-[12px] border border-dashed border-[#D1D5DB] bg-[#F9FAFB] bg-[linear-gradient(#E5E7EB_1px,transparent_1px),linear-gradient(90deg,#E5E7EB_1px,transparent_1px)] bg-[length:40px_40px] p-6 text-center">
+        <p className="max-w-md rounded-[10px] bg-white/90 px-4 py-3 text-sm text-[#374151] shadow-sm">No site has a position yet. Add an address in Settings, Operations, and choose a suggestion to place it.</p>
+      </div>
+    );
   const project = fitProjection(placed as { latitude: number; longitude: number }[], W, H, 64);
   const max = Math.max(1, ...placed.map((s) => s.kg));
   return (

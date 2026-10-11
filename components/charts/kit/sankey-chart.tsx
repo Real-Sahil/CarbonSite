@@ -24,6 +24,8 @@ export function selectionFor(node: { id: string; kind: string }): FlowSelection 
   return null;
 }
 
+const NARROW_SANKEY_PX = 560;
+
 function Diagram({ flows, width, height, locale, onSelect, selected }: { flows: Flows; width: number; height: number; locale: string; onSelect?: (s: FlowSelection) => void; selected?: Record<string, string> }) {
   const [hover, setHover] = useState<string | null>(null);
   const layout = useMemo(() => {
@@ -91,7 +93,8 @@ function Diagram({ flows, width, height, locale, onSelect, selected }: { flows: 
             onBlur={() => setHover(null)}
           >
             <rect x={x0} y={y0} width={x1 - x0} height={Math.max(1, y1 - y0)} rx={2} fill={colour(node.scope)} stroke={isSelected ? "#111827" : "none"} strokeWidth={2} />
-            {y1 - y0 >= 14 || node.kind === "scope" ? (
+            {/* Narrow widths: category and site names would run into the next column, so only the scope labels stay. The table view has every name. */}
+            {node.kind === "scope" || (width >= NARROW_SANKEY_PX && y1 - y0 >= 14) ? (
               <text x={x1 + 6} y={(y0 + y1) / 2} dy="0.32em" fontSize={11} fill="#374151">
                 {node.label.length > 22 ? `${node.label.slice(0, 21)}…` : node.label}
                 <tspan fill="#6B7280" dx={4}>{tonnes(v, locale)}</tspan>
