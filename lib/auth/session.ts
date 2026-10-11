@@ -61,6 +61,7 @@ async function loadSession() {
                   name: true,
                   createdAt: true,
                   updatedAt: true,
+                  themePreference: true,
                 },
               },
             },
@@ -97,6 +98,7 @@ async function loadSession() {
             name: true,
             createdAt: true,
             updatedAt: true,
+            themePreference: true,
           },
         },
       },
@@ -122,6 +124,7 @@ type DbSession = {
     emailVerifiedAt: Date | null;
     id: string;
     name: string | null;
+    themePreference: string | null;
     updatedAt: Date;
   };
 };
@@ -142,6 +145,7 @@ function buildSessionResult(session: DbSession) {
       emailVerified: Boolean(session.user.emailVerifiedAt),
       id: session.user.id,
       name: session.user.name ?? "",
+      themePreference: session.user.themePreference,
       updatedAt: session.user.updatedAt,
     },
   };

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./dark-theme.generated.css";
 
 @source "../app" "../components";
 
@@ -121,9 +122,14 @@
 }
 
 @layer base {
+  /* Default border colour; the dark appearance redefines it below. */
+  :root {
+    --default-border: #E2E8F0;
+  }
+
   * {
     @apply box-border;
-    border-color: #E2E8F0;
+    border-color: var(--default-border);
   }
 
   html, body {
@@ -570,4 +576,89 @@
   transform: perspective(1400px) rotateX(calc(var(--tilt-y, 0) * -1deg)) rotateY(calc(var(--tilt-x, 0) * 1deg));
   transition: transform 0.25s ease-out;
   will-change: transform;
+}
+
+/* ── Dark appearance (org app only) ───────────────────────────────────────────
+   Set on <html data-theme="dark"> by lib/theme/preference.ts. Unlayered, so it
+   beats the @theme variables and the base layer. Tailwind palette shades and
+   the arbitrary hex classes come from app/dark-theme.generated.css
+   (`pnpm theme:build`). These product tokens use :root[data-theme] so they win
+   over a tenant's branding variables, which pass contrast only in light mode;
+   a tenant's colours do not carry into the dark appearance. */
+:root[data-theme="dark"] {
+  --default-border: #26332E;
+
+  --color-primary: #F97316;
+  --color-primary-hover: #FB923C;
+  --color-primary-light: #2B1608;
+  --color-primary-border: #7C3A12;
+  --color-primary-dark: #FDBA74;
+  --color-primary-mid: #3A1D0B;
+
+  --color-info: #60A5FA;
+  --color-info-hover: #93C5FD;
+  --color-info-light: #0E1F3A;
+  --color-info-border: #1E40AF;
+
+  --color-eco: #4ADE80;
+  --color-eco-hover: #86EFAC;
+  --color-eco-light: #0D2A1A;
+  --color-eco-border: #14532D;
+  --color-eco-muted: #22C55E;
+
+  --color-lime: #A3E635;
+  --color-lime-light: #1E2A0B;
+
+  --color-warning: #FBBF24;
+  --color-warning-light: #2D2208;
+  --color-coral: #F87171;
+  --color-coral-light: #301414;
+
+  --color-surface: #161D1A;
+  --color-surface-subtle: #121815;
+  --color-surface-muted: #1B2420;
+
+  --color-border: #26332E;
+  --color-border-strong: #36453F;
+
+  --color-text-primary: #E6EDEA;
+  --color-text-secondary: #A7B5AF;
+  --color-text-muted: #94A39C;
+
+  --color-sidebar-bg: #111815;
+  --color-sidebar-border: #1F2A26;
+  --color-sidebar-text: #A7B5AF;
+  --color-sidebar-text-active: #5EEAD4;
+  --color-sidebar-bg-active: #15302B;
+  --color-sidebar-label: #94A39C;
+
+  --color-scope-1: #2DD4BF;
+  --color-scope-2: #FB923C;
+  --color-scope-3: #7DA7F0;
+
+  --color-forest-ink: #FB923C;
+  --color-sage-wash: #15302B;
+  --color-mist-blue: #0E1F3A;
+  --color-mint-veil: #0D2A1A;
+  --color-linen: #121815;
+  --color-linen-white: #161D1A;
+  --color-hairline-gray: #26332E;
+  --color-charcoal: #E6EDEA;
+  --color-graphite: #A7B5AF;
+  --color-brand-primary: #FB923C;
+  --color-brand-accent: #4ADE80;
+  --color-brand-forest: #4ADE80;
+  --color-sky-blue: #60A5FA;
+  --color-sky-light: #0E1F3A;
+  --color-cta-orange: #F97316;
+  --color-surface-var: #121815;
+
+  color-scheme: dark;
+  background-color: #0D1210;
+  color: #E6EDEA;
+}
+
+:root[data-theme="dark"] body {
+  background-color: #0D1210;
+  color: #E6EDEA;
 }

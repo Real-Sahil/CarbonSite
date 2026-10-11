@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { MotionProvider } from "@/components/motion-provider";
 import { ScrollProvider } from "@/components/scroll-provider";
 import { Providers } from "@/components/providers";
+import { THEME_INIT_SCRIPT } from "@/lib/theme/preference";
 import "./globals.css";
 import "@designcodeio/threeui/style.css";
 
@@ -54,6 +55,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
+        {/* Before first paint: picks the org app's saved theme (see lib/theme/preference.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <Providers>
           <ScrollProvider>
             <MotionProvider>{children}</MotionProvider>

@@ -27,6 +27,8 @@ model User {
   /// When the person accepted the Terms of Service at sign-up, and which Terms version they accepted.
   termsAcceptedAt      DateTime? @map("terms_accepted_at")
   termsVersion         String?   @map("terms_version")
+  /// Appearance the person chose for the org app: "light", "dark" or "system". Null means light.
+  themePreference      String?   @map("theme_preference")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { OrgSidebar } from "@/components/org-sidebar";
 import { CommandPalette } from "@/components/org/command-palette";
 import { OrgTopBar } from "@/components/org/org-topbar";
+import { AppearanceSync } from "@/components/org/appearance";
+import { parseThemeChoice } from "@/lib/theme/preference";
 import { viewRoles } from "@/lib/saved-views/roles";
 import { paymentState } from "@/lib/billing/dunning";
 import { PageTransition } from "@/components/page-transition";
@@ -151,6 +153,8 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     name: session!.user.name,
     email: session!.user.email,
   };
+  // The person's own appearance choice, read with the session (no extra query).
+  const themePreference = parseThemeChoice(session!.user.themePreference);
 
   const cssVars = brandingCss(brandingVars(branding));
 
@@ -173,11 +177,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   return (
     <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8F9FA]">
       {cssVars && <style>{cssVars}</style>}
-      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} />
+      <AppearanceSync saved={themePreference} />
+      <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} themePreference={themePreference} />
       <CommandPalette orgId={orgId} role={membership!.role} canUseViews={viewRoles().includes(membership!.role)} />
       {/* The column wraps the top bar and main so the bar sticks to the viewport, not to main (which never scrolls on its own). */}
       <div className="flex flex-1 min-w-0 flex-col">
-        <OrgTopBar orgId={orgId} user={user} />
+        <OrgTopBar orgId={orgId} user={user} themePreference={themePreference} />
         <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 overflow-auto">
           {payment.state !== "ok" ? (
             <div role="status" className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-2.5 text-sm sm:px-8 ${payment.state === "blocked" ? "border-red-200 bg-red-50 text-red-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>

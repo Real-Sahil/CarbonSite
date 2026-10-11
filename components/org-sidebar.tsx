@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/ui/logo";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ProjectSwitcher } from "@/components/org/project-switcher";
+import { AppearanceMenu } from "@/components/org/appearance";
+import type { ThemeChoice } from "@/lib/theme/preference";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
 /** A micro-group of items within a product's accordion panel, e.g. "Calculations" inside "MetricOra". */
@@ -41,6 +43,7 @@ interface OrgSidebarProps {
   role?: string;
   projects?: { id: string; name: string }[];
   selectedProjectId?: string | null;
+  themePreference?: ThemeChoice | null;
 }
 
 const COLLAPSED_KEY = "metricora:sidebar:collapsed";
@@ -263,7 +266,7 @@ function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, 
   );
 }
 
-export function OrgSidebar({ orgId, orgName, user, role, projects = [], selectedProjectId = null }: OrgSidebarProps) {
+export function OrgSidebar({ orgId, orgName, user, role, projects = [], selectedProjectId = null, themePreference = null }: OrgSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -532,6 +535,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
                       Members and settings
                     </Link>
                   </DropdownMenuItem>
+                  <AppearanceMenu saved={themePreference} />
                   <DropdownMenuSeparator className="bg-slate-200" />
                   <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={handleSignOut}>
                     <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />

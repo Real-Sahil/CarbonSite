@@ -10,10 +10,13 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationBell } from "@/components/notification-bell";
+import { AppearanceMenu } from "@/components/org/appearance";
+import type { ThemeChoice } from "@/lib/theme/preference";
 
 interface OrgTopBarProps {
   orgId: string;
   user: { name?: string | null; email: string };
+  themePreference?: ThemeChoice | null;
 }
 
 function initialsOf(name?: string | null, email?: string): string {
@@ -29,7 +32,7 @@ function initialsOf(name?: string | null, email?: string): string {
  * Desktop top bar: account menu, then the notification bell, at the top right of every org page.
  * Mobile keeps its own header (bell) and drawer footer (account), so this bar is md and up only.
  */
-export function OrgTopBar({ orgId, user }: OrgTopBarProps) {
+export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
   const router = useRouter();
 
   async function signOut() {
@@ -69,6 +72,7 @@ export function OrgTopBar({ orgId, user }: OrgTopBarProps) {
               Members and settings
             </Link>
           </DropdownMenuItem>
+          <AppearanceMenu saved={themePreference ?? null} />
           <DropdownMenuSeparator className="bg-slate-200" />
           <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={signOut}>
             <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />

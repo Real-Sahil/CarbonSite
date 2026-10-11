@@ -113,6 +113,13 @@ export const auth = betterAuth({
       });
     },
   },
+  user: {
+    // The org app's appearance choice (light, dark or system). Read with the session, so layouts
+    // need no extra query; written only by PATCH /api/me/theme, never at sign-up.
+    additionalFields: {
+      themePreference: { type: "string", required: false, input: false },
+    },
+  },
   session: {
     // Short-lived sessions with rolling expiry; mobile clients use bearer tokens
     expiresIn: 60 * 60 * 24 * 7, // 7 days

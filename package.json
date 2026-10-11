@@ -25,6 +25,7 @@
     "worker": "tsx workers/index.ts",
     "prisma": "prisma",
     "screenshots": "node scripts/appetize-screenshots.mjs",
+    "theme:build": "tsx scripts/build-dark-theme.ts",
     "tokens": "node scripts/dev-tools/token-report.mjs",
     "seed:demo": "tsx scripts/seed-demo-org.ts"
   },
