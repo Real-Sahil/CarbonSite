@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 120;
 
 // Checks the organisation's audit-trail hash chain end to end and reports the result. Read-only.
 

@@ -12,7 +12,7 @@ import { createHash } from "crypto";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 
 // Inline job mode parses the CSV inside this request — allow time for it.
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 type Params = { params: Promise<{ orgId: string }> };
 

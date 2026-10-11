@@ -20,7 +20,7 @@ import { anonymiseExpiredAuditRows } from "@/lib/audit/anonymise";
 import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   "submission-sla": dispatchSubmissionSlaMonitoring,

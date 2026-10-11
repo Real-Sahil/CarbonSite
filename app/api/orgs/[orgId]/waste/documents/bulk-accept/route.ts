@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 120;
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

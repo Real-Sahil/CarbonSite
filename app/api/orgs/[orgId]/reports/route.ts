@@ -16,7 +16,7 @@ import { recordUsage } from "@/lib/billing/usage";
 import { bidPackOptionsSchema } from "@/lib/bids/carbon-pack";
 
 // Inline job mode renders the PDF (Puppeteer) inside this request.
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 type Params = { params: Promise<{ orgId: string }> };
 
