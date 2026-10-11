@@ -87,6 +87,7 @@ import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { activeFilters } from "@/lib/saved-views";
 import { mayShare, viewRoles } from "@/lib/saved-views/roles";
 import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from "@/lib/dashboard/page-data";
+import { loadAnalyticsPeriod } from "@/lib/analytics/period";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
@@ -161,7 +162,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // stage. Counts and the latest run's figures come from one statement each
   // (lib/dashboard/page-data.ts): Prisma has one connection per instance, so
   // every separate query was another database round trip.
-  const [onboardingProgress, org, reportingPeriods, activeContracts, selectedContract, contractFacilityIds, counts, latestRun] =
+  const [onboardingProgress, org, reportingPeriods, activeContracts, selectedContract, contractFacilityIds, counts, latestRun, periodWithRows] =
     await Promise.all([
       role === "admin"
         ? prisma.onboardingProgress.findUnique({
@@ -205,6 +206,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       loadDashboardCounts(orgId).catch(onLoadFailure(() => null)),
       // Latest succeeded calculation run (used for data quality metrics)
       loadLatestRunStats(orgId).catch(onLoadFailure(() => null)),
+      // Newest period that has live rollup rows (lib/analytics/period.ts)
+      loadAnalyticsPeriod(orgId).catch(onLoadFailure(() => null)),
     ]);
 
   // Send admins of a brand-new organisation (no activity data yet) to the
@@ -257,8 +260,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   };
 
   const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, siteId: selectedSiteId });
-  const currentPeriod = reportingPeriods[0] ?? null;
-  const priorPeriod = reportingPeriods[1] ?? null;
+  // The newest period with calculated figures, so a fresh empty period does not
+  // blank the page. The period list stays newest first; the prior period is the
+  // one before the current in that list.
+  const currentPeriod =
+    reportingPeriods.find((p) => p.id === periodWithRows?.id) ?? reportingPeriods[0] ?? null;
+  const currentIndex = currentPeriod ? reportingPeriods.findIndex((p) => p.id === currentPeriod.id) : -1;
+  const priorPeriod = currentIndex >= 0 ? reportingPeriods[currentIndex + 1] ?? null : null;
 
   // Records the run processed but that contributed no emissions: a unit the
   // factor could not consume, no matching factor, or a zero input amount. Their
@@ -1363,7 +1371,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   );
   widgetNodes["scope-breakdown"] = (
     <>
-      {hasAggregates && (
+      {hasAggregates ? (
         <div
           className={`mt-6 grid gap-6 lg:grid-cols-2 ${showTrend ? "xl:grid-cols-3" : ""}`}
         >
@@ -1405,6 +1413,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </CardContent>
             </Card>
           )}
+        </div>
+      ) : (
+        <div className="mt-6">
+          <EmptyPanel
+            title="No calculated figures for this period yet"
+            description={`${currentPeriod ? currentPeriod.label : "The current period"} has no calculation run. Approve records, then run a calculation to fill the scope, category, trend and intelligence panels.`}
+            href="#run-calculation"
+            action="Run calculation"
+          />
         </div>
       )}
 
@@ -2314,7 +2331,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     live: Boolean(liveDashboardEnabled),
     industry: Boolean(industryData),
     environment: Boolean(hasEnvironmentalData),
-    "scope-breakdown": Boolean(hasAggregates),
+    // Always shown: with no figures it carries the empty state that says why.
+    "scope-breakdown": true,
     flow: Boolean(sliceView && sliceView.flows.totalKg > 0),
     waterfall: changeSteps.length > 1,
     facilities: facilityRows.length > 0,

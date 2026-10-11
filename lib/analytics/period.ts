@@ -1,17 +1,31 @@
 import { prisma } from "@/lib/db";
+import { SCOPE_ROLLUP_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
 
 export type AnalyticsPeriod = { id: string; startDate: Date; endDate: Date };
 
+const NEWEST_FIRST = [{ startDate: "desc" as const }, { createdAt: "desc" as const }];
+const PERIOD_SELECT = { id: true, startDate: true, endDate: true } as const;
+
 /**
- * The reporting period the analytics page reads: the newest one, chosen the
- * same way as the dashboard (latest start date, then latest created), so the
- * two pages describe the same period. Null when the organisation has none.
+ * The reporting period the analytics pages and the dashboard read: the newest
+ * period that has live scope rollup rows, so a new period with no calculation
+ * yet does not blank every chart. Falls back to the newest period at all (so the
+ * page can say which period is empty). Null when the organisation has none.
  */
 export async function loadAnalyticsPeriod(orgId: string): Promise<AnalyticsPeriod | null> {
+  const withRows = await prisma.reportingPeriod.findFirst({
+    where: {
+      organizationId: orgId,
+      aggregates: { some: { snapshotId: null, ...SCOPE_ROLLUP_DIMENSIONS, facilityId: null } },
+    },
+    orderBy: NEWEST_FIRST,
+    select: PERIOD_SELECT,
+  });
+  if (withRows) return withRows;
   return prisma.reportingPeriod.findFirst({
     where: { organizationId: orgId },
-    orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-    select: { id: true, startDate: true, endDate: true },
+    orderBy: NEWEST_FIRST,
+    select: PERIOD_SELECT,
   });
 }
 
