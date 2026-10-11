@@ -17,6 +17,7 @@ const INTELLIGENCE_VIEWERS = [
 
 /** Every widget, in the order the dashboard has always shown them. */
 export const WIDGETS: readonly WidgetDef[] = [
+  { id: "summary", title: "Summary", width: "full" },
   { id: "tasks", title: "What do you want to do?", width: "full" },
   { id: "headline", title: "Footprint and key figures", width: "full" },
   { id: "live", title: "Live dashboard", width: "full" },
@@ -28,7 +29,7 @@ export const WIDGETS: readonly WidgetDef[] = [
   { id: "flow", title: "Emissions flow", width: "half" },
   { id: "waterfall", title: "Change since the previous period", width: "half" },
   { id: "facilities", title: "By facility", width: "full" },
-  { id: "scope-detail", title: "Scopes, year-on-year and readiness", width: "full" },
+  { id: "scope-detail", title: "Scopes and year-on-year", width: "full" },
   { id: "data-quality", title: "Data quality", width: "full" },
   { id: "analytics-reporting", title: "Analytics and reporting", width: "full" },
   { id: "carbon-intelligence", title: "Carbon intelligence", width: "full", roles: INTELLIGENCE_VIEWERS },
@@ -36,6 +37,7 @@ export const WIDGETS: readonly WidgetDef[] = [
   { id: "ops-health", title: "Operations health", width: "half" },
   { id: "recent-decisions", title: "Recent decisions", width: "half" },
   { id: "review-queue", title: "Review task queue", width: "half" },
+  { id: "readiness", title: "Assurance readiness", width: "half" },
   { id: "run-calculation", title: "Run a calculation", width: "half", roles: EDITORS },
   { id: "quick-links", title: "Quick links", width: "full" },
 ];
@@ -46,12 +48,19 @@ const known = new Set(WIDGET_IDS);
 /** Widgets a role may be given at all. */
 export const widgetsForRole = (role: string): WidgetDef[] => WIDGETS.filter((w) => !w.roles || w.roles.includes(role));
 
-export type Layout = { order: string[]; hidden: string[]; widths: Record<string, WidgetWidth> };
+export type Layout = { order: string[]; hidden: string[]; widths: Record<string, WidgetWidth>; version?: number };
+
+/**
+ * Bumped when the default arrangement changes. A saved layout without this version (or with an older one) predates
+ * the master preset, so it is ignored once and every person starts from the master, not from a stale order.
+ */
+export const LAYOUT_VERSION = 2;
 
 export const layoutSchema = z.object({
   order: z.array(z.string()).max(40),
   hidden: z.array(z.string()).max(40),
   widths: z.record(z.string(), z.enum(["half", "full"])),
+  version: z.number().int().optional(),
 });
 
 /** Why a layout is refused: any id the registry does not know. */
@@ -60,25 +69,22 @@ export function layoutError(l: Layout): string | null {
   return bad ? `"${bad}" is not a dashboard widget.` : null;
 }
 
-// What each kind of person sees first. Everything else stays one click away
-// under "Add widget"; nothing is withheld that the role may read.
-const EXECUTIVE = ["tasks", "headline", "carbon-intelligence", "scope-breakdown", "flow", "waterfall", "facilities", "data-quality", "scope-detail"];
-const REVIEWER = ["tasks", "headline", "review-queue", "ops-health", "data-quality", "operations", "flow"];
-const PRESETS: Record<string, string[] | undefined> = {
-  sustainability_director: EXECUTIVE,
-  viewer: EXECUTIVE,
-  auditor: EXECUTIVE,
-  verifier: EXECUTIVE,
-  reviewer: REVIEWER,
-};
+/**
+ * The one master arrangement, shown to every role. Widgets outside it stay hidden and one click away under
+ * "Add widget"; nothing is withheld that the role may read. A role never gets a widget it may not see.
+ */
+export const MASTER_ORDER = ["summary", "headline", "review-queue", "waterfall", "scope-breakdown", "readiness", "recent-decisions"];
 
-/** The default layout for a role: the preset's widgets first, the rest hidden. */
+/** The default layout for a role: the master order first, the rest hidden. */
 export function presetLayout(role: string): Layout {
-  const preset = PRESETS[role];
   const all = widgetsForRole(role).map((w) => w.id);
-  if (!preset) return { order: all, hidden: [], widths: {} };
-  const shown = preset.filter((id) => all.includes(id));
-  return { order: [...shown, ...all.filter((id) => !shown.includes(id))], hidden: all.filter((id) => !shown.includes(id)), widths: {} };
+  const shown = MASTER_ORDER.filter((id) => all.includes(id));
+  return {
+    order: [...shown, ...all.filter((id) => !shown.includes(id))],
+    hidden: all.filter((id) => !shown.includes(id)),
+    widths: {},
+    version: LAYOUT_VERSION,
+  };
 }
 
 export type PlacedWidget = { id: string; title: string; width: WidgetWidth; hidden: boolean };
@@ -106,5 +112,6 @@ export function toLayout(items: PlacedWidget[]): Layout {
     order: items.map((i) => i.id),
     hidden: items.filter((i) => i.hidden).map((i) => i.id),
     widths: Object.fromEntries(items.map((i) => [i.id, i.width])),
+    version: LAYOUT_VERSION,
   };
 }

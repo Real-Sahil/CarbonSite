@@ -83,6 +83,7 @@ import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar"
 import { KpiStatRow } from "@/components/dashboard/kpi-stat-row";
 import { formatKgCo2e } from "@/components/dashboard/kpi-format";
 import { heroFacts } from "@/lib/dashboard/hero-facts";
+import { SummaryHero } from "@/components/dashboard/summary-hero";
 import { RecentDecisions } from "@/components/dashboard/recent-decisions";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
@@ -1086,19 +1087,22 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const hero =
     currentPeriod && !scoped && currentFootprint > 0
       ? heroFacts(
-          { periodLabel: currentPeriod.label, totalKg: currentFootprint, priorLabel: priorPeriod?.label ?? null, deltaPct: periodDeltaPct, steps: changeSteps },
+          {
+            periodLabel: currentPeriod.label,
+            totalKg: currentFootprint,
+            priorLabel: priorPeriod?.label ?? null,
+            deltaPct: periodDeltaPct,
+            steps: changeSteps,
+            scopes: scopeRows.map((row) => ({ scope: row.scope, kg: Number(row.total) })),
+            openReviewTasks: openReviewTaskCount,
+          },
           (kg) => formatKgCo2e(L, kg),
         )
       : null;
+  widgetNodes["summary"] = hero ? <SummaryHero facts={hero} /> : null;
   widgetNodes["headline"] = (
-    /* Carbon footprint summary */
-    <section aria-label="Carbon footprint summary" className="mt-2 space-y-4">
-      {hero ? (
-        <p className="text-lg font-normal tracking-[-0.2px] text-[#111827]">
-          {hero.headline}
-          {hero.detail ? <span className="mt-1 block text-sm text-[#6B7280]">{hero.detail}</span> : null}
-        </p>
-      ) : null}
+    /* Headline figures: the KPI tiles under the summary */
+    <section aria-label="Headline figures" className="mt-2 space-y-4">
         <KpiStatRow
           stats={[
             {
@@ -1651,43 +1655,45 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </Card>
         )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Readiness</CardTitle>
-            <CardDescription>
-              Counts from this organisation&apos;s records. Each row opens the page that changes it.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <ReadinessRow
-              icon={ClipboardCheck}
-              label="Approved record coverage"
-              value={formatPercent(approvedRecordCount, recordCount)}
-              href={`/orgs/${orgId}/records`}
-            />
-            <ReadinessRow
-              icon={Target}
-              label="Targets and initiatives"
-              value={`${targetCount + initiativeCount}`}
-              href={`/orgs/${orgId}/targets`}
-            />
-            <ReadinessRow
-              icon={Inbox}
-              label="Open submissions"
-              value={`${pendingSubmissionCount}`}
-              href={`/orgs/${orgId}/submissions`}
-            />
-            <ReadinessRow
-              icon={ClipboardCheck}
-              label="Open review tasks"
-              value={`${openReviewTaskCount}`}
-              href={`/orgs/${orgId}/tasks`}
-            />
-          </CardContent>
-        </Card>
       </div>
 
     </>
+  );
+  widgetNodes["readiness"] = (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="text-base">Assurance readiness</CardTitle>
+        <CardDescription>
+          Counts from this organisation&apos;s records. Each row opens the page that changes it.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <ReadinessRow
+          icon={ClipboardCheck}
+          label="Approved record coverage"
+          value={formatPercent(approvedRecordCount, recordCount)}
+          href={`/orgs/${orgId}/records`}
+        />
+        <ReadinessRow
+          icon={Target}
+          label="Targets and initiatives"
+          value={`${targetCount + initiativeCount}`}
+          href={`/orgs/${orgId}/targets`}
+        />
+        <ReadinessRow
+          icon={Inbox}
+          label="Open submissions"
+          value={`${pendingSubmissionCount}`}
+          href={`/orgs/${orgId}/submissions`}
+        />
+        <ReadinessRow
+          icon={ClipboardCheck}
+          label="Open review tasks"
+          value={`${openReviewTaskCount}`}
+          href={`/orgs/${orgId}/tasks`}
+        />
+      </CardContent>
+    </Card>
   );
   widgetNodes["data-quality"] = (
     <>

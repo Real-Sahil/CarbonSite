@@ -22,7 +22,7 @@ import { DELETE, PUT } from "@/app/api/orgs/[orgId]/dashboard-layout/route";
 import { loadStoredLayout } from "@/lib/dashboard/layout-store";
 
 const ctx = { params: Promise.resolve({ orgId: "org1" }) };
-const layout = { order: ["headline", "facilities"], hidden: ["facilities"], widths: { headline: "full" } };
+const layout = { order: ["headline", "facilities"], hidden: ["facilities"], widths: { headline: "full" }, version: 2 };
 const put = (body: unknown) => PUT(new NextRequest("http://x/api", { method: "PUT", body: JSON.stringify(body) }), ctx);
 
 beforeEach(() => {
@@ -79,7 +79,7 @@ describe("dashboard layout API", () => {
 describe("loadStoredLayout", () => {
   it("prefers the person's layout, then the organisation's, and reads inside the organisation", async () => {
     db.prisma.dashboardLayout.findMany.mockResolvedValue([
-      { userKey: "org", layout: { order: ["facilities"], hidden: [], widths: {} } },
+      { userKey: "org", layout: { order: ["facilities"], hidden: [], widths: {}, version: 2 } },
       { userKey: "u1", layout },
     ]);
     const mine = await loadStoredLayout("org1", "u1");
@@ -87,9 +87,14 @@ describe("loadStoredLayout", () => {
     expect(db.prisma.dashboardLayout.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { organizationId: "org1", surface: "dashboard", userKey: { in: ["org", "u1"] } } }),
     );
-    db.prisma.dashboardLayout.findMany.mockResolvedValue([{ userKey: "org", layout: { order: ["facilities"], hidden: [], widths: {} } }]);
+    db.prisma.dashboardLayout.findMany.mockResolvedValue([{ userKey: "org", layout: { order: ["facilities"], hidden: [], widths: {}, version: 2 } }]);
     expect((await loadStoredLayout("org1", "u1")).source).toBe("organisation");
     db.prisma.dashboardLayout.findMany.mockResolvedValue([{ userKey: "u1", layout: { nonsense: true } }]);
+    expect((await loadStoredLayout("org1", "u1")).source).toBe("preset");
+  });
+
+  it("ignores a layout saved before the master preset, so the summary is not pushed down", async () => {
+    db.prisma.dashboardLayout.findMany.mockResolvedValue([{ userKey: "u1", layout: { order: ["facilities"], hidden: [], widths: {} } }]);
     expect((await loadStoredLayout("org1", "u1")).source).toBe("preset");
   });
 });

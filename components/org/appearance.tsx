@@ -17,6 +17,9 @@ const OPTIONS: { value: ThemeChoice; label: string; icon: LucideIcon }[] = [
   { value: "system", label: "System", icon: Monitor },
 ];
 
+/** Fired on window after every applyTheme, so the top-bar toggle can show the theme now in force. */
+export const THEME_EVENT = "metricora-theme-change";
+
 /** Paints the theme now and writes the cookie the first-paint script reads. */
 export function applyTheme(choice: ThemeChoice) {
   const root = document.documentElement;
@@ -24,6 +27,17 @@ export function applyTheme(choice: ThemeChoice) {
   if (dark) root.setAttribute(THEME_ATTRIBUTE, "dark");
   else root.removeAttribute(THEME_ATTRIBUTE);
   document.cookie = `${THEME_COOKIE}=${choice}; path=/; max-age=31536000; samesite=lax`;
+  window.dispatchEvent(new Event(THEME_EVENT));
+}
+
+/** Saves the choice to the signed-in person's account. Resolves false when the save did not go through. */
+export async function saveTheme(choice: ThemeChoice): Promise<boolean> {
+  const res = await fetch("/api/me/theme", {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ theme: choice }),
+  }).catch(() => null);
+  return res?.ok === true;
 }
 
 /**
@@ -54,12 +68,7 @@ export function AppearanceMenu({ saved }: { saved: ThemeChoice | null }) {
     const previous = choice;
     setChoice(parsed);
     applyTheme(parsed);
-    const res = await fetch("/api/me/theme", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ theme: parsed }),
-    }).catch(() => null);
-    if (!res?.ok) {
+    if (!(await saveTheme(parsed))) {
       setChoice(previous);
       applyTheme(previous);
     }
@@ -82,5 +91,41 @@ export function AppearanceMenu({ saved }: { saved: ThemeChoice | null }) {
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
+  );
+}
+
+/**
+ * One click between light and dark, for every signed-in person, in the top bar and the mobile header.
+ * "System" is still chosen in the account menu; a click here makes the theme explicit.
+ */
+export function ThemeToggle() {
+  const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    const read = () => setDark(document.documentElement.getAttribute(THEME_ATTRIBUTE) === "dark");
+    read();
+    window.addEventListener(THEME_EVENT, read);
+    return () => window.removeEventListener(THEME_EVENT, read);
+  }, []);
+
+  async function flip() {
+    const previous: ThemeChoice = dark ? "dark" : "light";
+    const next: ThemeChoice = dark ? "light" : "dark";
+    applyTheme(next);
+    if (!(await saveTheme(next))) applyTheme(previous);
+  }
+
+  const label = dark ? "Switch to light theme" : "Switch to dark theme";
+  const Icon = dark ? Sun : Moon;
+  return (
+    <button
+      type="button"
+      onClick={flip}
+      aria-label={label}
+      title={label}
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+    >
+      <Icon aria-hidden="true" className="h-4 w-4" />
+    </button>
   );
 }

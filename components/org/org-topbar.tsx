@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationBell } from "@/components/notification-bell";
-import { AppearanceMenu } from "@/components/org/appearance";
+import { AppearanceMenu, ThemeToggle } from "@/components/org/appearance";
 import type { ThemeChoice } from "@/lib/theme/preference";
 
 interface OrgTopBarProps {
@@ -29,7 +29,7 @@ function initialsOf(name?: string | null, email?: string): string {
 }
 
 /**
- * Desktop top bar: account menu, then the notification bell, at the top right of every org page.
+ * Desktop top bar: account menu, the light/dark toggle, then the notification bell, at the top right of every org page.
  * Mobile keeps its own header (bell) and drawer footer (account), so this bar is md and up only.
  */
 export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
@@ -80,6 +80,7 @@ export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <ThemeToggle />
       <NotificationBell orgId={orgId} />
     </header>
   );

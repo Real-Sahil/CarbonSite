@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { LogoMark } from "@/components/ui/logo";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { ProjectSwitcher } from "@/components/org/project-switcher";
-import { AppearanceMenu } from "@/components/org/appearance";
+import { AppearanceMenu, ThemeToggle } from "@/components/org/appearance";
 import type { ThemeChoice } from "@/lib/theme/preference";
 
 interface NavItem { label: string; href: string; icon: React.ElementType; roles?: string[]; }
@@ -488,7 +488,8 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
           <span className="text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
           <span className="text-xs text-slate-500 truncate max-w-[120px]">/ {orgName}</span>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-1">
+          <ThemeToggle />
           <NotificationBell orgId={orgId} />
         </div>
       </header>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WIDGETS, layoutError, presetLayout, resolveLayout, toLayout, widgetsForRole } from "../widgets";
+import { LAYOUT_VERSION, MASTER_ORDER, layoutError, presetLayout, resolveLayout, toLayout, widgetsForRole } from "../widgets";
 
 const all = (role: string) => widgetsForRole(role);
 
@@ -12,26 +12,41 @@ describe("widgetsForRole", () => {
 });
 
 describe("presetLayout", () => {
-  it("gives managers and admins everything in the long-standing order", () => {
-    const l = presetLayout("sustainability_manager");
-    expect(l.order).toEqual(WIDGETS.map((w) => w.id));
-    expect(l.hidden).toEqual([]);
+  it("opens every role on the master order, summary first", () => {
+    for (const role of ["admin", "sustainability_manager", "viewer", "reviewer"]) {
+      const l = presetLayout(role);
+      expect(l.order[0]).toBe("summary");
+      expect(l.order.slice(0, MASTER_ORDER.length).filter((id) => MASTER_ORDER.includes(id))).toEqual(
+        MASTER_ORDER.filter((id) => widgetsForRole(role).some((w) => w.id === id)),
+      );
+    }
   });
 
-  it("gives an executive the short list first and keeps the rest addable", () => {
+  it("hides what is outside the master but keeps it addable for roles that may read it", () => {
     const l = presetLayout("viewer");
-    expect(l.order.slice(0, 5)).toEqual(["tasks", "headline", "carbon-intelligence", "scope-breakdown", "flow"]);
-    expect(l.hidden).toContain("review-queue");
-    expect(l.hidden).not.toContain("headline");
+    expect(l.hidden).toContain("live");
+    expect(l.hidden).not.toContain("summary");
+    expect(l.hidden).not.toContain("readiness");
     expect(new Set(l.order).size).toBe(widgetsForRole("viewer").length);
+  });
+
+  it("never offers a role a widget it may not see", () => {
+    const l = presetLayout("viewer");
+    expect(l.order).not.toContain("run-calculation");
+    expect(l.hidden).not.toContain("run-calculation");
+  });
+
+  it("stamps the layout version so older saved layouts are recognised", () => {
+    expect(presetLayout("admin").version).toBe(LAYOUT_VERSION);
   });
 });
 
 describe("resolveLayout", () => {
   it("falls back to the role's preset", () => {
     const placed = resolveLayout(all("viewer"), null, "viewer");
-    expect(placed.find((p) => p.id === "headline")!.hidden).toBe(false);
-    expect(placed.find((p) => p.id === "review-queue")!.hidden).toBe(true);
+    expect(placed.find((p) => p.id === "summary")!.hidden).toBe(false);
+    expect(placed.find((p) => p.id === "readiness")!.hidden).toBe(false);
+    expect(placed.find((p) => p.id === "live")!.hidden).toBe(true);
   });
 
   it("drops widgets that are not available, keeps the saved order and widths", () => {

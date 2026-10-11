@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db";
-import { layoutSchema, type Layout } from "./widgets";
+import { LAYOUT_VERSION, layoutSchema, type Layout } from "./widgets";
 
 export const SURFACE = "dashboard";
 
+// A layout saved before the master preset (no version, or an older one) is ignored, so it cannot push the summary down.
 const parse = (raw: unknown): Layout | null => {
   const r = layoutSchema.safeParse(raw);
-  return r.success ? r.data : null;
+  return r.success && (r.data.version ?? 1) >= LAYOUT_VERSION ? r.data : null;
 };
 
 /** The person's saved layout, else the organisation's default, else null. Always inside the organisation. */
