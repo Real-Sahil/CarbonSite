@@ -5,6 +5,7 @@ import { ExpandChart } from "../expand-chart";
 import { ScopeDonut } from "../scope-donut";
 import { BklitScopeRing } from "../bklit-scope-ring";
 import { BklitDataGauge } from "../bklit-data-gauge";
+import { BarChart } from "../bar-chart";
 
 // jsdom has no ResizeObserver; visx ParentSize needs one to measure.
 class ResizeObserverStub {
@@ -31,6 +32,24 @@ describe("ring and gauge expand", () => {
     ring.unmount();
     render(<BklitDataGauge value={72} label="Data confidence" />);
     expect(screen.getByRole("button", { name: "Expand Data confidence" })).toBeTruthy();
+  });
+});
+
+describe("bar chart expand", () => {
+  beforeAll(() => {
+    vi.stubGlobal("ResizeObserver", ResizeObserverStub);
+  });
+  afterAll(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("adds an expand button only when expandTitle is set", () => {
+    cleanup();
+    const { unmount } = render(<BarChart data={[{ name: "A", v: 1 }]} expandTitle="Emissions trend" />);
+    expect(screen.getByRole("button", { name: "Expand Emissions trend" })).toBeTruthy();
+    unmount();
+    render(<BarChart data={[{ name: "A", v: 1 }]} />);
+    expect(screen.queryByRole("button", { name: /^Expand/ })).toBeNull();
   });
 });
 

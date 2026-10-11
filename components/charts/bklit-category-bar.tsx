@@ -55,6 +55,7 @@ export function BklitCategoryBar({
       aria-label={ariaLabel}
     >
       <BarChart
+        expandTitle={ariaLabel}
         data={chartData}
         xDataKey="name"
         orientation="horizontal"

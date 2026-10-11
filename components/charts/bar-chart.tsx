@@ -41,6 +41,7 @@ import {
   DEFAULT_CHART_LIFECYCLE,
   resolveRestingChartPhase,
 } from "./chart-phase";
+import { ExpandChart } from "./expand-chart";
 import { BarLoadingSkeleton } from "./loading-sweep";
 import { extractReferenceAreaConfigs } from "./reference-area-config";
 import { useScheduledTooltip } from "./use-scheduled-tooltip";
@@ -95,6 +96,8 @@ export interface BarChartProps {
   /** Fetch / display status. When `"loading"`, a shimmer skeleton replaces the
    * bars (no chart data required). Default: `"ready"`. */
   status?: ChartStatus;
+  /** When set, the chart gets an expand button and opens full screen under this title. */
+  expandTitle?: string;
 }
 
 const DEFAULT_MARGIN: Margin = { top: 40, right: 40, bottom: 40, left: 40 };
@@ -669,7 +672,24 @@ const ChartCore = memo(function ChartCore({
   );
 });
 
-export function BarChart({
+/** Bar chart; with `expandTitle` it gets an expand button and a taller full-screen view. */
+export function BarChart({ expandTitle, ...props }: BarChartProps) {
+  if (!expandTitle) return <BarChartBody {...props} />;
+  return (
+    <ExpandChart title={expandTitle}>
+      {(expanded) => (
+        <BarChartBody
+          {...props}
+          aspectRatio={expanded ? "3 / 2" : props.aspectRatio}
+          // Phase callbacks fire once, from the inline chart only.
+          onPhaseChange={expanded ? undefined : props.onPhaseChange}
+        />
+      )}
+    </ExpandChart>
+  );
+}
+
+function BarChartBody({
   data,
   xDataKey = "name",
   margin: marginProp,
@@ -688,7 +708,7 @@ export function BarChart({
   children,
   onPhaseChange,
   status = "ready",
-}: BarChartProps) {
+}: Omit<BarChartProps, "expandTitle">) {
   const containerRef = useRef<HTMLDivElement>(null);
   const margin = { ...DEFAULT_MARGIN, ...marginProp };
 

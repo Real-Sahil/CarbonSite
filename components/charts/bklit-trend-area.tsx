@@ -49,6 +49,7 @@ export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
       aria-label="Emissions trend across reporting periods"
     >
       <BarChart
+        expandTitle="Emissions trend"
         data={chartData}
         xDataKey="name"
         orientation="vertical"
