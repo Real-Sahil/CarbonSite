@@ -30,6 +30,23 @@ Checked on 3 October 2026 from the publishers' own pages and the files they dist
 | Ireland SEAI conversion and emission factors 2025 | **No licence found.** The workbook states none; SEAI is cited on every factor and report. Confirm terms with SEAI before relying on this at scale. | Loaded (`data/sources/SEAI-conversion-and-emission-factors.xlsx`, `... seai`). |
 | Center for Resource Solutions, US residual mix (2025 release, 2023 data) | No licence or terms of use found on resource-solutions.org/2025-residual-mix; the page asks users to cite the rates, and the instrument created from one carries the citation. The "Green-e" mark is CRS's trademark and is not used as a logo. Written permission would settle the licence question. | 27 rates in `lib/factors/us-residual-mix.ts`, offered on the Electricity contracts form, never applied silently. |
 
+### Dashboard and UI candidates (checked 11 October 2026, not yet adopted)
+
+Each row becomes a dependency or copied component only at its first use (knip fails on unused files). Sites that were unreachable from the build sandbox are marked; their licence came from the repository or a search result and must be re-read on the site before use.
+
+| Source | Terms found | What we do |
+|---|---|---|
+| Recharts (github.com/recharts/recharts) | MIT (`LICENSE`). | Candidate chart base. Already a dependency. |
+| Apache ECharts (github.com/apache/echarts) | Apache 2.0. Keep the notices; embedded d3 code is BSD-3-Clause (`/licenses/LICENSE-d3`). | Candidate for denser charts. Not adopted. |
+| Tremor (github.com/tremorlabs/tremor) | Apache 2.0. The repository says some Tremor Raw subcomponents are MIT, so check each file copied. | Candidate KPI and chart cards. Not adopted. |
+| Magic UI (magicui.design; repo github.com/magicuidesign/magicui) | Repository `LICENSE.md` is MIT. It does not say whether the MIT covers the components or only the library. magicui.design was unreachable from the sandbox. | Candidate: Number Ticker. Adopt only after the component scope is confirmed on the site. |
+| Lucide (lucide.dev; github.com/lucide-icons/lucide) | ISC for the library; some icons are MIT, derived from Feather. | Already used for icons. Keep the notice. |
+| Radix UI (github.com/radix-ui/primitives) | MIT. | Already used through the shadcn components. |
+| Tailwind CSS (github.com/tailwindlabs/tailwindcss) | MIT. | Already the styling base. |
+| shadcn/ui (github.com/shadcn-ui/ui) | MIT. | Already used; components are copied in. |
+| 21st.dev (help.21st.dev/community) | Help page says community components are MIT, and each component page carries its own licence field. Site unreachable from the sandbox. | Use only a component whose own page says MIT, and log it here by name. |
+| Aceternity UI (ui.aceternity.com/licence) | Paid-item licence bars redistribution and resale. The free components' licence was not found. Some items include third-party code under other terms. | **Not used** until the free-tier licence is confirmed on the site. |
+
 Rules for new sources: read the licence or terms first; a tool that redistributes data needs permission that covers commercial redistribution; text of standards is never copied.
 
 ## Companies House (supplier lookup)
