@@ -34,6 +34,7 @@ export const WIDGETS: readonly WidgetDef[] = [
   { id: "carbon-intelligence", title: "Carbon intelligence", width: "full", roles: INTELLIGENCE_VIEWERS },
   { id: "social-evidence", title: "Social value and evidence", width: "full" },
   { id: "ops-health", title: "Operations health", width: "half" },
+  { id: "recent-decisions", title: "Recent decisions", width: "half" },
   { id: "review-queue", title: "Review task queue", width: "half" },
   { id: "run-calculation", title: "Run a calculation", width: "half", roles: EDITORS },
   { id: "quick-links", title: "Quick links", width: "full" },

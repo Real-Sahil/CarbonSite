@@ -14,7 +14,6 @@ import {
   BarChart3,
   Building2,
   ClipboardCheck,
-  Clock,
   Download,
   Droplets,
   Trash2,
@@ -84,6 +83,7 @@ import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar"
 import { KpiStatRow } from "@/components/dashboard/kpi-stat-row";
 import { formatKgCo2e } from "@/components/dashboard/kpi-format";
 import { heroFacts } from "@/lib/dashboard/hero-facts";
+import { RecentDecisions } from "@/components/dashboard/recent-decisions";
 import { countryOf } from "@/lib/i18n/countries";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { activeFilters } from "@/lib/saved-views";
@@ -2217,63 +2217,37 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <CardHeader>
           <CardTitle className="text-base">Operations health</CardTitle>
           <CardDescription>
-            Failed workflow signals and recent audit events from live system state.
+            Failed workflow signals from live system state. Recent decisions are in their own widget.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-5 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <HealthSignal
-              href={`/orgs/${orgId}/imports`}
-              label="Imports needing attention"
-              value={failedImportCount}
-            />
-            <HealthSignal
-              href={`/orgs/${orgId}/reports`}
-              label="Failed reports"
-              value={failedReportCount}
-            />
-            <HealthSignal
-              href={`/orgs/${orgId}/calculations`}
-              label="Failed calculations"
-              value={failedCalculationCount}
-            />
-          </div>
-          <div className="rounded-[14px] border border-[#E5E7EB]">
-            {recentAuditLogs.length === 0 ? (
-              <div className="flex min-h-32 flex-col items-center justify-center p-6 text-center">
-                <Clock aria-hidden="true" className="h-6 w-6 text-[#374151]" />
-                <p className="mt-2 text-sm font-normal text-[#111827] tracking-[-0.42px]">No audit events yet</p>
-                <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">
-                  Operational events appear here after users create, review, calculate, or publish data.
-                </p>
-              </div>
-            ) : (
-              <div className="divide-y divide-[#e5e7eb]">
-                {recentAuditLogs.map((log) => (
-                  <div key={log.id} className="flex items-start justify-between gap-4 p-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-normal text-[#111827] tracking-[-0.42px]">
-                        {log.action.replaceAll("_", " ")}
-                      </p>
-                      <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
-                        {log.resourceType} - {log.actor?.name ?? log.actor?.email ?? "System"}
-                      </p>
-                    </div>
-                    <time className="shrink-0 text-xs text-[#374151] tracking-[-0.36px]">
-                      {log.createdAt.toLocaleDateString(L, {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                    </time>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+        <CardContent className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <HealthSignal
+            href={`/orgs/${orgId}/imports`}
+            label="Imports needing attention"
+            value={failedImportCount}
+          />
+          <HealthSignal
+            href={`/orgs/${orgId}/reports`}
+            label="Failed reports"
+            value={failedReportCount}
+          />
+          <HealthSignal
+            href={`/orgs/${orgId}/calculations`}
+            label="Failed calculations"
+            value={failedCalculationCount}
+          />
         </CardContent>
       </Card>
 
     </>
+  );
+  widgetNodes["recent-decisions"] = (
+    <RecentDecisions
+      orgId={orgId}
+      decisions={recentAuditLogs}
+      locale={L}
+      canOpenAudit={ROLE_GROUPS.dataReaders.includes(role)}
+    />
   );
   widgetNodes["review-queue"] = (
     <>
