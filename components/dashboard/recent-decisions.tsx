@@ -53,7 +53,7 @@ export function RecentDecisions({
             description="Publishing a snapshot, approving a plan or reviewing records appears here."
           />
         ) : (
-          <ul className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E5E7EB]">
+          <ul className="divide-y divide-gray-200 rounded-[14px] border border-gray-200">
             {decisions.map((d) => (
               <li key={d.id} className="flex items-start justify-between gap-4 p-3">
                 <div className="min-w-0">

@@ -291,12 +291,10 @@
 [data-theme="dark"] [class~="bg-[#F9FAFB]"] { background-color: #171c22; }
 [data-theme="dark"] [class~="bg-[#FED7AA]"] { background-color: #552e01; }
 [data-theme="dark"] [class~="bg-[#FEF2F2]"] { background-color: #310404; }
-[data-theme="dark"] [class~="bg-[#FEFCE8]"] { background-color: #292502; }
 [data-theme="dark"] [class~="bg-[#FFF7ED]"] { background-color: #301b00; }
 [data-theme="dark"] [class~="bg-[#FFF7ED]/20"] { background-color: color-mix(in srgb, #301b00 20%, transparent); }
 [data-theme="dark"] [class~="bg-[#FFF7ED]/30"] { background-color: color-mix(in srgb, #301b00 30%, transparent); }
 [data-theme="dark"] [class~="bg-[#FFF7ED]/50"] { background-color: color-mix(in srgb, #301b00 50%, transparent); }
-[data-theme="dark"] [class~="bg-[#FFF7ED]/60"] { background-color: color-mix(in srgb, #301b00 60%, transparent); }
 [data-theme="dark"] [class~="bg-[#c2410c]"] { background-color: #f3723d; }
 [data-theme="dark"] [class~="bg-[#cfe7d3]"] { background-color: #18301c; }
 [data-theme="dark"] [class~="bg-[#dbeafe]"] { background-color: #011024; }
@@ -337,7 +335,6 @@
 [data-theme="dark"] [class~="focus:ring-[#c2410c]/30"]:focus { --tw-ring-color: color-mix(in srgb, #f3723d 30%, transparent); }
 [data-theme="dark"] [class~="focus:ring-[#c2410c]/40"]:focus { --tw-ring-color: color-mix(in srgb, #f3723d 40%, transparent); }
 [data-theme="dark"] [class~="focus:text-[#111827]"]:focus { color: #d8dfee; }
-[data-theme="dark"] .group:hover [class~="group-hover:bg-[#FFF7ED]"] { background-color: #301b00; }
 [data-theme="dark"] .group:hover [class~="group-hover:bg-[#c2410c]"] { background-color: #f3723d; }
 [data-theme="dark"] .group:hover [class~="group-hover:border-[#FED7AA]"] { border-color: #552e01; }
 [data-theme="dark"] .group:hover [class~="group-hover:ring-[#c2410c]"] { --tw-ring-color: #f3723d; }
@@ -348,7 +345,6 @@
 [data-theme="dark"] [class~="hover:bg-[#1f2937]"]:hover { background-color: #c8d2e0; }
 [data-theme="dark"] [class~="hover:bg-[#9a3412]"]:hover { background-color: #ed8765; }
 [data-theme="dark"] [class~="hover:bg-[#E0F2FE]"]:hover { background-color: #011421; }
-[data-theme="dark"] [class~="hover:bg-[#EFF6FF]"]:hover { background-color: #001632; }
 [data-theme="dark"] [class~="hover:bg-[#F3F4F6]"]:hover { background-color: #13161a; }
 [data-theme="dark"] [class~="hover:bg-[#F8F9FA]/50"]:hover { background-color: color-mix(in srgb, #171b20 50%, transparent); }
 [data-theme="dark"] [class~="hover:bg-[#F9FAFB]"]:hover { background-color: #171c22; }

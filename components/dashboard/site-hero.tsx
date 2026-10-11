@@ -92,7 +92,7 @@ export function SiteHero({
         <div>
           <h2 id="site-hero-title" className="text-base font-semibold text-[#111827]">Sites</h2>
           <p className="mt-0.5 text-xs text-[#6B7280]">
-            Live figures for {periodLabel}. Choose a site to filter the whole dashboard. Figures move as records change; the published view is on the <Link href={`/orgs/${orgId}/map`} className="underline underline-offset-2">Site map</Link>.
+            {periodLabel ? `Live figures for ${periodLabel}.` : "Live figures."} Choose a site to filter the whole dashboard. Figures move as records change; the published view is on the <Link href={`/orgs/${orgId}/map`} className="underline underline-offset-2">Site map</Link>.
           </p>
         </div>
         <div className="w-full sm:w-72">

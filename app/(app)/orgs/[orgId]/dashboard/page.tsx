@@ -1142,7 +1142,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         {targetCount === 0 && (
           <Link
             href={`/orgs/${orgId}/targets`}
-            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
+            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
           >
             <div className="flex items-center gap-2">
               <Target aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1172,7 +1172,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">
           Live updates
         </p>
-        <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-6">
+        <div className="rounded-[14px] border border-gray-200 bg-white p-6">
           <LiveDashboard
             orgId={orgId}
             locale={L}
@@ -1231,7 +1231,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=3`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <Scale aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1258,7 +1258,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=2`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <LineChart aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1285,7 +1285,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/reports`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px] transition-colors hover:bg-[#FFEDD5]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <Handshake aria-hidden="true" className="h-4 w-4 text-[#111827]" />
@@ -1469,7 +1469,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
                       ? "bg-[#c2410c] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                      : "border border-gray-200 text-[#374151] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
                   All
@@ -1481,7 +1481,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
                         ? "bg-[#c2410c] text-white"
-                        : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                        : "border border-gray-200 text-[#374151] hover:border-[#FED7AA] hover:bg-orange-50"
                     }`}
                   >
                     {fac.name}
@@ -1491,10 +1491,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-[14px] border border-[#E5E7EB]">
+            <div className="overflow-hidden rounded-[14px] border border-gray-200">
               <Table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
+                  <tr className="border-b border-gray-200 bg-gray-50">
                     <th className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wide text-[#374151]">
                       Facility
                     </th>
@@ -1509,7 +1509,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#e5e7eb]">
+                <tbody className="divide-y divide-gray-200">
                   {(activeFacility ? [activeFacility] : facilityRows).map((fac) => {
                     const share =
                       facilityTotal > 0
@@ -1519,7 +1519,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       <tr
                         key={fac.id}
                         className={
-                          selectedFacilityId === fac.id ? "bg-[#FFF7ED]/60" : "hover:bg-[#f9fafb]"
+                          selectedFacilityId === fac.id ? "bg-orange-50/60" : "hover:bg-gray-50"
                         }
                       >
                         <td className="px-4 py-3 font-normal text-[#111827] tracking-[-0.42px]">
@@ -1530,7 +1530,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#FFF7ED]">
+                            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-orange-50">
                               <div
                                 className="h-full rounded-full bg-[#c2410c]"
                                 style={{ width: `${share}%` }}
@@ -1575,7 +1575,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {hasAggregates ? (
               <div className="grid gap-3 md:grid-cols-3">
                 {scopeRows.map((row) => (
-                  <div key={row.scope} className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
+                  <div key={row.scope} className="rounded-[14px] border border-gray-200 p-[21px]">
                     <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">
                       Scope {row.scope}
                     </p>
@@ -1626,7 +1626,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   const deltaPct = priorVal > 0 ? (delta / priorVal) * 100 : null;
                   const improved = delta <= 0;
                   return (
-                    <div key={scope} className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
+                    <div key={scope} className="rounded-[14px] border border-gray-200 p-[21px]">
                       <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Scope {scope}</p>
                       <div className="mt-2 flex items-end justify-between gap-2">
                         <div>
@@ -1640,7 +1640,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           </div>
                         )}
                       </div>
-                      <div className="mt-2 pt-2 border-t border-[#E5E7EB]">
+                      <div className="mt-2 pt-2 border-t border-gray-200">
                         <p className="text-xs text-[#6B7280]">{formatKgCo2e(L, priorVal)} in {priorPeriod.label}</p>
                       </div>
                     </div>
@@ -1653,9 +1653,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Production readiness</CardTitle>
+            <CardTitle className="text-base">Readiness</CardTitle>
             <CardDescription>
-              Operational signals that must stay real in production.
+              Counts from this organisation&apos;s records. Each row opens the page that changes it.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -1663,30 +1663,26 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               icon={ClipboardCheck}
               label="Approved record coverage"
               value={formatPercent(approvedRecordCount, recordCount)}
+              href={`/orgs/${orgId}/records`}
             />
             <ReadinessRow
               icon={Target}
               label="Targets and initiatives"
               value={`${targetCount + initiativeCount}`}
+              href={`/orgs/${orgId}/targets`}
             />
             <ReadinessRow
               icon={Inbox}
               label="Open submissions"
               value={`${pendingSubmissionCount}`}
+              href={`/orgs/${orgId}/submissions`}
             />
             <ReadinessRow
               icon={ClipboardCheck}
               label="Open review tasks"
               value={`${openReviewTaskCount}`}
+              href={`/orgs/${orgId}/tasks`}
             />
-            <div className="pt-3">
-              <Button asChild size="sm">
-                <Link href={`/orgs/${orgId}/submissions`}>
-                  Review submissions
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -1711,7 +1707,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardHeader>
         <CardContent>
           <dl className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
+            <div className="rounded-[14px] border border-gray-200 p-[21px]">
               <dt className="text-xs font-normal uppercase tracking-wide text-[#374151]">
                 Emissions from reviewed records
               </dt>
@@ -1734,7 +1730,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               )}
             </div>
 
-            <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
+            <div className="rounded-[14px] border border-gray-200 p-[21px]">
               <dt className="text-xs font-normal uppercase tracking-wide text-[#374151]">
                 Approved records missing evidence
               </dt>
@@ -1750,7 +1746,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </p>
             </div>
 
-            <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
+            <div className="rounded-[14px] border border-gray-200 p-[21px]">
               <dt className="text-xs font-normal uppercase tracking-wide text-[#374151]">
                 Records pending attention
               </dt>
@@ -1810,7 +1806,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </div>
             )}
             {carbonPrice && carbonPriceCost && carbonPriceCost.coveredTco2e > 0 && (
-              <div className="rounded-[14px] border border-[#E5E7EB] bg-white px-4 py-3 text-sm text-[#374151] tracking-[-0.42px]">
+              <div className="rounded-[14px] border border-gray-200 bg-white px-4 py-3 text-sm text-[#374151] tracking-[-0.42px]">
                 At your {(PRICE_TYPES[carbonPrice.priceType as PriceType]?.label ?? "internal carbon price").toLowerCase()} of{" "}
                 {formatMoney(carbonPrice.pricePerTonne, carbonPrice.currency, 2)}/tCO₂e, the Scope {carbonPrice.scopes.join(", ")} emissions
                 on this page carry a carbon cost of{" "}
@@ -1867,7 +1863,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[#E5E7EB] bg-[#c2410c] text-white">
+          <CardHeader className="border-b border-gray-200 bg-[#c2410c] text-white">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
@@ -2023,8 +2019,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   download={doc.downloadUrl ? true : false}
                   className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
                     doc.downloadUrl
-                      ? "border-[#E5E7EB] hover:border-[#3B82F6] hover:bg-[#EFF6FF] cursor-pointer"
-                      : "border-[#F3F4F6] bg-[#F9FAFB] cursor-not-allowed opacity-50"
+                      ? "border-gray-200 hover:border-[#3B82F6] hover:bg-blue-50 cursor-pointer"
+                      : "border-gray-100 bg-gray-50 cursor-not-allowed opacity-50"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -2063,7 +2059,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   Track decarbonisation work, route-efficiency signals, and target ambition from live records.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#FFF7ED] text-[#111827]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-orange-50 text-[#111827]">
                 <Handshake aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
@@ -2101,9 +2097,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 detail="Awaiting review from field workers"
               />
             </div>
-            <div className="rounded-[14px] border border-[#E5E7EB]">
+            <div className="rounded-[14px] border border-gray-200">
               {initiativeStatusRows.length > 0 ? (
-                <div className="divide-y divide-[#e5e7eb]">
+                <div className="divide-y divide-gray-200">
                   {initiativeStatusRows.map((row) => (
                     <div key={row.status} className="flex items-center justify-between gap-4 p-3">
                       <div>
@@ -2185,7 +2181,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     />
                   ))
                 ) : (
-                  <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-5 text-sm text-[#374151] tracking-[-0.42px]">
+                  <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5 text-sm text-[#374151] tracking-[-0.42px]">
                     Document type analytics appear when field submissions are received.
                   </div>
                 )}
@@ -2351,14 +2347,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   timer.done({ orgId });
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-gray-50">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-gray-200">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
                   <LayoutDashboard className="h-4 w-4 text-[#111827]" />
                 </div>
                 <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
@@ -2423,7 +2419,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       {/* Quick setup links — shown to admins who skipped the wizard but haven't run a calculation yet */}
       {role === "admin" && onboardingProgress?.isComplete && calculationRuns.length === 0 && (
-        <div className="mb-8 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
+        <div className="mb-8 rounded-[14px] border border-gray-200 bg-white p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-medium text-[#111827] tracking-[-0.42px]">Quick setup</h2>
@@ -2446,7 +2442,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-start gap-2.5 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2.5 hover:bg-[#F3F4F6] hover:border-[#D1D5DB] transition-colors"
+                className="flex items-start gap-2.5 rounded-[10px] border border-gray-200 bg-gray-50 px-3 py-2.5 hover:bg-gray-100 hover:border-[#D1D5DB] transition-colors"
               >
                 <ArrowRight className="h-3.5 w-3.5 text-[#6B7280] mt-0.5 shrink-0" aria-hidden="true" />
                 <div>
@@ -2461,7 +2457,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       {/* Role-contextual quick-action banner */}
       {role === "auditor" && (
-        <div className="mb-6 rounded-[10px] border border-[#D1FAE5] bg-[#ECFDF5] px-4 py-3 flex items-center gap-3">
+        <div className="mb-6 rounded-[10px] border border-[#D1FAE5] bg-emerald-50 px-4 py-3 flex items-center gap-3">
           <ShieldCheck className="h-4 w-4 text-emerald-700 shrink-0" />
           <span className="text-sm text-emerald-800 font-medium">Auditor view</span>
           <span className="text-sm text-emerald-700">You have read-only access to all emissions data and audit trails.</span>
@@ -2472,14 +2468,14 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
       {role === "reviewer" && openReviewTaskCount > 0 && (
-        <div className="mb-6 rounded-[10px] border border-[#FEF9C3] bg-[#FEFCE8] px-4 py-3 flex items-center gap-3">
+        <div className="mb-6 rounded-[10px] border border-[#FEF9C3] bg-yellow-50 px-4 py-3 flex items-center gap-3">
           <ClipboardCheck className="h-4 w-4 text-yellow-700 shrink-0" />
           <span className="text-sm text-yellow-800 font-medium">{openReviewTaskCount} item{openReviewTaskCount !== 1 ? "s" : ""} awaiting review</span>
           <Link href={`/orgs/${orgId}/submissions`} className="ml-auto text-xs font-medium text-yellow-700 underline underline-offset-2 hover:text-yellow-900">Go to review queue</Link>
         </div>
       )}
       {role === "viewer" && (
-        <div className="mb-6 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-3 flex items-center gap-3">
+        <div className="mb-6 rounded-[10px] border border-gray-200 bg-gray-50 px-4 py-3 flex items-center gap-3">
           <Layers className="h-4 w-4 text-zinc-500 shrink-0" />
           <span className="text-sm text-zinc-600">You have read-only access to this dashboard. Contact an admin to request edit permissions.</span>
         </div>
@@ -2525,7 +2521,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     (selectedEntityId ?? "") === e.id
                       ? "bg-[#c2410c] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                      : "border border-gray-200 text-[#374151] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
                   {e.name}
@@ -2543,7 +2539,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     (selectedCountry ?? "") === c
                       ? "bg-[#c2410c] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                      : "border border-gray-200 text-[#374151] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
                   {c ? countryOf(c)?.name ?? c : "All"}
@@ -2558,7 +2554,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       {activeContracts.length > 0 && (
         <div className="flex flex-col gap-3">
           {selectedContract && (
-            <div className="flex items-center gap-2 rounded-[14px] border border-[#FED7AA] bg-[#FFF7ED]/20 px-4 py-3">
+            <div className="flex items-center gap-2 rounded-[14px] border border-[#FED7AA] bg-orange-50/20 px-4 py-3">
               <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
                 Filtering by contract: <strong>{selectedContract.name}</strong>
               </span>
@@ -2577,7 +2573,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
                   ? "bg-[#c2410c] text-white"
-                  : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                  : "border border-gray-200 text-[#374151] hover:border-[#FED7AA] hover:bg-orange-50"
               }`}
             >
               All
@@ -2589,7 +2585,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
                     ? "bg-[#c2410c] text-white"
-                    : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#FFF7ED]"
+                    : "border border-gray-200 text-[#374151] hover:border-[#FED7AA] hover:bg-orange-50"
                 }`}
               >
                 {contract.name}
@@ -2647,14 +2643,14 @@ function InsightCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-[21px]">
+    <div className="rounded-[14px] border border-gray-200 bg-white p-[21px]">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">{label}</p>
           <p className="mt-2 text-xl font-normal tracking-[-0.4px] text-[#111827]">{value}</p>
           <p className="mt-1 text-xs leading-5 text-[#374151] tracking-[-0.36px]">{detail}</p>
         </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-[#FFF7ED] text-[#111827]">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[7px] bg-orange-50 text-[#111827]">
           <Icon aria-hidden="true" className="h-4 w-4" />
         </div>
       </div>
@@ -2675,7 +2671,7 @@ function ProgressRow({
 }) {
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-[14px] border border-[#E5E7EB] p-3">
+    <div className="rounded-[14px] border border-gray-200 p-3">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-normal text-[#111827] tracking-[-0.42px]">{label}</p>
@@ -2683,7 +2679,7 @@ function ProgressRow({
         </div>
         <p className="shrink-0 text-sm font-normal text-[#111827] tracking-[-0.42px]">{value}</p>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-orange-50">
         <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />
       </div>
     </div>
@@ -2704,12 +2700,12 @@ function PipelineRow({
   const percent = total > 0 ? (count / total) * 100 : 0;
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-[14px] border border-[#E5E7EB] p-3">
+    <div className="rounded-[14px] border border-gray-200 p-3">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-normal capitalize text-[#374151] tracking-[-0.42px]">{label}</span>
         <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{count.toLocaleString(locale)}</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-[#FFF7ED]">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-orange-50">
         <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />
       </div>
     </div>
@@ -2729,7 +2725,7 @@ function HealthSignal({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-[14px] border border-[#E5E7EB] p-[21px] transition-colors hover:bg-[#FFF7ED]"
+      className="flex items-center justify-between rounded-[14px] border border-gray-200 p-[21px] transition-colors hover:bg-orange-50"
     >
       <div>
         <p className="text-sm font-normal text-[#374151] tracking-[-0.42px]">{label}</p>
@@ -2771,7 +2767,7 @@ function MetricCard({
             <p className={`mt-2 text-3xl font-normal tracking-[-0.4px] ${valueColor}`}>{value}</p>
             <p className="mt-1 text-xs text-[#374151] tracking-[-0.36px]">{detail}</p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-[#FFF7ED] text-[#111827]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-orange-50 text-[#111827]">
             <Icon aria-hidden="true" className="h-5 w-5" />
           </div>
         </div>
@@ -2786,19 +2782,24 @@ function ReadinessRow({
   icon: Icon,
   label,
   value,
+  href,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
+  href: string;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[14px] border border-[#E5E7EB] p-3">
+    <Link
+      href={href}
+      className="flex items-center justify-between gap-3 rounded-[14px] border border-gray-200 p-3 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2"
+    >
       <div className="flex items-center gap-3">
         <Icon aria-hidden="true" className="h-4 w-4 text-[#374151]" />
         <span className="text-sm text-[#374151] tracking-[-0.42px]">{label}</span>
       </div>
       <span className="text-sm font-normal text-[#111827] tracking-[-0.42px]">{value}</span>
-    </div>
+    </Link>
   );
 }
 
@@ -2814,7 +2815,7 @@ function EmptyPanel({
   action: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px]">
+    <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px]">
       <p className="font-normal text-[#111827] tracking-[-0.42px]">{title}</p>
       <p className="mt-1 max-w-xl text-sm text-[#374151] tracking-[-0.42px]">{description}</p>
       <Button asChild size="sm" className="mt-4">
@@ -2835,7 +2836,7 @@ function ActionCard({
 }) {
   return (
     <Link href={href} className="group block">
-      <Card className="h-full transition-colors group-hover:border-[#FED7AA] group-hover:bg-[#FFF7ED]">
+      <Card className="h-full transition-colors group-hover:border-[#FED7AA] group-hover:bg-orange-50">
         <CardHeader>
           <CardTitle className="text-base">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
