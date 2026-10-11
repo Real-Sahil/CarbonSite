@@ -85,23 +85,29 @@ function KpiCard({ stat }: { stat: KpiStat }) {
   const text = shown === null ? "No data" : formatKpi(stat.format, shown);
   const body = (
     <>
-      <p className="text-xs text-[#6B7280]">{stat.label}</p>
-      {stat.basis && <p className="text-[11px] text-[#9CA3AF]">{stat.basis}</p>}
-      <p className="mt-1 text-2xl font-semibold tabular-nums text-[#111827]" aria-live="off">
+      <p className="text-[13px] font-medium text-[#374151]">{stat.label}</p>
+      {stat.basis && <p className="mt-0.5 text-[11px] leading-4 text-[#6B7280]">{stat.basis}</p>}
+      <p className="mt-3 text-[28px] font-semibold leading-8 tracking-tight tabular-nums text-[#111827]" aria-live="off">
         {text}
       </p>
-      {shown === null && stat.note && <p className="mt-1 text-xs text-[#6B7280]">{stat.note}</p>}
+      {shown === null && stat.note && <p className="mt-1 text-xs leading-5 text-[#6B7280]">{stat.note}</p>}
       {stat.delta && (
-        <div className="mt-2">
+        <div className="mt-3">
           <DeltaChip delta={stat.delta} goodUp={stat.goodUp ?? false} />
         </div>
       )}
     </>
   );
-  const className = "block rounded-[14px] border border-[#E5E7EB] bg-white p-4";
+  const className = "block rounded-xl border border-[#E5E7EB] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]";
   if (stat.href) {
     return (
-      <Link href={stat.href} className={cn(className, "transition-colors hover:bg-[#FFF7ED]")}>
+      <Link
+        href={stat.href}
+        className={cn(
+          className,
+          "transition-[border-color,box-shadow] duration-200 hover:border-[#FDBA74] hover:shadow-[0_4px_12px_rgba(16,24,40,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2410c]/40",
+        )}
+      >
         {body}
       </Link>
     );
