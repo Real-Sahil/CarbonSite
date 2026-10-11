@@ -87,10 +87,11 @@ const nextConfig: NextConfig = {
   // Turbopack respects serverExternalPackages; webpack uses explicit externals config (line 15-21).
   turbopack: {},
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
-    ],
+    // Only WebP: AVIF optimisation is the path in GHSA-2xp9-vwfh-vxw4 (fixed in Next 16.3.3).
+    formats: ["image/webp"],
+    // No remote image hosts: every next/image source is a local /marketing file. An empty
+    // list makes the optimiser refuse remote URLs (SSRF advisory GHSA-cjq9-62q9-8jv4).
+    remotePatterns: [],
   },
   // Old marketing URLs that were removed or renamed, and links still in the
   // wild (old blog slugs, the comparison and case study pages).
