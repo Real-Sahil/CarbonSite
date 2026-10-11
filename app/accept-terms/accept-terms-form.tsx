@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TERMS_VERSION } from "@/lib/legal/terms";
+import { acceptTerms } from "./actions";
 
 export function AcceptTermsForm() {
   const router = useRouter();
@@ -14,12 +15,8 @@ export function AcceptTermsForm() {
   async function accept() {
     setPending(true);
     setError(null);
-    const res = await fetch("/api/account/terms", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ termsVersion: TERMS_VERSION }),
-    });
-    if (!res.ok) {
+    const result = await acceptTerms({ termsVersion: TERMS_VERSION }).catch(() => ({ ok: false as const, error: "" }));
+    if (!result.ok) {
       setPending(false);
       setError("We could not record your acceptance. Please try again.");
       return;
