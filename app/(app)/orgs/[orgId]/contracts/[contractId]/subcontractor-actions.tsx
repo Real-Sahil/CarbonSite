@@ -32,6 +32,8 @@ interface Submission {
   submitterName: string | null;
   submitterNote: string | null;
   hasEvidence: boolean;
+  /** Messages from lib/subcontractor/checks.ts, computed on the server. Shown only; they never block a verify. */
+  warnings: string[];
 }
 
 /** Mirrors OPEN_STATUSES in lib/subcontractor/portal.ts. That module imports the database, so the client cannot import it. */
@@ -355,11 +357,23 @@ export function SubmissionRow({
               <Button size="sm" variant="outline" onClick={() => setEditing(true)}>Log submission</Button>
             )}
             {canManage && submission.status === "submitted" && (
-              <div className="flex gap-2">
-                <Button size="sm" onClick={() => callAction({ action: "verify" })} disabled={isPending}>Verify</Button>
-                <Button size="sm" variant="outline" onClick={reject} disabled={isPending}>
-                  Reject
-                </Button>
+              <div className="flex flex-col gap-2">
+                {submission.warnings.length > 0 && (
+                  <div className="max-w-[40ch] text-xs text-[#92400E]">
+                    <p>Check before verifying. These notes do not stop Verify.</p>
+                    <ul className="mt-1 list-disc space-y-1 pl-4">
+                      {submission.warnings.map((message) => (
+                        <li key={message}>{message}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => callAction({ action: "verify" })} disabled={isPending}>Verify</Button>
+                  <Button size="sm" variant="outline" onClick={reject} disabled={isPending}>
+                    Reject
+                  </Button>
+                </div>
               </div>
             )}
             {rejectNotice && <p className="mt-2 text-xs text-[#374151] max-w-[24ch]">{rejectNotice}</p>}

@@ -33,6 +33,7 @@ import { BudgetStatusChip } from "@/components/project-carbon/budget-status-chip
 import { RequestSubmissionForm, SubmissionRow, SubcontractorSummaryStrip } from "./subcontractor-actions";
 import { startOfUtcDay } from "@/lib/subcontractor/deadline";
 import { subcontractorSummary } from "@/lib/subcontractor/summary";
+import { checkSubmissions } from "@/lib/subcontractor/checks";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 import { formatMoney } from "@/lib/i18n/org-format";
 import { getOrgLocale } from "@/lib/i18n/org-basics";
@@ -173,6 +174,8 @@ export default async function ContractDetailPage({ params }: Props) {
       GROUP BY c.id
     `,
   ]);
+  // Verify-screen warnings for submitted requests; display only, they never block a verify.
+  const submissionWarnings = checkSubmissions(submissions);
   // Burn-down status per project with a budget (a few queries each; contracts hold few projects).
   const burndowns = new Map(
     await Promise.all(projects.map(async (p) => [p.id, await loadProjectBurndown(orgId, p.id).catch(() => null)] as const)),
@@ -418,6 +421,7 @@ export default async function ContractDetailPage({ params }: Props) {
                           submitterNote: s.submitterNote,
                           // The token hash and evidence key stay on the server; the row gets a flag and downloads through the evidence route.
                           hasEvidence: s.evidenceStorageKey !== null,
+                          warnings: (submissionWarnings.get(s.id) ?? []).map((w) => w.message),
                         }}
                       />
                     ))}
