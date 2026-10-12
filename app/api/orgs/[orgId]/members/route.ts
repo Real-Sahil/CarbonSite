@@ -12,6 +12,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { sendEmail, memberAccessGrantedEmail, memberInviteEmail, resolveEmailLogoUrl } from "@/lib/notifications/email";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { offsetPage } from "@/lib/api/pagination";
 
 export async function GET(
   _req: NextRequest,
@@ -28,22 +29,30 @@ export async function GET(
 
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
-    const members = await prisma.organizationMembership.findMany({
-      where: { organizationId: orgId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            createdAt: true,
+    // Oldest first, one page at a time; the id breaks ties so offsets stay stable between pages.
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = { organizationId: orgId };
+    const [members, total] = await Promise.all([
+      prisma.organizationMembership.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              createdAt: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: "asc" },
-    });
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.organizationMembership.count({ where }),
+    ]);
 
-    return json(members, { version });
+    return json({ data: members, pagination: { offset, limit, total } }, { version });
   } catch (err) {
     return handleRouteError(err);
   }

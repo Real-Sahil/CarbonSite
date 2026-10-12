@@ -10,6 +10,7 @@ import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createFacilitySchema } from "@/lib/validation/org";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { offsetPage } from "@/lib/api/pagination";
 
 export async function GET(
   _req: NextRequest,
@@ -32,12 +33,19 @@ export async function GET(
     // even though ROLE_GROUPS.anyMember deliberately excludes it elsewhere.
     await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember, "field_worker");
 
-    const facilities = await prisma.facility.findMany({
-      where: { organizationId: orgId },
-      orderBy: { name: "asc" },
-    });
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = { organizationId: orgId };
+    const [facilities, total] = await Promise.all([
+      prisma.facility.findMany({
+        where,
+        orderBy: [{ name: "asc" }, { id: "asc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.facility.count({ where }),
+    ]);
 
-    return json(facilities, { version });
+    return json({ data: facilities, pagination: { offset, limit, total } }, { version });
   } catch (err) {
     return handleRouteError(err);
   }

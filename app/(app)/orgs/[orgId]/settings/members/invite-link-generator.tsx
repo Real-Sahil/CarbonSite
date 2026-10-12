@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, Copy, Check, Trash2, RefreshCw, MapPin, Send } from "lucide-react";
+import { fetchAllPages } from "@/lib/api/fetch-all-pages";
 
 interface SiteOption {
   id: string;
@@ -48,9 +49,7 @@ export function InviteLinkGenerator({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`/api/orgs/${orgId}/sites`);
-        if (!res.ok) return;
-        const data = (await res.json()) as SiteOption[];
+        const data = await fetchAllPages<SiteOption>(`/api/orgs/${orgId}/sites`);
         if (!cancelled) setSites(data);
       } catch {
         // sites are optional — leave the picker empty

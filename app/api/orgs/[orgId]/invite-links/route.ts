@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/db";
 import { requireOrgMember } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { offsetPage } from "@/lib/api/pagination";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
@@ -20,25 +21,32 @@ export async function GET(
     await requireOrgMember(orgId, "admin");
 
     const now = new Date();
-    const links = await prisma.inviteLink.findMany({
-      where: {
-        organizationId: orgId,
-        email: null,
-        role: "field_worker",
-        OR: [
-          // Non-reusable: must be unused and not yet expired
-          { reusable: false, usedAt: null, expiresAt: { gt: now } },
-          // Reusable: always show regardless of usedAt / expiry
-          { reusable: true },
-        ],
-      },
-      include: {
-        site: { select: { id: true, name: true, project: { select: { name: true } } } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = {
+      organizationId: orgId,
+      email: null,
+      role: "field_worker" as const,
+      OR: [
+        // Non-reusable: must be unused and not yet expired
+        { reusable: false, usedAt: null, expiresAt: { gt: now } },
+        // Reusable: always show regardless of usedAt / expiry
+        { reusable: true },
+      ],
+    };
+    const [links, total] = await Promise.all([
+      prisma.inviteLink.findMany({
+        where,
+        include: {
+          site: { select: { id: true, name: true, project: { select: { name: true } } } },
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.inviteLink.count({ where }),
+    ]);
 
-    return NextResponse.json(links);
+    return NextResponse.json({ data: links, pagination: { offset, limit, total } });
   } catch (err) {
     return handleRouteError(err);
   }

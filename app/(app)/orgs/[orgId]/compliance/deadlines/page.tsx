@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, CheckCircle2, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { relevantRegions, type Region } from '@/lib/compliance/regions';
+import { fetchAllPages } from '@/lib/api/fetch-all-pages';
 
 interface StatutoryDeadline {
   id: string;
@@ -367,11 +368,9 @@ export default function RegulatoryCalendarPage() {
     if (!orgId) return;
     Promise.all([
       fetch(`/api/orgs/${orgId}`).then((r) => r.json()),
-      fetch(`/api/orgs/${orgId}/facilities`).then((r) => r.json()),
+      fetchAllPages<{ country?: string | null }>(`/api/orgs/${orgId}/facilities`),
     ])
-      .then(([org, facilities]) =>
-        setScope(relevantRegions(org?.hqCountry, Array.isArray(facilities) ? facilities.map((f: { country?: string | null }) => f.country) : [])),
-      )
+      .then(([org, facilities]) => setScope(relevantRegions(org?.hqCountry, facilities.map((f) => f.country))))
       .catch(() => {});
   }, [orgId]);
 

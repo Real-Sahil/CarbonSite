@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { isMissingDatabaseObjectError } from "@/lib/db/prisma-errors";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { offsetPage } from "@/lib/api/pagination";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
@@ -26,23 +27,30 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
-    const assignments = await prisma.fieldWorkerSiteAssignment.findMany({
-      where: { organizationId: orgId },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        site: {
-          select: {
-            id: true,
-            name: true,
-            project: { select: { name: true } },
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = { organizationId: orgId };
+    const [assignments, total] = await Promise.all([
+      prisma.fieldWorkerSiteAssignment.findMany({
+        where,
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+          site: {
+            select: {
+              id: true,
+              name: true,
+              project: { select: { name: true } },
+            },
           },
+          assignedBy: { select: { name: true, email: true } },
         },
-        assignedBy: { select: { name: true, email: true } },
-      },
-      orderBy: [{ createdAt: "desc" }],
-    });
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.fieldWorkerSiteAssignment.count({ where }),
+    ]);
 
-    return NextResponse.json(assignments);
+    return NextResponse.json({ data: assignments, pagination: { offset, limit, total } });
   } catch (err) {
     if (isMissingDatabaseObjectError(err)) {
       return apiError(

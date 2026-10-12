@@ -132,9 +132,11 @@ All org-scoped endpoints require:
 
 List endpoints that can grow without bound page their rows. The shared rules live in `lib/api/pagination.ts`:
 - **Cursor** (`/audit/logs`, invoice anomalies, field submissions): `cursor`, `limit` (default 25 or 50, max 100). The response carries `pagination.nextCursor` and `hasMore`; the cursor is the last row returned, so no row is skipped.
-- **Offset** (`/audit-logs`, `/snapshots`): `offset`, `limit` (default 50, max 100). The response carries `pagination: { offset, limit, total }`. Offsets are capped at 100,000; past that, page by cursor.
+- **Offset** (`/audit-logs`, `/snapshots`, and the org lists below): `offset`, `limit` (default 50, max 100). The response carries `pagination: { offset, limit, total }`. Offsets are capped at 100,000; past that, page by cursor.
+- Org lists that used to return a bare array now return `{ data, pagination }` with the same offset rules: `members`, `sites`, `facilities`, `invite-links`, `supplier-invites`, `supplier-data-requests`, `social-value/records`, `field-worker-assignments` and `field-worker-site-assignments`. Read the rows from `data`. Each list counts with the same `where` it reads with, so `total` matches the filter, and it orders with an `id` tie-breaker so pages do not repeat or skip rows.
+- Web clients that need every row (pickers, the compliance pages) use `fetchAllPages()` in `lib/api/fetch-all-pages.ts`, which walks the pages until `total` is reached.
 - A malformed or out-of-range `limit`/`offset` is clamped or falls back to the default. It is never passed to Prisma as NaN, which used to fail the whole request.
-- Reference-sized lists (reporting periods, emission categories, factor libraries) are not paged. Array-root lists (members, sites, facilities, invite links, supplier invites and requests, social value records, field-worker assignments) are not paged yet: their clients read a bare array, so each needs its consumer moved before the response changes shape.
+- Reference-sized lists (reporting periods, emission categories, factor libraries) are not paged.
 
 ## Filtering & Search
 

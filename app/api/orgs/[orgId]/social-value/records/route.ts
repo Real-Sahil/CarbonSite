@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { offsetPage } from "@/lib/api/pagination";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
@@ -24,22 +25,29 @@ export async function GET(
     const contractId = searchParams.get("contractId") ?? undefined;
     const reportingPeriodId = searchParams.get("reportingPeriodId") ?? undefined;
 
-    const records = await prisma.socialValueRecord.findMany({
-      where: {
-        organizationId: orgId,
-        contractId,
-        reportingPeriodId,
-      },
-      include: {
-        measure: { include: { theme: true } },
-        contract: { select: { id: true, name: true } },
-        reportingPeriod: { select: { id: true, label: true } },
-        evidenceFile: { select: { id: true, filename: true, storageKey: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const { limit, offset } = offsetPage(searchParams);
+    const where = {
+      organizationId: orgId,
+      contractId,
+      reportingPeriodId,
+    };
+    const [records, total] = await Promise.all([
+      prisma.socialValueRecord.findMany({
+        where,
+        include: {
+          measure: { include: { theme: true } },
+          contract: { select: { id: true, name: true } },
+          reportingPeriod: { select: { id: true, label: true } },
+          evidenceFile: { select: { id: true, filename: true, storageKey: true } },
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.socialValueRecord.count({ where }),
+    ]);
 
-    return NextResponse.json(records);
+    return NextResponse.json({ data: records, pagination: { offset, limit, total } });
   } catch (err) {
     return handleRouteError(err);
   }

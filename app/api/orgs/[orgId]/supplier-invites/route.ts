@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { offsetPage } from "@/lib/api/pagination";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { resolveEmailLogoUrl } from "@/lib/notifications/email";
@@ -26,23 +27,30 @@ export async function GET(
     const { orgId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
-    const invites = await prisma.supplierInvite.findMany({
-      where: { organizationId: orgId },
-      select: {
-        id: true,
-        email: true,
-        companyName: true,
-        expiresAt: true,
-        usedAt: true,
-        createdAt: true,
-        inviteMethod: true,
-        createdBy: { select: { name: true, email: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = { organizationId: orgId };
+    const [invites, total] = await Promise.all([
+      prisma.supplierInvite.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          companyName: true,
+          expiresAt: true,
+          usedAt: true,
+          createdAt: true,
+          inviteMethod: true,
+          createdBy: { select: { name: true, email: true } },
+        },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.supplierInvite.count({ where }),
+    ]);
 
-    return NextResponse.json(
-      invites.map((inv) => ({
+    return NextResponse.json({
+      data: invites.map((inv) => ({
         id: inv.id,
         email: inv.email,
         companyName: inv.companyName,
@@ -53,7 +61,8 @@ export async function GET(
         createdBy: inv.createdBy.name ?? inv.createdBy.email,
         status: inv.usedAt ? "accepted" : inv.expiresAt <= new Date() ? "expired" : "pending",
       })),
-    );
+      pagination: { offset, limit, total },
+    });
   } catch (err) {
     return handleRouteError(err);
   }

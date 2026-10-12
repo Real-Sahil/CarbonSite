@@ -9,6 +9,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
+import { offsetPage } from "@/lib/api/pagination";
 import { handleRouteError } from "@/lib/validation/api";
 import { sendEmail, supplierDataRequestEmail } from "@/lib/notifications/email";
 
@@ -42,26 +43,33 @@ export async function GET(
     const url = new URL(req.url);
     const reportingPeriodId = url.searchParams.get("reportingPeriodId") ?? undefined;
 
-    const requests = await prisma.supplierDataRequest.findMany({
-      where: { organizationId: orgId, ...(reportingPeriodId ? { reportingPeriodId } : {}) },
-      select: {
-        id: true,
-        supplierEmail: true,
-        supplierName: true,
-        categoryCode: true,
-        status: true,
-        sentAt: true,
-        openedAt: true,
-        submittedAt: true,
-        expiresAt: true,
-        reportingPeriod: { select: { label: true } },
-        createdBy: { select: { name: true, email: true } },
-      },
-      orderBy: { sentAt: "desc" },
-    });
+    const { limit, offset } = offsetPage(url.searchParams);
+    const where = { organizationId: orgId, ...(reportingPeriodId ? { reportingPeriodId } : {}) };
+    const [requests, total] = await Promise.all([
+      prisma.supplierDataRequest.findMany({
+        where,
+        select: {
+          id: true,
+          supplierEmail: true,
+          supplierName: true,
+          categoryCode: true,
+          status: true,
+          sentAt: true,
+          openedAt: true,
+          submittedAt: true,
+          expiresAt: true,
+          reportingPeriod: { select: { label: true } },
+          createdBy: { select: { name: true, email: true } },
+        },
+        orderBy: [{ sentAt: "desc" }, { id: "desc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.supplierDataRequest.count({ where }),
+    ]);
 
-    return NextResponse.json(
-      requests.map((r) => ({
+    return NextResponse.json({
+      data: requests.map((r) => ({
         id: r.id,
         supplierEmail: r.supplierEmail,
         supplierName: r.supplierName,
@@ -75,7 +83,8 @@ export async function GET(
         sentBy: r.createdBy.name ?? r.createdBy.email,
         expired: r.expiresAt < new Date() && r.status === "sent",
       })),
-    );
+      pagination: { offset, limit, total },
+    });
   } catch (err) {
     return handleRouteError(err);
   }

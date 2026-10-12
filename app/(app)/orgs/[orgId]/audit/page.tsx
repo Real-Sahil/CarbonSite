@@ -40,6 +40,10 @@ interface AuditPageProps {
 }
 
 const PAGE_SIZE = 100;
+// The filter dropdowns list the actions and resource types written in the last year. Over the whole
+// trail, each DISTINCT scan grew with every row ever written, on every page load. A selected value
+// older than the window is still offered, so the filter keeps what the person chose.
+const OPTIONS_WINDOW_MS = 365 * 86_400_000;
 
 export default async function AuditPage({ params, searchParams }: AuditPageProps) {
   const { orgId } = await params;
@@ -72,6 +76,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   }
 
   const where = buildAuditWhere(orgId, filters);
+  const optionsSince = new Date(Date.now() - OPTIONS_WINDOW_MS);
   const dbResult = await Promise.all([
     prisma.auditLog.findMany({
       where,
@@ -89,13 +94,13 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       take: PAGE_SIZE,
     }),
     prisma.auditLog.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, createdAt: { gte: optionsSince } },
       distinct: ["action"],
       select: { action: true },
       orderBy: { action: "asc" },
     }),
     prisma.auditLog.findMany({
-      where: { organizationId: orgId },
+      where: { organizationId: orgId, createdAt: { gte: optionsSince } },
       distinct: ["resourceType"],
       select: { resourceType: true },
       orderBy: { resourceType: "asc" },
@@ -108,7 +113,15 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       <div className="p-8"><p className="text-red-600 text-sm">Failed to load audit logs. The database may be updating — try refreshing in a moment.</p></div>
     );
   }
-  const [logs, actionOptions, resourceOptions, totalCount] = dbResult;
+  const [logs, actionRows, resourceRows, totalCount] = dbResult;
+  const actionOptions =
+    filters.action && !actionRows.some((row) => row.action === filters.action)
+      ? [...actionRows, { action: filters.action }].sort((a, b) => a.action.localeCompare(b.action))
+      : actionRows;
+  const resourceOptions =
+    filters.resource && !resourceRows.some((row) => row.resourceType === filters.resource)
+      ? [...resourceRows, { resourceType: filters.resource }].sort((a, b) => a.resourceType.localeCompare(b.resourceType))
+      : resourceRows;
   const pageCount = Math.ceil(totalCount / PAGE_SIZE);
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 

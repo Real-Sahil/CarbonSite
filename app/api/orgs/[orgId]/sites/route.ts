@@ -6,9 +6,10 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError } from "@/lib/validation/api";
+import { offsetPage } from "@/lib/api/pagination";
 
-// Flat list of all sites for the org — used by the field-worker invite
-// generator so an admin can scope an invite link to a specific site.
+// Sites for the org, one page at a time — used by the field-worker invite
+// generator and the assignment picker, which page through with limit/offset.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ orgId: string }> },
@@ -17,19 +18,26 @@ export async function GET(
     const { orgId } = await params;
     await requireOrgMember(orgId, ...ROLE_GROUPS.reviewersAndEditors);
 
-    const sites = await prisma.site.findMany({
-      where: { organizationId: orgId },
-      select: {
-        id: true,
-        name: true,
-        siteCode: true,
-        postcode: true,
-        project: { select: { id: true, name: true } },
-      },
-      orderBy: [{ project: { name: "asc" } }, { name: "asc" }],
-    });
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = { organizationId: orgId };
+    const [sites, total] = await Promise.all([
+      prisma.site.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          siteCode: true,
+          postcode: true,
+          project: { select: { id: true, name: true } },
+        },
+        orderBy: [{ project: { name: "asc" } }, { name: "asc" }, { id: "asc" }],
+        skip: offset,
+        take: limit,
+      }),
+      prisma.site.count({ where }),
+    ]);
 
-    return NextResponse.json(sites);
+    return NextResponse.json({ data: sites, pagination: { offset, limit, total } });
   } catch (err) {
     return handleRouteError(err);
   }

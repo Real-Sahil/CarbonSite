@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { countryIso2 } from "@/lib/calculation/geography";
 import { missingIdentifiers } from "@/lib/exports/mrv-identifiers";
+import { fetchAllPages } from "@/lib/api/fetch-all-pages";
 
 type Facility = {
   id: string;
@@ -105,9 +106,8 @@ export default function AbuDhabiMrvPage() {
 
   const load = useCallback(() => {
     if (!orgId) return;
-    fetch(`/api/orgs/${orgId}/facilities`)
-      .then((r) => r.json())
-      .then((json) => setFacilities(Array.isArray(json) ? json : []))
+    fetchAllPages<Facility>(`/api/orgs/${orgId}/facilities`)
+      .then(setFacilities)
       .catch(() => setFacilities([]));
   }, [orgId]);
 
