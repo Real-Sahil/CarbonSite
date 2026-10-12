@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { hashToken } from "@/lib/management-systems/auditor-access";
 import { SupplierDataForm } from "./supplier-data-form";
 
 interface PageProps {
@@ -10,7 +11,7 @@ export default async function SupplierDataPage({ params }: PageProps) {
   const { token } = await params;
 
   const request = await prisma.supplierDataRequest.findUnique({
-    where: { token },
+    where: { tokenHash: hashToken(token) },
     select: {
       id: true,
       status: true,

@@ -3443,7 +3443,11 @@ model SupplierDataRequest {
   supplierEmail     String    @map("supplier_email")
   supplierName      String?   @map("supplier_name")
   categoryCode      String    @map("category_code")
-  token             String    @unique @default(cuid())
+  // Plaintext link token: legacy rows only, cleared on resend, dropped in a later release.
+  token             String?   @unique
+  // SHA-256 hex of the link token (hashToken() in lib/management-systems/auditor-access.ts).
+  // Every lookup goes through this column.
+  tokenHash         String?   @unique @map("token_hash")
   status            String    @default("sent") // sent | opened | submitted | flagged | approved | rejected | converted
   sentAt            DateTime  @default(now()) @map("sent_at")
   openedAt          DateTime? @map("opened_at")

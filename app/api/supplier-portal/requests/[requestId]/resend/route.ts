@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { writeAuditLog } from "@/lib/db/audit";
 import { sendEmail, supplierDataRequestEmail } from "@/lib/notifications/email";
+import { hashToken, newToken } from "@/lib/management-systems/auditor-access";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk";
 const EXPIRES_DAYS = 30;
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     // Verify token provides access to this request
     const verifyRequest = await prisma.supplierDataRequest.findUnique({
-      where: { token: body.token },
+      where: { tokenHash: hashToken(body.token) },
       select: {
         supplierEmail: true,
         organizationId: true,
@@ -80,16 +81,14 @@ export async function POST(req: NextRequest, { params }: Params) {
     // Update expiry date
     const newExpiresAt = new Date(Date.now() + EXPIRES_DAYS * 24 * 60 * 60 * 1000);
 
-    await prisma.supplierDataRequest.update({
-      where: { id: requestId },
-      data: {
-        expiresAt: newExpiresAt,
-        status: "sent", // Reset to sent state
-      },
-    });
+    // Only hashes are stored. When the supplier presented this request's own link, its raw token
+    // is in hand, so that same link is sent again. Otherwise a new token is issued and the old
+    // link stops working.
+    const reuseLink = request.tokenHash === hashToken(body.token);
+    const formToken = reuseLink ? body.token : newToken();
 
-    // Send email
-    const formUrl = `${APP_URL}/supplier-data/${request.token}`;
+    // Send email first: if the send fails, the link already in force still works.
+    const formUrl = `${APP_URL}/supplier-data/${formToken}`;
     await sendEmail({
       to: request.supplierEmail,
       ...supplierDataRequestEmail({
@@ -100,6 +99,15 @@ export async function POST(req: NextRequest, { params }: Params) {
         formUrl,
         expiresAt: newExpiresAt,
       }),
+    });
+
+    await prisma.supplierDataRequest.update({
+      where: { id: requestId },
+      data: {
+        expiresAt: newExpiresAt,
+        status: "sent", // Reset to sent state
+        ...(reuseLink ? {} : { tokenHash: hashToken(formToken), token: null }),
+      },
     });
 
     // Audit log
