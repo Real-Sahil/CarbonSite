@@ -29,12 +29,12 @@ Missing for a receipt: time of receipt, receiver permit number, site address and
 
 ## Built so far
 
-`lib/defra-dwt/receipt.ts`: a zod schema of the request body and `submissionDeadline()`. It calls nothing; it lets a reviewer see what is missing before anything is sent. Tests in `lib/defra-dwt/__tests__/receipt.test.ts` cover the schema rules, and `pat-scenarios.test.ts` checks the shape of all 14 PAT scenarios. Shapes only: a `Pass` comes from `POST /production-approval-tests`, never from these tests.
+`lib/defra-dwt/receipt.ts`: a zod schema of the request body and `submissionDeadline(start, nation)`. The deadline is two working days after the window opens (the UK day of receipt; for piped waste, the last load day, or the earlier of the quarter end and the day piping stops), skipping weekends and that nation's bank holidays, due at 23:59:59 UK time. `bank-holidays.ts` holds England and Wales, Scotland and Northern Ireland for 2026 to 2028 from gov.uk; `working-days.ts` does the calendar arithmetic in Europe/London and throws for a year outside the loaded data rather than guessing. It calls nothing; it lets a reviewer see what is missing before anything is sent. Tests in `lib/defra-dwt/__tests__/receipt.test.ts` cover the schema rules, `deadline.test.ts` the holiday data, the clock changes and each nation's deadlines, and `pat-scenarios.test.ts` checks the shape of all 14 PAT scenarios. Shapes only: a `Pass` comes from `POST /production-approval-tests`, never from these tests.
 
 ## Not built, waiting for test credentials
 
 1. A "Report to Defra" step on the receiving side of Material movements: a reviewer completes the missing fields, checks them against the reference-data endpoints (EWC, hazardous properties, disposal or recovery codes, container types, POP names), and a person presses submit. No automatic submission.
 2. Storage of the returned waste tracking ID and an audit entry for every submission and correction.
-3. A two-working-day tracker on each received load; `submissionDeadline()` ignores bank holidays, so it can be a day early, never late.
+3. A two-working-day tracker on each received load. The deadline arithmetic is done (see above), but the tracker and the page that shows it are not. The nation of each receiving site is not modelled yet (the facility has no country), so the caller passes it; a receiving site in Scotland or Northern Ireland needs that before the tracker is trusted. Bank holiday data stops at 2028 and must be re-copied each year.
 4. OAuth token handling in a server-only module, with the client secret in the environment, never the database.
 5. A runner for `POST /production-approval-tests`. The scenario shapes are tested; the runner waits for test credentials.

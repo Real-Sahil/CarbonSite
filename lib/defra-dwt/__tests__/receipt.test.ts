@@ -154,10 +154,12 @@ describe("Defra receipt check", () => {
     expect(receiptProblems(withItem({ wasteDescription: "x".repeat(6000) }))).toEqual([]);
   });
 
-  it("gives two working days after the day of receipt", () => {
-    // Monday 5 October 2026 morning: due before midnight on Wednesday 7th.
-    expect(submissionDeadline(new Date("2026-10-05T09:00:00Z")).toISOString()).toBe("2026-10-07T23:59:59.999Z");
+  it("gives two working days after the day of receipt, in UK time", () => {
+    // Monday 5 October 2026 morning (BST): due before midnight UK time on Wednesday 7th.
+    const received = new Date("2026-10-05T09:00:00Z");
+    expect(submissionDeadline({ kind: "receipt", received }, "england-and-wales").toISOString()).toBe("2026-10-07T22:59:59.999Z");
     // Friday: weekend skipped, due Tuesday.
-    expect(submissionDeadline(new Date("2026-10-09T16:00:00Z")).toISOString()).toBe("2026-10-13T23:59:59.999Z");
+    const friday = new Date("2026-10-09T16:00:00Z");
+    expect(submissionDeadline({ kind: "receipt", received: friday }, "england-and-wales").toISOString()).toBe("2026-10-13T22:59:59.999Z");
   });
 });

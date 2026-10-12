@@ -4,6 +4,8 @@
 // MetricOra instead of as a 400 from Defra. Re-read the spec when Defra changes it; the API has its own validation.
 
 import { z } from "zod";
+import type { Nation } from "./bank-holidays";
+import { assertDay, endOfUkDay, nthWorkingDayAfter, ukDay } from "./working-days";
 
 const text = z.string().trim().min(1);
 // The spec says amount must be greater than 0, so zero is refused here as well.
@@ -137,15 +139,36 @@ export function receiptProblems(input: unknown): string[] {
 }
 
 /**
- * Defra expects a receipt before midnight on the second working day after the day of receipt (FAQ, "Timing for
- * submission"). Weekends are skipped; bank holidays are not, so this can be a day early, never late.
+ * What the two-working-day window counts from. A receipt counts from the UK day it arrived; that day is not counted
+ * itself. Piped waste follows gov.uk: piped over more than one day, from the last load day; piped continuously, from
+ * the earlier of the consignment note's quarter end and the day piping stops.
  */
-export function submissionDeadline(received: Date): Date {
-  const d = new Date(Date.UTC(received.getUTCFullYear(), received.getUTCMonth(), received.getUTCDate()));
-  for (let left = 2; left > 0; ) {
-    d.setUTCDate(d.getUTCDate() + 1);
-    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6) left--;
+export type WindowStart =
+  | { kind: "receipt"; received: Date }
+  | { kind: "piped-last-load"; lastLoad: string }
+  | { kind: "piped-continuous"; quarterEnd: string; pipingStops?: string };
+
+/** The UK day (YYYY-MM-DD) the window counts from. Throws on a day that is not a real calendar day. */
+export function windowStartDay(start: WindowStart): string {
+  switch (start.kind) {
+    case "receipt":
+      return ukDay(start.received);
+    case "piped-last-load":
+      assertDay(start.lastLoad);
+      return start.lastLoad;
+    case "piped-continuous": {
+      assertDay(start.quarterEnd);
+      if (start.pipingStops !== undefined) assertDay(start.pipingStops);
+      return start.pipingStops !== undefined && start.pipingStops < start.quarterEnd ? start.pipingStops : start.quarterEnd;
+    }
   }
-  d.setUTCDate(d.getUTCDate() + 1); // end of that day
-  return new Date(d.getTime() - 1);
+}
+
+/**
+ * Defra expects a receipt before midnight on the second working day after the window opens (FAQ, "Timing for
+ * submission"). Weekends and that nation's bank holidays are skipped. The deadline is 23:59:59.999 UK time, so it is
+ * 22:59 UTC in summer and 23:59 UTC in winter. Throws for a year outside the loaded bank holidays rather than guessing.
+ */
+export function submissionDeadline(start: WindowStart, nation: Nation): Date {
+  return endOfUkDay(nthWorkingDayAfter(windowStartDay(start), 2, nation));
 }
