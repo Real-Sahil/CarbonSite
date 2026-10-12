@@ -6,6 +6,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createSubcontractorSubmissionSchema } from "@/lib/validation/project-carbon";
+import { orgSubmissionView } from "@/lib/subcontractor/portal";
 
 type Params = { params: Promise<{ orgId: string; contractId: string }> };
 
@@ -46,7 +47,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     );
 
     return NextResponse.json({
-      submissions,
+      submissions: submissions.map(orgSubmissionView),
       verifiedTotals: totals,
       complianceRate:
         submissions.length > 0
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       metadata: { contractId, subcontractorName: data.subcontractorName, dueDate: data.dueDate },
     });
 
-    return NextResponse.json({ submission }, { status: 201 });
+    return NextResponse.json({ submission: orgSubmissionView(submission) }, { status: 201 });
   } catch (err) {
     return handleRouteError(err);
   }

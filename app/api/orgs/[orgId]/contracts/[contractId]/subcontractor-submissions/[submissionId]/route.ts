@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { isValidStorageKey } from "@/lib/storage";
 import { updateSubcontractorSubmissionSchema } from "@/lib/validation/project-carbon";
+import { orgSubmissionView } from "@/lib/subcontractor/portal";
 
 type Params = { params: Promise<{ orgId: string; contractId: string; submissionId: string }> };
 
@@ -24,17 +25,18 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const submission = await findScopedSubmission(orgId, contractId, submissionId);
     if (!submission) return apiError("NOT_FOUND", "Subcontractor submission not found.", 404);
 
-    return NextResponse.json({ submission });
+    return NextResponse.json({ submission: orgSubmissionView(submission) });
   } catch (err) {
     return handleRouteError(err);
   }
 }
 
 // PATCH drives the requested -> submitted -> verified|rejected workflow.
-// "submit" records the data the org received from the subcontractor
-// (there is no public subcontractor-facing portal yet — data is logged by
-// the project/site team from what the subcontractor sent). "verify" and
-// "reject" are a separate, higher-trust compliance sign-off step.
+// "submit" records figures the project/site team logged from what the
+// subcontractor sent by email or post (submittedVia "logged"). A subcontractor
+// who uses the link portal is recorded by the public submit route instead
+// (submittedVia "portal_link"). "verify" and "reject" are a separate,
+// higher-trust compliance sign-off step.
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { orgId, contractId, submissionId } = await params;
@@ -72,6 +74,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           evidenceStorageKey: data.evidenceStorageKey,
           notes: data.notes ?? existing.notes,
           submittedAt: new Date(),
+          submittedVia: "logged",
           rejectionReason: null,
         },
       });
@@ -89,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         },
       });
 
-      return NextResponse.json({ submission });
+      return NextResponse.json({ submission: orgSubmissionView(submission) });
     }
 
     if (data.action === "verify") {
@@ -118,7 +121,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         metadata: {},
       });
 
-      return NextResponse.json({ submission });
+      return NextResponse.json({ submission: orgSubmissionView(submission) });
     }
 
     // action === "reject"
@@ -147,7 +150,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       metadata: { rejectionReason: data.rejectionReason },
     });
 
-    return NextResponse.json({ submission });
+    return NextResponse.json({ submission: orgSubmissionView(submission) });
   } catch (err) {
     return handleRouteError(err);
   }

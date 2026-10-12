@@ -54,6 +54,7 @@ const db = vi.hoisted(() => {
     commuteImport: model(),
     tenderOpportunity: model(),
     tenderWatch: model(),
+    subcontractorCarbonSubmission: model(),
     activityRecord: model(),
     importProfile: model(),
     importProfileRule: model(),
@@ -71,7 +72,20 @@ vi.mock("@/lib/jobs/dispatch", () => ({
   dispatchDsarErasure: vi.fn(),
   dispatchReport: vi.fn(),
 }));
-vi.mock("@/lib/notifications/email", () => ({ resolveEmailLogoUrl: vi.fn() }));
+vi.mock("@/lib/notifications/email", () => ({
+  resolveEmailLogoUrl: vi.fn(),
+  sendEmail: vi.fn().mockResolvedValue(undefined),
+  subcontractorRequestEmail: vi.fn().mockReturnValue({ subject: "Request", html: "<p>Request</p>", text: "Request" }),
+}));
+vi.mock("@/lib/storage", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/storage")>();
+  return {
+    ...actual,
+    putObject: vi.fn().mockResolvedValue(undefined),
+    deleteObject: vi.fn().mockResolvedValue(undefined),
+    presignDownload: vi.fn().mockResolvedValue("https://signed.test/evidence"),
+  };
+});
 vi.mock("@/workers/supplier-invite-email", () => ({
   sendSupplierInviteEmail: vi.fn(),
   sendSupplierCredentialsEmail: vi.fn(),
@@ -506,5 +520,140 @@ describe("tenders", () => {
     expect(db.contract.findFirst.mock.calls[0][0].where).toEqual({ organizationId: ORG_A, ftsNoticeId: "091200-2026" });
     expect(db.contract.create.mock.calls[0][0].data.organizationId).toBe(ORG_A);
     fetchMock.mockRestore();
+  });
+});
+
+describe("subcontractor portal link", () => {
+  const LINK_TOKEN = "a".repeat(43);
+  const ROUTE_PARAMS = { orgId: ORG_A, contractId: "contract-a", submissionId: "sub-a" };
+  const OPEN_ROW = {
+    id: "sub-a",
+    organizationId: ORG_A,
+    status: "requested",
+    tokenExpiresAt: new Date(Date.now() + 86_400_000),
+    subcontractorName: "Groundworks Ltd",
+    reportingPeriodLabel: "FY2026",
+    dueDate: new Date("2026-11-30"),
+    submittedAt: null,
+    rejectionReason: null,
+    organization: { name: "Org A" },
+  };
+
+  function formPost(url: string, fields: Record<string, string | File>) {
+    const body = new FormData();
+    for (const [key, value] of Object.entries(fields)) body.append(key, value);
+    return new NextRequest(`http://localhost${url}`, { method: "POST", body });
+  }
+
+  const submitParams = { params: Promise.resolve({ token: LINK_TOKEN }) };
+
+  it.each(["email", "copy"] as const)("will not issue a %s link for another organisation's submission", async (delivery) => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/link/route");
+    const { sendEmail } = await import("@/lib/notifications/email");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue(null); // the submission belongs to org B
+
+    const res = await POST(post("/x", { delivery }), { params: Promise.resolve({ ...ROUTE_PARAMS, submissionId: "sub-of-b" }) });
+
+    expect(res.status).toBe(404);
+    expect(db.subcontractorCarbonSubmission.findFirst.mock.calls[0][0].where).toEqual({
+      id: "sub-of-b",
+      contractId: "contract-a",
+      organizationId: ORG_A,
+    });
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(db.subcontractorCarbonSubmission.update).not.toHaveBeenCalled();
+  });
+
+  it("will not sign a download for an evidence key outside the caller's organisation", async () => {
+    const { GET } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/evidence/route");
+    const { presignDownload } = await import("@/lib/storage");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue({ evidenceStorageKey: "org/org-b/subcontractor/sub-b/1-x.pdf" });
+
+    const res = await GET(new NextRequest("http://localhost/x"), { params: Promise.resolve(ROUTE_PARAMS) });
+
+    expect(res.status).toBe(404);
+    expect(presignDownload).not.toHaveBeenCalled();
+  });
+
+  it("signs a download for evidence under the caller's own organisation", async () => {
+    const { GET } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/evidence/route");
+    const { presignDownload } = await import("@/lib/storage");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue({ evidenceStorageKey: "org/org-a/subcontractor/sub-a/1-x.pdf" });
+
+    const res = await GET(new NextRequest("http://localhost/x"), { params: Promise.resolve(ROUTE_PARAMS) });
+
+    expect(res.status).toBe(200);
+    expect(presignDownload).toHaveBeenCalledWith("org/org-a/subcontractor/sub-a/1-x.pdf");
+  });
+
+  it("refuses a link whose submission has already been sent on, and writes nothing", async () => {
+    const { POST } = await import("@/app/api/public/subcontractor/[token]/submit/route");
+    db.subcontractorCarbonSubmission.findUnique.mockResolvedValue({ ...OPEN_ROW, status: "submitted" });
+
+    const res = await POST(formPost("/x", { submitterName: "Sam", scope1Tco2e: "12.5" }), submitParams);
+
+    expect(res.status).toBe(409);
+    expect(db.subcontractorCarbonSubmission.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("treats an expired link as unknown, and writes nothing", async () => {
+    const { POST } = await import("@/app/api/public/subcontractor/[token]/submit/route");
+    db.subcontractorCarbonSubmission.findUnique.mockResolvedValue({ ...OPEN_ROW, tokenExpiresAt: new Date(Date.now() - 1000) });
+
+    const res = await POST(formPost("/x", { submitterName: "Sam", scope1Tco2e: "12.5" }), submitParams);
+
+    expect(res.status).toBe(404);
+    expect(db.subcontractorCarbonSubmission.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("finds the link by its hash only and writes with one update that matches an open link", async () => {
+    const { POST } = await import("@/app/api/public/subcontractor/[token]/submit/route");
+    const { hashToken } = await import("@/lib/management-systems/auditor-access");
+    const { writeAuditLog } = await import("@/lib/db/audit");
+    db.subcontractorCarbonSubmission.findUnique.mockResolvedValue(OPEN_ROW);
+    db.subcontractorCarbonSubmission.updateMany.mockResolvedValue({ count: 1 });
+
+    const res = await POST(formPost("/x", { submitterName: "Sam", scope1Tco2e: "12.5", scope3Tco2e: "3" }), submitParams);
+
+    expect(res.status).toBe(201);
+    expect(JSON.stringify(db.subcontractorCarbonSubmission.findUnique.mock.calls)).not.toContain(LINK_TOKEN);
+    expect(db.subcontractorCarbonSubmission.findUnique.mock.calls[0][0].where).toEqual({ tokenHash: hashToken(LINK_TOKEN) });
+
+    const call = db.subcontractorCarbonSubmission.updateMany.mock.calls[0][0];
+    expect(call.where).toEqual({
+      id: "sub-a",
+      status: { in: ["requested", "overdue", "rejected"] },
+      tokenExpiresAt: { gt: expect.any(Date) },
+    });
+    expect(call.data).toMatchObject({
+      status: "submitted",
+      submittedVia: "portal_link",
+      submitterName: "Sam",
+      scope1Tco2e: "12.5",
+      scope3Tco2e: "3",
+    });
+    expect(call.data.scope2Tco2e).toBeNull();
+    expect(call.data).not.toHaveProperty("tokenHash");
+    expect(writeAuditLog).toHaveBeenCalledWith(expect.objectContaining({
+      organizationId: ORG_A,
+      action: "subcontractor_submission.submitted",
+    }));
+  });
+
+  it("answers 409 when the link closed between the read and the write, and removes the file it wrote", async () => {
+    const { POST } = await import("@/app/api/public/subcontractor/[token]/submit/route");
+    const { putObject, deleteObject } = await import("@/lib/storage");
+    const { writeAuditLog } = await import("@/lib/db/audit");
+    db.subcontractorCarbonSubmission.findUnique.mockResolvedValue(OPEN_ROW);
+    db.subcontractorCarbonSubmission.updateMany.mockResolvedValue({ count: 0 }); // another submit won the race
+    const pdf = new File([Buffer.from("%PDF-1.4 scope")], "scope.pdf", { type: "application/pdf" });
+
+    const res = await POST(formPost("/x", { submitterName: "Sam", scope1Tco2e: "12.5", evidence: pdf }), submitParams);
+
+    expect(res.status).toBe(409);
+    const written = vi.mocked(putObject).mock.calls[0][0];
+    expect(written.startsWith("org/org-a/subcontractor/sub-a/")).toBe(true);
+    expect(vi.mocked(deleteObject)).toHaveBeenCalledWith(written);
+    expect(writeAuditLog).not.toHaveBeenCalled();
   });
 });

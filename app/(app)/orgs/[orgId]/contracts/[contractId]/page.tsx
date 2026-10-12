@@ -403,6 +403,14 @@ export default async function ContractDetailPage({ params }: Props) {
                         scope3Tco2e: s.scope3Tco2e?.toString() ?? null,
                         notes: s.notes,
                         rejectionReason: s.rejectionReason,
+                        linkSentAt: s.linkSentAt?.toISOString() ?? null,
+                        openedAt: s.openedAt?.toISOString() ?? null,
+                        tokenExpiresAt: s.tokenExpiresAt?.toISOString() ?? null,
+                        submittedVia: s.submittedVia,
+                        submitterName: s.submitterName,
+                        submitterNote: s.submitterNote,
+                        // The token hash and evidence key stay on the server; the row gets a flag and downloads through the evidence route.
+                        hasEvidence: s.evidenceStorageKey !== null,
                       }}
                     />
                   ))}

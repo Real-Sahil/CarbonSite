@@ -178,6 +178,9 @@ export const keys = {
     `org/${orgId}/reports/${reportId}/report.xml`,
   brandingLogo: (orgId: string, filename: string) =>
     `org/${orgId}/branding/${filename}`,
+  // Evidence a subcontractor uploads through its carbon submission link (lib/subcontractor/portal.ts).
+  subcontractorEvidence: (orgId: string, submissionId: string, filename: string) =>
+    `org/${orgId}/subcontractor/${submissionId}/${filename}`,
   // Audit-chain head copied out of the database (lib/audit/anchor.ts): one file per head
   // sequence, plus latest.json for the check.
   auditAnchor: (orgId: string, headSeq: string) =>
@@ -214,7 +217,7 @@ export function isValidStorageKey(key: string) {
   if (segments.length < 4) return false;
 
   if (segments[0] === "org") {
-    if (!["evidence", "imports", "reports", "branding", "pilot-kit", "audit-anchors"].includes(segments[2])) return false;
+    if (!["evidence", "imports", "reports", "branding", "pilot-kit", "audit-anchors", "subcontractor"].includes(segments[2])) return false;
   } else if (segments[0] === "user") {
     // DSAR exports — not tenant-scoped, see keys.dsarExport().
     if (segments[2] !== "dsar") return false;

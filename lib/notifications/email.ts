@@ -555,6 +555,61 @@ export function supplierDataRequestEmail(params: {
   return { subject, html, text };
 }
 
+const escapeHtml = (value: string) =>
+  value.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch] ?? ch);
+
+/** Sent to a subcontractor with a link to upload their own carbon figures. The link is single-purpose: no account. */
+export function subcontractorRequestEmail(params: {
+  recipientName: string;
+  orgName: string;
+  reportingPeriodLabel: string;
+  dueDate: Date;
+  portalUrl: string;
+  linkExpiresAt: Date;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const due = params.dueDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const linkExpires = params.linkExpiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const org = escapeHtml(params.orgName);
+  const name = escapeHtml(params.recipientName);
+  const subject = `${params.orgName} needs your carbon figures for ${params.reportingPeriodLabel}`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `${params.orgName} is collecting the emissions from work you carry out for them, so they can report on their supply chain.`,
+    ``,
+    `  Reporting period: ${params.reportingPeriodLabel}`,
+    `  Send by: ${due}`,
+    ``,
+    `Enter your total tonnes CO2e by scope and, if you have it, attach the calculation or the supporting invoice. No account is needed:`,
+    `${params.portalUrl}`,
+    ``,
+    `This link works until ${linkExpires} and only opens this one form. Keep it private.`,
+    ``,
+    `Thank you,`,
+    `The MetricOra team on behalf of ${params.orgName}`,
+  ].join("\n");
+
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Carbon figures request</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${name}, <strong style="color:${BRAND_DARK};">${org}</strong> is collecting the emissions from work you carry out for them,
+      so they can report on their supply chain.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Reporting period", escapeHtml(params.reportingPeriodLabel))}
+        ${kv("Send by", due)}
+      </tbody>
+    </table>
+    ${btn("Enter your figures", params.portalUrl)}
+    <p style="margin:20px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
+      No account is needed. The link opens this one form and works until ${linkExpires}. Keep it private.
+    </p>
+  `);
+
+  return { subject, html, text };
+}
+
 export function supplierDataApprovedEmail(params: {
   recipientName: string;
   orgName: string;
