@@ -34,9 +34,12 @@ export function Open({ t }: { t: number }) {
   return <Lockup t={t} appear={O.in} draw={O.draw} word={O.word} y={540} out={O.out} />;
 }
 
-/** Bars 25-28: the lockup again, then the call to action and the address. */
-export function End({ t }: { t: number }) {
-  const E = CUE.end;
+/** Timings of the closing act; the launch film passes its own, the platform film passes its own. */
+export type EndCue = { in: number; draw: number; word: number; rise: number; cta: number; url: number; docs: number; app: number; hover: number; fade: number };
+
+/** Bars 25-28 (launch): the lockup again, then the call to action and the address. */
+export function End({ t, cue = CUE.end, duration = DURATION, appLabel = "Field app on Google Play" }: { t: number; cue?: EndCue; duration?: number; appLabel?: string }) {
+  const E = cue;
   if (t < E.in - 0.05) return null;
   const rise = step(t - E.rise, { stiffness: 120, damping: 20 });
   const hovering = t >= E.hover;
@@ -52,7 +55,7 @@ export function End({ t }: { t: number }) {
   return (
     <>
       <div style={{ position: "absolute", inset: 0, translate: `0 ${-90 * rise}px` }}>
-        <Lockup t={t} appear={E.in} draw={E.draw} word={E.word} y={560} out={DURATION + 1} />
+        <Lockup t={t} appear={E.in} draw={E.draw} word={E.word} y={560} out={duration + 1} />
       </div>
       <div
         style={{
@@ -79,10 +82,10 @@ export function End({ t }: { t: number }) {
         {["Carbon Reduction Plan", "SECR", "GHG Protocol report"].map((d, i) => (
           <span key={d} style={arrive(t, E.docs + i * 0.25, 10)}>{d}</span>
         ))}
-        <span style={arrive(t, E.app, 10)}>Field app on Google Play</span>
+        <span style={arrive(t, E.app, 10)}>{appLabel}</span>
       </div>
       {t >= E.hover - 0.7 ? <UserCursor x={cursor.x} y={cursor.y} squash={cursor.squash} /> : null}
-      <div style={{ position: "absolute", inset: 0, background: C.stage, opacity: clamp01((t - E.fade) / (DURATION - E.fade)) }} />
+      <div style={{ position: "absolute", inset: 0, background: C.stage, opacity: clamp01((t - E.fade) / (duration - E.fade)) }} />
     </>
   );
 }

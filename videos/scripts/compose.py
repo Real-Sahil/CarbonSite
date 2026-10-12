@@ -19,6 +19,7 @@ to sfx/ with each file's peak time in sfx-peaks.json.
 
   uv run --with numpy --with scipy python3 scripts/compose.py public/audio/launch
 """
+import argparse
 import json
 import os
 import sys
@@ -31,8 +32,6 @@ SR = 48_000
 BPM = 120
 BEAT = 60 / BPM
 BAR = 4 * BEAT
-BARS = 28
-LENGTH = BARS * BAR
 rng = np.random.default_rng(7)
 
 
@@ -65,6 +64,33 @@ ARP = [
 HOOK = [  # bell hook over the drop and the ending, (beat offset in bar, note, beats)
     (0, "F#5", 1.5), (1.5, "E5", 0.5), (2, "D5", 1), (3, "A4", 1),
 ]
+LAUNCH_LEVELS = {1: -7, 2: -6, 3: -4.5, 4: -4.5, 11: -4.5, 16: -2.5, 23: -5, 24: -5, 25: -2, 26: -2.5, 27: -3, 28: -4}
+GROOVE = set(range(5, 11)) | set(range(12, 17)) | set(range(17, 23))  # drums and 8th-note bass
+# One entry per film. Bars 1-24 of "platform" are the launch plan; keep them identical.
+PLANS = {
+    "launch": {
+        "bars": 28,
+        "drums": GROOVE,
+        "pulse": set(range(3, 17)) | set(range(23, 28)),
+        "hook": set(range(17, 23)) | set(range(25, 28)),  # odd bars only
+        "impact": (25, 0.7),  # second impact; the first is on bar 17
+        "ring": False,
+        "levels": LAUNCH_LEVELS,
+    },
+    "platform": {
+        "bars": 45,
+        "drums": GROOVE | set(range(25, 41)),  # product-screens groove, 25-40
+        "pulse": set(range(3, 17)) | set(range(23, 41)),
+        "hook": set(range(17, 23)) | set(range(25, 28)) | {41, 43},  # odd bars only
+        "impact": (41, 0.9),  # ending impact
+        "ring": True,  # D6 bell on bar 45, the same bell as bar 1
+        "levels": {
+            **{k: v for k, v in LAUNCH_LEVELS.items() if k < 25},
+            **{b: -2.5 for b in range(25, 41)},
+            41: -2, 42: -3, 43: -4, 44: -4.5, 45: -5,
+        },
+    },
+}
 
 
 def t_at(bar, beat=1, frac=0.0):
@@ -219,11 +245,12 @@ def chord_of(bar):
     return (bar - 1) % 4
 
 
-def compose():
-    mix = Mix(LENGTH + 3.0)
-    drums_on = set(range(5, 11)) | set(range(12, 17)) | set(range(17, 23))
+def compose(plan):
+    bars = plan["bars"]
+    mix = Mix(bars * BAR + 3.0)
+    drums_on = plan["drums"]
 
-    for bar in range(1, BARS + 1):
+    for bar in range(1, bars + 1):
         c = chord_of(bar)
         start = t_at(bar)
         # Pad: through the whole film, brightening into the drop, bar 28 held.
@@ -237,7 +264,7 @@ def compose():
             cutoff = 2200
         else:
             cutoff = 1800
-        length = BAR * (1.8 if bar == BARS else 1.0)
+        length = BAR * (1.8 if bar == bars else 1.0)
         for i, name in enumerate(CHORDS[c]):
             pan = -0.5 + i * 0.25
             mix.add("pad", start, pad_note(hz(m(name)), length, cutoff), pan, 0.16)
@@ -248,14 +275,14 @@ def compose():
         # Sub bass from bar 2, bass line 8ths in the grooves.
         root = hz(m(ROOTS[c]))
         if bar >= 2 and bar not in drums_on:
-            mix.add("bass", start, bass_note(root, BAR * (1.6 if bar == BARS else 0.95)), 0, 0.55)
+            mix.add("bass", start, bass_note(root, BAR * (1.6 if bar == bars else 0.95)), 0, 0.55)
         if bar in drums_on:
             for eighth in range(8):
                 f = root * (2 if eighth in (3, 7) else 1)
                 mix.add("bass", start + eighth * BEAT / 2, bass_note(f, BEAT / 2 * 0.85), 0, 0.5)
 
         # Pulse: muted 8th plucks from bar 3 (not in the drop, where the arp leads).
-        if 3 <= bar <= 16 or 23 <= bar <= 27:
+        if bar in plan["pulse"]:
             for eighth in range(8):
                 note = CHORDS[c][1 if eighth % 2 else 2]
                 g = 0.10 if bar in (11, 16) else 0.14
@@ -287,9 +314,11 @@ def compose():
         if bar == 1:
             mix.add("bells", start, bell(hz(m("D6")), 3.5), 0, 0.28)
             mix.add("bells", start + BEAT * 0.5, bell(hz(m("A5")), 3.0), 0.3, 0.14)
-        if (17 <= bar <= 22 or 25 <= bar <= 27) and bar % 2 == 1:
+        if bar in plan["hook"] and bar % 2 == 1:
             for off, name, beats in HOOK:
                 mix.add("bells", start + off * BEAT, bell(hz(m(name)), 1.6), -0.2, 0.22)
+        if plan["ring"] and bar == bars:  # ring-out: the logo bell again
+            mix.add("bells", start, bell(hz(m("D6")), 3.5), 0, 0.28)
 
     # Build into the drop (bar 16): riser, 16th snare roll, silence on the last beat.
     b16 = t_at(16)
@@ -299,16 +328,18 @@ def compose():
     # The drop and the ending.
     mix.add("fx", t_at(17), impact(), 0, 0.9)
     mix.add("fx", t_at(24, 3), riser(BEAT * 2), 0, 0.35)
-    mix.add("fx", t_at(25), impact(), 0, 0.7)
+    end_bar, end_gain = plan["impact"]
+    mix.add("fx", t_at(end_bar), impact(), 0, end_gain)
     return mix
 
 
-def master(mix):
+def master(mix, plan):
+    bars = plan["bars"]
     n = mix.n
     t = np.arange(n) / SR
     # Sidechain: duck pad, bass and keys on every kick in the groove.
     duck = np.ones(n)
-    for bar in list(range(5, 11)) + list(range(12, 23)):
+    for bar in sorted(plan["drums"]):
         for beat in range(4):
             i = int(t_at(bar, beat + 1) * SR)
             k = np.arange(int(0.3 * SR))
@@ -335,22 +366,22 @@ def master(mix):
             left += fft_conv(l, reverb_ir(1)) * s
             right += fft_conv(r, reverb_ir(2)) * s
     # Section levels (dB per bar) so the drop is the loudest thing in the film.
-    levels = {1: -7, 2: -6, 3: -4.5, 4: -4.5, 11: -4.5, 16: -2.5, 23: -5, 24: -5, 25: -2, 26: -2.5, 27: -3, 28: -4}
+    levels = dict(plan["levels"])
     for bar in range(5, 16):
         levels.setdefault(bar, -3 if bar <= 10 else -2)
     for bar in range(17, 23):
         levels[bar] = 0
     curve = np.zeros(n)
-    for bar in range(1, BARS + 2):
+    for bar in range(1, bars + 2):
         a, b = int(t_at(bar) * SR), int(t_at(bar + 1) * SR)
-        curve[a:b] = 10 ** (levels.get(min(bar, BARS), -4) / 20)
+        curve[a:b] = 10 ** (levels.get(min(bar, bars), -4) / 20)
     ramp = int(0.03 * SR)
     curve = np.convolve(curve, np.ones(ramp) / ramp, mode="same")
     left, right = left * curve, right * curve
     stereo = np.stack([left, right], axis=1)
     stereo = hp(stereo.T, 28).T
     # Fade the ring-out and trim to the film length.
-    end = int(LENGTH * SR)
+    end = int(bars * BAR * SR)
     stereo = stereo[:end]
     fade = int(2.4 * SR)
     stereo[-fade:] *= np.linspace(1, 0, fade)[:, None] ** 1.5
@@ -411,9 +442,14 @@ def write_wav(path, data):
 
 
 if __name__ == "__main__":
-    out_dir = sys.argv[1] if len(sys.argv) > 1 else "public/audio/launch"
+    parser = argparse.ArgumentParser(description="Compose a film score and SFX.")
+    parser.add_argument("outdir", nargs="?", help="default public/audio/<plan>")
+    parser.add_argument("--plan", default="launch", choices=sorted(PLANS))
+    args = parser.parse_args()
+    plan = PLANS[args.plan]
+    out_dir = args.outdir or f"public/audio/{args.plan}"
     os.makedirs(os.path.join(out_dir, "sfx"), exist_ok=True)
-    song = master(compose())
+    song = master(compose(plan), plan)
     write_wav(os.path.join(out_dir, "score.wav"), song)
     peaks = {}
     for name, sig in sfx().items():
