@@ -44,6 +44,37 @@ describe("Defra receipt check", () => {
     expect(receiptProblems(r).join()).toContain("six digits");
   });
 
+  it("refuses a zero weight (spec: amount must be greater than 0)", () => {
+    const r = base();
+    r.wasteItems[0].weight.amount = 0;
+    expect(receiptProblems(r).join()).toContain("wasteItems.0.weight.amount");
+  });
+
+  it("takes a null concentration, but refuses zero, on hazardous and POPs components", () => {
+    const h = base();
+    Object.assign(h.wasteItems[0], {
+      containsHazardous: true,
+      hazardous: { sourceOfComponents: "OWN_TESTING", components: [{ name: "Lead", concentration: null }] },
+    });
+    Object.assign(h, { reasonForNoConsignmentCode: "NO_DOC_WITH_WASTE" });
+    expect(receiptProblems(h)).toEqual([]);
+    Object.assign(h.wasteItems[0], {
+      hazardous: { sourceOfComponents: "OWN_TESTING", components: [{ name: "Lead", concentration: 0 }] },
+    });
+    expect(receiptProblems(h).join()).toContain("wasteItems.0.hazardous.components.0.concentration");
+
+    const p = base();
+    Object.assign(p.wasteItems[0], {
+      containsPops: true,
+      pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PCB", concentration: null }] },
+    });
+    expect(receiptProblems(p)).toEqual([]);
+    Object.assign(p.wasteItems[0], {
+      pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PCB", concentration: 0 }] },
+    });
+    expect(receiptProblems(p).join()).toContain("wasteItems.0.pops.components.0.concentration");
+  });
+
   it("gives two working days after the day of receipt", () => {
     // Monday 5 October 2026 morning: due before midnight on Wednesday 7th.
     expect(submissionDeadline(new Date("2026-10-05T09:00:00Z")).toISOString()).toBe("2026-10-07T23:59:59.999Z");

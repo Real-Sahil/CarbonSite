@@ -29,6 +29,7 @@ Checked on 3 October 2026 from the publishers' own pages and the files they dist
 | Germany UBA emission factor list v2.1 | CC0 1.0 (no conditions); source cited and changes (restructuring into categories and units) stated. | Loaded (`data/sources/uba-liste-ef-thg-bilanzierung-v2.1.xlsx`, `... uba`). |
 | Ireland SEAI conversion and emission factors 2025 | **No licence found.** The workbook states none; SEAI is cited on every factor and report. Confirm terms with SEAI before relying on this at scale. | Loaded (`data/sources/SEAI-conversion-and-emission-factors.xlsx`, `... seai`). |
 | Center for Resource Solutions, US residual mix (2025 release, 2023 data) | No licence or terms of use found on resource-solutions.org/2025-residual-mix; the page asks users to cite the rates, and the instrument created from one carries the citation. The "Green-e" mark is CRS's trademark and is not used as a logo. Written permission would settle the licence question. | 27 rates in `lib/factors/us-residual-mix.ts`, offered on the Electricity contracts form, never applied silently. |
+| DEFRA Digital Waste Tracking, Receipt of Waste API spec (`DEFRA/waste-tracking-service`, `docs/apiSpecifications/ReceiptAPI.yml`) | Open Government Licence v3.0, per the repository `LICENSE` (fetched 12 October 2026). | Schema only: `lib/defra-dwt/receipt.ts` checks a receipt before a person sends it. Nothing calls Defra. Re-read the spec when Defra changes it. |
 
 ### Dashboard and UI candidates (checked 11 October 2026, not yet adopted)
 

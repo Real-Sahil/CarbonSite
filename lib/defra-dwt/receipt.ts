@@ -6,7 +6,8 @@
 import { z } from "zod";
 
 const text = z.string().trim().min(1);
-const weight = z.object({ metric: z.enum(["Grams", "Kilograms", "Tonnes"]), amount: z.number().min(0), isEstimate: z.boolean() });
+// The spec says amount must be greater than 0, so zero is refused here as well.
+const weight = z.object({ metric: z.enum(["Grams", "Kilograms", "Tonnes"]), amount: z.number().gt(0), isEstimate: z.boolean() });
 const component = z.enum(["NOT_PROVIDED", "PROVIDED_WITH_WASTE", "GUIDANCE", "OWN_TESTING"]);
 const address = z.object({ fullAddress: z.string().optional(), postcode: text });
 
@@ -22,7 +23,8 @@ const wasteItem = z
     pops: z
       .object({
         sourceOfComponents: component,
-        components: z.array(z.object({ code: text, concentration: z.number().min(0).optional(), concentrationOperator: z.enum(["<", ">"]).optional() })).optional(),
+        // A concentration is nullable, and when it is a number it must be above 0 (spec wording).
+        components: z.array(z.object({ code: text, concentration: z.number().gt(0).nullable().optional(), concentrationOperator: z.enum(["<", ">"]).optional() })).optional(),
       })
       .optional(),
     containsHazardous: z.boolean(),
@@ -30,7 +32,7 @@ const wasteItem = z
       .object({
         sourceOfComponents: component,
         hazCodes: z.array(z.string()).optional(),
-        components: z.array(z.object({ name: text, concentration: z.number().min(0).optional(), concentrationOperator: z.literal(">").optional() })).optional(),
+        components: z.array(z.object({ name: text, concentration: z.number().gt(0).nullable().optional(), concentrationOperator: z.literal(">").optional() })).optional(),
       })
       .optional(),
     disposalOrRecoveryCodes: z.array(z.object({ code: text, weight })).optional(),
