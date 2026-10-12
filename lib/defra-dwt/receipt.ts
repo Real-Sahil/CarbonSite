@@ -8,8 +8,13 @@ import type { Nation } from "./bank-holidays";
 import { assertDay, endOfUkDay, nthWorkingDayAfter, ukDay } from "./working-days";
 
 const text = z.string().trim().min(1);
-// The spec says amount must be greater than 0, so zero is refused here as well.
-const weight = z.object({ metric: z.enum(["Grams", "Kilograms", "Tonnes"]), amount: z.number().gt(0), isEstimate: z.boolean() });
+// The spec says amount must be greater than 0, so zero is refused here as well. It sets no upper bound, so this one
+// refuses a unit slip (grams keyed as tonnes), not a large load: 100,000 tonnes is above any single receipt.
+const GRAMS_PER_METRIC = { Grams: 1, Kilograms: 1e3, Tonnes: 1e6 } as const;
+const MAX_RECEIPT_GRAMS = 1e11;
+const weight = z
+  .object({ metric: z.enum(["Grams", "Kilograms", "Tonnes"]), amount: z.number().finite().gt(0), isEstimate: z.boolean() })
+  .refine((w) => w.amount * GRAMS_PER_METRIC[w.metric] <= MAX_RECEIPT_GRAMS, { message: "Weight is above 100,000 tonnes: check the unit", path: ["amount"] });
 const component = z.enum(["NOT_PROVIDED", "PROVIDED_WITH_WASTE", "GUIDANCE", "OWN_TESTING"]);
 const address = z.object({ fullAddress: z.string().optional(), postcode: text });
 // A concentration is nullable, and when it is a number it must be above 0 (spec wording).
@@ -118,7 +123,7 @@ export const receiptSchema = z
     receipt: z.object({ address: z.object({ fullAddress: text, postcode: text }) }),
   })
   .superRefine((r, ctx) => {
-    if (!r.carrier.registrationNumber && !r.carrier.reasonForNoRegistrationNumber) {
+    if (!r.carrier.registrationNumber?.trim() && !r.carrier.reasonForNoRegistrationNumber) {
       ctx.addIssue({ code: "custom", path: ["carrier", "reasonForNoRegistrationNumber"], message: "A carrier with no registration number needs a reason" });
     }
     if (r.carrier.meansOfTransport === "Road" && !r.carrier.vehicleRegistration?.trim()) {
@@ -132,10 +137,26 @@ export const receiptSchema = z
 
 export type Receipt = z.infer<typeof receiptSchema>;
 
+/**
+ * Strings with spaces at either end. The schema trims them before checking, so they pass, but the raw request is
+ * what goes to Defra: a padded permit number would be sent as typed.
+ */
+function paddedStrings(value: unknown, path: string[] = [], found: string[] = []): string[] {
+  if (typeof value === "string") {
+    if (value !== value.trim()) found.push(`${path.join(".") || "receipt"}: Remove leading or trailing spaces`);
+  } else if (Array.isArray(value)) {
+    value.forEach((v, i) => paddedStrings(v, [...path, String(i)], found));
+  } else if (value && typeof value === "object") {
+    for (const [key, v] of Object.entries(value)) paddedStrings(v, [...path, key], found);
+  }
+  return found;
+}
+
 /** Plain-language list of what stops a receipt being sent, for the review screen. */
 export function receiptProblems(input: unknown): string[] {
   const parsed = receiptSchema.safeParse(input);
-  return parsed.success ? [] : parsed.error.issues.map((i) => `${i.path.join(".") || "receipt"}: ${i.message}`);
+  const schemaProblems = parsed.success ? [] : parsed.error.issues.map((i) => `${i.path.join(".") || "receipt"}: ${i.message}`);
+  return [...paddedStrings(input), ...schemaProblems];
 }
 
 /**

@@ -3,10 +3,18 @@ import { siteNation } from "../nation";
 import { receiptReportState } from "../tracker";
 
 describe("siteNation", () => {
-  it("reads the region the person entered first", () => {
-    expect(siteNation({ region: "Scotland", postcode: "RG1 1AA" })).toBe("scotland");
+  it("reads a region on its own", () => {
+    expect(siteNation({ region: "Scotland" })).toBe("scotland");
     expect(siteNation({ region: "Wales" })).toBe("england-and-wales");
     expect(siteNation({ region: " Northern Ireland " })).toBe("northern-ireland");
+  });
+  it("uses the region when it agrees with the postcode", () => {
+    expect(siteNation({ region: "Northern Ireland", postcode: "BT1 5GS" })).toBe("northern-ireland");
+    expect(siteNation({ region: "England", postcode: "RG1 1AA" })).toBe("england-and-wales");
+  });
+  it("refuses a region and postcode that name different nations", () => {
+    expect(siteNation({ region: "Scotland", postcode: "RG1 1AA" })).toBeNull();
+    expect(siteNation({ region: "England", postcode: "BT1 5GS" })).toBeNull();
   });
   it("falls back to the postcode area", () => {
     expect(siteNation({ postcode: "BT1 5GS" })).toBe("northern-ireland");
@@ -21,6 +29,12 @@ describe("siteNation", () => {
     expect(siteNation({ postcode: "IM1 1AA" })).toBeNull();
     expect(siteNation({ region: "Yorkshire" })).toBeNull();
     expect(siteNation({ country: "IE", postcode: "BT1 5GS" })).toBeNull();
+  });
+  it("returns null for a postcode area it does not know, rather than England", () => {
+    expect(siteNation({ postcode: "XX1 1AA" })).toBeNull();
+    expect(siteNation({ postcode: "QZ9 9ZZ" })).toBeNull();
+    expect(siteNation({ postcode: "BFPO 1" })).toBeNull();
+    expect(siteNation({ postcode: "GU1 1AA" })).toBe("england-and-wales");
   });
   it("accepts UK country names and codes", () => {
     expect(siteNation({ country: "GB", postcode: "BT1 5GS" })).toBe("northern-ireland");

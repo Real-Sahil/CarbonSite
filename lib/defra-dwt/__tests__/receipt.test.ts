@@ -109,6 +109,36 @@ describe("Defra receipt check", () => {
     expect(receiptProblems(r).join()).toContain("wasteItems.0.weight.amount");
   });
 
+  it("refuses an infinite weight, which JSON would send as null", () => {
+    const r = baseReceipt();
+    r.wasteItems[0].weight.amount = Infinity;
+    expect(receiptProblems(r).join()).toContain("wasteItems.0.weight.amount");
+  });
+
+  it("refuses a weight above 100,000 tonnes in any unit, and accepts exactly that", () => {
+    const r = baseReceipt();
+    r.wasteItems[0].weight = { metric: "Tonnes", amount: 150000, isEstimate: false };
+    expect(receiptProblems(r).join()).toContain("Weight is above 100,000 tonnes");
+    r.wasteItems[0].weight = { metric: "Tonnes", amount: 100000, isEstimate: false };
+    expect(receiptProblems(r)).toEqual([]);
+    r.wasteItems[0].weight = { metric: "Grams", amount: 1e12, isEstimate: false };
+    expect(receiptProblems(r).join()).toContain("Weight is above 100,000 tonnes");
+  });
+
+  it("refuses leading or trailing spaces in the raw request, which the schema would trim away", () => {
+    const r = baseReceipt();
+    r.receiver.authorisationNumber = " EPR/AB1234CD ";
+    expect(receiptProblems(r)).toEqual(["receiver.authorisationNumber: Remove leading or trailing spaces"]);
+  });
+
+  it("treats a blank carrier registration number as none, so it needs a reason", () => {
+    const r = baseReceipt();
+    Object.assign(r.carrier, { registrationNumber: "   " });
+    expect(receiptProblems(r).join()).toContain("carrier.reasonForNoRegistrationNumber");
+    Object.assign(r.carrier, { reasonForNoRegistrationNumber: "ONE_OFF" });
+    expect(receiptProblems(r).join()).not.toContain("reasonForNoRegistrationNumber");
+  });
+
   it("takes a null concentration, but refuses zero, on hazardous and POPs components", () => {
     const h = hazardousReceipt();
     Object.assign(h.wasteItems[0], {
