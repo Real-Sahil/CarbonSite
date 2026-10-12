@@ -54,7 +54,7 @@ export type Layout = { order: string[]; hidden: string[]; widths: Record<string,
  * Bumped when the default arrangement changes. A saved layout without this version (or with an older one) predates
  * the master preset, so it is ignored once and every person starts from the master, not from a stale order.
  */
-export const LAYOUT_VERSION = 2;
+export const LAYOUT_VERSION = 3;
 
 export const layoutSchema = z.object({
   order: z.array(z.string()).max(40),
@@ -70,10 +70,25 @@ export function layoutError(l: Layout): string | null {
 }
 
 /**
- * The one master arrangement, shown to every role. Widgets outside it stay hidden and one click away under
- * "Add widget"; nothing is withheld that the role may read. A role never gets a widget it may not see.
+ * The one master arrangement, shown to every role: the analytical panels (scope donut, category bars, trend, emissions
+ * flow, change waterfall, facilities, year-on-year, data quality, carbon intelligence) first, then review and assurance.
+ * Widgets outside it stay hidden and one click away under "Add widget"; nothing is withheld that the role may read.
+ * A role never gets a widget it may not see.
  */
-export const MASTER_ORDER = ["summary", "headline", "review-queue", "waterfall", "scope-breakdown", "readiness", "recent-decisions"];
+export const MASTER_ORDER = [
+  "summary",
+  "headline",
+  "scope-breakdown",
+  "flow",
+  "waterfall",
+  "facilities",
+  "scope-detail",
+  "data-quality",
+  "carbon-intelligence",
+  "review-queue",
+  "readiness",
+  "recent-decisions",
+];
 
 /** The default layout for a role: the master order first, the rest hidden. */
 export function presetLayout(role: string): Layout {

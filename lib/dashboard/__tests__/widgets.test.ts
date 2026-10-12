@@ -22,6 +22,15 @@ describe("presetLayout", () => {
     }
   });
 
+  it("opens every role on the analytical panels, not a bare summary", () => {
+    for (const role of ["admin", "sustainability_manager", "viewer", "auditor", "reviewer"]) {
+      const l = presetLayout(role);
+      for (const id of ["scope-breakdown", "flow", "waterfall", "facilities", "scope-detail", "data-quality"]) {
+        expect(l.hidden, `${role} hides ${id}`).not.toContain(id);
+      }
+    }
+  });
+
   it("hides what is outside the master but keeps it addable for roles that may read it", () => {
     const l = presetLayout("viewer");
     expect(l.hidden).toContain("live");
