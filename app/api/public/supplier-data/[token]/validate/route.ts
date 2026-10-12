@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { hashToken } from "@/lib/management-systems/auditor-access";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -11,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { token } = await params;
 
     const dataRequest = await prisma.supplierDataRequest.findUnique({
-      where: { token },
+      where: { tokenHash: hashToken(token) },
       select: {
         id: true,
         organizationId: true,

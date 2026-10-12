@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
+import { hashToken } from "@/lib/management-systems/auditor-access";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const dataRequest = await prisma.supplierDataRequest.findUnique({
-      where: { token },
+      where: { tokenHash: hashToken(token) },
       select: {
         id: true,
         organizationId: true,
