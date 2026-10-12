@@ -1,12 +1,13 @@
 export const dynamic = "force-dynamic";
 
-import { AuthError, requireOrgMember } from "@/lib/auth/session";
+import { AuthError, ROLE_GROUPS, requireOrgMember } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { SavedViewsMenu } from "@/components/saved-views/saved-views-menu";
 import { SURFACES, activeFilters } from "@/lib/saved-views";
 import { mayShare, viewRoles } from "@/lib/saved-views/roles";
 import { SuppliersFilters } from "./suppliers-filters";
 import { SuppliersTable } from "./suppliers-table";
+import { SupplierPriorityPanel } from "./supplier-priority-panel";
 
 interface SuppliersPageProps {
   params: Promise<{ orgId: string }>;
@@ -28,6 +29,10 @@ export default async function SuppliersPage({ params, searchParams }: SuppliersP
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
   }
 
+  // Spend and emissions by supplier are inventory data, so only the roles that
+  // read the inventory see the priorities panel.
+  const canSeePriorities = role !== null && ROLE_GROUPS.dataReaders.some((r) => r === role);
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,6 +53,7 @@ export default async function SuppliersPage({ params, searchParams }: SuppliersP
       )}
       <SuppliersFilters filters={filters} />
       <SuppliersTable orgId={orgId} filters={filters} />
+      {canSeePriorities && <SupplierPriorityPanel orgId={orgId} />}
     </div>
   );
 }

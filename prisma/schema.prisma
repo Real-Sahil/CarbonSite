@@ -243,6 +243,7 @@ model Organization {
   snapshots                      PublishedSnapshot[]
   aggregates                     DashboardAggregate[]
   dashboardSlices                DashboardSlice[]
+  supplierPriorities             SupplierPriority[]
   savedViews                     SavedView[]
   dashboardLayouts               DashboardLayout[]
   reportNarratives               ReportNarrative[]
@@ -756,6 +757,7 @@ model ReportingPeriod {
   reportNarratives              ReportNarrative[]
   aggregates                    DashboardAggregate[]
   dashboardSlices               DashboardSlice[]
+  supplierPriorities            SupplierPriority[]
   reports                       Report[]
   targets                       ReductionTarget[]              @relation("BaselinePeriod")
   targetPeriods                 ReductionTarget[]              @relation("TargetPeriod")
@@ -1669,6 +1671,7 @@ model CalculationRun {
   calculations       EmissionCalculation[]
   snapshots          PublishedSnapshot[]
   scenarioRuns       ScenarioRun[]
+  supplierPriorities SupplierPriority[]
   dbtRuns            DbtRun[]                      @relation("DbtRuns")
   uncertaintyResult  CalculationUncertaintyResult?
 
@@ -1967,6 +1970,43 @@ model DashboardSlice {
   @@index([organizationId, reportingPeriodId, snapshotId])
   @@index([organizationId, snapshotId, scope])
   @@map("dashboard_slices")
+}
+
+/// One supplier's line in a calculation run's supplier priorities: spend and
+/// headline emissions for the run's records, written once per run
+/// (lib/calculation/supplier-priorities-store.ts). Matched on supplierKey(),
+/// the key DashboardSlice.supplierKey uses, so a ranking reconciles with slices.
+model SupplierPriority {
+  id                          String   @id @default(cuid())
+  organizationId              String   @map("organization_id")
+  reportingPeriodId           String   @map("reporting_period_id")
+  calculationRunId            String   @map("calculation_run_id")
+  supplierKey                 String   @map("supplier_key")
+  /// Most frequent spelling of the supplier's name in the run's records.
+  supplierName                String   @map("supplier_name")
+  /// Nominal spend in the organisation's reporting currency at each record's
+  /// date (not CPI-deflated). Records whose currency could not be converted are
+  /// left out and counted in unconvertedSpendRecordCount.
+  spendAmount                 Decimal  @map("spend_amount") @db.Decimal(18, 2)
+  spendCurrency               String   @map("spend_currency")
+  spendRecordCount            Int      @map("spend_record_count")
+  unconvertedSpendRecordCount Int      @map("unconverted_spend_record_count")
+  /// Headline (location-based) emissions in kg CO2e, as DashboardAggregate stores them.
+  totalCo2eKg                 Decimal  @map("total_co2e_kg") @db.Decimal(18, 8)
+  recordCount                 Int      @map("record_count")
+  /// 1 is the largest. Null when the supplier has no spend to rank.
+  spendRank                   Int?     @map("spend_rank")
+  /// 1 is the largest. Null when the supplier has no headline emissions to rank.
+  emissionsRank               Int?     @map("emissions_rank")
+  createdAt                   DateTime @default(now()) @map("created_at")
+
+  organization     Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reportingPeriod  ReportingPeriod @relation(fields: [reportingPeriodId], references: [id])
+  calculationRun   CalculationRun  @relation(fields: [calculationRunId], references: [id], onDelete: Cascade)
+
+  @@unique([calculationRunId, supplierKey])
+  @@index([organizationId, reportingPeriodId])
+  @@map("supplier_priorities")
 }
 
 /// A named set of filters for one portal page, either private to its owner or

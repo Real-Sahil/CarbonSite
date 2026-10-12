@@ -23,6 +23,7 @@ import { newFallbackState, selectFallbackFactor } from "./library-fallback";
 import { selectionCaveats } from "./selection-caveats";
 import { groupDashboardSlices } from "./dashboard-slices";
 import { groupDashboardAggregates } from "./dashboard-groups";
+import { writeSupplierPriorities } from "./supplier-priorities-store";
 import { loadMarketAllocations } from "./scope2-allocation-loader";
 import { deflateSpend } from "./price-index";
 import { allocationFormula, type Allocation } from "./scope2-instruments";
@@ -715,8 +716,19 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
   // a page comes back empty — every approved record now has a calculation
   // for this run. Safe to run the once-only finalization steps.
 
+  // Every calculation of the run, loaded once for the two writes below
+  const calculations = await loadRunCalculations(calculationRunId);
+
   // Rebuild DashboardAggregate for this period (live, snapshotId = null)
-  await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId);
+  await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId, calculations);
+
+  // Supplier priorities for the run: spend and headline emissions per supplier
+  await writeSupplierPriorities({
+    orgId,
+    reportingPeriodId: run.reportingPeriodId,
+    calculationRunId,
+    calculations,
+  });
 
   // Monte Carlo uncertainty propagation for the run's inventory total
   await computeAndPersistUncertainty(orgId, calculationRunId);
@@ -764,10 +776,25 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
 /** Rows per createMany for dashboard slices (12 columns each, well under Postgres's 65,535 bind limit). */
 const SLICE_INSERT_CHUNK = 2000;
 
+/** Every calculation of a run, joined with its record and category. */
+function loadRunCalculations(calculationRunId: string) {
+  return prisma.emissionCalculation.findMany({
+    where: { calculationRunId },
+    include: {
+      activityRecord: {
+        include: {
+          emissionCategory: { select: { scope: true, code: true } },
+        },
+      },
+    },
+  });
+}
+
 async function rebuildDashboardAggregates(
   orgId: string,
   reportingPeriodId: string,
   calculationRunId: string,
+  calculations: Awaited<ReturnType<typeof loadRunCalculations>>,
 ): Promise<void> {
   // Load reporting period for intensity metric calculations
   const reportingPeriod = await prisma.reportingPeriod.findFirst({
@@ -777,18 +804,6 @@ async function rebuildDashboardAggregates(
       revenueCurrency: true,
       fteCount: true,
       facilityAreaM2: true,
-    },
-  });
-
-  // Load all calculations for this run joined with their records
-  const calculations = await prisma.emissionCalculation.findMany({
-    where: { calculationRunId },
-    include: {
-      activityRecord: {
-        include: {
-          emissionCategory: { select: { scope: true, code: true } },
-        },
-      },
     },
   });
 
