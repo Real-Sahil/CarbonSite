@@ -8,6 +8,7 @@ import { copyLiveSlicesToSnapshot } from "@/lib/calculation/snapshot-slices";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { offsetPage } from "@/lib/api/pagination";
 
 type Params = { params: Promise<{ orgId: string }> };
 
@@ -28,23 +29,31 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
-    const snapshots = await prisma.publishedSnapshot.findMany({
-      where: { organizationId: orgId },
-      include: {
-        reportingPeriod: { select: { label: true } },
-        calculationRun: {
-          include: {
-            factorLibrary: { select: { name: true, version: true } },
-            methodologyVersion: { select: { name: true } },
+    // Newest first, one page at a time: every publish adds a row, so the list never stops growing.
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
+    const where = { organizationId: orgId };
+    const [snapshots, total] = await Promise.all([
+      prisma.publishedSnapshot.findMany({
+        where,
+        include: {
+          reportingPeriod: { select: { label: true } },
+          calculationRun: {
+            include: {
+              factorLibrary: { select: { name: true, version: true } },
+              methodologyVersion: { select: { name: true } },
+            },
           },
+          publishedBy: { select: { name: true, email: true } },
+          _count: { select: { reports: true } },
         },
-        publishedBy: { select: { name: true, email: true } },
-        _count: { select: { reports: true } },
-      },
-      orderBy: { publishedAt: "desc" },
-    });
+        orderBy: { publishedAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.publishedSnapshot.count({ where }),
+    ]);
 
-    return json({ data: snapshots }, { version });
+    return json({ data: snapshots, pagination: { offset, limit, total } }, { version });
   } catch (err) {
     return handleRouteError(err);
   }

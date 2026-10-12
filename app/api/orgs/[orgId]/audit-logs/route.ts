@@ -4,6 +4,7 @@ import { handleRouteError, apiError } from "@/lib/validation/api";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
+import { offsetPage } from "@/lib/api/pagination";
 import { z } from "zod";
 
 const querySchema = z.object({
@@ -12,8 +13,6 @@ const querySchema = z.object({
   actorId: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  limit: z.string().default("50"),
-  offset: z.string().default("0"),
 });
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -36,15 +35,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
       actorId: _req.nextUrl.searchParams.get("actorId") ?? undefined,
       startDate: _req.nextUrl.searchParams.get("startDate") ?? undefined,
       endDate: _req.nextUrl.searchParams.get("endDate") ?? undefined,
-      limit: _req.nextUrl.searchParams.get("limit") ?? undefined,
-      offset: _req.nextUrl.searchParams.get("offset") ?? undefined,
     });
 
     if (!query.success) {
       return apiError("INVALID_QUERY", "Invalid query parameters", 400, query.error.flatten());
     }
 
-    const { resourceType, action, actorId, startDate, endDate, limit, offset } = query.data;
+    const { resourceType, action, actorId, startDate, endDate } = query.data;
+    // Clamped and NaN-proof: a bad limit or offset falls back to the default instead of failing in Prisma.
+    const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
 
     const createdAtFilter: Prisma.DateTimeFilter<"AuditLog"> = {};
     if (startDate) createdAtFilter.gte = new Date(startDate);
@@ -62,8 +61,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
         actor: { select: { id: true, email: true, name: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: parseInt(limit),
-      skip: parseInt(offset),
+      take: limit,
+      skip: offset,
     });
 
     const total = await prisma.auditLog.count({ where });
@@ -84,8 +83,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
           userAgent: log.userAgent,
         })),
         pagination: {
-          offset: parseInt(offset),
-          limit: parseInt(limit),
+          offset,
+          limit,
           total,
         },
       },

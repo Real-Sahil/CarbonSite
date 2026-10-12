@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 import { VerifyChain } from "./verify-chain";
+import { MAX_OFFSET, pageHref, wholeNumberParam } from "@/lib/api/pagination";
 
 interface AuditPageProps {
   params: Promise<{ orgId: string }>;
@@ -43,7 +44,8 @@ const PAGE_SIZE = 100;
 export default async function AuditPage({ params, searchParams }: AuditPageProps) {
   const { orgId } = await params;
   const filters = await searchParams;
-  const offset = Math.max(0, parseInt(filters.offset || "0", 10));
+  // A malformed offset is 0, not NaN: NaN reaches Prisma as skip and fails the whole load.
+  const offset = wholeNumberParam(filters.offset, 0, 0, MAX_OFFSET);
 
   let authErr: AuthError | null = null;
   let canVerify = false;
@@ -259,7 +261,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                       </Button>
                     ) : (
                       <Button asChild variant="outline">
-                        <a href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${Math.max(0, offset - PAGE_SIZE)}`}>
+                        <a href={pageHref(`/orgs/${orgId}/audit`, { action: filters.action, resource: filters.resource, actor: filters.actor, since: filters.since, offset: Math.max(0, offset - PAGE_SIZE) || undefined })}>
                           Previous
                         </a>
                       </Button>
@@ -270,7 +272,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                       </Button>
                     ) : (
                       <Button asChild variant="outline">
-                        <a href={`/orgs/${orgId}/audit?action=${filters.action ?? ""}&resource=${filters.resource ?? ""}&actor=${filters.actor ?? ""}&since=${filters.since ?? ""}&offset=${offset + PAGE_SIZE}`}>
+                        <a href={pageHref(`/orgs/${orgId}/audit`, { action: filters.action, resource: filters.resource, actor: filters.actor, since: filters.since, offset: offset + PAGE_SIZE })}>
                           Next
                         </a>
                       </Button>

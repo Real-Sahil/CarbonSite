@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireOrgMember } from '@/lib/auth/session';
 import { prisma } from '@/lib/db';
 import { handleRouteError } from '@/lib/validation/api';
+import { cursorPage, wholeNumberParam, MAX_PAGE_SIZE } from '@/lib/api/pagination';
 import { z } from 'zod';
 
 const querySchema = z.object({
@@ -10,7 +11,7 @@ const querySchema = z.object({
   resourceId: z.string().optional(),
   action: z.string().optional(),
   framework: z.string().optional(),
-  limit: z.string().default('25').transform((v) => Math.min(100, parseInt(v, 10))),
+  limit: z.number().int().min(1).max(MAX_PAGE_SIZE),
 });
 
 export async function GET(
@@ -22,13 +23,14 @@ export async function GET(
 
     await requireOrgMember(orgId, 'admin', 'auditor', 'reviewer');
 
+    const sp = req.nextUrl.searchParams;
     const parsedParams = querySchema.parse({
-      cursor: req.nextUrl.searchParams.get('cursor') || undefined,
-      resourceType: req.nextUrl.searchParams.get('resourceType') || undefined,
-      resourceId: req.nextUrl.searchParams.get('resourceId') || undefined,
-      action: req.nextUrl.searchParams.get('action') || undefined,
-      framework: req.nextUrl.searchParams.get('framework') || undefined,
-      limit: req.nextUrl.searchParams.get('limit') || '25',
+      cursor: sp.get('cursor') || undefined,
+      resourceType: sp.get('resourceType') || undefined,
+      resourceId: sp.get('resourceId') || undefined,
+      action: sp.get('action') || undefined,
+      framework: sp.get('framework') || undefined,
+      limit: wholeNumberParam(sp.get('limit'), 25, 1, MAX_PAGE_SIZE),
     });
 
     const logs = await prisma.auditLog.findMany({
@@ -62,11 +64,10 @@ export async function GET(
       }),
     });
 
-    const items = logs.slice(0, parsedParams.limit);
-    const nextCursor = logs.length > parsedParams.limit ? logs[logs.length - 1]?.id : null;
+    const page = cursorPage(logs, parsedParams.limit);
 
     return NextResponse.json({
-      logs: items.map((log) => ({
+      logs: page.items.map((log) => ({
         id: log.id,
         timestamp: log.createdAt,
         action: log.action,
@@ -82,8 +83,8 @@ export async function GET(
         metadata: log.metadata,
       })),
       pagination: {
-        nextCursor,
-        hasMore: logs.length > parsedParams.limit,
+        nextCursor: page.nextCursor,
+        hasMore: page.hasMore,
       },
     });
   } catch (error) {
