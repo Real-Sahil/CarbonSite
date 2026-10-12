@@ -5,21 +5,21 @@ import { flushSync } from "react-dom";
 import { Play, Volume2 } from "lucide-react";
 import { DemoNote } from "@/components/marketing/kit";
 
-// The launch film (videos/, Remotion) in the home page hero. It plays muted
+// The platform film (videos/, Remotion, src/videos/platform) in the home page hero. It plays muted
 // and looping while on screen, from a 720p WebM with an MP4 fallback for
 // browsers without VP9. "Play with sound" swaps to the 1080p cut with the
 // score and native controls. Visitors who prefer reduced motion see the
 // poster until they press play.
 const FILM = {
-  webm: "/marketing/film/launch-720.webm",
-  mp4: "/marketing/film/launch-720.mp4",
-  soundWebm: "/marketing/film/launch-1080-sound.webm",
-  soundMp4: "/marketing/film/launch-1080-sound.mp4",
-  poster: "/marketing/film/poster.jpg",
+  webm: "/marketing/film/platform-720.webm",
+  mp4: "/marketing/film/platform-720.mp4",
+  soundWebm: "/marketing/film/platform-1080-sound.webm",
+  soundMp4: "/marketing/film/platform-1080-sound.mp4",
+  poster: "/marketing/film/platform-poster.jpg",
 };
 
 const LABEL =
-  "MetricOra launch film: a fuel receipt photographed in the field app, approved in review, traced from the dashboard total to its calculation, then the Carbon Reduction Plan, SECR and GHG Protocol reports and the assurance pack. Demo data.";
+  "MetricOra platform film: a field receipt photographed and approved, traced from the dashboard total to its calculation, then the reports, assurance pack and the wider modules on screen. Demo data.";
 
 export function LaunchFilm() {
   const ref = useRef<HTMLVideoElement>(null);
