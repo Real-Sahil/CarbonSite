@@ -8,7 +8,7 @@ export function LegalShell({ title, updated, children }: { title: string; update
       <Section tone="dark" className="pt-36 sm:pt-40">
         <div className="flex max-w-3xl flex-col gap-4">
           <Eyebrow tone="dark">Legal</Eyebrow>
-          <h1 className="text-[36px] font-semibold leading-[1.1] tracking-[-0.03em] sm:text-[48px]">{title}</h1>
+          <h1 className="text-[36px] font-light leading-[1.08] tracking-[-0.02em] sm:text-[48px]">{title}</h1>
           <p className="text-[15px] text-mk-on-dark-2">{updated}</p>
         </div>
       </Section>

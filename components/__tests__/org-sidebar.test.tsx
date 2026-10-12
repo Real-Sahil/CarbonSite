@@ -93,8 +93,8 @@ describe("OrgSidebar active state and roles", () => {
     const records = screen.getByRole("link", { name: "Records" });
     const imports = screen.getByRole("link", { name: "Imports" });
 
-    expect(records.className).toContain("bg-[#fff7ed]");
-    expect(imports.className).not.toContain("bg-[#fff7ed]");
+    expect(records.className).toContain("font-medium");
+    expect(imports.className).not.toContain("font-medium");
   });
 
   it("hides admin-only pages and the empty Admin group from a viewer on the full menu", () => {

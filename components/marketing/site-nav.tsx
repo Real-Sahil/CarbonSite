@@ -144,17 +144,17 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
     <header
       ref={barRef}
       className={cn(
-        "fixed inset-x-0 top-0 z-50 border-b transition-colors duration-200",
-        scrolled || open || menu ? "border-white/10 bg-mk-ink/95 backdrop-blur-md" : "border-transparent bg-transparent",
+        "fixed inset-x-0 top-0 z-50 pt-3 transition-all duration-200 sm:pt-4",
+        scrolled && "bg-[#F9FAFC]/85 pb-3 backdrop-blur-md [&_.nav-bar]:shadow-[0_8px_30px_-12px_rgba(19,29,41,0.25)]",
       )}
     >
-      <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center gap-6 px-5 sm:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-[15px] font-semibold tracking-tight text-mk-on-dark">
-          <LogoMark size={24} />
-          MetricOra
+      <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-4 px-4 sm:px-8 lg:gap-6">
+        <Link href="/" className="flex h-11 shrink-0 items-center gap-2 rounded-[14px] bg-white px-3 text-[15px] font-semibold tracking-tight text-mk-text shadow-[0_4px_16px_rgba(19,29,41,0.08)]">
+          <LogoMark size={22} />
+          <span className="hidden sm:inline">MetricOra</span>
         </Link>
 
-        <nav aria-label="Main" className="hidden flex-1 items-center gap-1 lg:flex">
+        <nav aria-label="Main" className="nav-bar mx-auto hidden items-center gap-1 rounded-full border border-white/60 bg-white/70 p-1.5 backdrop-blur-md transition-shadow lg:flex">
           {NAV.map((entry, index) =>
             isGroup(entry) ? (
               <div key={entry.label} className="relative">
@@ -164,8 +164,8 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                   onClick={() => setMenu((m) => (m === entry.label ? null : entry.label))}
                   onMouseEnter={() => setMenu(entry.label)}
                   className={cn(
-                    "flex items-center gap-1 rounded-md px-3 py-2 text-[14px] transition-colors",
-                    menu === entry.label || groupItems(entry).some((i) => active(i.href)) ? "text-mk-on-dark" : "text-mk-on-dark-2 hover:text-mk-on-dark",
+                    "flex items-center gap-1 rounded-full px-4 py-2 text-[14px] transition-colors",
+                    menu === entry.label || groupItems(entry).some((i) => active(i.href)) ? "bg-white text-mk-text" : "text-mk-text-2 hover:text-mk-text",
                   )}
                 >
                   {entry.label}
@@ -175,7 +175,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                   <div
                     onMouseLeave={() => setMenu(null)}
                     className={cn(
-                      "absolute top-full mt-2 flex gap-2 rounded-[12px] border border-white/10 bg-mk-ink-2 p-2 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6)]",
+                      "absolute top-full mt-2 flex gap-2 rounded-[18px] border border-mk-text/10 bg-white p-2 shadow-[0_24px_48px_-12px_rgba(19,29,41,0.25)]",
                       // Menus right of Pricing open leftwards so they stay on screen at 1024px.
                       index > NAV.findIndex((e) => !isGroup(e)) ? "right-0" : "left-0",
                     )}
@@ -183,12 +183,12 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                     {entry.columns.map((col, ci) => (
                       <div key={col.heading ?? ci} className="w-[260px] xl:w-[300px]">
                         {col.heading ? (
-                          <p className="px-3 pb-1 pt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-mk-on-dark-3">{col.heading}</p>
+                          <p className="px-3 pb-1 pt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-mk-text-3">{col.heading}</p>
                         ) : null}
                         {col.items.map((item) => (
-                          <Link key={item.href} href={item.href} className="block rounded-[8px] px-3 py-2.5 hover:bg-white/5 focus-visible:bg-white/5">
-                            <span className="block text-[14px] font-medium text-mk-on-dark">{item.label}</span>
-                            {item.note ? <span className="block text-[13px] text-mk-on-dark-3">{item.note}</span> : null}
+                          <Link key={item.href} href={item.href} className="block rounded-[8px] px-3 py-2.5 hover:bg-mk-text/5 focus-visible:bg-mk-text/5">
+                            <span className="block text-[14px] font-medium text-mk-text">{item.label}</span>
+                            {item.note ? <span className="block text-[13px] text-mk-text-3">{item.note}</span> : null}
                           </Link>
                         ))}
                       </div>
@@ -196,11 +196,11 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                     {entry.card ? (
                       <Link
                         href={entry.card.href}
-                        className="group flex w-[200px] flex-col xl:w-[240px] gap-2 rounded-[10px] border border-white/10 bg-white/[0.03] p-4 hover:border-white/20 focus-visible:border-white/30"
+                        className="group flex w-[200px] flex-col xl:w-[240px] gap-2 rounded-[14px] border border-mk-text/10 bg-mk-paper p-4 hover:border-mk-text/20 focus-visible:border-mk-text/30"
                       >
-                        <span className="text-[14px] font-medium text-mk-on-dark">{entry.card.title}</span>
-                        <span className="text-[13px] leading-relaxed text-mk-on-dark-3">{entry.card.text}</span>
-                        <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-[13px] font-medium text-mk-accent-lit">
+                        <span className="text-[14px] font-medium text-mk-text">{entry.card.title}</span>
+                        <span className="text-[13px] leading-relaxed text-mk-text-3">{entry.card.text}</span>
+                        <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-[13px] font-medium text-mk-accent">
                           {entry.card.cta}
                           <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                         </span>
@@ -214,7 +214,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                 key={entry.href}
                 href={entry.href}
                 onMouseEnter={() => setMenu(null)}
-                className={cn("rounded-md px-3 py-2 text-[14px] transition-colors", active(entry.href) ? "text-mk-on-dark" : "text-mk-on-dark-2 hover:text-mk-on-dark")}
+                className={cn("rounded-full px-4 py-2 text-[14px] transition-colors", active(entry.href) ? "bg-white text-mk-text" : "text-mk-text-2 hover:text-mk-text")}
               >
                 {entry.label}
               </Link>
@@ -222,11 +222,11 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
           )}
         </nav>
 
-        <div className="ml-auto hidden items-center gap-2 lg:flex">
-          <Link href="/sign-in" className="rounded-md px-3 py-2 text-[14px] text-mk-on-dark-2 hover:text-mk-on-dark">
+        <div className="hidden items-center gap-2 lg:flex">
+          <Link href="/sign-in" className="rounded-full px-3 py-2 text-[14px] text-mk-text-2 hover:text-mk-text">
             Sign in
           </Link>
-          <Link href="/sign-up" className="inline-flex h-9 items-center rounded-[10px] bg-mk-accent px-3.5 text-[14px] font-medium text-white hover:bg-mk-accent-hover">
+          <Link href="/sign-up" className="inline-flex h-11 items-center rounded-full bg-mk-accent px-5 text-[14px] font-semibold text-white hover:bg-mk-accent-hover">
             Start a 30-day trial
           </Link>
         </div>
@@ -236,26 +236,26 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
           aria-label={open ? "Close menu" : "Open menu"}
-          className="ml-auto rounded-md p-2 text-mk-on-dark hover:bg-white/5 lg:hidden"
+          className="ml-auto flex h-11 w-11 items-center justify-center rounded-full bg-white/80 text-mk-text shadow-[0_4px_16px_rgba(19,29,41,0.08)] lg:hidden"
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {open ? (
-        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/10 bg-mk-ink lg:hidden">
+        <div className="mx-4 mt-2 max-h-[calc(100dvh-5rem)] overflow-y-auto rounded-[24px] border border-mk-text/10 bg-white shadow-[0_24px_48px_-12px_rgba(19,29,41,0.25)] sm:mx-8 lg:hidden">
           <nav aria-label="Main" className="mx-auto grid w-full max-w-[1200px] gap-6 px-5 py-6 sm:grid-cols-2 sm:px-8">
             {NAV.map((entry) =>
               isGroup(entry) ? (
                 <div key={entry.label}>
-                  <p className="mb-2 font-mono text-[12px] uppercase tracking-[0.12em] text-mk-on-dark-3">{entry.label}</p>
+                  <p className="mb-2 font-mono text-[12px] uppercase tracking-[0.12em] text-mk-text-3">{entry.label}</p>
                   {entry.columns.map((col, ci) => (
                     <div key={col.heading ?? ci} className={ci > 0 ? "mt-3" : undefined}>
-                      {col.heading ? <p className="mb-1 text-[13px] text-mk-on-dark-3">{col.heading}</p> : null}
+                      {col.heading ? <p className="mb-1 text-[13px] text-mk-text-3">{col.heading}</p> : null}
                       <ul className="grid gap-1">
                         {col.items.map((item) => (
                           <li key={item.href}>
-                            <Link href={item.href} className="block py-1.5 text-[15px] text-mk-on-dark hover:text-mk-accent-lit">
+                            <Link href={item.href} className="block py-2.5 text-[15px] text-mk-text hover:text-mk-accent">
                               {item.label}
                             </Link>
                           </li>
@@ -266,18 +266,18 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                 </div>
               ) : (
                 <div key={entry.href}>
-                  <Link href={entry.href} className="block py-1.5 text-[15px] font-medium text-mk-on-dark hover:text-mk-accent-lit">
+                  <Link href={entry.href} className="block py-2.5 text-[15px] font-medium text-mk-text hover:text-mk-accent">
                     {entry.label}
                   </Link>
                 </div>
               ),
             )}
           </nav>
-          <div className="mx-auto flex w-full max-w-[1200px] flex-wrap gap-3 border-t border-white/10 px-5 py-5 sm:px-8">
-            <Link href="/sign-up" className="inline-flex h-11 flex-1 items-center justify-center rounded-[10px] bg-mk-accent px-5 text-[15px] font-medium text-white">
+          <div className="mx-auto flex w-full max-w-[1200px] flex-wrap gap-3 border-t border-mk-text/10 px-5 py-5 sm:px-8">
+            <Link href="/sign-up" className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-mk-accent px-5 text-[15px] font-semibold text-white">
               Start a 30-day trial
             </Link>
-            <Link href="/sign-in" className="inline-flex h-11 w-full items-center justify-center text-[15px] text-mk-on-dark-2">
+            <Link href="/sign-in" className="inline-flex h-11 w-full items-center justify-center text-[15px] text-mk-text-2">
               Sign in
             </Link>
           </div>

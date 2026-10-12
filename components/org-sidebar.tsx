@@ -109,14 +109,14 @@ function NavLink({ item, pathname, onClick, indent, isCollapsed }: { item: NavIt
       prefetch={true}
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-normal tracking-tight transition-all",
+        "flex items-center gap-2.5 rounded-full px-3 py-2 text-[13px] font-normal tracking-tight transition-all",
         isCollapsed ? "justify-center px-2" : indent ? "ml-1" : "",
         isActive
-          ? "bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]"
-          : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-transparent",
+          ? "bg-white font-medium text-[#131d29] border border-[#131d29]/[0.08] shadow-[0_2px_8px_-2px_rgba(19,29,41,0.1)]"
+          : "text-slate-500 hover:text-slate-900 hover:bg-white/70 border border-transparent",
       )}
     >
-      <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2410c]" : "text-slate-500")} aria-hidden="true" />
+      <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2400c]" : "text-slate-500")} aria-hidden="true" />
       {!isCollapsed && item.label}
     </Link>
   );
@@ -131,7 +131,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
         {isCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>{<NavLink item={nav.dashboardItem} pathname={pathname} onClick={onNavClick} isCollapsed={isCollapsed} />}</TooltipTrigger>
-            <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{nav.dashboardItem.label}</TooltipContent>
+            <TooltipContent side="right" className="text-xs bg-white border-[#131d29]/[0.08] text-slate-700 shadow-md">{nav.dashboardItem.label}</TooltipContent>
           </Tooltip>
         ) : (
           <NavLink item={nav.dashboardItem} pathname={pathname} onClick={onNavClick} isCollapsed={isCollapsed} />
@@ -151,7 +151,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
                 aria-expanded={isOpen}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                  isActive ? "text-[#c2410c]" : "text-slate-500 hover:text-slate-600",
+                  isActive ? "text-[#c2400c]" : "text-slate-500 hover:text-slate-600",
                 )}
               >
                 <GroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -185,7 +185,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
                           return (
                             <Tooltip key={item.href}>
                               <TooltipTrigger asChild>{link}</TooltipTrigger>
-                              <TooltipContent side="right" className="text-xs bg-white border-slate-200 text-slate-700 shadow-md">{item.label}</TooltipContent>
+                              <TooltipContent side="right" className="text-xs bg-white border-[#131d29]/[0.08] text-slate-700 shadow-md">{item.label}</TooltipContent>
                             </Tooltip>
                           );
                         }
@@ -228,7 +228,7 @@ function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, 
   return (
     <>
       {/* Logo */}
-      <div className={cn("flex items-center border-b border-slate-200 overflow-hidden", collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4")}>
+      <div className={cn("flex items-center border-b border-[#131d29]/[0.08] overflow-hidden", collapsed ? "px-3 pt-5 pb-4 justify-center" : "px-4 pt-5 pb-4")}>
         {collapsed ? (
           <span title={orgName}>
             <LogoMark size={28} />
@@ -244,11 +244,11 @@ function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, 
         )}
       </div>
       {!collapsed && (
-        <div className="border-b border-slate-200 px-4 py-2.5">
+        <div className="border-b border-[#131d29]/[0.08] px-4 py-2.5">
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
-            className="flex w-full items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-2 text-left text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            className="flex w-full items-center gap-2 rounded-md border border-[#131d29]/[0.08] bg-white px-2.5 py-2 text-left text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
           >
             <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span className="flex-1">Search pages and tasks</span>
@@ -479,7 +479,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
           Sticky needs no spacer and keeps its place however WebKit resolves
           fixed positioning. Solid white because backdrop-filter on a pinned
           bar is another source of iOS repaint bugs. */}
-      <header className="flex md:hidden sticky top-0 z-40 items-center h-14 px-4 bg-white border-b border-slate-200 shrink-0">
+      <header className="flex md:hidden sticky top-0 z-40 items-center h-14 px-4 bg-[#F9FAFC] border-b border-[#131d29]/[0.08] shrink-0">
         <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="flex items-center justify-center h-9 w-9 rounded-lg hover:bg-slate-100 transition-colors">
           <Menu className="h-5 w-5 text-slate-500" aria-hidden="true" />
         </button>
@@ -498,8 +498,8 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" onClick={() => setMobileOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white/97 backdrop-blur-2xl border-r border-slate-200 flex flex-col">
-            <div className="relative flex items-center justify-between px-4 pt-5 pb-4 border-b border-slate-200">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#F9FAFC] backdrop-blur-2xl border-r border-[#131d29]/[0.08] flex flex-col">
+            <div className="relative flex items-center justify-between px-4 pt-5 pb-4 border-b border-[#131d29]/[0.08]">
               <div className="flex items-center gap-2.5 min-w-0">
                 <LogoMark size={28} className="shrink-0" />
                 <div className="min-w-0">
@@ -514,7 +514,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
             <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto" aria-label="Organisation navigation">
               <NavContent nav={nav} onNavClick={() => setMobileOpen(false)} isCollapsed={false} />
             </nav>
-            <div className="border-t border-slate-200 px-2 py-3">
+            <div className="border-t border-[#131d29]/[0.08] px-2 py-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
@@ -529,7 +529,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
                     <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-slate-200 shadow-lg">
+                <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-[#131d29]/[0.08] shadow-lg">
                   <DropdownMenuItem asChild>
                     <Link href={`/orgs/${orgId}/settings/members`} onClick={() => setMobileOpen(false)} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
                       <Users aria-hidden="true" className="h-4 w-4 mr-2" />
@@ -551,7 +551,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
 
       {/* ── Desktop sidebar ───────────────────────────────────────────────────── */}
       <div className="relative hidden md:flex shrink-0">
-        <aside className={cn("sticky top-0 flex flex-col h-[100dvh] bg-white border-r border-slate-200 transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
+        <aside className={cn("sticky top-0 flex flex-col h-[100dvh] bg-[#F9FAFC] border-r border-[#131d29]/[0.08] transition-[width] duration-200 overflow-hidden", collapsed ? "w-[56px]" : "w-56")}>
           <div className="relative z-10 flex flex-col flex-1">
             <SidebarInner
               orgId={orgId}
@@ -567,7 +567,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
         <button
           onClick={toggleCollapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-colors"
+          className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-[#131d29]/[0.08] bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-colors"
         >
           {collapsed ? <ChevronRight className="h-3 w-3 text-slate-500" /> : <ChevronLeft className="h-3 w-3 text-slate-500" />}
         </button>

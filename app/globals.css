@@ -8,23 +8,23 @@
      Graphite ink for dark sections, a cool off-white for light ones and a
      single ember accent shared with the product and the logo. Button fills
      use accent (white text passes AA); accent text on dark uses accent-lit. */
-  --color-mk-ink:          #0B100E;
-  --color-mk-ink-2:        #131A17;
-  --color-mk-ink-3:        #1B2420;
-  --color-mk-paper:        #F3F5F2;
-  --color-mk-surface:      #FBFCFA;
-  --color-mk-line:         #DCE2DE;
-  --color-mk-line-dark:    #26302C;
-  --color-mk-text:         #0E1512;
-  --color-mk-text-2:       #414C47;
-  --color-mk-text-3:       #5F6A65;
-  --color-mk-on-dark:      #F1F4F2;
-  --color-mk-on-dark-2:    #B4BFBA;
-  --color-mk-on-dark-3:    #87938E;
-  --color-mk-accent:       #C2410C;
-  --color-mk-accent-hover: #9A3412;
+  --color-mk-ink:          #131D29;
+  --color-mk-ink-2:        #1B2736;
+  --color-mk-ink-3:        #243346;
+  --color-mk-paper:        #F9FAFC;
+  --color-mk-surface:      #FFFFFF;
+  --color-mk-line:         #E3E8EE;
+  --color-mk-line-dark:    #2B3A4C;
+  --color-mk-text:         #131D29;
+  --color-mk-text-2:       #41505F;
+  --color-mk-text-3:       #55646F;
+  --color-mk-on-dark:      #F3F6FA;
+  --color-mk-on-dark-2:    #B7C3CF;
+  --color-mk-on-dark-3:    #8A99A8;
+  --color-mk-accent:       #C2400C;
+  --color-mk-accent-hover: #A33409;
   --color-mk-accent-lit:   #FB8A4B;
-  --color-mk-accent-soft:  #FDEBDD;
+  --color-mk-accent-soft:  #FFF2EC;
 
   /* ── MetricOra design tokens — Direction 3: Data Field ────────────────── */
   /* Teal + Blue dual system — analytical, clean, enterprise BI */
@@ -33,9 +33,9 @@
   /* Product primary is the marketing ember (#C2410C), the same orange the
      product screens hard-code. Tenant colours override it through
      lib/branding/css-vars.ts only when they pass contrast. */
-  --color-primary:        #C2410C;
-  --color-primary-hover:  #9A3412;
-  --color-primary-light:  #FFF7ED;
+  --color-primary:        #C2400C;
+  --color-primary-hover:  #A33409;
+  --color-primary-light:  #FFF2EC;
   --color-primary-border: #FED7AA;
   --color-primary-dark:   #7C2D12;
   --color-primary-mid:    #FDEBDD;
@@ -47,7 +47,7 @@
   --color-info-border:    #BFDBFE;
 
   /* Eco: green sustainability signal */
-  --color-eco:            #15803D;
+  --color-eco:            #008954;
   --color-eco-hover:      #166534;
   --color-eco-light:      #EAF7EE;
   --color-eco-border:     #A7F3D0;
@@ -65,30 +65,30 @@
 
   /* Surfaces */
   --color-surface:        #FFFFFF;
-  --color-surface-subtle: #FAFCFB;
-  --color-surface-muted:  #F4F8F7;
+  --color-surface-subtle: #F9FAFC;
+  --color-surface-muted:  #F2F5F9;
 
   /* Borders */
-  --color-border:         #E2ECEA;
-  --color-border-strong:  #C9D8D5;
+  --color-border:         #E3E8EE;
+  --color-border-strong:  #CBD5DF;
 
   /* Text */
-  --color-text-primary:   #17201D;
-  --color-text-secondary: #5F6F68;
-  --color-text-muted:     #66756F;
+  --color-text-primary:   #131D29;
+  --color-text-secondary: #41505F;
+  --color-text-muted:     #5B6A78;
 
   /* Sidebar */
-  --color-sidebar-bg:           #FFFFFF;
-  --color-sidebar-border:       #E2ECEA;
-  --color-sidebar-text:         #5F6F68;
-  --color-sidebar-text-active:  #0F766E;
-  --color-sidebar-bg-active:    #E6F4F1;
-  --color-sidebar-label:        #66756F;
+  --color-sidebar-bg:           #F9FAFC;
+  --color-sidebar-border:       #E3E8EE;
+  --color-sidebar-text:         #41505F;
+  --color-sidebar-text-active:  #131D29;
+  --color-sidebar-bg-active:    #FFFFFF;
+  --color-sidebar-label:        #5B6A78;
 
   /* Scope colours — GHG Protocol scopes mapped to Direction 3 palette */
-  --color-scope-1: #0B8F80;
-  --color-scope-2: #E0692A;
-  --color-scope-3: #3B6FD4;
+  --color-scope-1: #E63E00;
+  --color-scope-2: #044AEA;
+  --color-scope-3: #009821;
 
   /* Legacy aliases (keeps old var() references working) */
   --color-forest-ink:    #C2410C;
@@ -111,14 +111,15 @@
   --color-surface-var:  #F4F8F7;
 
   /* Font */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-newsreader), Georgia, "Times New Roman", serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* Border radius system (soft) */
-  --radius-nav:    8px;
-  --radius-card:   12px;
+  --radius-nav:    999px;
+  --radius-card:   18px;
   --radius-badge:  999px;
-  --radius-button: 10px;
+  --radius-button: 999px;
 }
 
 @layer base {
@@ -133,8 +134,8 @@
   }
 
   html, body {
-    background-color: #FAFCFB;
-    color: #17201D;
+    background-color: #F9FAFC;
+    color: #131D29;
     font-family: var(--font-sans);
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -145,6 +146,17 @@
   h1, h2, h3, h4 {
     letter-spacing: -0.03em;
     font-weight: 600;
+  }
+
+  /* Daylight: page titles are a light serif; the italic word (<em>/<i>) takes the accent. */
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    letter-spacing: -0.02em;
+  }
+  h1 em, h1 i, h2 em, h2 i {
+    font-style: italic;
+    color: var(--color-primary);
   }
 }
 
@@ -661,4 +673,18 @@
 :root[data-theme="dark"] body {
   background-color: #0D1210;
   color: #E6EDEA;
+}
+
+/* ── Daylight (marketing) ─────────────────────────────────────────────────────
+   A hero is a "dark" Section that sits under the nav. It renders on the sky
+   gradient, and these scoped tokens turn its light-on-dark text dark again. */
+.mk-sky {
+  --color-mk-on-dark: #131D29;
+  --color-mk-on-dark-2: #41505F;
+  --color-mk-on-dark-3: #55646F;
+  --color-mk-accent-lit: #C2400C;
+  --color-mk-ink-2: #FFFFFF;
+  --color-mk-line-dark: #E3E8EE;
+  background: linear-gradient(180deg, #BFD9E8 0%, #DCEAF1 48%, #F9FAFC 100%);
+  color: #131D29;
 }

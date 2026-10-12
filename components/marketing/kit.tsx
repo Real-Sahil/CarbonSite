@@ -65,10 +65,12 @@ export function Section({
   poster?: string;
   size?: "sm" | "md" | "lg";
 }) {
+  // shortcut: a hero is found by its pt-36 offset under the fixed nav; give Section an explicit prop if another page type needs one.
+  const hero = tone === "dark" && /\bpt-36\b/.test(className ?? "");
   const pad = size === "lg" ? "py-24 sm:py-32" : size === "sm" ? "py-14 sm:py-16" : "py-20 sm:py-24";
   return (
-    <section id={id} className={cn("relative isolate scroll-mt-20 overflow-hidden", TONE_BG[tone], pad, className)}>
-      {video ? <BackgroundVideo src={video} poster={poster} tone={tone} /> : null}
+    <section id={id} className={cn("relative isolate scroll-mt-20 overflow-hidden", hero ? "mk-sky" : TONE_BG[tone], pad, className)}>
+      {video && !hero ? <BackgroundVideo src={video} poster={poster} tone={tone} /> : null}
       <Container className="relative">{children}</Container>
     </section>
   );
@@ -83,8 +85,8 @@ function BackgroundVideo({ src, poster, tone }: { src: string; poster?: string; 
         className={cn(
           "absolute inset-0",
           dark
-            ? "bg-[linear-gradient(90deg,#0B100E_0%,rgba(11,16,14,0.92)_38%,rgba(11,16,14,0.55)_100%)]"
-            : "bg-[linear-gradient(90deg,#F3F5F2_0%,rgba(243,245,242,0.94)_45%,rgba(243,245,242,0.7)_100%)]",
+            ? "bg-[linear-gradient(90deg,#131D29_0%,rgba(19,29,41,0.92)_38%,rgba(19,29,41,0.55)_100%)]"
+            : "bg-[linear-gradient(90deg,#F9FAFC_0%,rgba(249,250,252,0.94)_45%,rgba(249,250,252,0.7)_100%)]",
         )}
       />
     </div>
@@ -106,7 +108,7 @@ export function Eyebrow({ children, tone = "light" }: { children: ReactNode; ton
 
 export function H1({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <h1 className={cn("text-[40px] font-semibold leading-[1.05] tracking-[-0.035em] text-balance sm:text-[56px] lg:text-[64px]", className)}>
+    <h1 className={cn("font-display text-[44px] font-light leading-[1.02] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[76px]", className)}>
       {children}
     </h1>
   );
@@ -116,7 +118,7 @@ export function H2({ children, className }: { children: ReactNode; className?: s
   return (
     <h2
       {...(typeof children === "string" ? st("split", { "string-split": "word" }) : {})}
-      className={cn("text-[30px] font-semibold leading-[1.1] tracking-[-0.03em] text-balance sm:text-[40px]", className)}
+      className={cn("font-display text-[34px] font-light leading-[1.08] tracking-[-0.02em] text-balance sm:text-[46px]", className)}
     >
       {children}
     </h2>
@@ -153,13 +155,13 @@ export function ButtonLink({
   className?: string;
 }) {
   const base =
-    "inline-flex h-11 items-center justify-center gap-2 rounded-[10px] px-5 text-[15px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mk-accent";
+    "inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mk-accent";
   const styles =
     variant === "primary"
       ? "bg-mk-accent text-white hover:bg-mk-accent-hover"
       : tone === "dark"
-        ? "border border-white/20 text-mk-on-dark hover:border-white/40 hover:bg-white/5"
-        : "border border-mk-text/20 text-mk-text hover:border-mk-text/40 hover:bg-mk-text/[0.03]";
+        ? "border border-mk-on-dark/25 text-mk-on-dark hover:border-mk-on-dark/45 hover:bg-mk-on-dark/5"
+        : "border border-mk-text/10 bg-white text-mk-text shadow-[0_2px_8px_rgba(19,29,41,0.05)] hover:border-mk-text/25";
   return (
     <Link
       href={href}
@@ -215,11 +217,11 @@ export function ProductFrame({ children, tone = "light", className }: { children
       <div
         {...st("tilt", { "string-tilt-max": "3" })}
         className={cn(
-          "overflow-hidden rounded-[12px] border shadow-[0_24px_60px_-24px_rgba(11,16,14,0.35)]",
-          tone === "dark" ? "border-white/10 bg-mk-ink-2" : "border-mk-line bg-mk-surface",
+          "overflow-hidden rounded-[18px] border shadow-[0_32px_70px_-24px_rgba(19,29,41,0.35)]",
+          tone === "dark" ? "border-mk-on-dark/10 bg-mk-ink-2" : "border-mk-line bg-mk-surface",
         )}
       >
-        <div className={cn("flex items-center gap-1.5 border-b px-3.5 py-2.5", tone === "dark" ? "border-white/10" : "border-mk-line")}>
+        <div className={cn("flex items-center gap-1.5 border-b px-3.5 py-2.5", tone === "dark" ? "border-mk-on-dark/10" : "border-mk-line")}>
           <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
@@ -296,19 +298,25 @@ export function SectionIntro({
   );
 }
 
-/** Closing call to action shared by every page. */
+/** Closing call to action shared by every page: one accent band, white on ember. */
 export function ClosingCta({ title, lead }: { title: ReactNode; lead: ReactNode }) {
   return (
-    <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg">
-      <div className="flex max-w-2xl flex-col gap-6">
-        <H2>{title}</H2>
-        <Lead tone="dark">{lead}</Lead>
+    <Section tone="paper" size="md">
+      <div className="flex flex-col gap-6 rounded-[28px] bg-mk-accent px-6 py-12 text-white sm:px-14 sm:py-16">
+        <H2 className="max-w-2xl">{title}</H2>
+        <p className="max-w-[56ch] text-[17px] leading-relaxed text-white/90 sm:text-[18px]">{lead}</p>
         {/* One primary action; the pilot is a quieter link so the trial reads as the next step. */}
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-          <ButtonLink href="/sign-up">Start a 30-day trial</ButtonLink>
-          <TextLink href="/contact" tone="dark">
+          <Link
+            href="/sign-up"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-white px-6 text-[15px] font-semibold text-mk-accent hover:bg-mk-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            Start a 30-day trial
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </Link>
+          <Link href="/contact" className="inline-flex items-center gap-1.5 text-[15px] font-medium text-white underline underline-offset-4">
             Or book a pilot
-          </TextLink>
+          </Link>
         </div>
       </div>
     </Section>

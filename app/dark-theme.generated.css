@@ -289,12 +289,16 @@
 [data-theme="dark"] [class~="bg-[#F4F8F7]"] { background-color: #131e1b; }
 [data-theme="dark"] [class~="bg-[#F8F9FA]"] { background-color: #171b20; }
 [data-theme="dark"] [class~="bg-[#F9FAFB]"] { background-color: #171c22; }
+[data-theme="dark"] [class~="bg-[#F9FAFC]"] { background-color: #131926; }
+[data-theme="dark"] [class~="bg-[#F9FAFC]/85"] { background-color: color-mix(in srgb, #131926 85%, transparent); }
+[data-theme="dark"] [class~="bg-[#F9FAFC]/90"] { background-color: color-mix(in srgb, #131926 90%, transparent); }
 [data-theme="dark"] [class~="bg-[#FED7AA]"] { background-color: #552e01; }
 [data-theme="dark"] [class~="bg-[#FEF2F2]"] { background-color: #310404; }
 [data-theme="dark"] [class~="bg-[#FFF7ED]"] { background-color: #301b00; }
 [data-theme="dark"] [class~="bg-[#FFF7ED]/20"] { background-color: color-mix(in srgb, #301b00 20%, transparent); }
 [data-theme="dark"] [class~="bg-[#FFF7ED]/30"] { background-color: color-mix(in srgb, #301b00 30%, transparent); }
 [data-theme="dark"] [class~="bg-[#FFF7ED]/50"] { background-color: color-mix(in srgb, #301b00 50%, transparent); }
+[data-theme="dark"] [class~="bg-[#c2400c]"] { background-color: #f3713d; }
 [data-theme="dark"] [class~="bg-[#c2410c]"] { background-color: #f3723d; }
 [data-theme="dark"] [class~="bg-[#cfe7d3]"] { background-color: #18301c; }
 [data-theme="dark"] [class~="bg-[#dbeafe]"] { background-color: #011024; }
@@ -306,6 +310,9 @@
 [data-theme="dark"] [class~="bg-[#fff7ed]"] { background-color: #301b00; }
 [data-theme="dark"] [class~="border-[#0F766E]"] { border-color: #89f0e8; }
 [data-theme="dark"] [class~="border-[#111827]"] { border-color: #d8dfee; }
+[data-theme="dark"] [class~="border-[#131d29]"] { border-color: #d6e0ec; }
+[data-theme="dark"] [class~="border-[#131d29]/10"] { border-color: color-mix(in srgb, #d6e0ec 10%, transparent); }
+[data-theme="dark"] [class~="border-[#131d29]/15"] { border-color: color-mix(in srgb, #d6e0ec 15%, transparent); }
 [data-theme="dark"] [class~="border-[#BAE6FD]"] { border-color: #022e45; }
 [data-theme="dark"] [class~="border-[#D1D5DB]"] { border-color: #24282e; }
 [data-theme="dark"] [class~="border-[#D1FAE5]"] { border-color: #052e19; }
@@ -324,6 +331,7 @@
 [data-theme="dark"] [class~="file:border-[#D1D5DB]"]::file-selector-button { border-color: #24282e; }
 [data-theme="dark"] [class~="focus-visible:outline-[#c2410c]"]:focus-visible { outline-color: #f3723d; }
 [data-theme="dark"] [class~="focus-visible:ring-[#111827]"]:focus-visible { --tw-ring-color: #d8dfee; }
+[data-theme="dark"] [class~="focus-visible:ring-[#c2400c]/40"]:focus-visible { --tw-ring-color: color-mix(in srgb, #f3713d 40%, transparent); }
 [data-theme="dark"] [class~="focus-visible:ring-[#c2410c]"]:focus-visible { --tw-ring-color: #f3723d; }
 [data-theme="dark"] [class~="focus-visible:ring-[#c2410c]/40"]:focus-visible { --tw-ring-color: color-mix(in srgb, #f3723d 40%, transparent); }
 [data-theme="dark"] [class~="focus:bg-[#F0F9FF]"]:focus { background-color: #001f33; }
@@ -348,12 +356,15 @@
 [data-theme="dark"] [class~="hover:bg-[#F3F4F6]"]:hover { background-color: #13161a; }
 [data-theme="dark"] [class~="hover:bg-[#F8F9FA]/50"]:hover { background-color: color-mix(in srgb, #171b20 50%, transparent); }
 [data-theme="dark"] [class~="hover:bg-[#F9FAFB]"]:hover { background-color: #171c22; }
+[data-theme="dark"] [class~="hover:bg-[#F9FAFC]"]:hover { background-color: #131926; }
 [data-theme="dark"] [class~="hover:bg-[#FFEDD5]"]:hover { background-color: #2a1800; }
 [data-theme="dark"] [class~="hover:bg-[#FFF7ED]"]:hover { background-color: #301b00; }
+[data-theme="dark"] [class~="hover:bg-[#a33409]"]:hover { background-color: #f6875c; }
 [data-theme="dark"] [class~="hover:bg-[#c2410c]/90"]:hover { background-color: color-mix(in srgb, #f3723d 90%, transparent); }
 [data-theme="dark"] [class~="hover:bg-[#f0f9ff]"]:hover { background-color: #001f33; }
 [data-theme="dark"] [class~="hover:bg-[#f9fafb]"]:hover { background-color: #171c22; }
 [data-theme="dark"] [class~="hover:bg-[#fff7ed]"]:hover { background-color: #301b00; }
+[data-theme="dark"] [class~="hover:border-[#131d29]/25"]:hover { border-color: color-mix(in srgb, #d6e0ec 25%, transparent); }
 [data-theme="dark"] [class~="hover:border-[#3B82F6]"]:hover { border-color: #0950c4; }
 [data-theme="dark"] [class~="hover:border-[#9CA3AF]"]:hover { border-color: #505763; }
 [data-theme="dark"] [class~="hover:border-[#D1D5DB]"]:hover { border-color: #24282e; }
@@ -363,6 +374,7 @@
 [data-theme="dark"] [class~="hover:border-[#f97316]"]:hover { border-color: #e96306; }
 [data-theme="dark"] [class~="hover:text-[#0B5F59]"]:hover { color: #a0f4ee; }
 [data-theme="dark"] [class~="hover:text-[#111827]"]:hover { color: #d8dfee; }
+[data-theme="dark"] [class~="hover:text-[#131d29]"]:hover { color: #d6e0ec; }
 [data-theme="dark"] [class~="hover:text-[#374151]"]:hover { color: #aeb8c8; }
 [data-theme="dark"] [class~="hover:text-[#6B7280]"]:hover { color: #7f8694; }
 [data-theme="dark"] [class~="hover:text-[#9a3412]"]:hover { color: #ed8765; }
@@ -376,9 +388,11 @@
 [data-theme="dark"] [class~="text-[#059669]"] { color: #69facd; }
 [data-theme="dark"] [class~="text-[#0F766E]"] { color: #89f0e8; }
 [data-theme="dark"] [class~="text-[#111827]"] { color: #d8dfee; }
+[data-theme="dark"] [class~="text-[#131d29]"] { color: #d6e0ec; }
 [data-theme="dark"] [class~="text-[#1d4ed8]"] { color: #2758e2; }
 [data-theme="dark"] [class~="text-[#374151]"] { color: #aeb8c8; }
 [data-theme="dark"] [class~="text-[#3B82F6]"] { color: #0950c4; }
+[data-theme="dark"] [class~="text-[#41505F]"] { color: #a0afbe; }
 [data-theme="dark"] [class~="text-[#4B5563]"] { color: #9ca6b4; }
 [data-theme="dark"] [class~="text-[#555555]"] { color: #aaaaaa; }
 [data-theme="dark"] [class~="text-[#555]"] { color: #aaaaaa; }
@@ -398,5 +412,6 @@
 [data-theme="dark"] [class~="text-[#B91C1C]"] { color: #e34646; }
 [data-theme="dark"] [class~="text-[#D1D5DB]"] { color: #24282e; }
 [data-theme="dark"] [class~="text-[#FED7AA]"] { color: #552e01; }
+[data-theme="dark"] [class~="text-[#c2400c]"] { color: #f3713d; }
 [data-theme="dark"] [class~="text-[#c2410c]"] { color: #f3723d; }
 [data-theme="dark"] [class~="text-[#fff]/60"] { color: color-mix(in srgb, #212121 60%, transparent); }

@@ -41,7 +41,7 @@ export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 hidden md:flex h-14 shrink-0 items-center justify-end gap-2 border-b border-slate-200 bg-white px-6">
+    <header className="sticky top-0 z-30 hidden md:flex h-14 shrink-0 items-center justify-end gap-2 border-b border-[#131d29]/[0.08] bg-[#F9FAFC]/90 px-6 backdrop-blur">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
