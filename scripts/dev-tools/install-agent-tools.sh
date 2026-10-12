@@ -10,6 +10,12 @@
 #   - squeez    (Bash-output compressor, hooks; needs npm; see the squeez block below)
 #   - graphify  (knowledge graph CLI + MCP server; rebuilds the graph of any git
 #                repo at session start and after each commit)
+#   - watch     (claude-video plugin: /watch gives Claude a video as frames plus a
+#                transcript; MIT; needs yt-dlp and ffmpeg for URLs)
+#   - video-shotcraft (skill: product videos with Remotion; Apache-2.0; ~/.claude/skills)
+#   - agency-agents (subagents in ~/.claude/agents; MIT; a subset of divisions, see below)
+#   - crawl4ai  (Python CLI `crwl`: crawls pages to Markdown; Apache-2.0; run once per
+#                machine, it downloads a browser)
 # Self-contained and idempotent: safe to run again, and safe to paste into a
 # Claude Code cloud environment's setup script so every new session gets it.
 # Headroom is deliberately not configured here: it reroutes all model traffic
@@ -81,6 +87,8 @@ s.setdefault("enabledPlugins", {})["ponytail@ponytail"] = True
 s["extraKnownMarketplaces"]["superpowers-marketplace"] = {"source": {"source": "github", "repo": "obra/superpowers-marketplace"}}
 s["enabledPlugins"]["superpowers@superpowers-marketplace"] = True
 s["enabledPlugins"].pop("superpowers@claude-plugins-official", None)
+s["extraKnownMarketplaces"]["claude-video"] = {"source": {"source": "github", "repo": "bradautomates/claude-video"}}
+s["enabledPlugins"]["watch@claude-video"] = True
 
 hooks = s.setdefault("hooks", {})
 def add(event, matcher, command, timeout):
@@ -133,5 +141,39 @@ if command -v npm >/dev/null 2>&1 && ! command -v squeez >/dev/null 2>&1 && [ ! 
 fi
 SQUEEZ="$(command -v squeez || echo "$HOME/.claude/squeez/bin/squeez")"
 [ -x "$SQUEEZ" ] && { "$SQUEEZ" setup --host=claude-code >/dev/null 2>&1 && log "squeez hooks registered" || log "squeez setup failed"; }
+
+# ── video-shotcraft: skill for Remotion product videos (skills CLI, user scope) ─
+if command -v npx >/dev/null 2>&1 && [ ! -d "$CLAUDE_DIR/skills/video-shotcraft" ]; then
+  npx --yes skills add Vincentwei1021/video-shotcraft -g -a claude-code -y >/dev/null 2>&1 \
+    && log "video-shotcraft skill installed" || log "video-shotcraft install failed"
+fi
+
+# ── agency-agents: subagents in ~/.claude/agents (MIT) ────────────────────────
+# The repo has 280+ agents and every one adds its description to every session's
+# context (about 230 characters each), so only these divisions are installed:
+# engineering, design, testing, security (96 agents, roughly 5k tokens). Choose others with
+# AGENCY_AGENTS_DIVISIONS="engineering,product" (see divisions.json in the repo), or "all".
+# Re-run with AGENCY_AGENTS_REFRESH=1 to pull newer agents.
+if command -v git >/dev/null 2>&1 && { [ ! -f "$CLAUDE_DIR/agents/.agency-agents-installed" ] || [ -n "${AGENCY_AGENTS_REFRESH:-}" ]; }; then
+  AA_TMP="$(mktemp -d)"
+  if git clone --quiet --depth 1 https://github.com/msitarzewski/agency-agents "$AA_TMP/agency-agents" >/dev/null 2>&1; then
+    AA_DIVS="${AGENCY_AGENTS_DIVISIONS:-engineering,design,testing,security}"
+    AA_SEL=(--division "$AA_DIVS"); [ "$AA_DIVS" = "all" ] && AA_SEL=()
+    (cd "$AA_TMP/agency-agents" && CLAUDE_CONFIG_DIR="$CLAUDE_DIR" ./scripts/install.sh --tool claude-code "${AA_SEL[@]}" --no-interactive >/dev/null 2>&1) \
+      && { mkdir -p "$CLAUDE_DIR/agents" && echo "$AA_DIVS" > "$CLAUDE_DIR/agents/.agency-agents-installed"; log "agency-agents installed ($AA_DIVS)"; } \
+      || log "agency-agents install failed"
+  else
+    log "agency-agents clone failed"
+  fi
+  rm -rf "$AA_TMP"
+fi
+
+# ── crawl4ai: `crwl` CLI (Python, via uv) ─────────────────────────────────────
+# crawl4ai-setup downloads a Playwright browser (a few hundred MB) once per machine.
+if command -v uv >/dev/null 2>&1 && ! command -v crwl >/dev/null 2>&1; then
+  uv tool install --quiet crawl4ai >/dev/null 2>&1 \
+    && { crawl4ai-setup >/dev/null 2>&1 || log "crawl4ai-setup failed; run crawl4ai-doctor"; log "crawl4ai installed"; } \
+    || log "crawl4ai install failed"
+fi
 
 log "done. Start a new Claude Code session; ponytail installs from its marketplace on first start."

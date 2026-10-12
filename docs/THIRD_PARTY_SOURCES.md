@@ -55,3 +55,17 @@ Rules for new sources: read the licence or terms first; a tool that redistribute
 ## Companies House (supplier lookup)
 
 Local spend → Add a supplier can search the Companies House public register (`api.company-information.service.gov.uk`, free API key in `COMPANIES_HOUSE_API_KEY`). Data is public sector information under the Open Government Licence v3.0; the attribution "Contains public sector information licensed under the Open Government Licence v3.0. Source: Companies House." is shown beside the result. Only the typed company name or number is sent. Nothing is stored beyond what the person saves on the supplier (name, postcode). Companies House's API terms limit the rate to 600 requests per 5 minutes per key; our route allows 30 a minute per user.
+
+## Agent tooling (developer machines, not shipped)
+
+Installed by `scripts/dev-tools/install-agent-tools.sh` into the owner's `~/.claude` and `~/.local`; none of it is in the app bundle or in this repository's code. Licences read from each repository's `LICENSE` file on 12 October 2026.
+
+| Tool | Licence | Use here |
+|---|---|---|
+| claude-video, plugin `watch` (github.com/bradautomates/claude-video) | MIT | `/watch` turns a video into frames and a transcript for review. Installed. |
+| video-shotcraft (github.com/Vincentwei1021/video-shotcraft) | Apache 2.0 | Skill for Remotion product videos. Installed as a user skill. Remotion has its own company licence terms; check them before any paid or team use of a render. |
+| agency-agents (github.com/msitarzewski/agency-agents) | MIT | Subagents for engineering, design, testing and security in `~/.claude/agents`. The other divisions are left out to keep every session's context small. |
+| crawl4ai (github.com/unclecode/crawl4ai) | Apache 2.0 | `crwl` CLI for crawling public pages to Markdown. Installed. Respect each site's terms and robots.txt; never crawl behind a login. |
+| liquid-glass (github.com/samasante/liquid-glass) | MIT | Front-end library, not a global tool. Not installed. Add it to a project only with its first use. |
+| Theatre.js (github.com/theatre-js/theatre) | `@theatre/core` Apache 2.0; `@theatre/studio` AGPL 3.0 | Animation library, not a global tool. Not installed. The studio is a design-time editor; keep it out of the production bundle. |
+| OpnForm (github.com/OpnForm/OpnForm) | AGPL 3.0, with a separate commercial licence for the enterprise folders | A full form-builder application, not installable as a tool. Read for ideas only; never copy code. |

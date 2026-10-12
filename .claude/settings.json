@@ -76,12 +76,19 @@
         "source": "github",
         "repo": "obra/superpowers-marketplace"
       }
+    },
+    "claude-video": {
+      "source": {
+        "source": "github",
+        "repo": "bradautomates/claude-video"
+      }
     }
   },
   "enabledPlugins": {
     "founder@emotix": true,
     "ponytail@ponytail": true,
-    "superpowers@superpowers-marketplace": true
+    "superpowers@superpowers-marketplace": true,
+    "watch@claude-video": true
   },
   "autoCompactWindow": 250000
 }
