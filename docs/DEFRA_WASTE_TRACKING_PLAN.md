@@ -10,14 +10,14 @@ Permitted or licensed waste **receiving** sites must report each receipt digital
 
 1. Register as a software provider (done, awaiting test credentials).
 2. Build against the external test environment (`waste-tracking.integration.api.defra.gov.uk`) with a dummy API code.
-3. Run the 17 production approval tests (R01 to R07, C01, C02, B01, P01, H01 to H03, X01) through `POST /production-approval-tests`, self-certify, and send Defra the waste tracking ID for each.
+3. Run the 14 production approval tests (R01 to R05, R07, C01, C02, B01, P01, H01 to H03, X01; R06 was withdrawn) through `POST /production-approval-tests`, which takes the twelve that create a receipt. C01 and H02 are refusals with no ID, so check their error handling separately. Self-certify, then email Defra to confirm and request production credentials, without the client secret.
 4. Receive production credentials. Defra then onboards receivers, who give us their own `apiCode`.
 
 ## Rules that shape the build
 
 - Submit within two working days beginning the day after receipt. Later corrections go in with `PUT /movements/{wasteTrackingId}/receive`, and every mistake must be corrected.
 - A movement between two sites of one company, or between two permits on one site, still needs a receipt.
-- Rejections are not in v1. EWC codes are six digits, up to five per item. Free text is capped at 5,000 characters.
+- Rejections are not in v1. EWC codes are six digits, up to five per item. Only `specialHandlingRequirements` is capped, at 5,000 characters; the waste description has no maximum in the spec.
 - OAuth2 client credentials; soft limit of 200 requests a second.
 - Email addresses go to Defra, so the customer's record of processing activities needs updating.
 
@@ -29,7 +29,7 @@ Missing for a receipt: time of receipt, receiver permit number, site address and
 
 ## Built so far
 
-`lib/defra-dwt/receipt.ts`: a zod schema of the request body and `submissionDeadline()`. It calls nothing; it lets a reviewer see what is missing before anything is sent. Tests in `lib/defra-dwt/__tests__/receipt.test.ts` cover the PAT shapes R01, C01, C02, H02 and H03.
+`lib/defra-dwt/receipt.ts`: a zod schema of the request body and `submissionDeadline()`. It calls nothing; it lets a reviewer see what is missing before anything is sent. Tests in `lib/defra-dwt/__tests__/receipt.test.ts` cover the schema rules, and `pat-scenarios.test.ts` checks the shape of all 14 PAT scenarios. Shapes only: a `Pass` comes from `POST /production-approval-tests`, never from these tests.
 
 ## Not built, waiting for test credentials
 
@@ -37,4 +37,4 @@ Missing for a receipt: time of receipt, receiver permit number, site address and
 2. Storage of the returned waste tracking ID and an audit entry for every submission and correction.
 3. A two-working-day tracker on each received load; `submissionDeadline()` ignores bank holidays, so it can be a day early, never late.
 4. OAuth token handling in a server-only module, with the client secret in the environment, never the database.
-5. The remaining PAT scenarios as tests and a runner for the PAT endpoint.
+5. A runner for `POST /production-approval-tests`. The scenario shapes are tested; the runner waits for test credentials.
