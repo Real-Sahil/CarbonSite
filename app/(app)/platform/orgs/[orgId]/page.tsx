@@ -74,7 +74,7 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
 
       {/* Heading */}
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#7C2D12] bg-[#FFF2EC] rounded-full px-[14px] py-[7px] inline-flex">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#7C2D12] bg-[#FFF2EC] rounded-full px-[14px] py-[7px] inline-flex self-start">
           Platform
         </p>
         <h1

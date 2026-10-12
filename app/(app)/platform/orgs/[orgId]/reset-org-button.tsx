@@ -39,7 +39,7 @@ export function ResetOrgButton({ orgId, orgName }: Props) {
       <Button
         size="sm"
         variant="destructive"
-        className="gap-1.5"
+        className="gap-1.5 self-start"
         onClick={() => setPhase("confirm")}
       >
         <Trash2 className="h-3.5 w-3.5" />
