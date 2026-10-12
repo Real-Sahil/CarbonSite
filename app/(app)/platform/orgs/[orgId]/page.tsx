@@ -64,33 +64,33 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px]">
-        <Link href="/platform" className="hover:text-[#111827] transition-colors">
+      <nav className="flex items-center gap-2 text-sm text-[#41505F] tracking-[-0.42px]">
+        <Link href="/platform" className="hover:text-[#131d29] transition-colors">
           Platform Admin
         </Link>
         <span aria-hidden="true">/</span>
-        <span className="text-[#111827]">{org.name}</span>
+        <span className="text-[#131d29]">{org.name}</span>
       </nav>
 
       {/* Heading */}
       <div className="flex flex-col gap-3">
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#7C2D12] bg-[#FFF2EC] rounded-full px-[14px] py-[7px] inline-flex">
           Platform
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
+          className="text-3xl text-[#131d29]"
           
         >
           {org.name}
         </h1>
         <div className="flex flex-col gap-1">
-          <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Plan</p>
+          <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Plan</p>
           <PlanSelector orgId={orgId} currentPlan={org.plan} />
         </div>
       </div>
 
       {/* Danger zone */}
-      <div className="rounded-[14px] border border-red-200 p-[21px] flex flex-col gap-3">
+      <div className="rounded-[18px] border border-red-200 bg-[#FDECEC]/60 p-[21px] flex flex-col gap-3">
         <div>
           <p className="text-sm font-semibold text-red-900">Danger zone</p>
           <p className="text-xs text-red-700 mt-0.5">
@@ -102,24 +102,24 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
-          <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Members</p>
-          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#111827]">
+        <Card className="p-[21px]">
+          <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Members</p>
+          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#131d29]">
             {org.memberships.length.toLocaleString("en-GB")}
           </p>
-        </div>
-        <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
-          <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Activity records</p>
-          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#111827]">
+        </Card>
+        <Card className="p-[21px]">
+          <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Activity records</p>
+          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#131d29]">
             {org._count.activityRecords.toLocaleString("en-GB")}
           </p>
-        </div>
-        <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
-          <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Contracts</p>
-          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#111827]">
+        </Card>
+        <Card className="p-[21px]">
+          <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Contracts</p>
+          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#131d29]">
             {org._count.contracts.toLocaleString("en-GB")}
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* Members table */}
@@ -143,12 +143,12 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
             <TableBody>
               {org.memberships.map((m) => (
                 <TableRow key={m.id}>
-                  <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
+                  <TableCell className="font-normal text-[#131d29] tracking-[-0.42px]">
                     {m.user.name ?? (
-                      <span className="text-[#374151] italic">No name</span>
+                      <span className="text-[#41505F] italic">No name</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                  <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                     {m.user.email}
                   </TableCell>
                   <TableCell>
@@ -156,7 +156,7 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
                       {m.role.replace(/_/g, " ")}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                  <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                     {m.createdAt.toLocaleDateString("en-GB", {
                       day: "numeric",
                       month: "short",
@@ -167,7 +167,7 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
               ))}
               {org.memberships.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-sm text-[#374151] py-8">
+                  <TableCell colSpan={4} className="text-center text-sm text-[#41505F] py-8">
                     No members yet.
                   </TableCell>
                 </TableRow>
@@ -187,13 +187,13 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
         </CardHeader>
         <CardContent>
           {org.reportingPeriods.length > 0 ? (
-            <div className="flex flex-col divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E5E7EB] overflow-hidden">
+            <div className="flex flex-col divide-y divide-[#E3E8EE] rounded-[18px] border border-[#E3E8EE] overflow-hidden">
               {org.reportingPeriods.map((period) => (
                 <div
                   key={period.id}
                   className="flex items-center justify-between gap-4 px-4 py-3"
                 >
-                  <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
+                  <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">
                     {period.label}
                   </p>
                   <Badge variant="outline" className="font-normal text-xs capitalize">
@@ -203,7 +203,7 @@ export default async function PlatformOrgDetailPage({ params }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-[#374151] tracking-[-0.42px]">
+            <p className="text-sm text-[#41505F] tracking-[-0.42px]">
               No reporting periods created yet.
             </p>
           )}

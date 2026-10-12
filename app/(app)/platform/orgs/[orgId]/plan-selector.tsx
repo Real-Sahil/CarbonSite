@@ -70,7 +70,7 @@ export function PlanSelector({
           value={plan}
           onChange={(e) => handleChange(e.target.value)}
           disabled={isPending}
-          className="rounded-[7px] border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#111827] tracking-[-0.42px] focus:outline-none focus:ring-2 focus:ring-[#c2410c] disabled:opacity-50"
+          className="rounded-full border border-[#131d29]/[0.12] bg-white px-4 py-1.5 text-sm text-[#131d29] tracking-[-0.42px] focus:outline-none focus:ring-2 focus:ring-[#c2410c] disabled:opacity-50"
         >
           {PLAN_ORDER.map((p) => (
             <option key={p} value={p} className="capitalize">
@@ -79,7 +79,7 @@ export function PlanSelector({
           ))}
         </select>
         {isPending && (
-          <span className="text-xs text-[#374151]">Saving…</span>
+          <span className="text-xs text-[#41505F]">Saving…</span>
         )}
         {saved && !isPending && (
           <span className="text-xs text-emerald-700">Saved</span>

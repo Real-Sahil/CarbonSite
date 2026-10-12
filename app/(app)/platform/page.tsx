@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
 import { SeedLibrariesButton } from "./seed-libraries-button";
 
 export default async function PlatformPage() {
@@ -51,61 +52,61 @@ export default async function PlatformPage() {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#F0F9FF] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#7C2D12] bg-[#FFF2EC] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Platform
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
+          className="text-3xl text-[#131d29]"
           
         >
           Platform Admin
         </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#41505F] font-normal tracking-[-0.42px] mt-[7px]">
           Super-admin view of all organisations on the platform.
         </p>
-        <Link href="/platform/growth" className="mt-3 inline-block text-sm text-[#111827] underline underline-offset-2">
+        <Link href="/platform/growth" className="mt-3 inline-block text-sm text-[#131d29] underline underline-offset-2">
           Growth: trials, activation and paying by source
         </Link>
       </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
-          <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">
+        <Card className="p-[21px]">
+          <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">
             Total orgs
           </p>
-          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#111827]">
+          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#131d29]">
             {orgs.length.toLocaleString("en-GB")}
           </p>
-        </div>
-        <div className="rounded-[14px] border border-[#E5E7EB] p-[21px]">
-          <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">
+        </Card>
+        <Card className="p-[21px]">
+          <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">
             Total members
           </p>
-          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#111827]">
+          <p className="mt-2 text-3xl font-normal tracking-[-0.4px] text-[#131d29]">
             {totalMembers.toLocaleString("en-GB")}
           </p>
-        </div>
+        </Card>
       </div>
 
       {/* Factor libraries */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-900">Factor libraries</h2>
-            <p className="text-xs text-[#374151] tracking-[-0.36px] mt-0.5">
+            <h2 className="text-sm font-semibold text-[#131d29]">Factor libraries</h2>
+            <p className="text-xs text-[#41505F] tracking-[-0.36px] mt-0.5">
               Global emission factor libraries available to all orgs for calculation runs.
             </p>
           </div>
           <SeedLibrariesButton />
         </div>
         {missingStandardLibraries && (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <p className="text-xs text-[#92400E] bg-[#FFF4DE] border border-[#FDE3B0] rounded-[12px] px-3 py-2">
             One or more standard libraries (DEFRA 2025.1, EPA 2025.1) are missing. Click
             &ldquo;Seed standard libraries&rdquo; to create them.
           </p>
         )}
-        <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
+        <Card className="overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -117,29 +118,29 @@ export default async function PlatformPage() {
             <TableBody>
               {factorLibraries.map((lib) => (
                 <TableRow key={lib.id}>
-                  <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
+                  <TableCell className="font-normal text-[#131d29] tracking-[-0.42px]">
                     {lib.name}
                   </TableCell>
-                  <TableCell className="text-sm text-[#374151]">{lib.version}</TableCell>
-                  <TableCell className="text-right text-sm text-[#374151] tabular-nums">
+                  <TableCell className="text-sm text-[#41505F]">{lib.version}</TableCell>
+                  <TableCell className="text-right text-sm text-[#41505F] tabular-nums">
                     {lib._count.factors.toLocaleString("en-GB")}
                   </TableCell>
                 </TableRow>
               ))}
               {factorLibraries.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center text-sm text-[#374151] py-6">
+                  <TableCell colSpan={3} className="text-center text-sm text-[#41505F] py-6">
                     No factor libraries yet. Seed them above.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-        </div>
+        </Card>
       </div>
 
       {/* Orgs table */}
-      <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
+      <Card className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -153,16 +154,16 @@ export default async function PlatformPage() {
           <TableBody>
             {orgs.map((org) => (
               <TableRow key={org.id}>
-                <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
+                <TableCell className="font-normal text-[#131d29] tracking-[-0.42px]">
                   {org.name}
                 </TableCell>
-                <TableCell className="text-right text-sm text-[#374151] tracking-[-0.42px]">
+                <TableCell className="text-right text-sm text-[#41505F] tracking-[-0.42px]">
                   {org._count.memberships.toLocaleString("en-GB")}
                 </TableCell>
-                <TableCell className="text-right text-sm text-[#374151] tracking-[-0.42px]">
+                <TableCell className="text-right text-sm text-[#41505F] tracking-[-0.42px]">
                   {org._count.activityRecords.toLocaleString("en-GB")}
                 </TableCell>
-                <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                   {org.createdAt.toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "short",
@@ -172,7 +173,7 @@ export default async function PlatformPage() {
                 <TableCell>
                   <Link
                     href={`/platform/orgs/${org.id}`}
-                    className="text-xs text-[#111827] hover:underline tracking-[-0.36px]"
+                    className="text-xs text-[#131d29] hover:underline tracking-[-0.36px]"
                   >
                     View &rarr;
                   </Link>
@@ -181,14 +182,14 @@ export default async function PlatformPage() {
             ))}
             {orgs.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-sm text-[#374151] py-8">
+                <TableCell colSpan={5} className="text-center text-sm text-[#41505F] py-8">
                   No organisations yet.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
-      </div>
+      </Card>
     </div>
   );
 }

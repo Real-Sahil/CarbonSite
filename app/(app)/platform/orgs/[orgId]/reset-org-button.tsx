@@ -50,7 +50,7 @@ export function ResetOrgButton({ orgId, orgName }: Props) {
 
   if (phase === "confirm") {
     return (
-      <div className="flex flex-col gap-2 rounded-[14px] border border-red-200 bg-red-50 p-4">
+      <div className="flex flex-col gap-2 rounded-[18px] border border-red-200 bg-red-50 p-4">
         <p className="text-sm font-medium text-red-900">
           Reset all activity data for {orgName}?
         </p>
@@ -82,7 +82,7 @@ export function ResetOrgButton({ orgId, orgName }: Props) {
 
   if (phase === "loading") {
     return (
-      <p className="text-sm text-[#374151] tracking-[-0.42px] animate-pulse">
+      <p className="text-sm text-[#41505F] tracking-[-0.42px] animate-pulse">
         Deleting org data…
       </p>
     );
