@@ -324,6 +324,7 @@ export type AuditAction =
   | "subcontractor_submission.verified"
   | "subcontractor_submission.rejected"
   | "subcontractor_submission.link_issued"
+  | "subcontractor_submission.reminder_sent"
   | "whole_life_carbon.assessment_set"
   | "completeness.requirement_set"
   | "completeness.requirement_deleted"

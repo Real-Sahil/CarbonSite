@@ -76,6 +76,8 @@ vi.mock("@/lib/notifications/email", () => ({
   resolveEmailLogoUrl: vi.fn(),
   sendEmail: vi.fn().mockResolvedValue(undefined),
   subcontractorRequestEmail: vi.fn().mockReturnValue({ subject: "Request", html: "<p>Request</p>", text: "Request" }),
+  subcontractorRejectedEmail: vi.fn().mockReturnValue({ subject: "Rejected", html: "<p>Rejected</p>", text: "Rejected" }),
+  subcontractorReminderEmail: vi.fn().mockReturnValue({ subject: "Reminder", html: "<p>Reminder</p>", text: "Reminder" }),
 }));
 vi.mock("@/lib/storage", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/storage")>();
@@ -655,5 +657,106 @@ describe("subcontractor portal link", () => {
     expect(written.startsWith("org/org-a/subcontractor/sub-a/")).toBe(true);
     expect(vi.mocked(deleteObject)).toHaveBeenCalledWith(written);
     expect(writeAuditLog).not.toHaveBeenCalled();
+  });
+});
+
+describe("subcontractor rejection link", () => {
+  const ROUTE_PARAMS = { orgId: ORG_A, contractId: "contract-a", submissionId: "sub-a" };
+  const SUBMITTED_ROW = {
+    id: "sub-a",
+    organizationId: ORG_A,
+    contractId: "contract-a",
+    status: "submitted",
+    contactEmail: "sam@groundworks.test",
+    subcontractorName: "Groundworks Ltd",
+    reportingPeriodLabel: "FY2026",
+    dueDate: new Date("2026-11-30"),
+    tokenHash: "old-hash",
+    tokenExpiresAt: new Date(Date.now() + 86_400_000),
+  };
+
+  function reject(reason = "Scope 3 is missing the haulage figure") {
+    return post("/x", { action: "reject", rejectionReason: reason }, "PATCH");
+  }
+
+  it("will not send back another organisation's submission, and emails nobody", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/route");
+    const { sendEmail } = await import("@/lib/notifications/email");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue(null); // the submission belongs to org B
+
+    const res = await PATCH(reject(), { params: Promise.resolve({ ...ROUTE_PARAMS, submissionId: "sub-of-b" }) });
+
+    expect(res.status).toBe(404);
+    expect(db.subcontractorCarbonSubmission.findFirst.mock.calls[0][0].where).toEqual({
+      id: "sub-of-b",
+      contractId: "contract-a",
+      organizationId: ORG_A,
+    });
+    expect(db.subcontractorCarbonSubmission.update).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("replaces the old link with a fresh one that is the only copy sent, so the old link stops working", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/route");
+    const { sendEmail, subcontractorRejectedEmail } = await import("@/lib/notifications/email");
+    const { hashToken } = await import("@/lib/management-systems/auditor-access");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue(SUBMITTED_ROW);
+    db.subcontractorCarbonSubmission.update
+      .mockResolvedValueOnce({ ...SUBMITTED_ROW, status: "rejected", organization: { name: "Org A" } })
+      .mockResolvedValueOnce({ ...SUBMITTED_ROW, status: "rejected" });
+
+    const res = await PATCH(reject(), { params: Promise.resolve(ROUTE_PARAMS) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ emailSent: true });
+    const emailed = vi.mocked(subcontractorRejectedEmail).mock.calls[0][0];
+    const token = emailed.portalUrl.split("/").pop()!;
+    expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: "sam@groundworks.test" }));
+
+    const second = db.subcontractorCarbonSubmission.update.mock.calls[1][0];
+    expect(second.where).toEqual({ id: "sub-a" });
+    expect(second.data.tokenHash).toBe(hashToken(token));
+    expect(second.data.tokenHash).not.toBe("old-hash");
+    expect(JSON.stringify(db.subcontractorCarbonSubmission.update.mock.calls)).not.toContain(token);
+  });
+
+  it("keeps the rejection and the old link when the email does not send, and says so", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/route");
+    const { sendEmail } = await import("@/lib/notifications/email");
+    const { writeAuditLog } = await import("@/lib/db/audit");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue(SUBMITTED_ROW);
+    db.subcontractorCarbonSubmission.update.mockResolvedValueOnce({
+      ...SUBMITTED_ROW,
+      status: "rejected",
+      organization: { name: "Org A" },
+    });
+    vi.mocked(sendEmail).mockRejectedValueOnce(new Error("mail provider down"));
+
+    const res = await PATCH(reject(), { params: Promise.resolve(ROUTE_PARAMS) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ emailSent: false });
+    // The decision stands, but no new hash is stored, so the link already out still works.
+    expect(db.subcontractorCarbonSubmission.update).toHaveBeenCalledTimes(1);
+    expect(db.subcontractorCarbonSubmission.update.mock.calls[0][0].data).toEqual({
+      status: "rejected",
+      rejectionReason: "Scope 3 is missing the haulage figure",
+    });
+    expect(writeAuditLog).toHaveBeenCalledWith(expect.objectContaining({
+      action: "subcontractor_submission.rejected",
+      metadata: expect.objectContaining({ emailSent: false }),
+    }));
+  });
+
+  it("refuses to reject a request that is not awaiting review, and emails nothing", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/contracts/[contractId]/subcontractor-submissions/[submissionId]/route");
+    const { sendEmail } = await import("@/lib/notifications/email");
+    db.subcontractorCarbonSubmission.findFirst.mockResolvedValue({ ...SUBMITTED_ROW, status: "verified" });
+
+    const res = await PATCH(reject(), { params: Promise.resolve(ROUTE_PARAMS) });
+
+    expect(res.status).toBe(422);
+    expect(db.subcontractorCarbonSubmission.update).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 });

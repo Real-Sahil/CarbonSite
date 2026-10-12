@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { CompanyFinder, CompanyFlags } from "@/components/company/company-finder";
 import { FormField, FormActions, FormError, FormSection } from "@/components/forms/form-kit";
+// Type-only, so it is erased from the client bundle. The module itself imports the database.
+import type { SubcontractorSummary } from "@/lib/subcontractor/summary";
 
 interface Submission {
   id: string;
@@ -24,6 +26,8 @@ interface Submission {
   linkSentAt: string | null;
   openedAt: string | null;
   tokenExpiresAt: string | null;
+  reminderCount: number;
+  lastReminderAt: string | null;
   submittedVia: "portal_link" | "logged" | null;
   submitterName: string | null;
   submitterNote: string | null;
@@ -128,6 +132,31 @@ export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; co
   );
 }
 
+// Counts come from subcontractorSummary() on the server; this only lays them out.
+export function SubcontractorSummaryStrip({ summary }: { summary: SubcontractorSummary }) {
+  const items = [
+    { label: "Still owed", value: String(summary.owed), hint: `${summary.overdue} overdue` },
+    { label: "Link not opened", value: String(summary.notOpened), hint: "Sent, never opened" },
+    { label: "Awaiting review", value: String(summary.awaitingReview), hint: "Figures in, not yet checked" },
+    {
+      label: "Verified",
+      value: String(summary.verified),
+      hint: `${summary.verifiedTco2e.toFixed(2)} tCO₂e as reported`,
+    },
+  ];
+  return (
+    <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-lg border border-[#E5E7EB] bg-white p-3">
+          <dt className="text-xs text-[#6B7280]">{item.label}</dt>
+          <dd className="mt-1 text-lg font-medium tabular-nums text-[#111827]">{item.value}</dd>
+          <dd className="text-xs text-[#6B7280]">{item.hint}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 // Each row is one request. Links are issued here and shown once (Copy link) or
 // emailed to the contact. The evidence file downloads through a one-hour signed URL.
 export function SubmissionRow({
@@ -152,12 +181,13 @@ export function SubmissionRow({
   const [linkNotice, setLinkNotice] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [rejectNotice, setRejectNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const canSendLink = canManage && LINK_OPEN_STATUSES.includes(submission.status);
   const linkLive = submission.tokenExpiresAt !== null && new Date(submission.tokenExpiresAt).getTime() > Date.now();
 
-  function callAction(body: Record<string, unknown>) {
+  function callAction(body: Record<string, unknown>, onDone?: (json: { emailSent?: boolean }) => void) {
     setError(null);
     startTransition(async () => {
       const res = await fetch(
@@ -168,13 +198,29 @@ export function SubmissionRow({
           body: JSON.stringify(body),
         },
       );
+      const json = (await res.json().catch(() => null)) as { message?: string; emailSent?: boolean } | null;
       if (!res.ok) {
-        const json = await res.json().catch(() => null);
         setError(json?.message ?? "Could not update submission");
         return;
       }
       setEditing(false);
+      onDone?.(json ?? {});
       router.refresh();
+    });
+  }
+
+  function reject() {
+    const reason = window.prompt("Reason for rejecting this submission?");
+    if (!reason) return;
+    setRejectNotice(null);
+    callAction({ action: "reject", rejectionReason: reason }, (json) => {
+      if (!submission.contactEmail) {
+        setRejectNotice("Rejected. No contact email, so nothing was sent. Copy a link to send it yourself.");
+      } else if (json.emailSent) {
+        setRejectNotice(`Rejected. A new link was emailed to ${submission.contactEmail}.`);
+      } else {
+        setRejectNotice("Rejected, but the email did not send. Send the link again from this row.");
+      }
     });
   }
 
@@ -255,6 +301,11 @@ export function SubmissionRow({
           {submission.openedAt && (
             <div className="text-xs text-[#6B7280]">Opened {formatDate(submission.openedAt)}</div>
           )}
+          {submission.reminderCount > 0 && submission.lastReminderAt && (
+            <div className="text-xs text-[#6B7280]">
+              {submission.reminderCount} reminder{submission.reminderCount === 1 ? "" : "s"}, last {formatDate(submission.lastReminderAt)}
+            </div>
+          )}
           {canSendLink && linkLive && submission.tokenExpiresAt && (
             <div className="text-xs text-[#6B7280]">Link valid to {formatDate(submission.tokenExpiresAt)}</div>
           )}
@@ -306,19 +357,12 @@ export function SubmissionRow({
             {canManage && submission.status === "submitted" && (
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => callAction({ action: "verify" })} disabled={isPending}>Verify</Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    const reason = window.prompt("Reason for rejecting this submission?");
-                    if (reason) callAction({ action: "reject", rejectionReason: reason });
-                  }}
-                  disabled={isPending}
-                >
+                <Button size="sm" variant="outline" onClick={reject} disabled={isPending}>
                   Reject
                 </Button>
               </div>
             )}
+            {rejectNotice && <p className="mt-2 text-xs text-[#374151] max-w-[24ch]">{rejectNotice}</p>}
             {editing && (
               <div className="flex flex-col gap-2 rounded-md border border-[#E5E7EB] bg-white p-3">
                 <div className="flex gap-2">

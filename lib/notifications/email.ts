@@ -558,6 +558,12 @@ export function supplierDataRequestEmail(params: {
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch] ?? ch);
 
+/**
+ * A date as the day it is in UTC. Due dates are stored at UTC midnight, so a
+ * server outside UTC would otherwise print the day before.
+ */
+const longDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
 /** Sent to a subcontractor with a link to upload their own carbon figures. The link is single-purpose: no account. */
 export function subcontractorRequestEmail(params: {
   recipientName: string;
@@ -567,8 +573,8 @@ export function subcontractorRequestEmail(params: {
   portalUrl: string;
   linkExpiresAt: Date;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
-  const due = params.dueDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const linkExpires = params.linkExpiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const due = longDate(params.dueDate);
+  const linkExpires = longDate(params.linkExpiresAt);
   const org = escapeHtml(params.orgName);
   const name = escapeHtml(params.recipientName);
   const subject = `${params.orgName} needs your carbon figures for ${params.reportingPeriodLabel}`;
@@ -604,6 +610,120 @@ export function subcontractorRequestEmail(params: {
     ${btn("Enter your figures", params.portalUrl)}
     <p style="margin:20px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
       No account is needed. The link opens this one form and works until ${linkExpires}. Keep it private.
+    </p>
+  `);
+
+  return { subject, html, text };
+}
+
+/**
+ * Chases figures still owed. `daysLeft` is whole UTC days to the due day: above
+ * zero is upcoming, zero is today, below zero is overdue. The link is new, so the
+ * earlier one no longer works; the email says so.
+ */
+export function subcontractorReminderEmail(params: {
+  recipientName: string;
+  orgName: string;
+  reportingPeriodLabel: string;
+  dueDate: Date;
+  daysLeft: number;
+  portalUrl: string;
+  linkExpiresAt: Date;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const due = longDate(params.dueDate);
+  const linkExpires = longDate(params.linkExpiresAt);
+  const overdue = params.daysLeft < 0;
+  const timing = overdue
+    ? "overdue"
+    : params.daysLeft === 0
+      ? "due today"
+      : `due in ${params.daysLeft} day${params.daysLeft === 1 ? "" : "s"}`;
+  const org = escapeHtml(params.orgName);
+  const name = escapeHtml(params.recipientName);
+  const period = escapeHtml(params.reportingPeriodLabel);
+  const subject = `Reminder: ${params.orgName} carbon figures for ${params.reportingPeriodLabel} are ${timing}`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `${params.orgName} is still waiting for your carbon figures for ${params.reportingPeriodLabel}.`,
+    ``,
+    `  Reporting period: ${params.reportingPeriodLabel}`,
+    `  ${overdue ? "Was due" : "Send by"}: ${due}`,
+    ``,
+    `Enter your total tonnes CO2e by scope and, if you have it, attach the calculation or the supporting invoice. No account is needed.`,
+    `This is a new link. Any earlier link no longer works:`,
+    `${params.portalUrl}`,
+    ``,
+    `This link works until ${linkExpires} and only opens this one form. Keep it private.`,
+    ``,
+    `Thank you,`,
+    `The MetricOra team on behalf of ${params.orgName}`,
+  ].join("\n");
+
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Figures still needed</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${name}, <strong style="color:${BRAND_DARK};">${org}</strong> is still waiting for your carbon figures for ${period}.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Reporting period", period)}
+        ${kv(overdue ? "Was due" : "Send by", due)}
+      </tbody>
+    </table>
+    ${btn("Enter your figures", params.portalUrl)}
+    <p style="margin:20px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
+      This is a new link. Any earlier link no longer works. The link opens this one form and works until ${linkExpires}. Keep it private.
+    </p>
+  `);
+
+  return { subject, html, text };
+}
+
+/** Sent when the team sends figures back. The reason is theirs, shown as written. A new link lets the subcontractor resubmit. */
+export function subcontractorRejectedEmail(params: {
+  recipientName: string;
+  orgName: string;
+  reportingPeriodLabel: string;
+  reason: string;
+  portalUrl: string;
+  linkExpiresAt: Date;
+}): Pick<EmailPayload, "subject" | "html" | "text"> {
+  const linkExpires = longDate(params.linkExpiresAt);
+  const org = escapeHtml(params.orgName);
+  const name = escapeHtml(params.recipientName);
+  const period = escapeHtml(params.reportingPeriodLabel);
+  const reason = escapeHtml(params.reason);
+  const subject = `${params.orgName} sent back your carbon figures for ${params.reportingPeriodLabel}`;
+  const text = [
+    `Hi ${params.recipientName},`,
+    ``,
+    `${params.orgName} has sent back the carbon figures you submitted for ${params.reportingPeriodLabel}.`,
+    ``,
+    `Reason: ${params.reason}`,
+    ``,
+    `Correct the figures and send them again. This is a new link. Any earlier link no longer works:`,
+    `${params.portalUrl}`,
+    ``,
+    `This link works until ${linkExpires} and only opens this one form. Keep it private.`,
+    ``,
+    `Thank you,`,
+    `The MetricOra team on behalf of ${params.orgName}`,
+  ].join("\n");
+
+  const html = emailLayout(`
+    <p style="margin:0 0 6px;font-size:24px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;">Figures sent back</p>
+    <p style="margin:0 0 28px;font-size:15px;color:${TEXT_MUTED};line-height:1.5;">
+      Hi ${name}, <strong style="color:${BRAND_DARK};">${org}</strong> has sent back the carbon figures you submitted for ${period}.
+    </p>
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:${BODY_BG};border-radius:6px;padding:16px 20px;width:100%;box-sizing:border-box;">
+      <tbody>
+        ${kv("Reason", reason)}
+      </tbody>
+    </table>
+    ${btn("Correct your figures", params.portalUrl)}
+    <p style="margin:20px 0 0;font-size:12px;color:${TEXT_MUTED};line-height:1.6;">
+      This is a new link. Any earlier link no longer works. The link opens this one form and works until ${linkExpires}. Keep it private.
     </p>
   `);
 

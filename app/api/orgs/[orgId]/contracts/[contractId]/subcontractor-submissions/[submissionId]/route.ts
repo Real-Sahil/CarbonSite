@@ -7,7 +7,8 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { isValidStorageKey } from "@/lib/storage";
 import { updateSubcontractorSubmissionSchema } from "@/lib/validation/project-carbon";
-import { orgSubmissionView } from "@/lib/subcontractor/portal";
+import { sendEmail, subcontractorRejectedEmail } from "@/lib/notifications/email";
+import { issueLinkToken, orgSubmissionView, portalUrl } from "@/lib/subcontractor/portal";
 
 type Params = { params: Promise<{ orgId: string; contractId: string; submissionId: string }> };
 
@@ -136,10 +137,43 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       );
     }
 
-    const submission = await prisma.subcontractorCarbonSubmission.update({
+    // The status change is the decision, so it stands even if the email fails.
+    // The response says whether the email went; the team can send a link again from the row.
+    const { organization, ...rejected } = await prisma.subcontractorCarbonSubmission.update({
       where: { id: submissionId },
       data: { status: "rejected", rejectionReason: data.rejectionReason },
+      include: { organization: { select: { name: true } } },
     });
+
+    let emailSent = false;
+    let submission = rejected;
+    if (rejected.contactEmail) {
+      const now = new Date();
+      const issued = issueLinkToken(now);
+      try {
+        await sendEmail({
+          to: rejected.contactEmail,
+          ...subcontractorRejectedEmail({
+            recipientName: rejected.subcontractorName,
+            orgName: organization.name,
+            reportingPeriodLabel: rejected.reportingPeriodLabel,
+            reason: data.rejectionReason,
+            portalUrl: portalUrl(issued.token),
+            linkExpiresAt: issued.tokenExpiresAt,
+          }),
+        });
+        emailSent = true;
+      } catch {
+        // Nothing stored: the old link is unchanged, and the team can send a new one.
+      }
+      if (emailSent) {
+        // The new link replaces the old one: the email is now the only working copy.
+        submission = await prisma.subcontractorCarbonSubmission.update({
+          where: { id: submissionId },
+          data: { tokenHash: issued.tokenHash, tokenExpiresAt: issued.tokenExpiresAt, linkSentAt: now },
+        });
+      }
+    }
 
     await writeAuditLog({
       organizationId: orgId,
@@ -147,10 +181,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       action: "subcontractor_submission.rejected",
       resourceType: "SubcontractorCarbonSubmission",
       resourceId: submissionId,
-      metadata: { rejectionReason: data.rejectionReason },
+      metadata: { rejectionReason: data.rejectionReason, emailSent },
     });
 
-    return NextResponse.json({ submission: orgSubmissionView(submission) });
+    return NextResponse.json({ submission: orgSubmissionView(submission), emailSent });
   } catch (err) {
     return handleRouteError(err);
   }

@@ -30,7 +30,9 @@ import {
 import { CreateProjectForm, DeleteProjectButton } from "./project-actions";
 import { loadProjectBurndown } from "@/lib/project-carbon/burndown-load";
 import { BudgetStatusChip } from "@/components/project-carbon/budget-status-chip";
-import { RequestSubmissionForm, SubmissionRow } from "./subcontractor-actions";
+import { RequestSubmissionForm, SubmissionRow, SubcontractorSummaryStrip } from "./subcontractor-actions";
+import { startOfUtcDay } from "@/lib/subcontractor/deadline";
+import { subcontractorSummary } from "@/lib/subcontractor/summary";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 import { formatMoney } from "@/lib/i18n/org-format";
 import { getOrgLocale } from "@/lib/i18n/org-basics";
@@ -132,9 +134,10 @@ export default async function ContractDetailPage({ params }: Props) {
 
   const canEdit = EDIT_ROLES.includes(role!);
 
-  // Derive "overdue" purely from the clock — no background job needed.
+  // Derive "overdue" purely from the clock, from the day after the due date (UTC).
+  const now = new Date();
   await prisma.subcontractorCarbonSubmission.updateMany({
-    where: { contractId, organizationId: orgId, status: "requested", dueDate: { lt: new Date() } },
+    where: { contractId, organizationId: orgId, status: "requested", dueDate: { lt: startOfUtcDay(now) } },
     data: { status: "overdue" },
   });
 
@@ -372,50 +375,55 @@ export default async function ContractDetailPage({ params }: Props) {
           {submissions.length === 0 ? (
             <EmptyState message="No subcontractor carbon data requested yet." />
           ) : (
-            <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden overflow-x-auto">
-              <Table className="w-full">
-                <thead>
-                  <tr className="bg-[#f9fafb]">
-                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3 pl-6">Subcontractor</th>
-                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Period</th>
-                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Due</th>
-                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Status</th>
-                    <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Emissions</th>
-                    <th className="w-[160px] pr-6" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {submissions.map((s) => (
-                    <SubmissionRow
-                      key={s.id}
-                      orgId={orgId}
-                      contractId={contractId}
-                      canManage={canEdit}
-                      submission={{
-                        id: s.id,
-                        subcontractorName: s.subcontractorName,
-                        contactEmail: s.contactEmail,
-                        reportingPeriodLabel: s.reportingPeriodLabel,
-                        dueDate: s.dueDate.toISOString(),
-                        status: s.status,
-                        scope1Tco2e: s.scope1Tco2e?.toString() ?? null,
-                        scope2Tco2e: s.scope2Tco2e?.toString() ?? null,
-                        scope3Tco2e: s.scope3Tco2e?.toString() ?? null,
-                        notes: s.notes,
-                        rejectionReason: s.rejectionReason,
-                        linkSentAt: s.linkSentAt?.toISOString() ?? null,
-                        openedAt: s.openedAt?.toISOString() ?? null,
-                        tokenExpiresAt: s.tokenExpiresAt?.toISOString() ?? null,
-                        submittedVia: s.submittedVia,
-                        submitterName: s.submitterName,
-                        submitterNote: s.submitterNote,
-                        // The token hash and evidence key stay on the server; the row gets a flag and downloads through the evidence route.
-                        hasEvidence: s.evidenceStorageKey !== null,
-                      }}
-                    />
-                  ))}
-                </tbody>
-              </Table>
+            <div className="flex flex-col gap-4">
+              <SubcontractorSummaryStrip summary={subcontractorSummary(submissions, now)} />
+              <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden overflow-x-auto">
+                <Table className="w-full">
+                  <thead>
+                    <tr className="bg-[#f9fafb]">
+                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3 pl-6">Subcontractor</th>
+                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Period</th>
+                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Due</th>
+                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Status</th>
+                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Emissions</th>
+                      <th className="w-[160px] pr-6" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {submissions.map((s) => (
+                      <SubmissionRow
+                        key={s.id}
+                        orgId={orgId}
+                        contractId={contractId}
+                        canManage={canEdit}
+                        submission={{
+                          id: s.id,
+                          subcontractorName: s.subcontractorName,
+                          contactEmail: s.contactEmail,
+                          reportingPeriodLabel: s.reportingPeriodLabel,
+                          dueDate: s.dueDate.toISOString(),
+                          status: s.status,
+                          scope1Tco2e: s.scope1Tco2e?.toString() ?? null,
+                          scope2Tco2e: s.scope2Tco2e?.toString() ?? null,
+                          scope3Tco2e: s.scope3Tco2e?.toString() ?? null,
+                          notes: s.notes,
+                          rejectionReason: s.rejectionReason,
+                          linkSentAt: s.linkSentAt?.toISOString() ?? null,
+                          openedAt: s.openedAt?.toISOString() ?? null,
+                          tokenExpiresAt: s.tokenExpiresAt?.toISOString() ?? null,
+                          reminderCount: s.reminderCount,
+                          lastReminderAt: s.lastReminderAt?.toISOString() ?? null,
+                          submittedVia: s.submittedVia,
+                          submitterName: s.submitterName,
+                          submitterNote: s.submitterNote,
+                          // The token hash and evidence key stay on the server; the row gets a flag and downloads through the evidence route.
+                          hasEvidence: s.evidenceStorageKey !== null,
+                        }}
+                      />
+                    ))}
+                  </tbody>
+                </Table>
+              </div>
             </div>
           )}
         </CardContent>

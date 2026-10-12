@@ -1,6 +1,6 @@
 /**
  * Scheduled monitoring jobs. Called by the Supabase pg_cron schedule in
- * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045, 20260927000050 and 20261015000099 (daily), 20261005000076 (monthly). Each job only alerts once per record or per
+ * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045, 20260927000050, 20261015000099 and 20261016000101 (daily), 20261005000076 (monthly). Each job only alerts once per record or per
  * threshold day, so a repeated or late call is safe.
  */
 
@@ -19,6 +19,7 @@ import { processWasteDocumentReminders } from "@/lib/waste/reminders";
 import { anonymiseExpiredAuditRows } from "@/lib/audit/anonymise";
 import { anchorAllAuditChains } from "@/lib/audit/anchor";
 import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
+import { processSubcontractorReminders } from "@/lib/subcontractor/reminders";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -66,6 +67,12 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
   },
   "monthly-checklist": async () => {
     await processMonthlyChecklistReminders();
+    return "processed";
+  },
+  // Daily: a reminder for each subcontractor request still owed within a week of its
+  // due date or up to 60 days overdue, at most three per request (migration 20261016000101).
+  "subcontractor-reminders": async () => {
+    await processSubcontractorReminders();
     return "processed";
   },
 };

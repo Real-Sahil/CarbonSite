@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createSubcontractorSubmissionSchema } from "@/lib/validation/project-carbon";
 import { orgSubmissionView } from "@/lib/subcontractor/portal";
+import { startOfUtcDay } from "@/lib/subcontractor/deadline";
 
 type Params = { params: Promise<{ orgId: string; contractId: string }> };
 
@@ -19,10 +20,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
     if (!contract) return apiError("NOT_FOUND", "Contract not found.", 404);
 
     const now = new Date();
-    // Mark past-due, still-requested submissions as overdue on read — no
-    // background job needed for a status derived purely from the clock.
+    // Mark requests overdue on read, from the day after their due date (UTC).
+    // No background job needed for a status derived purely from the clock.
     await prisma.subcontractorCarbonSubmission.updateMany({
-      where: { contractId, organizationId: orgId, status: "requested", dueDate: { lt: now } },
+      where: { contractId, organizationId: orgId, status: "requested", dueDate: { lt: startOfUtcDay(now) } },
       data: { status: "overdue" },
     });
 
