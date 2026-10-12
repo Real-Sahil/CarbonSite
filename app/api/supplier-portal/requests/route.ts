@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { writeAuditLog } from "@/lib/db/audit";
+import { hashToken } from "@/lib/management-systems/auditor-access";
 
 // GET /api/supplier-portal/requests?token=... — list supplier's submission history
 export async function GET(req: NextRequest) {
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
 
     // Find any request with this token to identify the supplier
     const anyRequest = await prisma.supplierDataRequest.findUnique({
-      where: { token },
+      where: { tokenHash: hashToken(token) },
       select: {
         supplierEmail: true,
         organizationId: true,
@@ -56,7 +57,6 @@ export async function GET(req: NextRequest) {
       },
       select: {
         id: true,
-        token: true,
         categoryCode: true,
         status: true,
         sentAt: true,
@@ -99,7 +99,6 @@ export async function GET(req: NextRequest) {
       hasMore,
       requests: requests.map((r) => ({
         id: r.id,
-        token: r.token,
         categoryCode: r.categoryCode,
         categoryName: r.categoryCode.replace(/^s\d-/, "").replace(/-/g, " "),
         status: r.status,

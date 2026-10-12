@@ -12,6 +12,7 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { offsetPage } from "@/lib/api/pagination";
 import { handleRouteError } from "@/lib/validation/api";
 import { sendEmail, supplierDataRequestEmail } from "@/lib/notifications/email";
+import { hashToken, newToken } from "@/lib/management-systems/auditor-access";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk";
 const EXPIRES_DAYS = 30;
@@ -122,6 +123,7 @@ export async function POST(
 
     for (const supplier of body.suppliers) {
       try {
+        const linkToken = newToken();
         const request = await prisma.supplierDataRequest.create({
           data: {
             organizationId: orgId,
@@ -132,10 +134,11 @@ export async function POST(
             expiresAt,
             notes: body.notes ?? null,
             createdByUserId: session.user.id,
+            tokenHash: hashToken(linkToken),
           },
         });
 
-        const formUrl = `${APP_URL}/supplier-data/${request.token}`;
+        const formUrl = `${APP_URL}/supplier-data/${linkToken}`;
 
         await sendEmail({
           to: supplier.email,

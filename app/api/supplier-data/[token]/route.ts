@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { handleRouteError } from "@/lib/validation/api";
 import { isSupplierCurrency, isSupplierUnit, methodForUnit } from "@/lib/suppliers/units";
+import { hashToken } from "@/lib/management-systems/auditor-access";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest, { params }: Params) {
 
     // Load the request and validate token
     const request = await prisma.supplierDataRequest.findUnique({
-      where: { token },
+      where: { tokenHash: hashToken(token) },
       select: {
         id: true,
         organizationId: true,
@@ -173,7 +174,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
     const { token } = await params;
 
     const request = await prisma.supplierDataRequest.findUnique({
-      where: { token },
+      where: { tokenHash: hashToken(token) },
       select: {
         supplierEmail: true,
         supplierName: true,

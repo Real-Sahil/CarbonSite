@@ -1023,6 +1023,7 @@ async function autoCreateSupplierDataRequests(
     // Create SupplierDataRequest
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
     try {
+      // No link is issued here (no email is sent); a resend issues one and stores its hash.
       await prisma.supplierDataRequest.create({
         data: {
           organizationId: orgId,
