@@ -5,7 +5,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
-import { handleRouteError } from "@/lib/validation/api";
+import { isValidStorageKey } from "@/lib/storage";
+import { apiError, handleRouteError } from "@/lib/validation/api";
 
 const epdSchema = z.object({
   productName: z.string().min(1).max(200).trim(),
@@ -86,6 +87,10 @@ export async function POST(
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor, "supplier");
 
     const body = epdSchema.parse(await req.json());
+    // The file must be this organisation's own: a supplier could otherwise attach another tenant's evidence.
+    if (body.storageKey && (!body.storageKey.startsWith(`org/${orgId}/`) || !isValidStorageKey(body.storageKey))) {
+      return apiError("VALIDATION_ERROR", "storageKey must be a file uploaded for this organisation.", 400);
+    }
 
     const epd = await prisma.epdRecord.create({
       data: {
