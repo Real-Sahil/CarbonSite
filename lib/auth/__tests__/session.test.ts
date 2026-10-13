@@ -60,10 +60,26 @@ describe("requireOrgMember", () => {
     mocks.authGetSession.mockReset();
     mocks.membershipFindUnique.mockReset();
     mocks.sessionFindUnique.mockReset();
+    // The browser session's revocation check; a live row unless a test says otherwise.
+    mocks.sessionFindUnique.mockResolvedValue({ revokedAt: null });
     mocks.accountFindFirst.mockReset();
     mocks.authGetSession.mockResolvedValue(session);
     // Default: account has already changed password (non-null passwordChangedAt)
     mocks.accountFindFirst.mockResolvedValue({ passwordChangedAt: new Date("2026-01-01") });
+  });
+
+  test("refuses a browser session that has been revoked, even though Better Auth still accepts it", async () => {
+    mocks.sessionFindUnique.mockResolvedValueOnce({ revokedAt: new Date("2026-06-08T10:30:00.000Z") });
+
+    await expect(requireOrgMember("org-1", "viewer")).rejects.toMatchObject({
+      code: "UNAUTHENTICATED",
+      status: 401,
+    } satisfies Partial<AuthError>);
+    expect(mocks.sessionFindUnique).toHaveBeenCalledWith({
+      where: { id: "session-1" },
+      select: { revokedAt: true },
+    });
+    expect(mocks.membershipFindUnique).not.toHaveBeenCalled();
   });
 
   test("queries membership by the requested organisation and current user", async () => {
@@ -128,6 +144,8 @@ describe("ROLE_GROUPS", () => {
     mocks.authGetSession.mockReset();
     mocks.membershipFindUnique.mockReset();
     mocks.sessionFindUnique.mockReset();
+    // The browser session's revocation check; a live row unless a test says otherwise.
+    mocks.sessionFindUnique.mockResolvedValue({ revokedAt: null });
     mocks.accountFindFirst.mockReset();
     mocks.authGetSession.mockResolvedValue(session);
     mocks.accountFindFirst.mockResolvedValue({ passwordChangedAt: new Date("2026-01-01") });

@@ -51,13 +51,13 @@ export function generateState(): string {
   return base64url.stringify(crypto.randomBytes(32));
 }
 
+// RFC 7636 requires unpadded base64url; rfc4648's default adds "=" padding.
 export function generateCodeChallenge(codeVerifier: string): string {
-  const hash = crypto.createHash("sha256").update(codeVerifier).digest();
-  return base64url.stringify(hash);
+  return crypto.createHash("sha256").update(codeVerifier).digest("base64url");
 }
 
 export function generateCodeVerifier(): string {
-  return base64url.stringify(crypto.randomBytes(32));
+  return crypto.randomBytes(32).toString("base64url");
 }
 
 export async function buildOidcAuthorizationUrl(

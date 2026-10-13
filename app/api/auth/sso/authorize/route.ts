@@ -6,6 +6,7 @@ import {
   getSsoConfiguration,
   generateState,
   generateCodeVerifier,
+  generateCodeChallenge,
   buildOidcAuthorizationUrl,
   buildSamlAuthenticationRequest,
   inferOidcEndpoint,
@@ -102,7 +103,7 @@ export async function GET(req: NextRequest) {
       },
       redirectUri,
       state,
-      codeVerifier
+      generateCodeChallenge(codeVerifier)
     );
 
     // Create response and set secure cookies

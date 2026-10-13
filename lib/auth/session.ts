@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { headers } from "next/headers";
 import { auth } from "./index";
+import { verifiedSessionToken } from "./session-cookie";
 import { prisma } from "@/lib/db";
 import type { OrgRole } from "@prisma/client";
 
@@ -18,16 +19,20 @@ async function loadSession() {
     console.error("[getSession] auth.api.getSession threw:", err);
     return null;
   });
-  if (browserSession) return browserSession;
+  if (browserSession) {
+    // Better Auth ignores revokedAt, so a revoked row still passes its lookup. Check it by id;
+    // a missing row or a failed read falls through to the checks below, which refuse it too.
+    const row = await prisma.session
+      .findUnique({ where: { id: browserSession.session.id }, select: { revokedAt: true } })
+      .catch(() => null);
+    if (row?.revokedAt === null) return browserSession;
+  }
 
-  // Cookie fallback: Better Auth signs session cookies with BETTER_AUTH_SECRET.
-  // If that env var is absent the library generates a random per-process secret.
-  // On serverless platforms (Vercel) every cold start is a new process with a
-  // new secret, so getSignedCookie() always returns null even for valid sessions.
-  //
-  // The signed cookie format is "{rawToken}.{44-char-base64-hmac}".
-  // We extract the raw token (the part before the trailing signature), look it
-  // up in the DB, and validate expiry ourselves.
+  // Cookie fallback: runs when auth.api.getSession() returns nothing, for example
+  // when Better Auth's own lookup fails during a deploy. The HMAC must check out
+  // against BETTER_AUTH_SECRET (verifiedSessionToken), so a bare token from a DB
+  // read or backup signs no one in. The token is then looked up here, with expiry
+  // and revocation checked.
   //
   // We use an explicit `select` (no `include`) so the query works even when
   // the revoked_at column has not yet been added by the migration — SELECT *
@@ -40,7 +45,7 @@ async function loadSession() {
       readRawCookie(cookieHeader, "better-auth.session_token");
 
     if (signedValue) {
-      const token = extractTokenFromSignedCookie(signedValue);
+      const token = verifiedSessionToken(signedValue);
       if (token) {
         const dbSession = await prisma.session
           .findUnique({
@@ -163,16 +168,6 @@ function readRawCookie(cookieHeader: string, name: string): string | null {
     }
   }
   return null;
-}
-
-function extractTokenFromSignedCookie(value: string): string | null {
-  // Better Auth signs cookies as "{token}.{hmac}" using base64url encoding (RFC 4648 §5),
-  // which produces 43 chars without "=" padding — not the 44-char padded base64 the
-  // previous check expected. Removing the strict format check lets the cookie fallback
-  // work regardless of the exact signature encoding the library version produces.
-  const lastDot = value.lastIndexOf(".");
-  if (lastDot < 1) return value; // no dot — treat whole value as the token
-  return value.substring(0, lastDot);
 }
 
 function extractBearerToken(header: string | null) {

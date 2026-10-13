@@ -23,6 +23,7 @@ interface UserInfo {
   accessToken?: string;
   refreshToken?: string;
   expiresIn?: number;
+  emailUnverified?: boolean;
 }
 
 async function handleOidcCallback(
@@ -101,7 +102,9 @@ async function handleOidcCallback(
     name,
     accessToken: tokenResponse.accessToken,
     refreshToken: tokenResponse.refreshToken,
-    expiresIn: tokenResponse.expiresIn
+    expiresIn: tokenResponse.expiresIn,
+    // A missing claim is allowed; only an explicit false refuses the sign-in.
+    emailUnverified: idTokenPayload.email_verified === false || idTokenPayload.email_verified === "false",
   };
 }
 
@@ -135,10 +138,34 @@ async function createOrUpdateUserAndSession(
   providerFromCookie: string,
   ssoConfig: SsoConfiguration
 ): Promise<NextResponse> {
+  // Checked before any write: the new-user branch below marks the email verified.
+  if (userInfo.emailUnverified) {
+    return apiError(
+      "SSO_EMAIL_NOT_VERIFIED",
+      "Your identity provider has not verified this email address. Verify it there, then sign in again.",
+      403
+    );
+  }
+
   // Find or create user in Better Auth
   let user = await prisma.user.findUnique({
     where: { email: userInfo.email },
   });
+
+  // An existing account is linked and signed in only if it already belongs to
+  // this org. Linking by an IdP-asserted email let accounts from other orgs in.
+  if (user) {
+    const member = await prisma.organizationMembership.findFirst({
+      where: { userId: user.id, organizationId: orgIdFromCookie, terminatedAt: null },
+    });
+    if (!member) {
+      return apiError(
+        "SSO_ACCOUNT_NOT_IN_ORG",
+        "This account is not a member of this organisation. Ask an administrator to invite you, then sign in again.",
+        403
+      );
+    }
+  }
 
   if (!user) {
     if (!ssoConfig.autoCreateUsers) {

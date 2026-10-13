@@ -10,16 +10,11 @@ import { POLICIES } from "@/lib/security/rate-limit";
 // POST /api/auth/token — mobile bearer-token refresh.
 //
 // Field workers authenticate with a session token stored on-device; they have
-// no password (invite links are single-use), so without a refresh path an
-// expired session permanently locks them out. The Dio interceptor calls this
-// endpoint on 401 with the (possibly just-expired) token. We rotate the token
-// and extend the session, accepting tokens up to GRACE_MS past expiry —
-// refresh-token semantics for a single-token client.
+// no password (invite links are single-use). The Dio interceptor calls this
+// endpoint on 401. We rotate the token and extend the session only while it is
+// unexpired and unrevoked; an expired session needs a new invite link.
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days, matches accept-invite
-// FIND-003: Reduced from 60 days — enough for a field worker whose phone was
-// offline over a weekend, but limits the window if a token is compromised.
-const GRACE_MS = 7 * 24 * 60 * 60 * 1000; // rotate up to 7 days after expiry
 
 function extractBearerToken(header: string | null): string | null {
   if (!header) return null;
@@ -40,15 +35,15 @@ export async function POST(req: NextRequest) {
 
     const session = await prisma.session.findUnique({
       where: { token },
-      select: { id: true, expiresAt: true, userId: true },
+      select: { id: true, expiresAt: true, revokedAt: true, userId: true },
     });
     if (!session) {
       return apiError("UNAUTHENTICATED", "Session not found.", 401);
     }
 
     const now = Date.now();
-    if (session.expiresAt.getTime() + GRACE_MS <= now) {
-      return apiError("SESSION_EXPIRED", "Session expired too long ago to refresh.", 401);
+    if (session.revokedAt || session.expiresAt.getTime() <= now) {
+      return apiError("SESSION_EXPIRED", "Session expired. Ask your organisation for a new invite link.", 401);
     }
 
     const newToken = randomBytes(32).toString("base64url");
