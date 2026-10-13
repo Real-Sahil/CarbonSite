@@ -8,6 +8,7 @@ import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { rateLimitKey } from "@/lib/security/rate-limit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { upsertBrandingSchema } from "@/lib/validation/org";
+import { isOwnBrandingLogoKey } from "@/lib/storage";
 
 export async function GET(
   _req: NextRequest,
@@ -42,6 +43,9 @@ export async function PUT(
     if (limited) return limited;
 
     const body = upsertBrandingSchema.parse(await req.json());
+    if (body.reportHeaderLogoKey && !isOwnBrandingLogoKey(orgId, body.reportHeaderLogoKey)) {
+      return apiError("INVALID_LOGO_KEY", "Logo must be uploaded through this organisation's branding page.", 422);
+    }
 
     // Ensure subdomain is not claimed by another org
     const conflict = await prisma.tenantBranding.findFirst({

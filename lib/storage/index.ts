@@ -356,6 +356,15 @@ export function brandingLogoUrl(orgId: string): string {
   return `${appOrigin()}/api/public/orgs/${encodeURIComponent(orgId)}/branding/logo`;
 }
 
+// A logo key must sit under this org's branding prefix. The public logo route
+// streams whatever key it is given, so the prefix is the only tenant check.
+export function isOwnBrandingLogoKey(orgId: string, key: string): boolean {
+  return key.startsWith(`org/${orgId}/branding/`) && !key.includes("..");
+}
+
+// Raster types only. SVG can run script when opened on the app origin.
+export const SERVABLE_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+
 // ── Delete ────────────────────────────────────────────────────────────────────
 export async function deleteObject(key: string): Promise<void> {
   assertStorageKey(key);

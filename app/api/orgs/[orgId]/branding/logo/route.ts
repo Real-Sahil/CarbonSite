@@ -15,7 +15,6 @@ const ALLOWED: Record<string, string> = {
   "image/png": "png",
   "image/jpeg": "jpg",
   "image/webp": "webp",
-  "image/svg+xml": "svg",
 };
 
 // Uploads a white-label report logo. Stored under org/{orgId}/branding/.
@@ -51,7 +50,7 @@ export async function POST(
     if (!ext) {
       return apiError(
         "UNSUPPORTED_TYPE",
-        "Logo must be a PNG, JPEG, WEBP or SVG image.",
+        "Logo must be a PNG, JPEG or WEBP image. SVG is not accepted.",
         422,
       );
     }

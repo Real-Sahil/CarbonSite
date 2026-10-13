@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { presignDownload } from "@/lib/storage";
+import { presignDownload, isOwnBrandingLogoKey, SERVABLE_LOGO_TYPES } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export async function GET(
   });
 
   const key = branding?.reportHeaderLogoKey ?? branding?.logoStorageKey;
-  if (!key) {
+  if (!key || !isOwnBrandingLogoKey(orgId, key)) {
     return new NextResponse(null, { status: 404 });
   }
 
@@ -30,11 +30,17 @@ export async function GET(
     if (!upstream.ok) return new NextResponse(null, { status: 404 });
 
     const body = await upstream.arrayBuffer();
-    const contentType = upstream.headers.get("content-type") ?? "image/png";
+    const contentType = (upstream.headers.get("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+    // Legacy SVG logos stay in storage; refuse them rather than serve script.
+    if (!(SERVABLE_LOGO_TYPES as readonly string[]).includes(contentType)) {
+      return new NextResponse(null, { status: 404 });
+    }
 
     return new NextResponse(body, {
       headers: {
         "Content-Type": contentType,
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": "default-src 'none'; sandbox",
         // 1-hour browser/CDN cache; email clients will re-fetch if expired.
         "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       },
