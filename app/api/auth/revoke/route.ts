@@ -33,34 +33,21 @@ export async function POST(req: NextRequest) {
       return apiError("INVALID_BODY", "Request body must be valid JSON.", 400);
     }
 
-    const now = new Date();
-
+    // Rows are deleted, not stamped: Better Auth ignores revokedAt, so only a missing row ends a session.
     if (body?.all) {
-      const { count } = await prisma.session.updateMany({
-        where: { userId: user.id, revokedAt: null },
-        data: { revokedAt: now },
-      });
+      const { count } = await prisma.session.deleteMany({ where: { userId: user.id } });
       return NextResponse.json({ revoked: count });
     }
 
     const targetId = body?.sessionId ?? session.id;
 
-    // Verify the target session belongs to the calling user.
-    const target = await prisma.session.findUnique({
-      where: { id: targetId },
-      select: { id: true, userId: true, revokedAt: true },
+    // Scoped to the calling user: another user's session id matches no row.
+    const { count: removed } = await prisma.session.deleteMany({
+      where: { id: targetId, userId: user.id },
     });
-    if (!target || target.userId !== user.id) {
+    if (removed === 0) {
       return apiError("NOT_FOUND", "Session not found.", 404);
     }
-    if (target.revokedAt !== null) {
-      return apiError("ALREADY_REVOKED", "Session is already revoked.", 409);
-    }
-
-    await prisma.session.update({
-      where: { id: targetId },
-      data: { revokedAt: now },
-    });
 
     return NextResponse.json({ revoked: 1 });
   } catch (err) {

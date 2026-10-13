@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "crypto";
+import { randomUUID, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     // link. Checked before the rate limit, because store reviewers share
     // network addresses and retry the same link.
     const demoToken = process.env.DEMO_REVIEWER_TOKEN;
-    if (demoToken && demoToken.length >= 24 && body.token === demoToken) {
+    if (demoToken && demoToken.length >= 24 && sameSecret(body.token, demoToken)) {
       return handleDemoReviewerLogin(body.name ?? "Reviewer");
     }
 
@@ -83,6 +83,15 @@ export async function POST(req: NextRequest) {
     // 3. Find or create the user
     let user = await prisma.user.findUnique({ where: { email } });
 
+    // An unbound link is a bearer token: whoever holds it must not get into an existing account.
+    if (user && !invite.email) {
+      return apiError(
+        "ACCOUNT_EXISTS",
+        "An account already exists for this email. Ask an admin to add you under Settings → Members.",
+        409,
+      );
+    }
+
     if (!user) {
       const userId = randomUUID();
       user = await prisma.user.create({
@@ -132,6 +141,15 @@ export async function POST(req: NextRequest) {
     const sessionExpiresAt = new Date(now.getTime() + 30 * 86_400_000); // 30 days
 
     const membership = await prisma.$transaction(async (tx) => {
+      // Claim first: a concurrent accept of the same link finds it used and writes nothing.
+      if (!invite.reusable) {
+        const claim = await tx.inviteLink.updateMany({
+          where: { id: invite.id, usedAt: null },
+          data: { usedAt: now, usedByUserId: user!.id },
+        });
+        if (claim.count === 0) return null;
+      }
+
       let mem = existingMembership;
 
       if (!mem) {
@@ -165,13 +183,6 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      if (!invite.reusable) {
-        await tx.inviteLink.update({
-          where: { id: invite.id },
-          data: { usedAt: now, usedByUserId: user!.id },
-        });
-      }
-
       await tx.session.create({
         data: {
           id: sessionId,
@@ -183,6 +194,10 @@ export async function POST(req: NextRequest) {
 
       return mem;
     });
+
+    if (!membership) {
+      return apiError("INVITE_ALREADY_USED", "This invite link has already been used.", 400);
+    }
 
     // 6. Audit log
     await writeAuditLog({
@@ -217,9 +232,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Constant-time: the demo token is a bearer credential, so a timing leak would cost real guesses.
+function sameSecret(given: string, expected: string): boolean {
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 // ---------------------------------------------------------------------------
 // Demo reviewer account — Google Play / App Store review access only.
-// Upserts a permanent demo org + field worker. Session never expires.
+// Upserts the demo org + field worker. Each login issues a session that lasts 30 days.
 // Activated only when DEMO_REVIEWER_TOKEN env var is set and matched.
 // ---------------------------------------------------------------------------
 async function handleDemoReviewerLogin(name: string) {
@@ -229,8 +251,7 @@ async function handleDemoReviewerLogin(name: string) {
   const DEMO_ORG_NAME = "MetricOra Demo";
 
   const now = new Date();
-  // Session expires 10 years out — effectively permanent for reviewers.
-  const sessionExpiresAt = new Date(now.getTime() + 10 * 365 * 86_400_000);
+  const sessionExpiresAt = new Date(now.getTime() + 30 * 86_400_000);
 
   // Upsert demo org. A pilot, so billing never blocks the reviewer.
   const org = await prisma.organization.upsert({

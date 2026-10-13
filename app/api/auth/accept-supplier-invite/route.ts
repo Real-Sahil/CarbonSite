@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomBytes, randomUUID } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 import { handleRouteError, apiError } from "@/lib/validation/api";
@@ -51,69 +52,83 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find or create the supplier user account.
-    let user = await prisma.user.findUnique({
+    // An existing account joins only from its own signed-in session,
+    // so the link alone never signs anyone in.
+    const existing = await prisma.user.findUnique({
       where: { email: invite.email },
     });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          id: randomUUID(),
-          email: invite.email,
-          name: body.name,
-          emailVerifiedAt: now,
-          createdAt: now,
-          updatedAt: now,
+    if (existing) {
+      const signedIn = await getSession();
+      if (signedIn?.user.id !== existing.id) {
+        return apiError(
+          "SIGN_IN_TO_ACCEPT",
+          "Sign in with the invited email address to accept this invite.",
+          409,
+        );
+      }
+      const member = await prisma.organizationMembership.findUnique({
+        where: {
+          organizationId_userId: { organizationId: invite.organizationId, userId: existing.id },
         },
+        select: { id: true },
       });
-    } else if (!user.name && body.name) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { name: body.name, updatedAt: now },
-      });
+      if (member) {
+        return apiError("ALREADY_MEMBER", "This user is already a member of the organisation.", 409);
+      }
     }
 
-    // Upsert membership with supplier role.
-    await prisma.organizationMembership.upsert({
-      where: {
-        organizationId_userId: {
-          organizationId: invite.organizationId,
-          userId: user.id,
-        },
-      },
-      create: {
-        organizationId: invite.organizationId,
-        userId: user.id,
-        role: "supplier",
-      },
-      update: { role: "supplier" },
-    });
-
-    // Mark invite used and issue a session token.
+    const userId = existing?.id ?? randomUUID();
     const sessionToken = randomBytes(32).toString("base64url");
     const expiresAt = new Date(now.getTime() + SESSION_TTL_MS);
 
-    await prisma.$transaction([
-      prisma.supplierInvite.update({
-        where: { id: invite.id },
-        data: { usedAt: now, usedByUserId: user.id },
-      }),
-      prisma.session.create({
-        data: {
-          id: randomUUID(),
-          token: sessionToken,
-          userId: user.id,
-          expiresAt,
-          createdAt: now,
-          updatedAt: now,
-        },
-      }),
-    ]);
+    const claimed = await prisma.$transaction(async (tx) => {
+      // Claim first: a concurrent accept of the same link finds it used and writes nothing.
+      const claim = await tx.supplierInvite.updateMany({
+        where: { id: invite.id, usedAt: null },
+        data: { usedAt: now, usedByUserId: userId },
+      });
+      if (claim.count === 0) return false;
+
+      if (!existing) {
+        await tx.user.create({
+          data: {
+            id: userId,
+            email: invite.email,
+            name: body.name,
+            emailVerifiedAt: now,
+            createdAt: now,
+            updatedAt: now,
+          },
+        });
+        await tx.session.create({
+          data: {
+            id: randomUUID(),
+            token: sessionToken,
+            userId,
+            expiresAt,
+            createdAt: now,
+            updatedAt: now,
+          },
+        });
+      } else if (!existing.name && body.name) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { name: body.name, updatedAt: now },
+        });
+      }
+
+      await tx.organizationMembership.create({
+        data: { organizationId: invite.organizationId, userId, role: "supplier" },
+      });
+      return true;
+    });
+    if (!claimed) {
+      return apiError("INVITE_ALREADY_USED", "This invite link has already been used.", 400);
+    }
 
     await writeAuditLog({
       organizationId: invite.organizationId,
-      actorUserId: user.id,
+      actorUserId: userId,
       action: "supplier_invite.accepted",
       resourceType: "SupplierInvite",
       resourceId: invite.id,
@@ -121,9 +136,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
-      sessionToken,
-      expiresAt: expiresAt.toISOString(),
-      user: { id: user.id, name: user.name, email: user.email },
+      // An existing account already holds its own session, so none is issued here.
+      ...(existing ? {} : { sessionToken, expiresAt: expiresAt.toISOString() }),
+      user: { id: userId, name: existing?.name || body.name, email: invite.email },
       org: {
         id: invite.organization.id,
         name: invite.organization.name,
