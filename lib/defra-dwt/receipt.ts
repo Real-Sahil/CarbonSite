@@ -32,9 +32,9 @@ const AUTHORISATION_FORMATS = [
   /^(WML \d+\/\d+(\/T)?( (LN\/\d+\/\d+(\/[MVTCN]\d*)*|PAC\/\d{4}\/WCL\d{3}))?|LN\/\d+\/\d+(\/[MVTCN]\d*)*|PAC\/\d{4}\/WCL\d{3})$/i, // WML 99/#, LN/99/#, PAC/9999/WCL999 and their combinations
 ];
 
-type Components = { concentration?: number | null; concentrationOperator?: string }[] | undefined;
+type Components = unknown[] | undefined;
 
-// Spec: NOT_PROVIDED takes no components; GUIDANCE and OWN_TESTING need at least one; an operator needs a concentration.
+// Spec: NOT_PROVIDED takes no components; GUIDANCE and OWN_TESTING need at least one. No concentration operator: the live test API rejects it as NotAllowed.
 function checkComponents(ctx: z.RefinementCtx, field: "pops" | "hazardous", source: z.infer<typeof component>, components: Components) {
   const count = components?.length ?? 0;
   if (source === "NOT_PROVIDED" && count > 0) {
@@ -43,11 +43,6 @@ function checkComponents(ctx: z.RefinementCtx, field: "pops" | "hazardous", sour
   if ((source === "GUIDANCE" || source === "OWN_TESTING") && count === 0) {
     ctx.addIssue({ code: "custom", path: [field, "components"], message: `Components are required when the source is ${source}` });
   }
-  components?.forEach((c, i) => {
-    if (c.concentrationOperator && c.concentration == null) {
-      ctx.addIssue({ code: "custom", path: [field, "components", i, "concentration"], message: "A concentration operator needs a concentration value" });
-    }
-  });
 }
 
 const wasteItem = z
@@ -62,7 +57,7 @@ const wasteItem = z
     pops: z
       .object({
         sourceOfComponents: component,
-        components: z.array(z.object({ code: text, concentration, concentrationOperator: z.enum(["<", ">"]).optional() })).optional(),
+        components: z.array(z.object({ code: text, concentration })).optional(),
       })
       .optional(),
     containsHazardous: z.boolean(),
@@ -70,7 +65,7 @@ const wasteItem = z
       .object({
         sourceOfComponents: component,
         hazCodes: z.array(z.string().regex(/^HP_(?:[1-9]|1[0-5])$/, "A hazardous property code is HP_1 to HP_15, with an underscore")).optional(),
-        components: z.array(z.object({ name: text, concentration, concentrationOperator: z.literal(">").optional() })).optional(),
+        components: z.array(z.object({ name: text, concentration })).optional(),
       })
       .optional(),
     disposalOrRecoveryCodes: z.array(z.object({ code: text, weight })).optional(),
