@@ -38,7 +38,7 @@ const ROLE_BADGE: Record<string, "default" | "secondary" | "outline"> = {
 
 // Left accent border color per role for quick visual scanning
 const ROLE_ACCENT: Record<string, string> = {
-  admin: "border-l-[#0F766E]",
+  admin: "border-l-[#131d29]",
   editor: "border-l-blue-500",
   reviewer: "border-l-violet-500",
   viewer: "border-l-slate-300",
@@ -185,7 +185,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
             value={search}
             onChange={(e) => changeSearch(e.target.value)}
             placeholder="Search name or email"
-            className="h-8 w-full rounded-md border border-[#E3E8EE] bg-white pl-8 pr-7 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
+            className="h-8 w-full rounded-md border border-[#E3E8EE] bg-white pl-8 pr-7 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-[#c2400c]"
           />
           {search && (
             <button

@@ -12,7 +12,7 @@ export function LegalShell({ title, updated, children }: { title: string; update
           <p className="text-[15px] text-mk-on-dark-2">{updated}</p>
         </div>
       </Section>
-      <Section tone="light">
+      <Section tone="paper">
         <div className="mk-prose mx-auto max-w-[72ch]">{children}</div>
       </Section>
     </>

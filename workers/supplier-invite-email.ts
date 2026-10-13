@@ -1,7 +1,7 @@
 import { sendEmail, OrgBranding } from "@/lib/notifications/email";
 
-const BRAND_GREEN = "#16a34a";
-const BRAND_DARK = "#0f172a";
+const BRAND_GREEN = "#C2400C";
+const BRAND_DARK = "#131D29";
 const TEXT_MUTED = "#64748b";
 const TEXT_SUBTLE = "#94a3b8";
 const BORDER = "#e2e8f0";

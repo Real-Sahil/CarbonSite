@@ -56,7 +56,7 @@ export default function FieldAppPage() {
         <ol className="mt-12 grid gap-px overflow-hidden rounded-[12px] border border-mk-line bg-mk-line sm:grid-cols-2 lg:grid-cols-3">
           {STEPS.map((s, i) => (
             <li key={s.title} {...reveal(i, "inner")} className="flex flex-col gap-2 bg-mk-surface p-7">
-              <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+              <span className="text-[13px] tabular-nums text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
               <H3>{s.title}</H3>
               <Body>{s.text}</Body>
             </li>

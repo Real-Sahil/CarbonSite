@@ -101,7 +101,7 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-[#c2400c] hover:text-[#0B5F59] font-medium"
+              className="inline-flex items-center gap-1.5 text-sm text-[#c2400c] hover:text-[#a33409] font-medium"
             >
               Get the MetricOra app on Google Play
               <ExternalLink className="h-3.5 w-3.5" />

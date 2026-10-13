@@ -26,33 +26,33 @@ export function EcoLoader({
       aria-live="polite"
       className={cn(
         "flex w-full flex-col items-center justify-center gap-5 px-4",
-        fullScreen ? "min-h-[100dvh] bg-[#F4F8F7]" : "min-h-[60vh]",
+        fullScreen ? "min-h-[100dvh] bg-[#F9FAFC]" : "min-h-[60vh]",
       )}
     >
       <span className="sr-only">{label}</span>
 
       <svg viewBox="0 0 120 120" width="112" height="112" aria-hidden="true" className="eco-loader">
         {/* progress ring */}
-        <circle cx="60" cy="60" r="52" fill="none" stroke="#E6F4F1" strokeWidth="3" />
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#E3E8EE" strokeWidth="3" />
         <circle
           className="eco-ring"
           cx="60"
           cy="60"
           r="52"
           fill="none"
-          stroke="#0F766E"
+          stroke="#C2400C"
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray="70 257"
         />
 
         {/* soil */}
-        <path d="M34 92 Q60 86 86 92" fill="none" stroke="#A7D4CF" strokeWidth="3" strokeLinecap="round" />
+        <path d="M34 92 Q60 86 86 92" fill="none" stroke="#B8C4D0" strokeWidth="3" strokeLinecap="round" />
 
         {/* CO2 drifting in and absorbed by the leaves */}
-        <circle className="eco-co2 eco-co2-1" cx="26" cy="40" r="2.4" fill="#0F766E" />
-        <circle className="eco-co2 eco-co2-2" cx="92" cy="30" r="2" fill="#0F766E" />
-        <circle className="eco-co2 eco-co2-3" cx="30" cy="62" r="1.8" fill="#0F766E" />
+        <circle className="eco-co2 eco-co2-1" cx="26" cy="40" r="2.4" fill="#C2400C" />
+        <circle className="eco-co2 eco-co2-2" cx="92" cy="30" r="2" fill="#C2400C" />
+        <circle className="eco-co2 eco-co2-3" cx="30" cy="62" r="1.8" fill="#C2400C" />
 
         {/* seedling */}
         <path

@@ -80,7 +80,7 @@ export default function ResourcesPage() {
                 <ol className="mt-5 grid gap-4">
                   {g.body.map((p, i) => (
                     <li key={i} className="flex gap-4">
-                      <span className="font-mono text-[13px] leading-[1.8] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="text-[13px] leading-[1.8] tabular-nums text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
                       <Body className="text-[16px]">{p}</Body>
                     </li>
                   ))}

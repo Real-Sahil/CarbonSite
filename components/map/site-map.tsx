@@ -356,7 +356,7 @@ export function SiteMap({
             </thead>
             <tbody>
               {g.rows.map((s) => (
-                <tr key={s.id} className={`border-b border-[#E3E8EE] ${s.id === selectedId ? "bg-orange-50/60" : ""}`}>
+                <tr key={s.id} className={`border-b border-[#E3E8EE] ${s.id === selectedId ? "bg-[#FFF2EC]" : ""}`}>
                   <td className="px-4 py-2 text-[#131d29]">
                     <button type="button" onClick={() => setSelectedId(s.id)} aria-pressed={s.id === selectedId} className="text-left font-medium underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2400c]">{s.name}</button>
                     {s.detail ? <span className="block text-xs text-[#5B6A78]">{s.detail}</span> : null}

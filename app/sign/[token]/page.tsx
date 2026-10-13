@@ -93,7 +93,7 @@ export default function SignPage() {
   return (
     <Shell>
       <header className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-1">Acknowledgment Request</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-[#c2400c] mb-1">Acknowledgment Request</p>
         <h1 className="text-2xl text-[#131d29]">{meta.report.organizationName}</h1>
         <p className="text-sm text-[#5B6A78] mt-1">Report type: <span className="font-medium text-[#41505F]">{formatReportType(meta.report.type)}</span></p>
       </header>
@@ -135,7 +135,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     <div className="min-h-[100dvh] bg-[#F9FAFC] flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <div className="mb-6 flex items-center gap-2">
-          <span className="text-lg font-bold text-emerald-700">MetricOra</span>
+          <span className="text-lg font-bold text-[#131d29]">MetricOra</span>
           <span className="text-[#5B6A78]">|</span>
           <span className="text-sm text-[#5B6A78]">Secure document acknowledgment</span>
         </div>

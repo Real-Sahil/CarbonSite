@@ -159,8 +159,8 @@ export async function sendEmail(payload: EmailPayload): Promise<void> {
 
 // ── Branded email layout ──────────────────────────────────────────────────────
 
-const BRAND_GREEN = "#0F766E"; // Direction 3 teal
-const BRAND_DARK = "#0B3B38";  // Direction 3 deep teal
+const BRAND_GREEN = "#C2400C"; // Daylight ember (buttons, logo tile)
+const BRAND_DARK = "#131D29";  // Daylight ink
 const BODY_BG = "#f1f5f9";
 const CARD_BG = "#ffffff";
 const TEXT_MUTED = "#64748b";
@@ -286,7 +286,7 @@ export function memberAccessGrantedEmail(params: {
   ].join("\n");
   const html = emailLayout(`
     <p style="margin:0 0 8px;">
-      <span style="display:inline-block;background:#ccfbf1;color:#0F766E;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Access granted</span>
+      <span style="display:inline-block;background:#FFF2EC;color:#C2400C;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Access granted</span>
     </p>
     <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
       You've been added to ${params.orgName}
@@ -334,7 +334,7 @@ export function memberInviteEmail(params: {
   ].join("\n");
   const html = emailLayout(`
     <p style="margin:0 0 8px;">
-      <span style="display:inline-block;background:#f0fdfa;color:#0F766E;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Invitation</span>
+      <span style="display:inline-block;background:#FFF2EC;color:#C2400C;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Invitation</span>
     </p>
     <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
       Join ${params.orgName} on MetricOra
@@ -475,7 +475,7 @@ export function submissionReviewedEmail(params: {
   appUrl: string;
 }): Pick<EmailPayload, "subject" | "html" | "text"> {
   const statusLabel = params.status === "approved" ? "approved" : params.status === "rejected" ? "rejected" : "needs more info";
-  const statusColor = params.status === "approved" ? BRAND_GREEN : params.status === "rejected" ? "#dc2626" : "#d97706";
+  const statusColor = params.status === "approved" ? "#047857" : params.status === "rejected" ? "#dc2626" : "#d97706";
   const subject = `Your submission was ${statusLabel}`;
   const noteText = params.reviewNote ? `\n\nReviewer note: ${params.reviewNote}` : "";
   const text = `Hi ${params.recipientName},\n\nYour submission in ${params.orgName} was ${statusLabel}.${noteText}\n\nOpen in MetricOra: ${params.appUrl}`;
@@ -972,7 +972,7 @@ export function fieldWorkerInviteEmail(params: {
   ].join("\n");
   const html = emailLayout(`
     <p style="margin:0 0 8px;">
-      <span style="display:inline-block;background:#f0fdfa;color:#0F766E;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Field worker invite</span>
+      <span style="display:inline-block;background:#FFF2EC;color:#C2400C;font-size:11px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;padding:3px 10px;border-radius:20px;">Field worker invite</span>
     </p>
     <p style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND_DARK};letter-spacing:-0.02em;line-height:1.3;">
       You're invited to submit field records

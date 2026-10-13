@@ -1523,7 +1523,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                       <tr
                         key={fac.id}
                         className={
-                          selectedFacilityId === fac.id ? "bg-orange-50/60" : "hover:bg-[#F9FAFC]"
+                          selectedFacilityId === fac.id ? "bg-[#FFF2EC]" : "hover:bg-[#F9FAFC]"
                         }
                       >
                         <td className="px-4 py-3 font-normal text-[#131d29] tracking-[-0.42px]">

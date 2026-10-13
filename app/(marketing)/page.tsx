@@ -236,7 +236,7 @@ export default function HomePage() {
           <ol className="grid gap-4">
             {FIRST_DOCUMENTS.map((d, i) => (
               <li key={d.title} {...reveal(i, "self", 1)} className="flex gap-4 rounded-[12px] border border-mk-line bg-mk-surface p-6">
-                <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+                <span className="text-[13px] tabular-nums text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
                 <div className="flex flex-col gap-1.5">
                   <H3>{d.title}</H3>
                   <Body>{d.text}</Body>
@@ -260,7 +260,7 @@ export default function HomePage() {
                 <Image src={s.img} alt={s.alt} width={2400} height={1500} sizes="(min-width: 768px) 560px, 100vw" className="h-auto w-full" />
               </div>
               <div className="flex gap-4">
-                <span className="font-mono text-[13px] text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
+                <span className="text-[13px] tabular-nums text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
                 <div className="flex flex-col gap-1.5">
                   <H3>{s.step}</H3>
                   <Body>{s.text}</Body>

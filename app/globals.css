@@ -313,66 +313,6 @@
   border-right: 1px solid #E2E8F0;
 }
 
-/* ── Button & interaction utilities ──────────────────────────────────────── */
-.btn-primary {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: #c2400c;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 0.875rem;
-  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
-  cursor: pointer;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #9A3412;
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(194, 65, 12, 0.25);
-}
-
-.btn-primary:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: #EAF1FF;
-  color: #1D4ED8;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: 1px solid #BFDBFE;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: #1D4ED8;
-  color: #ffffff;
-  transform: translateY(-2px);
-}
-
-.btn-tertiary {
-  @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: transparent;
-  color: #0F766E;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: 2px solid #0F766E;
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-}
-
-.btn-tertiary:hover:not(:disabled) {
-  background-color: #0F766E;
-  color: #ffffff;
-  transform: scale(1.05);
-}
-
 /* ── Animation utilities ─────────────────────────────────────────────────── */
 .animate-entrance {
   animation: card-entrance 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -409,13 +349,6 @@
 .card-light:hover {
   border-color: #d1d5db;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.gradient-accent {
-  background: linear-gradient(135deg, #0F766E 0%, #15803D 50%, #84CC16 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* ── Reduced motion ───────────────────────────────────────────────────────── */
