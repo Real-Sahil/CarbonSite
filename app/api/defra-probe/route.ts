@@ -16,7 +16,9 @@ function guardOk(header: string | null): boolean {
 }
 
 export async function GET(req: Request) {
-  if (!guardOk(req.headers.get("x-probe-token"))) return new NextResponse(null, { status: 404 });
+  // Query fallback so the probe can be opened from a phone browser (no custom headers there).
+  const token = req.headers.get("x-probe-token") ?? new URL(req.url).searchParams.get("token");
+  if (!guardOk(token)) return new NextResponse(null, { status: 404 });
   const id = process.env.DEFRA_DWT_CLIENT_ID?.trim();
   const secret = process.env.DEFRA_DWT_CLIENT_SECRET?.trim();
   if (!id || !secret) return NextResponse.json({ error: "defra_env_missing" });
