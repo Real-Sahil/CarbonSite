@@ -24,8 +24,8 @@ The assessment is based on current codebase state as of August 2026. Some contro
 | Item | Status | Details |
 |--|--|--|
 | **HTTPS/TLS** | ✅ Implemented | All traffic encrypted via TLS 1.3+ (enforced by Vercel CDN). HTTP → HTTPS redirect on all routes. |
-| **Security Headers** | ⚠️ Partial | CSP header set via `middleware.ts` but allows `unsafe-inline` for scripts (Tailwind CSS dependency). Plan to migrate to nonce-based CSP in A3 hardening phase. HSTS, X-Frame-Options, X-Content-Type-Options headers set. |
-| **Content Security Policy (CSP)** | ⚠️ Partial | Current: `script-src 'self' 'unsafe-inline'` (required by Tailwind). Goal: migrate to CSP nonce injection post-A5. See A3 hardening roadmap. |
+| **Security Headers** | ⚠️ Partial | HSTS, X-Frame-Options and X-Content-Type-Options set in `middleware.ts`. CSP is report-only, set in `next.config.ts`: violations go to `/api/csp-report` and nothing is blocked. No enforcing CSP yet. |
+| **Content Security Policy (CSP)** | ⚠️ Partial | Report-only policy in `next.config.ts`. `script-src` and `style-src` allow `'unsafe-inline'`: Next's hydration payload carries no nonce. No enforcing CSP and no nonces yet. |
 | **CSRF Protection** | ✅ Implemented | Better Auth CSRF tokens on all state-changing requests. Token validation in middleware. |
 | **Clickjacking Protection** | ✅ Implemented | `X-Frame-Options: DENY` prevents embedding in iframes. |
 | **MIME Type Sniffing** | ✅ Implemented | `X-Content-Type-Options: nosniff` prevents browser MIME type guessing. |
@@ -176,7 +176,7 @@ The assessment is based on current codebase state as of August 2026. Some contro
 | **MFA not implemented** | High | A3 Hardening | Implement via Better Auth 2FA plugin or hand-rolled TOTP. Mandatory for admins, optional for others. |
 | **Email verification disabled** | Medium | A1 Quick Wins | Re-enable after Resend domain SPF/DKIM setup (infra dependency). Currently all signups unverified. |
 | **Per-account login lockout missing** | High | A3 Hardening | Extend `RateLimitBucket` for account-level rate limiting. Prevents distributed-IP bypass. |
-| **CSP still allows unsafe-inline** | Medium | A3 Hardening | Migrate to nonce-based CSP. Requires Tailwind CSS build tool adjustment. |
+| **CSP still allows unsafe-inline** | Medium | A3 Hardening | Move to nonce-based CSP so Next's inline hydration scripts carry a nonce. Until then the CSP is report-only and blocks nothing. |
 | **Audit log missing IP/user-agent capture** | Medium | A1 Quick Wins | Add fields to `AuditLog`. Extend `writeAuditLog()` to capture client IP + user-agent. |
 | **Audit log not tamper-evident** | Medium | A1 Quick Wins | Implement SHA-256 hash chaining (each row commits previous hash). Enables integrity verification. |
 | **No automated alerting on security events** | High | A4 Monitoring | Build `lib/security/alerting.ts`. Flag high-risk actions: repeated failed logins, role changes, mass exports. Notify admins via FCM/Resend. |

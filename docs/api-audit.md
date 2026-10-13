@@ -72,7 +72,7 @@
 
 | Method | Path | Auth |
 |--------|------|------|
-| `POST` | `/api/uploads/presign` | Bearer/cookie session + org membership |
+| `POST` | `/api/uploads/presign` | Session + editor or field_worker membership; evidence keys only (`org/{orgId}/evidence/...`) |
 | `GET`  | `/api/storage/serve` | HMAC signature (DB driver) |
 | `POST` | `/api/storage/upload` | HMAC signature (DB driver) |
 | `GET`  | `/api/dev/storage/serve` | Dev-only (NODE_ENV check, no session) |
@@ -195,7 +195,7 @@ All database queries in org-scoped routes include `organizationId: orgId` in the
 
 1. `requireOrgMember(orgId, ...roles)` — verifies the authenticated user has a membership in the requested org before any DB operation.
 2. Secondary ownership checks on nested resources (evidence files, facilities, sites, reporting periods) confirm `organizationId` before returning or mutating data.
-3. Storage keys follow `org/{orgId}/...` convention; `isValidStorageKey()` validates the prefix; `presignUpload` verifies org membership before issuing a URL.
+3. Storage keys follow `org/{orgId}/...` convention. `/api/uploads/presign` issues upload URLs only for `org/{orgId}/evidence/...` keys, and only to editors or field workers of that org; `isValidStorageKey()` rejects traversal.
 
 **Confirmed isolated per tenant:**
 - `FieldSubmission` — `organizationId` in all queries
@@ -381,6 +381,7 @@ paths:
   /api/uploads/presign:
     post:
       summary: Request a presigned upload URL for evidence files
+      description: Key must be org/{orgId}/evidence/...; caller needs editor or field_worker membership of that org. Other key prefixes return 400 INVALID_KEY.
       security:
         - BearerAuth: []
       requestBody:

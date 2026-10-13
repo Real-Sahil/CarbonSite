@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
-// Security headers are now generated dynamically in middleware.ts with CSP nonces.
-// See middleware.ts for the CSP header generation logic (nonce per request).
-// This config file only handles non-CSP headers.
+// Static security headers are set in headers() below. The CSP is report-only (CSP_REPORT_ONLY): browsers
+// send violations to /api/csp-report and block nothing. No enforcing CSP or per-request nonce exists yet.
 //
 // NOTE: the withSentryConfig wrapper is deliberately not used: it adds ~1.06 MB
 // to the middleware Edge Function bundle, exceeding Vercel's 1 MB free tier
@@ -33,6 +32,24 @@ const OCR_FILES = [
   "./node_modules/.pnpm/@napi-rs+canvas@*/node_modules/@napi-rs/canvas/**/*",
   "./node_modules/.pnpm/@napi-rs+canvas-linux-x64-gnu@*/node_modules/@napi-rs/canvas-linux-x64-gnu/**/*",
 ];
+
+// Report-only: 'unsafe-inline' scripts are Next's hydration payload, which carries no nonce here.
+// Enforce it once /api/csp-report shows no first-party violations.
+const CSP_REPORT_ONLY = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self' https://*.sentry.io https://*.stripe.com https://*.supabase.co https://tiles.openfreemap.org",
+  "worker-src 'self' blob:",
+  "frame-src 'self' blob: https://*.stripe.com https://m.stripe.network",
+  "frame-ancestors 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "report-uri /api/csp-report",
+].join("; ");
 
 const nextConfig: NextConfig = {
   // Icon and chart packages ship many modules; this makes the bundler import only the names each file uses.
@@ -122,6 +139,7 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      { source: "/:path*", headers: [{ key: "Content-Security-Policy-Report-Only", value: CSP_REPORT_ONLY }] },
       // Prevent browser and CDN caching of all API routes.
       // Without this, prefetch or repeated requests can serve stale data and
       // cause "database is updating" false positives when mutations haven't
