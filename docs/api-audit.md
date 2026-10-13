@@ -381,7 +381,7 @@ paths:
   /api/uploads/presign:
     post:
       summary: Request a presigned upload URL for evidence files
-      description: Key must be org/{orgId}/evidence/...; caller needs editor or field_worker membership of that org. Other key prefixes return 400 INVALID_KEY.
+      description: Key must be org/{orgId}/evidence/...; caller needs editor or field_worker membership of that org. Other key prefixes return 400 INVALID_KEY; a key that fails the storage key rules returns 422 INVALID_STORAGE_KEY.
       security:
         - BearerAuth: []
       requestBody:
