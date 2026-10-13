@@ -36,5 +36,5 @@ Missing for a receipt: time of receipt, receiver permit number, site address and
 1. A "Report to Defra" step on the receiving side of Material movements: a reviewer completes the missing fields, checks them against the reference-data endpoints (EWC, hazardous properties, disposal or recovery codes, container types, POP names), and a person presses submit. No automatic submission.
 2. Storage of the returned waste tracking ID and an audit entry for every submission and correction.
 3. A two-working-day tracker on each received load. The deadline arithmetic is done (see above), but the status logic is done, the page and the per-load window start are not. The nation comes from `siteNation()`; a site where it returns null must be shown as missing, with a link to the facility's region and postcode, never defaulted to England. Bank holiday data stops at 2028 and must be re-copied each year.
-4. OAuth token handling in a server-only module, with the client secret in the environment, never the database.
+4. OAuth token handling in a server-only module, with the client secret in the environment, never the database. Written in `lib/defra-dwt/client.ts` (test host URLs; no route calls it). The first live token request is not made yet.
 5. A runner for `POST /production-approval-tests`. The scenario shapes are tested; the runner waits for test credentials.
