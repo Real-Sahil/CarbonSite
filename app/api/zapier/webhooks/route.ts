@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateZapierConfig, verifyZapierWebhookSignature, decryptSecret, getZapierIntegration } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
+import { handleRouteError } from '@/lib/validation/api';
 
 const webhookSchema = z.object({
   trigger: z.enum(['activity_record.created', 'report.published']),
@@ -74,10 +75,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const errorMessage = err instanceof Error ? err.message : 'Webhook processing failed';
-    return NextResponse.json(
-      { code: 'ERROR', message: errorMessage },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }

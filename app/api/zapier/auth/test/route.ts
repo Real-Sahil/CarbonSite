@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
+import { handleRouteError } from '@/lib/validation/api';
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,10 +51,6 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Authentication test failed';
-    return NextResponse.json(
-      { code: 'AUTH_ERROR', message: errorMessage },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
+import { handleRouteError } from '@/lib/validation/api';
 
 export async function GET(req: NextRequest) {
   try {
@@ -97,10 +98,6 @@ export async function GET(req: NextRequest) {
       resourceTypes: ['categories', 'facilities', 'units'],
     });
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Resource discovery failed';
-    return NextResponse.json(
-      { code: 'ERROR', message: errorMessage },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }

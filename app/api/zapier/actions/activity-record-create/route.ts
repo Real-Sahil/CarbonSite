@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
+import { handleRouteError } from '@/lib/validation/api';
 import { writeAuditLog } from '@/lib/db/audit';
-import { normalizeUnit } from '@/lib/calculation/units';
+import { normalizeUnit, UnitError } from '@/lib/calculation/units';
 
 const createActivityRecordSchema = z.object({
   organizationId: z.string().min(1),
@@ -152,10 +153,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const errorMessage = err instanceof Error ? err.message : 'Failed to create activity record';
-    return NextResponse.json(
-      { code: 'ERROR', message: errorMessage },
-      { status: 500 },
-    );
+    if (err instanceof UnitError) {
+      return NextResponse.json({ code: 'INVALID_UNIT', message: err.message }, { status: 400 });
+    }
+
+    return handleRouteError(err);
   }
 }

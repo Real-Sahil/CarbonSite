@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { validateZapierConfig, verifyZapierApiKey, ZapierAuthError } from '@/lib/integrations/zapier';
 import { prisma } from '@/lib/db';
+import { handleRouteError } from '@/lib/validation/api';
 import { writeAuditLog } from '@/lib/db/audit';
 
 const createSupplierSchema = z.object({
@@ -115,10 +116,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const errorMessage = err instanceof Error ? err.message : 'Failed to create supplier account';
-    return NextResponse.json(
-      { code: 'ERROR', message: errorMessage },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }

@@ -93,8 +93,8 @@ export async function POST(
       );
     }
 
-    // Signed and bound to this admin; the callback checks both (oauth-state.ts)
-    const state = signOAuthState(orgId, session.user.id);
+    // Signed and bound to this admin's session; the callback checks it (oauth-state.ts)
+    const state = signOAuthState(orgId, session.user.id, session.session.id);
     const scopes = [
       "openid",
       "profile",
