@@ -82,12 +82,12 @@ export default function NewOrgPage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-[76px]">
       <div className="mb-[42px] flex flex-col items-center gap-[7px]">
         <span
-          className="text-2xl text-[#111827] tracking-[-0.72px]"
+          className="text-2xl text-[#131d29] tracking-[-0.72px]"
           
         >
           MetricOra
         </span>
-        <span className="text-xs text-[#374151] font-normal tracking-[-0.36px]">GHG Emissions Tracking</span>
+        <span className="text-xs text-[#41505F] font-normal tracking-[-0.36px]">GHG Emissions Tracking</span>
       </div>
       <div className="w-full max-w-md">
         <Card>

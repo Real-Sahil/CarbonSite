@@ -18,13 +18,13 @@ export function ExpandChart({ title, children }: { title: string; children: (exp
           <button
             type="button"
             aria-label={`Expand ${title}`}
-            className="absolute right-0 top-0 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#E5E7EB] bg-white text-[#374151] transition-colors hover:bg-[#F9FAFB]"
+            className="absolute right-0 top-0 z-10 inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#E3E8EE] bg-white text-[#41505F] transition-colors hover:bg-[#F9FAFC]"
           >
             <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </DialogTrigger>
         <DialogContent className="max-w-[min(96vw,1200px)] p-5">
-          <DialogTitle className="mb-3 text-sm font-medium text-[#111827]">{title}</DialogTitle>
+          <DialogTitle className="mb-3 text-sm font-medium text-[#131d29]">{title}</DialogTitle>
           {children(true)}
         </DialogContent>
       </Dialog>

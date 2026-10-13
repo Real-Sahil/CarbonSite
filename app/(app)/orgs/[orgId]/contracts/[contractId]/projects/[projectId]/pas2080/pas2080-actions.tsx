@@ -117,10 +117,10 @@ export function PlanForm({
         </FormField>
         </FormSection>
         <fieldset className="space-y-2">
-          <legend className="text-sm font-semibold text-zinc-900">Life cycle modules in scope</legend>
+          <legend className="text-sm font-semibold text-[#131d29]">Life cycle modules in scope</legend>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {LIFECYCLE_MODULES.map((m) => (
-              <label key={m} className="flex items-center gap-1.5 text-sm text-[#111827]">
+              <label key={m} className="flex items-center gap-1.5 text-sm text-[#131d29]">
                 <input
                   id={`pas-module-${m}`}
                   type="checkbox"
@@ -216,14 +216,14 @@ export function OpportunityLog({
   return (
     <div className="flex flex-col gap-4">
       {opportunities.length === 0 ? (
-        <p className="text-sm text-[#374151]">
+        <p className="text-sm text-[#41505F]">
           Nothing logged yet. Start with the highest levels: could the need be met without building, or with less?
         </p>
       ) : (
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
+              <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#41505F]">
                 <th className="py-2 pr-3 font-normal">Opportunity</th>
                 <th className="py-2 pr-3 font-normal">Hierarchy</th>
                 <th className="py-2 pr-3 font-normal">Stage</th>
@@ -236,20 +236,20 @@ export function OpportunityLog({
               {opportunities.map((o) => (
                 <tr key={o.id} className="border-b border-[#F3F4F6] align-top">
                   <td className="py-2.5 pr-3">
-                    <p className="font-medium text-[#111827]">{o.title}</p>
-                    {o.description && <p className="text-xs text-[#6B7280]">{o.description}</p>}
-                    {o.decisionRationale && <p className="mt-1 text-xs text-[#374151]">Decision: {o.decisionRationale}</p>}
-                    {o.ownerName && <p className="text-xs text-[#6B7280]">Owner: {o.ownerName}</p>}
+                    <p className="font-medium text-[#131d29]">{o.title}</p>
+                    {o.description && <p className="text-xs text-[#5B6A78]">{o.description}</p>}
+                    {o.decisionRationale && <p className="mt-1 text-xs text-[#41505F]">Decision: {o.decisionRationale}</p>}
+                    {o.ownerName && <p className="text-xs text-[#5B6A78]">Owner: {o.ownerName}</p>}
                   </td>
-                  <td className="py-2.5 pr-3 text-[#374151]">{LEVEL_LABEL[o.hierarchyLevel]}</td>
-                  <td className="py-2.5 pr-3 text-[#374151]">{o.workStage ?? ""}</td>
+                  <td className="py-2.5 pr-3 text-[#41505F]">{LEVEL_LABEL[o.hierarchyLevel]}</td>
+                  <td className="py-2.5 pr-3 text-[#41505F]">{o.workStage ?? ""}</td>
                   <td className="py-2.5 pr-3 text-right tabular-nums">{o.estimatedSavingTco2e != null ? o.estimatedSavingTco2e.toLocaleString("en-GB") : ""}</td>
                   <td className="py-2.5 pr-3">
                     {canEdit ? (
                       <select
                         id={`pas-status-${o.id}`}
                         aria-label={`Status of ${o.title}`}
-                        className="h-8 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm"
+                        className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm"
                         value={o.status}
                         disabled={busy === o.id}
                         onChange={(e) => setStatus(o, e.target.value as Status)}
@@ -263,7 +263,7 @@ export function OpportunityLog({
                   {canEdit && (
                     <td className="py-2.5 text-right">
                       {(o.status === "identified" || o.status === "under_review") && (
-                        <button type="button" onClick={() => remove(o)} className="text-xs text-[#374151] underline underline-offset-2 hover:text-red-600" disabled={busy === o.id}>
+                        <button type="button" onClick={() => remove(o)} className="text-xs text-[#41505F] underline underline-offset-2 hover:text-red-600" disabled={busy === o.id}>
                           Remove
                         </button>
                       )}
@@ -285,7 +285,7 @@ export function OpportunityLog({
       )}
 
       {canEdit && adding && (
-        <form onSubmit={add} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+        <form onSubmit={add} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
           <FormSection title="Opportunity" cols={4}>
           <FormField label="Opportunity" htmlFor="opp-title" span={2}>
             <input id="opp-title" required maxLength={200} className={input} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} placeholder="e.g. Retain and strengthen the existing culvert" />

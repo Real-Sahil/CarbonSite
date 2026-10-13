@@ -135,21 +135,21 @@ export default async function CommitmentsPage({ params }: Props) {
   const totalCompleted = commitments.filter((c) => c.status === "completed").length;
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <ClipboardList className="h-4 w-4 text-[#111827]" />
+              <ClipboardList className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Social Value
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Commitments</h1>
-              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">Commitments</h1>
+              <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
                 Social value commitments linked to contracts, frameworks, and reporting periods.
               </p>
             </div>
@@ -166,16 +166,16 @@ export default async function CommitmentsPage({ params }: Props) {
           {commitments.length > 0 && (
             <div className="mt-6 flex gap-6">
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Active</span>
-                <span className="text-xl font-bold text-[#111827] tabular-nums">{totalActive}</span>
+                <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Active</span>
+                <span className="text-xl font-bold text-[#131d29] tabular-nums">{totalActive}</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Completed</span>
-                <span className="text-xl font-bold text-[#111827] tabular-nums">{totalCompleted}</span>
+                <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Completed</span>
+                <span className="text-xl font-bold text-[#131d29] tabular-nums">{totalCompleted}</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Total</span>
-                <span className="text-xl font-bold text-[#111827] tabular-nums">{commitments.length}</span>
+                <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Total</span>
+                <span className="text-xl font-bold text-[#131d29] tabular-nums">{commitments.length}</span>
               </div>
             </div>
           )}
@@ -183,13 +183,13 @@ export default async function CommitmentsPage({ params }: Props) {
       </div>
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               All commitments
-              <span className="ml-2 text-xs font-normal text-[#6B7280]">({commitments.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#5B6A78]">({commitments.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Up to 100 commitments shown, ordered by status then date.
             </CardDescription>
           </CardHeader>
@@ -200,79 +200,79 @@ export default async function CommitmentsPage({ params }: Props) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Commitment</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Contract</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Framework</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Target</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Delivered</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Activities</TableHead>
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Commitment</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Contract</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Framework</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Target</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Delivered</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Activities</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {commitmentsWithProgress.map((c) => (
                       <TableRow
                         key={c.id}
-                        className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors"
+                        className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors"
                       >
                         <TableCell className="py-3.5 pl-6 max-w-[260px]">
                           <Link
                             href={`/orgs/${orgId}/social-value/commitments/${c.id}`}
-                            className="text-sm font-medium text-[#111827] hover:underline truncate block"
+                            className="text-sm font-medium text-[#131d29] hover:underline truncate block"
                           >
                             {c.title}
                           </Link>
                           {c.owner && (
-                            <span className="text-xs text-[#6B7280]">{c.owner.name}</span>
+                            <span className="text-xs text-[#5B6A78]">{c.owner.name}</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
-                          {c.contract?.name ?? <span className="text-[#6B7280]">-</span>}
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
+                          {c.contract?.name ?? <span className="text-[#5B6A78]">-</span>}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
-                          {c.framework?.name ?? <span className="text-[#6B7280]">-</span>}
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
+                          {c.framework?.name ?? <span className="text-[#5B6A78]">-</span>}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
-                          {c.reportingPeriod?.label ?? <span className="text-[#6B7280]">-</span>}
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
+                          {c.reportingPeriod?.label ?? <span className="text-[#5B6A78]">-</span>}
                         </TableCell>
                         <TableCell className="py-3.5">
                           <Badge variant={STATUS_VARIANTS[c.status] ?? "outline"} className="text-xs">
                             {STATUS_LABELS[c.status] ?? c.status}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right text-sm tabular-nums text-[#374151] py-3.5">
+                        <TableCell className="text-right text-sm tabular-nums text-[#41505F] py-3.5">
                           {c.monetisedValue != null
                             ? formatGbp(Number(c.monetisedValue))
                             : c.targetValue != null
                             ? `${Number(c.targetValue).toLocaleString("en-GB")} ${c.targetUnit ?? ""}`
-                            : <span className="text-[#6B7280]">-</span>}
+                            : <span className="text-[#5B6A78]">-</span>}
                         </TableCell>
                         <TableCell className="text-right py-3.5">
                           {c.progressPct != null ? (
                             <div className="flex flex-col items-end gap-1">
-                              <span className="text-sm font-semibold text-[#111827] tabular-nums">
+                              <span className="text-sm font-semibold text-[#131d29] tabular-nums">
                                 {formatGbp(c.approvedMonetised)}
                               </span>
                               <div className="flex items-center gap-2">
-                                <div className="w-16 h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                                <div className="w-16 h-1.5 rounded-full bg-[#E3E8EE] overflow-hidden">
                                   <div
                                     className="h-full rounded-full bg-[#c2410c]"
                                     style={{ width: `${c.progressPct}%` }}
                                   />
                                 </div>
-                                <span className="text-xs text-[#6B7280] tabular-nums">{c.progressPct}%</span>
+                                <span className="text-xs text-[#5B6A78] tabular-nums">{c.progressPct}%</span>
                               </div>
                             </div>
                           ) : (
-                            <span className="text-sm text-[#6B7280]">-</span>
+                            <span className="text-sm text-[#5B6A78]">-</span>
                           )}
                         </TableCell>
                         <TableCell className="py-3.5 pr-6">
                           <Link
                             href={`/orgs/${orgId}/social-value/activities?commitmentId=${c.id}`}
-                            className="text-sm text-[#374151] hover:underline tabular-nums"
+                            className="text-sm text-[#41505F] hover:underline tabular-nums"
                           >
                             {c._count.activities}
                           </Link>

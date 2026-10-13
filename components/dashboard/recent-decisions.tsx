@@ -53,16 +53,16 @@ export function RecentDecisions({
             description="Publishing a snapshot, approving a plan or reviewing records appears here."
           />
         ) : (
-          <ul className="divide-y divide-gray-200 rounded-[14px] border border-gray-200">
+          <ul className="divide-y divide-gray-200 rounded-[14px] border border-[#E3E8EE]">
             {decisions.map((d) => (
               <li key={d.id} className="flex items-start justify-between gap-4 p-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-normal text-[#111827] tracking-[-0.42px]">{decisionSentence(d.action)}</p>
-                  <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
+                  <p className="truncate text-sm font-normal text-[#131d29] tracking-[-0.42px]">{decisionSentence(d.action)}</p>
+                  <p className="mt-0.5 text-xs text-[#41505F] tracking-[-0.36px]">
                     {d.actor?.name ?? d.actor?.email ?? "System"}
                   </p>
                 </div>
-                <time dateTime={d.createdAt.toISOString()} className="shrink-0 text-xs text-[#374151] tracking-[-0.36px]">
+                <time dateTime={d.createdAt.toISOString()} className="shrink-0 text-xs text-[#41505F] tracking-[-0.36px]">
                   {d.createdAt.toLocaleDateString(locale, { day: "numeric", month: "short" })}
                 </time>
               </li>

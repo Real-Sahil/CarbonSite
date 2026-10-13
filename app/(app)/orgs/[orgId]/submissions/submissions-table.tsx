@@ -51,12 +51,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  pending: "border-[#E5E7EB] bg-[#FFF7ED] text-[#111827]",
-  submitted: "border-[#FED7AA] bg-[#FFF7ED]/30 text-[#111827]",
-  under_review: "border-[#FED7AA] bg-[#FFF7ED]/50 text-[#111827]",
-  approved: "border-[#FED7AA] bg-[#cfe7d3] text-[#111827]",
-  rejected: "border-[#E5E7EB] bg-[#e5e7eb] text-[#374151]",
-  needs_info: "border-[#FED7AA] bg-[#FFF7ED]/20 text-[#111827]",
+  pending: "border-[#E3E8EE] bg-[#FFF7ED] text-[#131d29]",
+  submitted: "border-[#FED7AA] bg-[#FFF7ED]/30 text-[#131d29]",
+  under_review: "border-[#FED7AA] bg-[#FFF7ED]/50 text-[#131d29]",
+  approved: "border-[#FED7AA] bg-[#cfe7d3] text-[#131d29]",
+  rejected: "border-[#E3E8EE] bg-[#E3E8EE] text-[#41505F]",
+  needs_info: "border-[#FED7AA] bg-[#FFF7ED]/20 text-[#131d29]",
 };
 
 const DOC_TYPE_LABELS: Record<string, string> = {
@@ -250,7 +250,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
       cell: ({ row }) => (
         <Link
           href={`/orgs/${orgId}/submissions/${row.original.id}`}
-          className="hover:underline underline-offset-2 text-[#111827]"
+          className="hover:underline underline-offset-2 text-[#131d29]"
         >
           {DOC_TYPE_LABELS[row.original.documentType] ?? row.original.documentType}
           {row.original.lowConfidenceFields?.length ? (
@@ -272,7 +272,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
           className={cn(
             "inline-flex items-center rounded-full border px-[14px] py-[7px] text-xs font-normal tracking-[-0.36px]",
             STATUS_CLASSES[row.original.status] ??
-              "border-[#E5E7EB] bg-[#FFF7ED] text-[#374151]",
+              "border-[#E3E8EE] bg-[#FFF7ED] text-[#41505F]",
           )}
         >
           {STATUS_LABELS[row.original.status] ?? row.original.status}
@@ -303,7 +303,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
       id: "submittedBy",
       header: "Submitted by",
       cell: ({ row }) => (
-        <span className="text-[#374151]">
+        <span className="text-[#41505F]">
           {row.original.submittedBy.name ?? row.original.submittedBy.email}
         </span>
       ),
@@ -312,7 +312,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
       id: "reportingPeriod",
       header: "Reporting period",
       cell: ({ row }) => (
-        <span className="text-[#374151]">
+        <span className="text-[#41505F]">
           {row.original.reportingPeriod.label}
         </span>
       ),
@@ -321,9 +321,9 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
       id: "facility",
       header: "Facility",
       cell: ({ row }) => (
-        <span className="text-[#374151]">
+        <span className="text-[#41505F]">
           {row.original.facility?.name ?? (
-            <span className="text-[#374151] italic">None</span>
+            <span className="text-[#41505F] italic">None</span>
           )}
         </span>
       ),
@@ -332,7 +332,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
       id: "date",
       header: "Date",
       cell: ({ row }) => (
-        <span className="text-[#374151] text-sm tracking-[-0.36px]">
+        <span className="text-[#41505F] text-sm tracking-[-0.36px]">
           {new Date(row.original.createdAt).toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short",
@@ -357,13 +357,13 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
         <CardContent className="pb-8">
           <div className="flex flex-col items-center gap-4 py-12 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF7ED]">
-              <Inbox aria-hidden="true" className="h-7 w-7 text-[#111827]" />
+              <Inbox aria-hidden="true" className="h-7 w-7 text-[#131d29]" />
             </div>
             <div>
-              <p className="font-normal text-[#111827] tracking-[-0.42px]">
+              <p className="font-normal text-[#131d29] tracking-[-0.42px]">
                 No field submissions yet
               </p>
-              <p className="text-sm text-[#374151] tracking-[-0.42px] mt-[7px] max-w-sm">
+              <p className="text-sm text-[#41505F] tracking-[-0.42px] mt-[7px] max-w-sm">
                 Share an invite link with your field workers to get started.
                 Field workers photograph waste tickets, delivery notes, and fuel
                 receipts directly from the mobile app.
@@ -382,7 +382,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
           <div>
             <CardTitle className="text-base">
               Submissions
-              <span className="ml-2 text-sm font-normal text-[#374151]">
+              <span className="ml-2 text-sm font-normal text-[#41505F]">
                 ({data.length})
               </span>
             </CardTitle>
@@ -413,7 +413,7 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
                   <select
                     value={assigneeUserId}
                     onChange={(e) => setAssigneeUserId(e.target.value)}
-                    className="h-8 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm"
+                    className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm"
                   >
                     {members.map((m) => (
                       <option key={m.id} value={m.id}>

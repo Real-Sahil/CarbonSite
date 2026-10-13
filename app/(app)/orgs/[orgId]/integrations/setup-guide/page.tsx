@@ -8,7 +8,7 @@ export default function SetupGuidePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Integration Setup Guide</h1>
+        <h1 className="text-3xl tracking-tight">Integration Setup Guide</h1>
         <p className="text-muted-foreground mt-2">
           Learn how to connect n8n and dbt to automate your emissions data flow
         </p>

@@ -33,7 +33,7 @@ function BklitScopeRingBody({ data, height }: BklitScopeRingProps) {
   if (rows.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-sm text-slate-500"
+        className="flex items-center justify-center text-sm text-[#5B6A78]"
         style={{ height }}
       >
         No calculated emissions to chart.
@@ -71,7 +71,7 @@ function BklitScopeRingBody({ data, height }: BklitScopeRingProps) {
               className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
               style={{ background: scopeColor(d.scope) }}
             />
-            <span className="text-xs text-slate-600">
+            <span className="text-xs text-[#41505F]">
               {d.label}
             </span>
           </div>

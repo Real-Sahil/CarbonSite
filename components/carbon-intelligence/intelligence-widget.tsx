@@ -31,18 +31,18 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
 
   return (
     <section aria-label="Carbon intelligence" className="mt-6">
-      <div className="rounded-lg border border-[#E5E7EB] bg-white">
-        <div className="flex items-center justify-between gap-3 border-b border-[#E5E7EB] px-5 py-4">
+      <div className="rounded-lg border border-[#E3E8EE] bg-white">
+        <div className="flex items-center justify-between gap-3 border-b border-[#E3E8EE] px-5 py-4">
           <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-[#111827]" aria-hidden="true" />
+            <Zap className="h-4 w-4 text-[#131d29]" aria-hidden="true" />
             <div>
-              <p className="text-sm font-semibold text-[#111827]">Carbon intelligence</p>
-              <p className="text-xs text-[#6B7280]">Threshold alerts and incoming carbon signals for this organisation.</p>
+              <p className="text-sm font-semibold text-[#131d29]">Carbon intelligence</p>
+              <p className="text-xs text-[#5B6A78]">Threshold alerts and incoming carbon signals for this organisation.</p>
             </div>
           </div>
           <Link
             href={`/orgs/${orgId}/carbon-intelligence`}
-            className="flex items-center gap-1 text-xs text-[#374151] hover:underline"
+            className="flex items-center gap-1 text-xs text-[#41505F] hover:underline"
           >
             Open overview <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
@@ -53,7 +53,7 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
           <Stat value={high} label="high severity" alarm={high > 0} />
           <Stat value={recentSignals} label={`signals, last ${SIGNAL_WINDOW_DAYS} days`} href={`/orgs/${orgId}/carbon-intelligence/signals`} />
         </div>
-        <p className="border-t border-[#E5E7EB] px-5 py-3 text-xs text-[#6B7280]">
+        <p className="border-t border-[#E3E8EE] px-5 py-3 text-xs text-[#5B6A78]">
           {openAlerts === 0 && recentSignals === 0
             ? "No open alerts and no signals this week."
             : "Open alerts are unresolved threshold breaches and anomalies."}
@@ -63,7 +63,7 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
               {activeCreds > 0
                 ? `${activeCreds} active integration${activeCreds !== 1 ? "s" : ""}. `
                 : "No integrations connected. "}
-              <Link href={`/orgs/${orgId}/carbon-intelligence/integrations`} className="underline underline-offset-2 hover:text-[#111827]">
+              <Link href={`/orgs/${orgId}/carbon-intelligence/integrations`} className="underline underline-offset-2 hover:text-[#131d29]">
                 Manage integrations
               </Link>
             </>
@@ -79,14 +79,14 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
 function Stat({ value, label, href, alarm }: { value: number; label: string; href?: string; alarm?: boolean }) {
   const body = (
     <>
-      <span className={`text-2xl font-bold tabular-nums ${alarm ? "text-red-600" : "text-[#111827]"}`}>
+      <span className={`text-2xl font-bold tabular-nums ${alarm ? "text-red-600" : "text-[#131d29]"}`}>
         {value.toLocaleString("en-GB")}
       </span>
-      <span className="text-xs text-[#6B7280]">{label}</span>
+      <span className="text-xs text-[#5B6A78]">{label}</span>
     </>
   );
   return href ? (
-    <Link href={href} className="flex flex-col gap-1 rounded-lg hover:bg-[#F9FAFB]">{body}</Link>
+    <Link href={href} className="flex flex-col gap-1 rounded-lg hover:bg-[#F9FAFC]">{body}</Link>
   ) : (
     <div className="flex flex-col gap-1">{body}</div>
   );

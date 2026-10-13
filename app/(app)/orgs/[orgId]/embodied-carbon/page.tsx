@@ -39,7 +39,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-zinc-500">
+        <div className="p-8 text-sm text-[#5B6A78]">
           You do not have permission to view embodied carbon data.
         </div>
       );
@@ -103,20 +103,20 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
     .map(([category, kgCo2e]) => ({ category, kgCo2e }));
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-start gap-3 mb-1">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] shrink-0 mt-0.5">
-              <Layers className="h-4 w-4 text-[#111827]" />
+              <Layers className="h-4 w-4 text-[#131d29]" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Carbon Accounting</span>
+                <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Carbon Accounting</span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Embodied Carbon</h1>
-              <p className="mt-1 text-sm text-zinc-500 max-w-[65ch]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">Embodied Carbon</h1>
+              <p className="mt-1 text-sm text-[#5B6A78] max-w-[65ch]">
                 Track cradle-to-gate embodied carbon for construction materials. Factors sourced from ICE Database v3.0 and project-specific EPDs.
               </p>
             </div>
@@ -135,10 +135,10 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
 
         {/* Category breakdown */}
         {categoryBreakdown.length > 0 && (
-          <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-zinc-900">Breakdown by material category</CardTitle>
-              <CardDescription className="text-xs text-zinc-500 mt-0.5">kgCO2e A1-A3 cradle-to-gate</CardDescription>
+          <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Breakdown by material category</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">kgCO2e A1-A3 cradle-to-gate</CardDescription>
             </CardHeader>
             <CardContent className="px-6 py-5">
               <div className="space-y-3">
@@ -146,15 +146,15 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                   const pct = totalKgCo2e > 0 ? (kgCo2e / totalKgCo2e) * 100 : 0;
                   return (
                     <div key={category} className="flex items-center gap-3">
-                      <div className="w-28 shrink-0 text-xs text-zinc-600 capitalize font-medium">{category}</div>
+                      <div className="w-28 shrink-0 text-xs text-[#41505F] capitalize font-medium">{category}</div>
                       <div className="flex-1 bg-[#f3f4f6] rounded-full h-2">
                         <div
                           className="bg-[#228B22] h-2 rounded-full transition-all"
                           style={{ width: `${pct.toFixed(1)}%` }}
                         />
                       </div>
-                      <div className="w-28 shrink-0 text-right text-xs tabular-nums text-zinc-600">{fmtKgCo2e(kgCo2e)}</div>
-                      <div className="w-10 shrink-0 text-right text-xs tabular-nums text-zinc-500">{pct.toFixed(0)}%</div>
+                      <div className="w-28 shrink-0 text-right text-xs tabular-nums text-[#41505F]">{fmtKgCo2e(kgCo2e)}</div>
+                      <div className="w-10 shrink-0 text-right text-xs tabular-nums text-[#5B6A78]">{pct.toFixed(0)}%</div>
                     </div>
                   );
                 })}
@@ -164,13 +164,13 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         )}
 
         {/* Add record form */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-zinc-500" />
-              <CardTitle className="text-sm font-semibold text-zinc-900">Add material record</CardTitle>
+              <Plus className="h-4 w-4 text-[#5B6A78]" />
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Add material record</CardTitle>
             </div>
-            <CardDescription className="text-xs text-zinc-500 mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Select a material from the ICE library or upload a project-specific EPD.
             </CardDescription>
           </CardHeader>
@@ -191,13 +191,13 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
         </Card>
 
         {/* Records table */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-zinc-500" />
-              <CardTitle className="text-sm font-semibold text-zinc-900">
+              <Package className="h-4 w-4 text-[#5B6A78]" />
+              <CardTitle className="text-sm font-semibold text-[#131d29]">
                 Records
-                <span className="ml-2 text-xs font-normal text-zinc-500">({records.length})</span>
+                <span className="ml-2 text-xs font-normal text-[#5B6A78]">({records.length})</span>
               </CardTitle>
             </div>
           </CardHeader>
@@ -205,10 +205,10 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
             {records.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center px-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-4">
-                  <Package className="h-6 w-6 text-[#111827]" />
+                  <Package className="h-6 w-6 text-[#131d29]" />
                 </div>
-                <h3 className="text-sm font-semibold text-zinc-900 mb-1">No embodied carbon records yet</h3>
-                <p className="text-sm text-zinc-500 max-w-sm">
+                <h3 className="text-sm font-semibold text-[#131d29] mb-1">No embodied carbon records yet</h3>
+                <p className="text-sm text-[#5B6A78] max-w-sm">
                   Add the first material record using the form above. Factors come from ICE Database v3.0.
                 </p>
               </div>
@@ -216,46 +216,46 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 pl-6">Material</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Category</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Quantity</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Stages</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Project</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3">Source</TableHead>
-                      <TableHead className="text-xs font-medium text-zinc-500 py-3 text-right pr-6">kgCO2e</TableHead>
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Material</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Category</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Quantity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Stages</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Project</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Source</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right pr-6">kgCO2e</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {records.map((record) => (
-                      <TableRow key={record.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
+                      <TableRow key={record.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6">
-                          <span className="text-sm font-medium text-zinc-900">
+                          <span className="text-sm font-medium text-[#131d29]">
                             {record.material?.name ?? record.epd?.productName ?? record.description ?? "Custom"}
                           </span>
                           {record.epd && (
-                            <span className="ml-2 text-xs text-zinc-500">EPD</span>
+                            <span className="ml-2 text-xs text-[#5B6A78]">EPD</span>
                           )}
                         </TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-xs capitalize text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full">
+                          <span className="text-xs capitalize text-[#41505F] bg-zinc-100 px-2 py-0.5 rounded-full">
                             {record.material?.category ?? "custom"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-600 py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {record.quantity.toLocaleString("en-GB")} {record.unit}
                         </TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-xs text-zinc-500">{record.lifecycleStages.join(", ")}</span>
+                          <span className="text-xs text-[#5B6A78]">{record.lifecycleStages.join(", ")}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500 py-3.5">
+                        <TableCell className="text-sm text-[#5B6A78] py-3.5">
                           {record.project?.name ?? "-"}
                         </TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-xs text-zinc-500 capitalize">{record.source.replace(/_/g, " ")}</span>
+                          <span className="text-xs text-[#5B6A78] capitalize">{record.source.replace(/_/g, " ")}</span>
                         </TableCell>
                         <TableCell className="py-3.5 pr-6 text-right tabular-nums">
-                          <span className="text-sm font-semibold text-[#111827]">
+                          <span className="text-sm font-semibold text-[#131d29]">
                             {fmtKgCo2e(record.totalKgCo2e)}
                           </span>
                         </TableCell>
@@ -281,8 +281,8 @@ function StatPill({
   value: string;
   accent?: "green";
 }) {
-  const colors = { green: "bg-[#FFF7ED] text-[#111827]" };
-  const base = accent ? colors[accent] : "bg-white text-zinc-700 border border-[#E5E7EB]";
+  const colors = { green: "bg-[#FFF7ED] text-[#131d29]" };
+  const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
       <span className="tabular-nums font-semibold">{value}</span>

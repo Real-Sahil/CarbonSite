@@ -97,7 +97,7 @@ export function SubmissionReviewActions({
       {emissionCategories.length > 0 && (
         <div className="flex flex-wrap gap-4">
           {categoryRequired && <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Emission category</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Emission category</label>
             <Select value={emissionCategoryId} onValueChange={setEmissionCategoryId} disabled={disabled}>
               <SelectTrigger className="w-56">
                 <SelectValue placeholder="Select category" />
@@ -111,7 +111,7 @@ export function SubmissionReviewActions({
           </div>}
           {facilities.length > 0 && (
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility (optional)</label>
+              <label className="text-xs text-[#41505F] tracking-[-0.36px]">Facility (optional)</label>
               <Select value={facilityId} onValueChange={setFacilityId} disabled={disabled}>
                 <SelectTrigger className="w-44">
                   <SelectValue placeholder="Optional" />
@@ -128,7 +128,7 @@ export function SubmissionReviewActions({
       )}
       {embodied && (
         <div className="flex flex-col gap-1">
-          <label htmlFor="embodied-material" className="text-xs text-[#374151] tracking-[-0.36px]">
+          <label htmlFor="embodied-material" className="text-xs text-[#41505F] tracking-[-0.36px]">
             Embodied carbon material
           </label>
           <Select value={embodiedChoice} onValueChange={setEmbodiedChoice} disabled={disabled}>
@@ -144,14 +144,14 @@ export function SubmissionReviewActions({
               ))}
             </SelectContent>
           </Select>
-          <p className="text-xs text-[#6B7280]">
+          <p className="text-xs text-[#5B6A78]">
             {embodied.suggestedMaterialId ? `Suggested: ${embodied.matchReason}` : embodied.matchReason} Approving records
             A1-A3 for the material and A4 for this delivery against the site&apos;s project.
           </p>
         </div>
       )}
       <div className="flex flex-col gap-1">
-        <label className="text-xs text-[#374151] tracking-[-0.36px]">Review note (optional)</label>
+        <label className="text-xs text-[#41505F] tracking-[-0.36px]">Review note (optional)</label>
         <Textarea
           value={reviewNote}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReviewNote(e.target.value)}

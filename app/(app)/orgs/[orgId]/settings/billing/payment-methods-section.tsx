@@ -102,8 +102,8 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Payment methods</h3>
-          <p className="text-sm text-slate-600 mt-1">
+          <h3 className="text-lg font-semibold text-[#131d29]">Payment methods</h3>
+          <p className="text-sm text-[#41505F] mt-1">
             Cards used for your subscription
           </p>
         </div>
@@ -125,12 +125,12 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
+          <Loader2 className="h-6 w-6 animate-spin text-[#5B6A78]" />
         </div>
       ) : paymentMethods.length === 0 ? (
-        <div className="text-center py-8 text-slate-600">
+        <div className="text-center py-8 text-[#41505F]">
           <p className="text-sm">No payment methods added yet</p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[#5B6A78] mt-1">
             Add a payment method to enable automatic billing
           </p>
         </div>
@@ -139,15 +139,15 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
           {paymentMethods.map((method) => (
             <div
               key={method.id}
-              className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
+              className="flex items-center justify-between p-4 border border-[#E3E8EE] rounded-lg hover:bg-[#F9FAFC]"
             >
               <div className="flex items-center gap-4">
-                <CreditCard className="h-5 w-5 text-slate-500" />
+                <CreditCard className="h-5 w-5 text-[#5B6A78]" />
                 <div>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-[#131d29]">
                     {method.brand.charAt(0).toUpperCase() + method.brand.slice(1)} ending in {method.last4}
                   </p>
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-[#41505F]">
                     Expires {method.expiryMonth.toString().padStart(2, '0')}/{method.expiryYear}
                   </p>
                 </div>
@@ -164,7 +164,7 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleSetDefault(method.id)}
-                    className="text-slate-600 hover:text-slate-900"
+                    className="text-[#41505F] hover:text-[#131d29]"
                   >
                     Make Default
                   </Button>
@@ -174,7 +174,7 @@ export function PaymentMethodsSection({ orgId }: { orgId: string }) {
                   size="sm"
                   onClick={() => handleDelete(method.id)}
                   disabled={deleting === method.id || (method.isDefault && paymentMethods.length === 1)}
-                  className="text-slate-600 hover:text-red-600"
+                  className="text-[#41505F] hover:text-red-600"
                 >
                   {deleting === method.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

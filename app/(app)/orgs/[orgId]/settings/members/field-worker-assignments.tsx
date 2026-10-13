@@ -169,14 +169,14 @@ export function FieldWorkerAssignments({
   return (
     <div className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-        <form onSubmit={assignWorker} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <form onSubmit={assignWorker} className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
               <UserRoundCheck className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Assign site access</p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
+              <p className="text-sm font-semibold text-[#131d29]">Assign site access</p>
+              <p className="mt-1 text-sm leading-6 text-[#41505F]">
                 Field workers only see assigned sites in the mobile app. Workers who
                 joined with an org-wide invite have no sites until you assign one here.
               </p>
@@ -232,9 +232,9 @@ export function FieldWorkerAssignments({
             {/* Quick site creation — Site requires a Contract → Project chain
                 that new orgs don't have yet; this provisions a default pair
                 so the field workflow isn't blocked on full setup. */}
-            <div className="mt-2 border-t border-slate-200 pt-3">
+            <div className="mt-2 border-t border-[#E3E8EE] pt-3">
               <Label htmlFor="quick-site-name" className="flex items-center gap-1.5">
-                <MapPinPlus className="h-3.5 w-3.5 text-slate-500" />
+                <MapPinPlus className="h-3.5 w-3.5 text-[#5B6A78]" />
                 New site
               </Label>
               <div className="mt-1.5 flex gap-2">
@@ -257,20 +257,20 @@ export function FieldWorkerAssignments({
                   Create site
                 </Button>
               </div>
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-[#5B6A78]">
                 Filed under a default &quot;General&quot; contract — reorganise
                 later from the Contracts page.
               </p>
             </div>
           </div>
           {!assignmentsAvailable && (
-            <p className="mt-3 rounded-[7px] border border-[#E5E7EB] bg-[#FFF7ED] px-3 py-2 text-sm text-[#111827] tracking-[-0.42px]">
+            <p className="mt-3 rounded-[7px] border border-[#E3E8EE] bg-[#FFF7ED] px-3 py-2 text-sm text-[#131d29] tracking-[-0.42px]">
               Mobile assignment setup is incomplete. Contact your administrator
               to apply the latest database update, then refresh this page.
             </p>
           )}
           {!hasSetup && (
-            <p className="mt-3 text-sm text-slate-500">
+            <p className="mt-3 text-sm text-[#5B6A78]">
               Invite a Field Worker and create a contract, project, and site before
               assigning mobile access.
             </p>
@@ -279,12 +279,12 @@ export function FieldWorkerAssignments({
           {success && <p className="mt-3 text-sm text-green-700">{success}</p>}
         </form>
 
-        <div className="rounded-lg border border-slate-200 flex flex-col min-w-0">
+        <div className="rounded-lg border border-[#E3E8EE] flex flex-col min-w-0">
           <div className="border-b border-slate-100 px-4 py-3">
-            <p className="text-sm font-semibold text-slate-900">Current site access</p>
+            <p className="text-sm font-semibold text-[#131d29]">Current site access</p>
           </div>
           {assignments.length === 0 ? (
-            <div className="p-5 text-sm leading-6 text-slate-500">
+            <div className="p-5 text-sm leading-6 text-[#5B6A78]">
               No field workers have site access yet. Site-scoped invite links grant
               access automatically; org-wide invites need a manual assignment here.
             </div>
@@ -312,7 +312,7 @@ export function FieldWorkerAssignments({
               {/* Assignment cards */}
               {filteredAssignments.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-8 text-center">
-                  <p className="text-sm text-slate-500">No assignments for this site.</p>
+                  <p className="text-sm text-[#5B6A78]">No assignments for this site.</p>
                   <button
                     onClick={() => { setSiteFilter("all"); setAssignPage(0); }}
                     className="text-xs text-[#0F766E] hover:underline"
@@ -328,7 +328,7 @@ export function FieldWorkerAssignments({
                       return (
                         <div
                           key={assignment.id}
-                          className="rounded-xl border border-slate-200 border-l-4 border-l-orange-400 bg-white p-4 flex flex-col gap-3 min-w-0 transition-opacity"
+                          className="rounded-xl border border-[#E3E8EE] border-l-4 border-l-orange-400 bg-white p-4 flex flex-col gap-3 min-w-0 transition-opacity"
                         >
                           <div className="flex items-start gap-3 min-w-0">
                             <div className="h-9 w-9 rounded-full bg-[#CCFBF1] flex items-center justify-center text-[#0F766E] text-sm font-semibold shrink-0 select-none">
@@ -336,14 +336,14 @@ export function FieldWorkerAssignments({
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-                                <p className="text-sm font-medium text-slate-900 truncate">
+                                <p className="text-sm font-medium text-[#131d29] truncate">
                                   {assignment.workerLabel}
                                 </p>
                                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 shrink-0">Mobile</Badge>
                               </div>
-                              <p className="text-xs text-slate-500 truncate">{assignment.workerEmail}</p>
-                              <p className="mt-1 text-xs font-medium text-slate-700 truncate">{assignment.siteLabel}</p>
-                              <p className="mt-0.5 text-[10px] text-slate-500">
+                              <p className="text-xs text-[#5B6A78] truncate">{assignment.workerEmail}</p>
+                              <p className="mt-1 text-xs font-medium text-[#41505F] truncate">{assignment.siteLabel}</p>
+                              <p className="mt-0.5 text-[10px] text-[#5B6A78]">
                                 by {assignment.assignedByLabel} on{" "}
                                 {new Date(assignment.createdAt).toLocaleDateString("en-GB", {
                                   day: "numeric",
@@ -374,7 +374,7 @@ export function FieldWorkerAssignments({
                   {/* Pagination */}
                   {assignTotalPages > 1 && (
                     <div className="flex items-center justify-between pt-1">
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[#5B6A78]">
                         Showing {assignPage * PAGE_SIZE + 1}-{Math.min((assignPage + 1) * PAGE_SIZE, filteredAssignments.length)} of {filteredAssignments.length}
                       </p>
                       <div className="flex items-center gap-1">
@@ -388,7 +388,7 @@ export function FieldWorkerAssignments({
                         >
                           <ChevronLeft className="h-3.5 w-3.5" />
                         </Button>
-                        <span className="text-xs text-slate-600 px-1">
+                        <span className="text-xs text-[#41505F] px-1">
                           {assignPage + 1} / {assignTotalPages}
                         </span>
                         <Button

@@ -71,15 +71,15 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 function statusConfig(status: string) {
   switch (status) {
     case "queued":
-      return { label: "Queued", className: "bg-zinc-100 text-[#374151] border-transparent", icon: Clock };
+      return { label: "Queued", className: "bg-zinc-100 text-[#41505F] border-transparent", icon: Clock };
     case "generating":
       return { label: "Generating", className: "bg-blue-50 text-blue-700 border-transparent animate-pulse", icon: Loader2 };
     case "ready":
-      return { label: "Ready", className: "bg-[#FFF7ED] text-[#111827] border-transparent", icon: CheckCircle2 };
+      return { label: "Ready", className: "bg-[#FFF7ED] text-[#131d29] border-transparent", icon: CheckCircle2 };
     case "failed":
       return { label: "Failed", className: "bg-red-50 text-red-700 border-transparent", icon: AlertTriangle };
     default:
-      return { label: status, className: "border-zinc-200", icon: Clock };
+      return { label: status, className: "border-[#E3E8EE]", icon: Clock };
   }
 }
 
@@ -108,7 +108,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-[#6B7280]">
+        <div className="p-8 text-sm text-[#5B6A78]">
           You do not have permission to view reports.
         </div>
       );
@@ -174,27 +174,27 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       <StatusPoller active={true} intervalMs={5000} />
 
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-start gap-3 mb-1">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED] shrink-0 mt-0.5">
-              <FileText className="h-4 w-4 text-[#111827]" />
+              <FileText className="h-4 w-4 text-[#131d29]" />
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Reporting</span>
+                <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Reporting</span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Reports</h1>
-              <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">Reports</h1>
+              <p className="mt-1 text-sm text-[#5B6A78] max-w-[65ch]">
                 Generate PDF and CSV reports from published snapshots. Totals are guaranteed to match dashboard figures for the same snapshot.
               </p>
               {mayWriteSummary ? (
                 <p className="mt-1 text-sm">
-                  <Link href={`/orgs/${orgId}/reports/narrative`} className="text-[#374151] underline underline-offset-2 hover:text-[#111827]">
+                  <Link href={`/orgs/${orgId}/reports/narrative`} className="text-[#41505F] underline underline-offset-2 hover:text-[#131d29]">
                     Write the summary page of your inventory reports
                   </Link>
                 </p>
@@ -217,16 +217,16 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {/* Snapshots */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-[#6B7280]" />
-              <CardTitle className="text-sm font-semibold text-[#111827]">
+              <Layers className="h-4 w-4 text-[#5B6A78]" />
+              <CardTitle className="text-sm font-semibold text-[#131d29]">
                 Published snapshots
-                <span className="ml-2 text-xs font-normal text-[#6B7280]">({snapshots.length})</span>
+                <span className="ml-2 text-xs font-normal text-[#5B6A78]">({snapshots.length})</span>
               </CardTitle>
             </div>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Immutable links between a reporting period and a calculation run. Dashboards and reports read from these.
             </CardDescription>
           </CardHeader>
@@ -241,35 +241,35 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Version</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Published by</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Published at</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Calculation run</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Assurance</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right pr-6">Reports</TableHead>
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Version</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Published by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Published at</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Calculation run</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Assurance</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right pr-6">Reports</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {snapshots.map((snapshot) => (
-                      <TableRow key={snapshot.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
+                      <TableRow key={snapshot.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6">
-                          <span className="font-semibold text-sm text-[#111827]">v{snapshot.version}</span>
+                          <span className="font-semibold text-sm text-[#131d29]">v{snapshot.version}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
                           {snapshot.reportingPeriod.label}
                         </TableCell>
-                        <TableCell className="text-sm text-[#6B7280] py-3.5">
+                        <TableCell className="text-sm text-[#5B6A78] py-3.5">
                           {snapshot.publishedBy.name ?? snapshot.publishedBy.email}
                         </TableCell>
-                        <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#5B6A78] py-3.5 tabular-nums">
                           {formatTimestamp(snapshot.publishedAt)}
                         </TableCell>
                         <TableCell className="py-3.5">
                           <Link
                             href={`/orgs/${orgId}/calculations/${snapshot.calculationRunId}`}
-                            className="text-sm text-[#111827] hover:underline underline-offset-2"
+                            className="text-sm text-[#131d29] hover:underline underline-offset-2"
                           >
                             View run
                           </Link>
@@ -277,12 +277,12 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                         <TableCell className="py-3.5">
                           <Link
                             href={`/orgs/${orgId}/snapshots/${snapshot.id}/assurance`}
-                            className="text-sm text-[#111827] hover:underline underline-offset-2"
+                            className="text-sm text-[#131d29] hover:underline underline-offset-2"
                           >
                             Review
                           </Link>
                         </TableCell>
-                        <TableCell className="py-3.5 text-right pr-6 text-sm text-[#6B7280] tabular-nums">
+                        <TableCell className="py-3.5 text-right pr-6 text-sm text-[#5B6A78] tabular-nums">
                           {snapshot._count.reports.toLocaleString("en-GB")}
                         </TableCell>
                       </TableRow>
@@ -295,14 +295,14 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
         </Card>
 
         {/* Reports */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-[#6B7280]" />
-                <CardTitle className="text-sm font-semibold text-[#111827]">
+                <FileText className="h-4 w-4 text-[#5B6A78]" />
+                <CardTitle className="text-sm font-semibold text-[#131d29]">
                   Reports
-                  <span className="ml-2 text-xs font-normal text-[#6B7280]">({reports.length})</span>
+                  <span className="ml-2 text-xs font-normal text-[#5B6A78]">({reports.length})</span>
                 </CardTitle>
               </div>
               {hasInFlight && (
@@ -315,7 +315,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                 </div>
               )}
             </div>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               PDF and CSV outputs generated asynchronously from published snapshots.
             </CardDescription>
           </CardHeader>
@@ -345,14 +345,14 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Snapshot</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Requested by</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Requested at</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Download</TableHead>
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Snapshot</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Requested by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Requested at</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Download</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -360,16 +360,16 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                       const cfg = statusConfig(report.status);
                       const StatusIcon = cfg.icon;
                       return (
-                        <TableRow key={report.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
+                        <TableRow key={report.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
                           <TableCell className="py-3.5 pl-6">
-                            <span className="text-sm font-medium text-[#111827]">
+                            <span className="text-sm font-medium text-[#131d29]">
                               {REPORT_TYPE_LABELS[report.type] ?? report.type.replaceAll("_", " ")}
                             </span>
                           </TableCell>
-                          <TableCell className="text-sm text-[#374151] py-3.5">
+                          <TableCell className="text-sm text-[#41505F] py-3.5">
                             {report.reportingPeriod.label}
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5">
                             v{report.snapshot.version}
                           </TableCell>
                           <TableCell className="py-3.5">
@@ -381,10 +381,10 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                               {cfg.label}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5">
                             {report.createdBy.name ?? report.createdBy.email}
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5 tabular-nums">
                             {formatTimestamp(report.createdAt)}
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
@@ -424,10 +424,10 @@ function StatPill({
   pulse?: boolean;
 }) {
   const colors = {
-    green: "bg-[#FFF7ED] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#131d29]",
     blue: "bg-blue-50 text-blue-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
+  const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
       <span className="tabular-nums font-semibold">{value}</span>

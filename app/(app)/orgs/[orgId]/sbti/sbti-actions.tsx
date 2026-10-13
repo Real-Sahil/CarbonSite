@@ -21,7 +21,7 @@ export interface SbtiTarget {
 }
 
 export const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  draft:     { label: "Draft",     cls: "bg-gray-100 text-gray-600" },
+  draft:     { label: "Draft",     cls: "bg-gray-100 text-[#41505F]" },
   committed: { label: "Committed", cls: "bg-blue-100 text-blue-700" },
   validated: { label: "Validated", cls: "bg-green-100 text-green-700" },
 };
@@ -141,9 +141,9 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">{existing ? "Edit" : "Set"} SBTi net-zero target</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">{existing ? "Edit" : "Set"} SBTi net-zero target</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
@@ -177,9 +177,9 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
             ))}
           </FormSection>
 
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-            <p className="text-sm font-medium text-zinc-800">What reduction does a pathway require?</p>
-            <p className="mt-0.5 text-xs text-zinc-500">Not sure what percentage to commit to? Model one and copy it across.</p>
+          <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
+            <p className="text-sm font-medium text-[#131d29]">What reduction does a pathway require?</p>
+            <p className="mt-0.5 text-xs text-[#5B6A78]">Not sure what percentage to commit to? Model one and copy it across.</p>
             <div className="mt-3 flex items-end gap-2">
               <div className="flex-1">
                 <FormField label="Pathway to model" htmlFor="f-pathway-to-model">
@@ -196,14 +196,14 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
             </div>
             {calcError && <p role="alert" className="mt-2 text-xs text-red-700">{calcError}</p>}
             {suggestion && (
-              <div className="mt-3 rounded-md border border-zinc-200 bg-white px-3 py-2.5">
-                <p className="text-sm text-zinc-900">
+              <div className="mt-3 rounded-md border border-[#E3E8EE] bg-white px-3 py-2.5">
+                <p className="text-sm text-[#131d29]">
                   Reaching {form.nearTermYear} on this pathway needs{" "}
                   <span className="font-semibold">{suggestion.totalReductionPercent.toFixed(1)}%</span> total reduction
                   (~{suggestion.annualReductionRate.toFixed(1)}%/year).
                 </p>
                 {suggestion.recommendations.length > 0 && (
-                  <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-xs text-zinc-500">
+                  <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-xs text-[#5B6A78]">
                     {suggestion.recommendations.slice(0, 2).map((rec, i) => <li key={i}>{rec}</li>)}
                   </ul>
                 )}

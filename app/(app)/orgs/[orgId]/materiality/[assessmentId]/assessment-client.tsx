@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IRO_LABELS, STATUS_LABELS, isMaterialByScore } from "@/lib/materiality";
 
-const selectClass = "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-2 text-sm shadow-sm disabled:opacity-60";
+const selectClass = "h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm shadow-sm disabled:opacity-60";
 
 type Topic = {
   id: string;
@@ -36,7 +36,7 @@ export function StarterButton({ orgId, assessmentId }: { orgId: string; assessme
   const [pending, start] = useTransition();
   return (
     <div className="flex items-center gap-3">
-      {msg && <p className="text-sm text-[#374151]">{msg}</p>}
+      {msg && <p className="text-sm text-[#41505F]">{msg}</p>}
       <Button
         type="button"
         size="sm"
@@ -81,14 +81,14 @@ export function StatusControl({ orgId, assessmentId, status, approvedAt }: { org
   return (
     <div className="mt-3 flex flex-wrap items-end gap-3">
       <div>
-        <label className="mb-1.5 block text-xs font-medium text-[#374151]" htmlFor="ma-status">Status</label>
+        <label className="mb-1.5 block text-xs font-medium text-[#41505F]" htmlFor="ma-status">Status</label>
         <select id="ma-status" value={value} onChange={(e) => setValue(e.target.value)} className={selectClass}>
           {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </div>
       {(value === "approved" || value === "published") && (
         <div>
-          <label className="mb-1.5 block text-xs font-medium text-[#374151]" htmlFor="ma-date">Date approved</label>
+          <label className="mb-1.5 block text-xs font-medium text-[#41505F]" htmlFor="ma-date">Date approved</label>
           <Input id="ma-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       )}
@@ -148,13 +148,13 @@ function Row({ orgId, assessmentId, topic, canEdit }: { orgId: string; assessmen
   return (
     <tr className="align-top">
       <td className="px-5 py-3">
-        <p className="font-medium text-[#111827]">{t.topicName}</p>
-        <p className="text-xs text-[#6B7280]">{t.esrsCode ?? "Own topic"} · {IRO_LABELS[t.iroType] ?? t.iroType}</p>
+        <p className="font-medium text-[#131d29]">{t.topicName}</p>
+        <p className="text-xs text-[#5B6A78]">{t.esrsCode ?? "Own topic"} · {IRO_LABELS[t.iroType] ?? t.iroType}</p>
       </td>
       <td className="w-24 px-2 py-3">{scoreSelect("impactScore", "Impact score")}</td>
       <td className="w-24 px-2 py-3">{scoreSelect("financialScore", "Financial score")}</td>
       <td className="w-28 px-2 py-3">
-        <label className="flex items-center gap-2 text-sm text-[#374151]">
+        <label className="flex items-center gap-2 text-sm text-[#41505F]">
           <input
             type="checkbox"
             disabled={!canEdit}
@@ -172,7 +172,7 @@ function Row({ orgId, assessmentId, topic, canEdit }: { orgId: string; assessmen
           disabled={!canEdit}
           value={t.rationale ?? ""}
           onChange={(e) => setT({ ...t, rationale: e.target.value })}
-          className="w-full rounded-md border border-[#E5E7EB] bg-white px-2 py-1.5 text-sm shadow-sm disabled:opacity-60"
+          className="w-full rounded-md border border-[#E3E8EE] bg-white px-2 py-1.5 text-sm shadow-sm disabled:opacity-60"
         />
       </td>
       <td className="px-3 py-3 text-right">
@@ -182,7 +182,7 @@ function Row({ orgId, assessmentId, topic, canEdit }: { orgId: string; assessmen
               <Button type="button" size="sm" disabled={pending} onClick={save}>Save</Button>
               <Button type="button" size="sm" variant="outline" disabled={pending} onClick={remove}>Delete</Button>
             </div>
-            {msg && <p className="text-xs text-[#374151]">{msg}</p>}
+            {msg && <p className="text-xs text-[#41505F]">{msg}</p>}
           </div>
         )}
       </td>
@@ -214,12 +214,12 @@ export function TopicEditor({ orgId, assessmentId, canEdit, topics }: { orgId: s
   return (
     <div>
       {topics.length === 0 ? (
-        <p className="px-5 py-6 text-sm text-[#374151]">No topics yet. Add the ESRS starter topics, or your own below.</p>
+        <p className="px-5 py-6 text-sm text-[#41505F]">No topics yet. Add the ESRS starter topics, or your own below.</p>
       ) : (
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#F3F4F6] text-left text-xs text-[#6B7280]">
+              <tr className="border-b border-[#F3F4F6] text-left text-xs text-[#5B6A78]">
                 <th className="px-5 py-2 font-medium">Topic</th>
                 <th className="px-2 py-2 font-medium">Impact (1 to 5)</th>
                 <th className="px-2 py-2 font-medium">Financial (1 to 5)</th>
@@ -237,11 +237,11 @@ export function TopicEditor({ orgId, assessmentId, canEdit, topics }: { orgId: s
       {canEdit && (
         <div className="flex flex-wrap items-end gap-3 border-t border-[#F3F4F6] px-5 py-4">
           <div className="min-w-[260px] flex-1">
-            <label className="mb-1.5 block text-xs font-medium text-[#374151]" htmlFor="mt-name">Add your own topic (for example one specific to your sector)</label>
+            <label className="mb-1.5 block text-xs font-medium text-[#41505F]" htmlFor="mt-name">Add your own topic (for example one specific to your sector)</label>
             <Input id="mt-name" value={name} maxLength={300} onChange={(e) => setName(e.target.value)} />
           </div>
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-[#374151]" htmlFor="mt-iro">Type</label>
+            <label className="mb-1.5 block text-xs font-medium text-[#41505F]" htmlFor="mt-iro">Type</label>
             <select id="mt-iro" value={iro} onChange={(e) => setIro(e.target.value)} className={selectClass}>
               {Object.entries(IRO_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
             </select>

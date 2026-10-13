@@ -179,14 +179,14 @@ export function MatchBills({ orgId }: { orgId: string }) {
   return (
     <div className="flex flex-col gap-4">
       {inbox?.configured && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
-          <Mail className="h-4 w-4 text-[#6B7280]" aria-hidden />
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg bg-[#F9FAFC] px-4 py-3 text-sm text-[#41505F]">
+          <Mail className="h-4 w-4 text-[#5B6A78]" aria-hidden />
           {inbox.address ? (
             <>
               <span>
-                Or forward bills to <span className="font-medium text-[#111827] select-all">{inbox.address}</span>. They appear below to match.
+                Or forward bills to <span className="font-medium text-[#131d29] select-all">{inbox.address}</span>. They appear below to match.
               </span>
-              <button type="button" onClick={() => void turnOnInbox(true)} className="text-xs text-[#6B7280] underline underline-offset-2">
+              <button type="button" onClick={() => void turnOnInbox(true)} className="text-xs text-[#5B6A78] underline underline-offset-2">
                 New address
               </button>
             </>
@@ -203,9 +203,9 @@ export function MatchBills({ orgId }: { orgId: string }) {
 
       <SubmissionLinks orgId={orgId} />
 
-      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFB]">
-        {busy ? <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" /> : <FileStack className="h-5 w-5 text-[#6B7280]" />}
-        <span className="text-sm text-[#374151]">
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFC]">
+        {busy ? <Loader2 className="h-5 w-5 animate-spin text-[#5B6A78]" /> : <FileStack className="h-5 w-5 text-[#5B6A78]" />}
+        <span className="text-sm text-[#41505F]">
           {busy ? "Reading and matching. Photos can take up to a minute each." : `Choose up to ${MAX_FILES} bills or receipts (PDF or photo)`}
         </span>
         <input
@@ -226,7 +226,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
         <div className="overflow-x-auto">
           <Table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+              <tr className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
                 <th className="py-2 pr-3 font-medium">File</th>
                 <th className="py-2 pr-3 font-medium">Read</th>
                 <th className="py-2 pr-3 font-medium">Matching record</th>
@@ -238,10 +238,10 @@ export function MatchBills({ orgId }: { orgId: string }) {
                 <tr key={row.key} className="border-b border-[#F3F4F6] align-top">
                   <td className="py-2.5 pr-3 max-w-[180px]">
                     <span className="block truncate" title={row.filename}>{row.filename}</span>
-                    {row.from && <span className="block truncate text-xs text-[#6B7280]" title={row.from}>Emailed by {row.from}</span>}
+                    {row.from && <span className="block truncate text-xs text-[#5B6A78]" title={row.from}>Emailed by {row.from}</span>}
                   </td>
-                  <td className="py-2.5 pr-3 text-[#374151] tabular-nums">
-                    {row.state === "reading" ? <span className="text-[#6B7280]">Reading...</span> : row.state === "queued" ? <span className="text-[#6B7280]">Waiting</span> : (row.read ?? "-")}
+                  <td className="py-2.5 pr-3 text-[#41505F] tabular-nums">
+                    {row.state === "reading" ? <span className="text-[#5B6A78]">Reading...</span> : row.state === "queued" ? <span className="text-[#5B6A78]">Waiting</span> : (row.read ?? "-")}
                   </td>
                   <td className="py-2.5 pr-3">
                     {row.state === "matched" && (
@@ -256,36 +256,36 @@ export function MatchBills({ orgId }: { orgId: string }) {
                               onChange={() => update(row.key, { choice: m.recordId })}
                             />
                             <span>
-                              <span className="font-medium text-[#111827]">
+                              <span className="font-medium text-[#131d29]">
                                 {m.record.amount.toLocaleString("en-GB")} {m.record.unit}
                                 {m.record.date ? `, ${m.record.date}` : ""}
                               </span>{" "}
-                              <span className="text-[#374151]">
+                              <span className="text-[#41505F]">
                                 {m.record.category}
                                 {m.record.facility ? `, ${m.record.facility}` : ""}
                                 {m.record.supplierName ? `, ${m.record.supplierName}` : ""}
                               </span>
-                              <span className="block text-[#6B7280]">
+                              <span className="block text-[#5B6A78]">
                                 {m.score >= CONFIDENT ? "Strong match: " : "Possible match: "}
                                 {m.reasons.join(", ")}
                               </span>
                             </span>
                           </label>
                         ))}
-                        <label className="flex items-center gap-2 text-xs text-[#6B7280]">
+                        <label className="flex items-center gap-2 text-xs text-[#5B6A78]">
                           <input type="radio" name={`match-${row.key}`} checked={!row.choice} onChange={() => update(row.key, { choice: undefined })} />
                           None of these
                         </label>
                       </div>
                     )}
                     {row.state === "none" && (
-                      <span className="text-xs text-[#6B7280]">
+                      <span className="text-xs text-[#5B6A78]">
                         {row.message ?? "No record with this quantity. Use Add from a bill to create one."}
                       </span>
                     )}
                     {row.state === "error" && <span role="alert" className="text-xs text-red-600">{row.message}</span>}
                     {row.state === "attached" && <span className="text-xs text-emerald-700">Attached</span>}
-                    {row.state === "dismissed" && <span className="text-xs text-[#6B7280]">Dismissed</span>}
+                    {row.state === "dismissed" && <span className="text-xs text-[#5B6A78]">Dismissed</span>}
                     {row.state === "matched" && row.message && <span role="alert" className="block text-xs text-red-600">{row.message}</span>}
                   </td>
                   <td className="py-2.5 text-right whitespace-nowrap">
@@ -295,7 +295,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
                       </button>
                     )}
                     {row.inboxItemId && (row.state === "matched" || row.state === "none" || row.state === "error") && (
-                      <button type="button" onClick={() => void dismiss(row)} className="ml-3 text-xs text-[#6B7280] underline underline-offset-2">
+                      <button type="button" onClick={() => void dismiss(row)} className="ml-3 text-xs text-[#5B6A78] underline underline-offset-2">
                         Dismiss
                       </button>
                     )}
@@ -309,7 +309,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
 
       {ready > 1 && (
         <div>
-          <button type="button" disabled={busy} onClick={attachAllChosen} className="inline-flex items-center gap-1.5 rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
+          <button type="button" disabled={busy} onClick={attachAllChosen} className="inline-flex items-center gap-1.5 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
             Attach {ready} selected
           </button>
         </div>

@@ -8,10 +8,10 @@ import { ImportBatchActions, ImportBatchEvidenceActions } from "./import-actions
 import { DeleteImportButton } from "./delete-import-button";
 
 const STATE_CONFIG: Record<string, { label: string; className: string }> = {
-  uploaded:        { label: "Uploaded",         className: "bg-zinc-100 text-[#374151] border-transparent" },
+  uploaded:        { label: "Uploaded",         className: "bg-zinc-100 text-[#41505F] border-transparent" },
   parsing:         { label: "Parsing",           className: "bg-blue-50 text-blue-700 border-transparent animate-pulse" },
   needs_attention: { label: "Needs attention",   className: "bg-amber-50 text-amber-700 border-transparent" },
-  ready_to_commit: { label: "Ready to commit",   className: "bg-[#FFF7ED] text-[#111827] border-transparent" },
+  ready_to_commit: { label: "Ready to commit",   className: "bg-[#FFF7ED] text-[#131d29] border-transparent" },
   committed:       { label: "Committed",         className: "bg-[#c2410c] text-white border-transparent" },
   failed:          { label: "Failed",            className: "bg-red-50 text-red-700 border-transparent" },
 };
@@ -90,21 +90,21 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       id: "file",
       header: "File",
       cell: ({ row }) => (
-        <span className="text-sm font-medium text-[#111827]">{row.original.sourceFilename}</span>
+        <span className="text-sm font-medium text-[#131d29]">{row.original.sourceFilename}</span>
       ),
     },
     {
       id: "template",
       header: "Template",
       cell: ({ row }) => (
-        <span className="text-sm text-[#6B7280]">{row.original.templateKey}</span>
+        <span className="text-sm text-[#5B6A78]">{row.original.templateKey}</span>
       ),
     },
     {
       id: "period",
       header: "Period",
       cell: ({ row }) => (
-        <span className="text-sm text-[#374151]">
+        <span className="text-sm text-[#41505F]">
           {periodLabelById[row.original.reportingPeriodId] ?? row.original.reportingPeriodId}
         </span>
       ),
@@ -113,7 +113,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       id: "rows",
       header: "Rows",
       cell: ({ row }) => (
-        <span className="text-sm text-[#6B7280] tabular-nums">
+        <span className="text-sm text-[#5B6A78] tabular-nums">
           {(row.original.rowCount ?? row.original._count.stagedRecords).toLocaleString("en-GB")}
         </span>
       ),
@@ -139,7 +139,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
 
         return (
           <div>
-            <div className="text-sm text-[#6B7280]">
+            <div className="text-sm text-[#5B6A78]">
               {batch.errorCount > 0 && (
                 <span className="text-red-600">
                   {batch.errorCount} error{batch.errorCount !== 1 ? "s" : ""}
@@ -154,14 +154,14 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
                 </span>
               )}
               {batch.errorCount === 0 && batch.warningCount === 0 && (
-                <span className="text-[#6B7280]">None</span>
+                <span className="text-[#5B6A78]">None</span>
               )}
             </div>
             {inlineErrors.length > 0 && (
               <ul className="mt-1.5 space-y-0.5">
                 {inlineErrors.map((err, i) => (
-                  <li key={i} className="text-xs text-[#6B7280]">
-                    <span className="font-medium text-[#374151]">Row {err.row}:</span> {err.msg}
+                  <li key={i} className="text-xs text-[#5B6A78]">
+                    <span className="font-medium text-[#41505F]">Row {err.row}:</span> {err.msg}
                   </li>
                 ))}
               </ul>
@@ -188,7 +188,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       id: "uploadedBy",
       header: "Uploaded by",
       cell: ({ row }) => (
-        <span className="text-sm text-[#6B7280]">
+        <span className="text-sm text-[#5B6A78]">
           {row.original.createdBy
             ? (row.original.createdBy.name ?? row.original.createdBy.email)
             : "System"}
@@ -201,7 +201,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
       cell: ({ row }) => {
         const cfg = STATE_CONFIG[row.original.state] ?? {
           label: row.original.state,
-          className: "border-zinc-200",
+          className: "border-[#E3E8EE]",
         };
         return (
           <Badge variant="outline" className={`text-xs font-medium ${cfg.className}`}>

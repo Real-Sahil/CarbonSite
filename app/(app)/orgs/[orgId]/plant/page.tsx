@@ -49,26 +49,26 @@ export default async function PlantPage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-[42px]">
       {scope && (
-        <p className="rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+        <p className="rounded-lg bg-[#F9FAFC] px-4 py-2 text-sm text-[#41505F]">
           Showing <span className="font-medium">{scope.project.name}</span> only{scope.siteIds.length === 0 ? ", which has no sites yet. Add a site to the project to see its fuel, machines and loads here" : ""}. Choose All projects in the sidebar to see everything.
         </p>
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Plant</h1>
-          <p className="mt-2 max-w-[65ch] text-sm text-[#374151]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Plant</h1>
+          <p className="mt-2 max-w-[65ch] text-sm text-[#41505F]">
             Engine hours, idling and fuel from your machines&apos; telematics, with the carbon that fuel represents and
             the savings from HVO. These are monitoring figures: your inventory counts the fuel you record, and the
             reconciliation below shows where the two disagree.
           </p>
         </div>
-        <nav className="flex gap-1 rounded-md border border-[#E5E7EB] p-1 text-sm" aria-label="Time window">
+        <nav className="flex gap-1 rounded-md border border-[#E3E8EE] p-1 text-sm" aria-label="Time window">
           {WINDOWS.map((w) => (
             <Link
               key={w}
               href={`/orgs/${orgId}/plant?days=${w}`}
               aria-current={w === days ? "page" : undefined}
-              className={`rounded px-3 py-1 ${w === days ? "bg-[#111827] text-white" : "text-[#374151] hover:bg-[#F3F4F6]"}`}
+              className={`rounded px-3 py-1 ${w === days ? "bg-[#131d29] text-white" : "text-[#41505F] hover:bg-[#F3F4F6]"}`}
             >
               {w === 365 ? "12 months" : `${w} days`}
             </Link>
@@ -112,12 +112,12 @@ export default async function PlantPage({ params, searchParams }: Props) {
         </CardHeader>
         <CardContent>
           {assets.length === 0 ? (
-            <p className="text-sm text-[#374151]">No machines registered. Add one below, or send a telematics feed and machines are added as they report.</p>
+            <p className="text-sm text-[#41505F]">No machines registered. Add one below, or send a telematics feed and machines are added as they report.</p>
           ) : (
             <div className="overflow-x-auto">
               <Table className="text-sm">
                 <thead>
-                  <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
+                  <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#41505F]">
                     <th className="py-2 pr-3 font-normal">Machine</th>
                     <th className="py-2 pr-3 font-normal">Site</th>
                     <th className="py-2 pr-3 font-normal">Fuel</th>
@@ -132,14 +132,14 @@ export default async function PlantPage({ params, searchParams }: Props) {
                   {assets.map((a) => (
                     <tr key={a.asset.id} className="border-b border-[#F3F4F6]">
                       <td className="py-2.5 pr-3">
-                        <p className="font-medium text-[#111827]">{a.asset.name}</p>
-                        <p className="text-xs text-[#6B7280]">
+                        <p className="font-medium text-[#131d29]">{a.asset.name}</p>
+                        <p className="text-xs text-[#5B6A78]">
                           {[a.asset.category, a.asset.ownership === "hired" ? "Hired" : null].filter(Boolean).join(" · ")}
                           {a.asset.autoRegistered && <span className="ml-1 rounded-full bg-amber-100 px-1.5 text-amber-800">Added by feed, check details</span>}
                         </p>
                       </td>
-                      <td className="py-2.5 pr-3 text-[#374151]">{a.asset.siteName ?? "Unassigned"}</td>
-                      <td className="py-2.5 pr-3 text-[#374151]">{a.asset.fuelType}</td>
+                      <td className="py-2.5 pr-3 text-[#41505F]">{a.asset.siteName ?? "Unassigned"}</td>
+                      <td className="py-2.5 pr-3 text-[#41505F]">{a.asset.fuelType}</td>
                       <td className="py-2.5 pr-3 text-right">{n(a.hours, 1)}</td>
                       <td className={`py-2.5 pr-3 text-right ${a.idleShare != null && a.idleShare > 0.3 ? "text-amber-700" : ""}`}>{pct(a.idleShare)}</td>
                       <td className="py-2.5 pr-3 text-right">{n(a.litresPerHour, 1)}</td>
@@ -166,7 +166,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
           <CardContent className="overflow-x-auto">
             <Table className="text-sm tabular-nums">
               <thead>
-                <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
+                <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#41505F]">
                   <th className="py-2 pr-3 font-normal">Site</th>
                   <th className="py-2 pr-3 text-right font-normal">Burnt (L)</th>
                   <th className="py-2 pr-3 text-right font-normal">Recorded (L)</th>
@@ -176,10 +176,10 @@ export default async function PlantPage({ params, searchParams }: Props) {
               <tbody>
                 {reconciliation.map((r) => (
                   <tr key={r.siteId} className="border-b border-[#F3F4F6]">
-                    <td className="py-2.5 pr-3 text-[#111827]">{r.siteName}</td>
+                    <td className="py-2.5 pr-3 text-[#131d29]">{r.siteName}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.telematicsLitres)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.recordedLitres)}</td>
-                    <td className={`py-2.5 text-right ${r.gapLitres > 0 && (r.gapShare == null || r.gapShare > 0.05) ? "font-medium text-red-600" : "text-[#374151]"}`}>
+                    <td className={`py-2.5 text-right ${r.gapLitres > 0 && (r.gapShare == null || r.gapShare > 0.05) ? "font-medium text-red-600" : "text-[#41505F]"}`}>
                       {r.gapLitres > 0 ? "+" : ""}{n(r.gapLitres)} L{r.gapShare != null ? ` (${r.gapShare > 0 ? "+" : ""}${(r.gapShare * 100).toFixed(0)}%)` : ""}
                     </td>
                   </tr>
@@ -208,8 +208,8 @@ export default async function PlantPage({ params, searchParams }: Props) {
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <ReadingsUpload orgId={orgId} />
-              <div className="text-xs text-[#374151]">
-                <p className="font-medium text-[#111827]">Automatic feed</p>
+              <div className="text-xs text-[#41505F]">
+                <p className="font-medium text-[#131d29]">Automatic feed</p>
                 <p className="mt-1">
                   POST an ISO 15143-3 (AEMP 2.0) fleet snapshot to{" "}
                   <code className="rounded bg-[#F3F4F6] px-1">/api/orgs/{orgId}/integrations/plant/ingest</code> with an API key
@@ -227,10 +227,10 @@ export default async function PlantPage({ params, searchParams }: Props) {
 
 function Kpi({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: "good" | "warn" }) {
   return (
-    <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4">
-      <p className="text-xs text-[#374151]">{label}</p>
-      <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{value}</p>
-      {note && <p className={`mt-1 text-xs ${tone === "good" ? "text-green-700" : tone === "warn" ? "text-amber-700" : "text-[#6B7280]"}`}>{note}</p>}
+    <div className="rounded-[10px] border border-[#E3E8EE] bg-white p-4">
+      <p className="text-xs text-[#41505F]">{label}</p>
+      <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{value}</p>
+      {note && <p className={`mt-1 text-xs ${tone === "good" ? "text-green-700" : tone === "warn" ? "text-amber-700" : "text-[#5B6A78]"}`}>{note}</p>}
     </div>
   );
 }

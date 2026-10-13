@@ -135,11 +135,11 @@ export default async function BiodiversityPage({ params }: PageProps) {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-            <Leaf className="h-5 w-5 text-zinc-700" />
+            <Leaf className="h-5 w-5 text-[#41505F]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-zinc-900">Biodiversity Net Gain</h1>
-            <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+            <h1 className="text-xl font-semibold text-[#131d29]">Biodiversity Net Gain</h1>
+            <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
               Mandatory for development in England since February 2024. A scheme must deliver at
               least {REQUIRED_NET_GAIN_PERCENT}% more biodiversity units than it started with, in
               each of three modules independently, and secure it for 30 years.
@@ -195,9 +195,9 @@ export default async function BiodiversityPage({ params }: PageProps) {
       )}
 
       {unsecured.length > 0 && (
-        <div className="flex items-start gap-3 rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500" />
-          <p className="text-sm leading-relaxed text-zinc-700">
+        <div className="flex items-start gap-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] px-4 py-3">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#5B6A78]" />
+          <p className="text-sm leading-relaxed text-[#41505F]">
             {unsecured.length} assessment{unsecured.length === 1 ? "" : "s"} deliver net gain but
             have no securing mechanism recorded. A gain that is not secured by a planning
             obligation or a conservation covenant does not discharge the requirement.
@@ -207,7 +207,7 @@ export default async function BiodiversityPage({ params }: PageProps) {
 
       {rows.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-sm text-zinc-500">
+          <CardContent className="py-8 text-sm text-[#5B6A78]">
             No assessments yet. Create one to record the habitat baseline for a site, then add the
             habitat proposed after development to see the net gain position.
           </CardContent>
@@ -261,30 +261,30 @@ export default async function BiodiversityPage({ params }: PageProps) {
                       key={m.module}
                       className={
                         m.baselineIsZero && m.postInterventionUnits === 0
-                          ? "rounded-md border border-zinc-200 p-3 opacity-50"
+                          ? "rounded-md border border-[#E3E8EE] p-3 opacity-50"
                           : m.meetsRequirement
-                            ? "rounded-md border border-zinc-200 p-3"
+                            ? "rounded-md border border-[#E3E8EE] p-3"
                             : "rounded-md border border-amber-200 bg-amber-50 p-3"
                       }
                     >
-                      <p className="text-xs font-medium text-zinc-500">
+                      <p className="text-xs font-medium text-[#5B6A78]">
                         {MODULE_LABEL[m.module]}
                       </p>
                       {m.baselineIsZero && m.postInterventionUnits === 0 ? (
-                        <p className="mt-1 text-sm text-zinc-500">Not engaged</p>
+                        <p className="mt-1 text-sm text-[#5B6A78]">Not engaged</p>
                       ) : (
                         <>
                           <p
                             className={
                               m.meetsRequirement
-                                ? "mt-1 font-mono text-lg font-semibold tabular-nums text-zinc-900"
+                                ? "mt-1 font-mono text-lg font-semibold tabular-nums text-[#131d29]"
                                 : "mt-1 font-mono text-lg font-semibold tabular-nums text-amber-700"
                             }
                           >
                             {m.netGainPercent >= 0 ? "+" : ""}
                             {m.netGainPercent.toFixed(1)}%
                           </p>
-                          <p className="text-xs tabular-nums text-zinc-500">
+                          <p className="text-xs tabular-nums text-[#5B6A78]">
                             {m.baselineUnits.toFixed(2)} to {m.postInterventionUnits.toFixed(2)}{" "}
                             units
                           </p>
@@ -300,7 +300,7 @@ export default async function BiodiversityPage({ params }: PageProps) {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-sm">
-                  <div className="flex flex-wrap gap-4 text-zinc-500">
+                  <div className="flex flex-wrap gap-4 text-[#5B6A78]">
                     <span>{a._count.parcels} habitat parcels</span>
                     <span>{a._count.speciesRecords} species records</span>
                     <span>{SECURING_LABEL[a.securingMechanism]}</span>
@@ -316,7 +316,7 @@ export default async function BiodiversityPage({ params }: PageProps) {
                   </div>
                   <Link
                     href={`/orgs/${orgId}/biodiversity/${a.id}`}
-                    className="flex items-center gap-1 font-medium text-zinc-600 hover:text-zinc-900"
+                    className="flex items-center gap-1 font-medium text-[#41505F] hover:text-[#131d29]"
                   >
                     Open assessment
                     <ChevronRight className="h-3.5 w-3.5" />
@@ -334,8 +334,8 @@ export default async function BiodiversityPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view biodiversity assessments.
       </p>
     </div>

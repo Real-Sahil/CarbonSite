@@ -77,7 +77,7 @@ function getTrendIcon(trend: string | null) {
     case 'declining':
       return <TrendingDown className="h-4 w-4 text-red-600" />;
     default:
-      return <Minus className="h-4 w-4 text-gray-500" />;
+      return <Minus className="h-4 w-4 text-[#5B6A78]" />;
   }
 }
 
@@ -159,7 +159,7 @@ export default function SupplierPerformancePage() {
 
   const selector = (
     <div className="flex items-center gap-3">
-      <Building2 className="h-5 w-5 text-gray-500" />
+      <Building2 className="h-5 w-5 text-[#5B6A78]" />
       <Select value={selected} onValueChange={handleSelect} disabled={suppliersLoading}>
         <SelectTrigger className="w-72">
           <SelectValue placeholder="Select entity" />
@@ -181,8 +181,8 @@ export default function SupplierPerformancePage() {
       <div className="space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance Analytics</h1>
-            <p className="mt-2 text-gray-600">Track submission quality across your organization and suppliers</p>
+            <h1 className="text-3xl text-[#131d29]">Performance Analytics</h1>
+            <p className="mt-2 text-[#41505F]">Track submission quality across your organization and suppliers</p>
           </div>
           {selector}
         </div>
@@ -198,8 +198,8 @@ export default function SupplierPerformancePage() {
       <div className="space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance Analytics</h1>
-            <p className="mt-2 text-gray-600">Track submission quality across your organization and suppliers</p>
+            <h1 className="text-3xl text-[#131d29]">Performance Analytics</h1>
+            <p className="mt-2 text-[#41505F]">Track submission quality across your organization and suppliers</p>
           </div>
           {selector}
         </div>
@@ -232,8 +232,8 @@ export default function SupplierPerformancePage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{performance.supplier.name}</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl text-[#131d29]">{performance.supplier.name}</h1>
+          <p className="mt-2 text-[#41505F]">
             {selected === OWN_COMPANY_VALUE ? 'Organization-wide submission performance' : 'Supplier Performance Analytics'}
           </p>
         </div>
@@ -241,8 +241,8 @@ export default function SupplierPerformancePage() {
       </div>
 
       {!hasSubmissionData && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-          <p className="text-gray-600">No submissions recorded in the last 90 days.</p>
+        <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-6 text-center">
+          <p className="text-[#41505F]">No submissions recorded in the last 90 days.</p>
         </div>
       )}
 
@@ -250,14 +250,14 @@ export default function SupplierPerformancePage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Data Quality Score
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between">
               <div>
-                <div className="text-2xl font-bold text-gray-900">
+                <div className="text-2xl font-bold text-[#131d29]">
                   {Math.round(performance.dataQualityScore * 10) / 10}%
                 </div>
                 <Badge className={`mt-2 ${qualityBadge.color}`}>
@@ -271,15 +271,15 @@ export default function SupplierPerformancePage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Acceptance Rate
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-[#131d29]">
               {Math.round(performance.acceptanceRate * 10) / 10}%
             </div>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-[#41505F]">
               {metrics.approvedSubmissions} of {metrics.totalSubmissions}
             </p>
           </CardContent>
@@ -287,15 +287,15 @@ export default function SupplierPerformancePage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               On-Time Rate
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-[#131d29]">
               {Math.round(performance.onTimeRate * 10) / 10}%
             </div>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-[#41505F]">
               {metrics.onTimeSubmissions} on time
             </p>
           </CardContent>
@@ -303,15 +303,15 @@ export default function SupplierPerformancePage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Completeness Score
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-[#131d29]">
               {Math.round(performance.completenessScore * 10) / 10}%
             </div>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-[#41505F]">
               Average data completeness
             </p>
           </CardContent>
@@ -394,8 +394,8 @@ export default function SupplierPerformancePage() {
                 <CheckCircle className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-[#41505F]">Total</p>
+                <p className="text-xl font-bold text-[#131d29]">
                   {metrics.totalSubmissions}
                 </p>
               </div>
@@ -405,8 +405,8 @@ export default function SupplierPerformancePage() {
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Approved</p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-[#41505F]">Approved</p>
+                <p className="text-xl font-bold text-[#131d29]">
                   {metrics.approvedSubmissions}
                 </p>
               </div>
@@ -416,8 +416,8 @@ export default function SupplierPerformancePage() {
                 <AlertCircle className="h-5 w-5 text-red-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">Rejected</p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-[#41505F]">Rejected</p>
+                <p className="text-xl font-bold text-[#131d29]">
                   {metrics.rejectedSubmissions}
                 </p>
               </div>
@@ -427,8 +427,8 @@ export default function SupplierPerformancePage() {
                 <TrendingUp className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-600">On Time</p>
-                <p className="text-xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-[#41505F]">On Time</p>
+                <p className="text-xl font-bold text-[#131d29]">
                   {metrics.onTimeSubmissions}
                 </p>
               </div>

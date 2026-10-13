@@ -92,11 +92,11 @@ export default async function CommutingPage({ params }: PageProps) {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="border-b border-[#E5E7EB] bg-white">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Employee commuting</h1>
-          <p className="mt-1 max-w-[70ch] text-sm text-[#374151]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Employee commuting</h1>
+          <p className="mt-1 max-w-[70ch] text-sm text-[#41505F]">
             Scope 3 Category 7 from your site sign-ins and each site&apos;s anonymous travel survey: days on site,
             priced at the round trip in miles and the way people said they travel. No home postcodes are asked for or
             read. Only your own staff count in the inventory; subcontractor travel is shown beside it. Records go to{" "}

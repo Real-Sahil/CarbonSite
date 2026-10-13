@@ -154,8 +154,8 @@ export default async function CrosswalkPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">You do not have permission to view the crosswalk.</p>
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">You do not have permission to view the crosswalk.</p>
     </div>
   );
 }

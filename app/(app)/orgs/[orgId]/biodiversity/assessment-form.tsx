@@ -76,7 +76,7 @@ export function CreateAssessmentForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Name" htmlFor="ba-name">
           <Input
@@ -92,7 +92,7 @@ export function CreateAssessmentForm({
             id="ba-project"
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">None</option>
             {projects.map((p) => (
@@ -108,7 +108,7 @@ export function CreateAssessmentForm({
             id="ba-site"
             value={siteId}
             onChange={(e) => setSiteId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">None</option>
             {sites.map((s) => (

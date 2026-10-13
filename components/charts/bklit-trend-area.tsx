@@ -33,19 +33,19 @@ function trendReadout(point: Record<string, unknown>): ReactNode {
   const total = rows.reduce((sum, r) => sum + r.kg, 0);
   return (
     <div className="flex flex-col gap-1">
-      <span className="font-medium text-slate-900">{String(point.name ?? "")}</span>
+      <span className="font-medium text-[#131d29]">{String(point.name ?? "")}</span>
       {rows.map((r) => (
         <div key={r.label} className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 text-slate-600">
+          <span className="flex items-center gap-1.5 text-[#41505F]">
             <span className="inline-block h-2 w-2 rounded-full shrink-0" style={{ background: r.color }} />
             {r.label}
           </span>
-          <span className="tabular-nums text-slate-900">{formatTonnes(r.kg)}</span>
+          <span className="tabular-nums text-[#131d29]">{formatTonnes(r.kg)}</span>
         </div>
       ))}
-      <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-1">
-        <span className="text-slate-600">Total</span>
-        <span className="tabular-nums font-medium text-slate-900">{formatTonnes(total)}</span>
+      <div className="flex items-center justify-between gap-4 border-t border-[#E3E8EE] pt-1">
+        <span className="text-[#41505F]">Total</span>
+        <span className="tabular-nums font-medium text-[#131d29]">{formatTonnes(total)}</span>
       </div>
     </div>
   );
@@ -55,7 +55,7 @@ export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
   if (data.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-sm text-slate-500"
+        className="flex items-center justify-center text-sm text-[#5B6A78]"
         style={{ height }}
         role="img"
         aria-label="Emissions trend across reporting periods"
@@ -104,7 +104,7 @@ export function BklitTrendArea({ data, height = 260 }: BklitTrendAreaProps) {
               className="inline-block h-2.5 w-2.5 rounded-full shrink-0"
               style={{ background: s.color }}
             />
-            <span className="text-xs text-slate-600">{s.label}</span>
+            <span className="text-xs text-[#41505F]">{s.label}</span>
           </div>
         ))}
       </div>

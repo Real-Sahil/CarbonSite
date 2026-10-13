@@ -51,11 +51,11 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
   return (
     <div className="flex flex-col gap-6">
       {canPack && (
-        <section className="flex flex-col gap-3 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
-          <h2 className="text-sm font-semibold text-[#111827]">Certification pack</h2>
+        <section className="flex flex-col gap-3 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
+          <h2 className="text-sm font-semibold text-[#131d29]">Certification pack</h2>
           <div className="flex flex-wrap gap-x-4 gap-y-2" role="group" aria-label="Frameworks in the pack">
             {frameworks.map((f) => (
-              <label key={f.slug} className="flex items-center gap-1.5 text-sm text-[#374151]">
+              <label key={f.slug} className="flex items-center gap-1.5 text-sm text-[#41505F]">
                 <input type="checkbox" checked={packFor.includes(f.slug)} onChange={() => setPackFor(toggle(packFor, f.slug))} className="h-4 w-4" />
                 {f.name}
               </label>
@@ -72,8 +72,8 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
       )}
 
       {canEdit && (
-        <section className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
-          <h2 className="text-sm font-semibold text-[#111827]">Auditor links</h2>
+        <section className="flex flex-col gap-4 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
+          <h2 className="text-sm font-semibold text-[#131d29]">Auditor links</h2>
           <form onSubmit={create} className="grid gap-4 sm:grid-cols-2">
             <FormSection title="Give an auditor access" description="A read-only link to the evidence pack. It expires and can be revoked." cols={2}>
               <FormField label="Auditor&apos;s name" htmlFor="aa-name">
@@ -91,7 +91,7 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
             </FormSection>
             <div className="flex flex-wrap gap-x-4 gap-y-2 sm:col-span-2" role="group" aria-label="Frameworks shared">
               {frameworks.map((f) => (
-                <label key={f.slug} className="flex items-center gap-1.5 text-sm text-[#374151]">
+                <label key={f.slug} className="flex items-center gap-1.5 text-sm text-[#41505F]">
                   <input type="checkbox" checked={form.frameworks.includes(f.slug)} onChange={() => setForm({ ...form, frameworks: toggle(form.frameworks, f.slug) })} className="h-4 w-4" />
                   {f.name}
                 </label>
@@ -101,7 +101,7 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
           </form>
           {created && (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 text-sm">
-              <p className="font-medium text-[#111827]">Copy this link now; it is not shown again.</p>
+              <p className="font-medium text-[#131d29]">Copy this link now; it is not shown again.</p>
               <p className="mt-1 break-all font-mono text-xs">{created}</p>
               <Button type="button" size="sm" variant="outline" className="mt-2" onClick={() => navigator.clipboard?.writeText(created)}>Copy</Button>
             </div>
@@ -110,7 +110,7 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
           {links.length > 0 && (
             <div className="overflow-x-auto">
               <Table className="w-full text-left text-sm">
-                <thead className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+                <thead className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
                   <tr><th className="py-2 pr-4">Auditor</th><th className="py-2 pr-4">Frameworks</th><th className="py-2 pr-4">Expires</th><th className="py-2 pr-4">Last used</th><th className="py-2" /></tr>
                 </thead>
                 <tbody className="divide-y divide-[#F3F4F6]">
@@ -118,10 +118,10 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
                     const live = !l.revokedAt && l.expiresAt > now;
                     return (
                       <tr key={l.id}>
-                        <td className="py-2 pr-4">{l.name}{l.company ? <span className="block text-xs text-[#6B7280]">{l.company}</span> : null}</td>
-                        <td className="py-2 pr-4 text-[#374151]">{l.frameworks.map(nameOf).join(", ")}</td>
+                        <td className="py-2 pr-4">{l.name}{l.company ? <span className="block text-xs text-[#5B6A78]">{l.company}</span> : null}</td>
+                        <td className="py-2 pr-4 text-[#41505F]">{l.frameworks.map(nameOf).join(", ")}</td>
                         <td className="whitespace-nowrap py-2 pr-4 tabular-nums">{l.revokedAt ? "Withdrawn" : l.expiresAt.slice(0, 10)}</td>
-                        <td className="whitespace-nowrap py-2 pr-4 tabular-nums text-[#6B7280]">{l.lastUsedAt?.slice(0, 10) ?? "Not yet"}</td>
+                        <td className="whitespace-nowrap py-2 pr-4 tabular-nums text-[#5B6A78]">{l.lastUsedAt?.slice(0, 10) ?? "Not yet"}</td>
                         <td className="py-2 text-right">{live && <Button size="sm" variant="outline" onClick={() => revoke(l.id)} disabled={isPending}>Withdraw</Button>}</td>
                       </tr>
                     );

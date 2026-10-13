@@ -243,8 +243,8 @@ export default function SupplierSubmissionsPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Supplier Data Submissions</h1>
-          <p className="text-gray-600 mt-1">Review and approve supplier-submitted emissions data</p>
+          <h1 className="text-3xl">Supplier Data Submissions</h1>
+          <p className="text-[#41505F] mt-1">Review and approve supplier-submitted emissions data</p>
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40">
@@ -265,7 +265,7 @@ export default function SupplierSubmissionsPage() {
           <Loader2 className="animate-spin" />
         </div>
       ) : reports.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-[#5B6A78]">
           <p>No supplier reports found</p>
         </div>
       ) : (
@@ -288,13 +288,13 @@ export default function SupplierSubmissionsPage() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{report.supplierName || report.supplierEmail}</div>
-                      <div className="text-sm text-gray-600">{report.supplierEmail}</div>
+                      <div className="text-sm text-[#41505F]">{report.supplierEmail}</div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div>
                       <div className="font-medium">{report.emissionCategory.name}</div>
-                      <div className="text-sm text-gray-600">{report.emissionCategory.scope}</div>
+                      <div className="text-sm text-[#41505F]">{report.emissionCategory.scope}</div>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
@@ -360,43 +360,43 @@ export default function SupplierSubmissionsPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Supplier Email</label>
+                  <label className="text-sm font-medium text-[#41505F]">Supplier Email</label>
                   <p className="mt-1">{selectedReport.supplierEmail}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Reporting Year</label>
+                  <label className="text-sm font-medium text-[#41505F]">Reporting Year</label>
                   <p className="mt-1">{selectedReport.reportingYear}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Category</label>
+                  <label className="text-sm font-medium text-[#41505F]">Category</label>
                   <p className="mt-1">{selectedReport.emissionCategory.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Quality Score</label>
+                  <label className="text-sm font-medium text-[#41505F]">Quality Score</label>
                   <p className="mt-1">{getQualityScoreBadge(selectedReport.qualityScore)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Amount</label>
+                  <label className="text-sm font-medium text-[#41505F]">Amount</label>
                   <p className="mt-1 font-mono">
                     {selectedReport.totalAmount} {selectedReport.unit}
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Calculation Method</label>
+                  <label className="text-sm font-medium text-[#41505F]">Calculation Method</label>
                   <p className="mt-1">{selectedReport.calculationMethod}</p>
                 </div>
               </div>
 
               {selectedReport.notes && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Notes</label>
-                  <p className="mt-1 p-3 bg-gray-50 rounded text-sm">{selectedReport.notes}</p>
+                  <label className="text-sm font-medium text-[#41505F]">Notes</label>
+                  <p className="mt-1 p-3 bg-[#F9FAFC] rounded text-sm">{selectedReport.notes}</p>
                 </div>
               )}
 
               {selectedReport.qualityFlags && selectedReport.qualityFlags.length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-600">Quality Flags</label>
+                  <label className="text-sm font-medium text-[#41505F]">Quality Flags</label>
                   <ul className="mt-2 space-y-1">
                     {selectedReport.qualityFlags.map((flag) => (
                       <li key={flag} className="flex items-center gap-2 text-sm">
@@ -410,7 +410,7 @@ export default function SupplierSubmissionsPage() {
 
               {selectedReport.reviewedBy && (
                 <div className="pt-4 border-t">
-                  <label className="text-sm font-medium text-gray-600">Review Info</label>
+                  <label className="text-sm font-medium text-[#41505F]">Review Info</label>
                   <p className="mt-1 text-sm">
                     Reviewed by {selectedReport.reviewedBy.name || selectedReport.reviewedBy.email}{" "}
                     on {new Date(selectedReport.reviewedAt!).toLocaleDateString()}

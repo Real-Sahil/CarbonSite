@@ -198,11 +198,11 @@ export default async function EnvironmentPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-          <ShieldAlert className="h-5 w-5 text-zinc-700" />
+          <ShieldAlert className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Environmental management</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold text-[#131d29]">Environmental management</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             Permits and consents, compliance obligations, the incident register and the aspects
             and impacts register.
           </p>
@@ -274,10 +274,10 @@ export default async function EnvironmentPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900">Permits needing attention</h2>
+          <h2 className="text-lg font-semibold text-[#131d29]">Permits needing attention</h2>
           <Link
             href={`/orgs/${orgId}/environment/permits`}
-            className="flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+            className="flex items-center gap-1 text-sm font-medium text-[#41505F] hover:text-[#131d29]"
           >
             Full register
             <ChevronRight className="h-3.5 w-3.5" />
@@ -304,15 +304,15 @@ export default async function EnvironmentPage({ params }: PageProps) {
                     return (
                       <TableRow key={p.id}>
                         <TableCell className="pl-4">
-                          <div className="font-medium text-zinc-900">{p.title}</div>
-                          <div className="text-xs text-zinc-500">
+                          <div className="font-medium text-[#131d29]">{p.title}</div>
+                          <div className="text-xs text-[#5B6A78]">
                             {PERMIT_TYPE_LABEL[p.type] ?? p.type} · {p.reference}
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {p.issuingAuthority}
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {p.facility?.name ?? "Organisation wide"}
                         </TableCell>
                         <TableCell className="pr-4 text-right">
@@ -330,10 +330,10 @@ export default async function EnvironmentPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-zinc-900">Open incidents</h2>
+          <h2 className="text-lg font-semibold text-[#131d29]">Open incidents</h2>
           <Link
             href={`/orgs/${orgId}/environment/incidents`}
-            className="flex items-center gap-1 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+            className="flex items-center gap-1 text-sm font-medium text-[#41505F] hover:text-[#131d29]"
           >
             Full register
             <ChevronRight className="h-3.5 w-3.5" />
@@ -361,15 +361,15 @@ export default async function EnvironmentPage({ params }: PageProps) {
                     return (
                       <TableRow key={i.id}>
                         <TableCell className="pl-4">
-                          <div className="font-medium text-zinc-900">{i.reference}</div>
-                          <div className="text-xs text-zinc-500">
+                          <div className="font-medium text-[#131d29]">{i.reference}</div>
+                          <div className="text-xs text-[#5B6A78]">
                             {i.facility?.name ?? "Organisation wide"}
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-600">
+                        <TableCell className="text-sm text-[#41505F]">
                           {INCIDENT_TYPE_LABEL[i.type] ?? i.type}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm text-zinc-500">
+                        <TableCell className="whitespace-nowrap text-sm text-[#5B6A78]">
                           {i.occurredAt.toLocaleDateString("en-GB", {
                             day: "numeric",
                             month: "short",
@@ -381,7 +381,7 @@ export default async function EnvironmentPage({ params }: PageProps) {
                         </TableCell>
                         <TableCell className="pr-4">
                           {!i.regulatorNotifiable ? (
-                            <span className="text-xs text-zinc-500">Not notifiable</span>
+                            <span className="text-xs text-[#5B6A78]">Not notifiable</span>
                           ) : i.regulatorNotifiedAt ? (
                             <Badge variant="outline" className="text-xs">
                               Notified
@@ -425,7 +425,7 @@ export default async function EnvironmentPage({ params }: PageProps) {
             <StatRow label="Overdue review" value={String(legalOverdue)} alarm={legalOverdue > 0} />
             <Link
               href={`/orgs/${orgId}/environment/legal-register`}
-              className="inline-flex items-center gap-1 pt-1 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+              className="inline-flex items-center gap-1 pt-1 text-sm font-medium text-[#41505F] hover:text-[#131d29]"
             >
               Open register
               <ChevronRight className="h-3.5 w-3.5" />
@@ -454,7 +454,7 @@ export default async function EnvironmentPage({ params }: PageProps) {
             />
             <Link
               href={`/orgs/${orgId}/environment/aspects`}
-              className="inline-flex items-center gap-1 pt-1 text-sm font-medium text-zinc-600 hover:text-zinc-900"
+              className="inline-flex items-center gap-1 pt-1 text-sm font-medium text-[#41505F] hover:text-[#131d29]"
             >
               Open register
               <ChevronRight className="h-3.5 w-3.5" />
@@ -482,7 +482,7 @@ function StatCard({
   return (
     <Card className={alarm ? "border-red-200" : undefined}>
       <CardContent className="space-y-1 py-5">
-        <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
+        <div className="flex items-center gap-2 text-xs font-medium text-[#5B6A78]">
           <Icon className="h-3.5 w-3.5" />
           {label}
         </div>
@@ -490,12 +490,12 @@ function StatCard({
           className={
             alarm
               ? "font-mono text-2xl font-semibold tabular-nums text-red-700"
-              : "font-mono text-2xl font-semibold tabular-nums text-zinc-900"
+              : "font-mono text-2xl font-semibold tabular-nums text-[#131d29]"
           }
         >
           {value}
         </p>
-        <p className="text-xs text-zinc-500">{caption}</p>
+        <p className="text-xs text-[#5B6A78]">{caption}</p>
       </CardContent>
     </Card>
   );
@@ -504,12 +504,12 @@ function StatCard({
 function StatRow({ label, value, alarm }: { label: string; value: string; alarm?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-zinc-500">{label}</span>
+      <span className="text-[#5B6A78]">{label}</span>
       <span
         className={
           alarm
             ? "font-mono font-semibold tabular-nums text-red-700"
-            : "font-mono tabular-nums text-zinc-900"
+            : "font-mono tabular-nums text-[#131d29]"
         }
       >
         {value}
@@ -560,7 +560,7 @@ function SeverityBadge({ severity }: { severity: string }) {
 function EmptyCard({ text }: { text: string }) {
   return (
     <Card>
-      <CardContent className="py-6 text-sm text-zinc-500">{text}</CardContent>
+      <CardContent className="py-6 text-sm text-[#5B6A78]">{text}</CardContent>
     </Card>
   );
 }
@@ -568,8 +568,8 @@ function EmptyCard({ text }: { text: string }) {
 function AccessDenied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view environmental management.
       </p>
     </div>

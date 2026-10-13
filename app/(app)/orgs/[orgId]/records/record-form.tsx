@@ -150,7 +150,7 @@ export function CreateRecordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="What was used" description="The amount and unit are converted to the category's standard unit when calculated.">
         <FormField label="Reporting period" htmlFor="record-period">
           <Select value={periodId} onValueChange={setPeriodId}>

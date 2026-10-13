@@ -64,7 +64,7 @@ export function CreateEngagementForm({
   }
 
   if (periods.length === 0) {
-    return <p className="text-sm text-zinc-500">Create a reporting period before starting an engagement.</p>;
+    return <p className="text-sm text-[#5B6A78]">Create a reporting period before starting an engagement.</p>;
   }
 
   if (!open) {
@@ -77,17 +77,17 @@ export function CreateEngagementForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-1.5">
-          <label htmlFor="e-period" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-period" className="block text-sm font-medium text-[#41505F]">
             Reporting period
           </label>
           <select
             id="e-period"
             value={reportingPeriodId}
             onChange={(e) => setReportingPeriodId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             {periods.map((p) => (
               <option key={p.id} value={p.id}>
@@ -98,14 +98,14 @@ export function CreateEngagementForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="e-standard" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-standard" className="block text-sm font-medium text-[#41505F]">
             Standard
           </label>
           <select
             id="e-standard"
             value={standard}
             onChange={(e) => setStandard(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="isae_3000">ISAE 3000</option>
             <option value="iso_14064_3">ISO 14064-3</option>
@@ -115,14 +115,14 @@ export function CreateEngagementForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="e-level" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-level" className="block text-sm font-medium text-[#41505F]">
             Level
           </label>
           <select
             id="e-level"
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="limited">Limited (negative)</option>
             <option value="reasonable">Reasonable (positive)</option>
@@ -130,7 +130,7 @@ export function CreateEngagementForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="e-provider" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-provider" className="block text-sm font-medium text-[#41505F]">
             Provider
           </label>
           <Input
@@ -142,7 +142,7 @@ export function CreateEngagementForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="e-lead" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-lead" className="block text-sm font-medium text-[#41505F]">
             Lead assuror
           </label>
           <Input
@@ -154,7 +154,7 @@ export function CreateEngagementForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="e-email" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-email" className="block text-sm font-medium text-[#41505F]">
             Assuror email
           </label>
           <Input
@@ -166,7 +166,7 @@ export function CreateEngagementForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="e-materiality" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="e-materiality" className="block text-sm font-medium text-[#41505F]">
             Materiality threshold
           </label>
           <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export function CreateEngagementForm({
               value={materialityThresholdPercent}
               onChange={(e) => setMaterialityThresholdPercent(e.target.value)}
             />
-            <span className="text-sm text-zinc-500">%</span>
+            <span className="text-sm text-[#5B6A78]">%</span>
           </div>
         </div>
       </div>

@@ -101,12 +101,12 @@ export function AddressPicker({
               {s.label}
             </li>
           ))}
-          <li className="px-3 py-1 text-[11px] text-slate-500" aria-hidden="true">
+          <li className="px-3 py-1 text-[11px] text-[#5B6A78]" aria-hidden="true">
             Address search by Geoapify, © OpenStreetMap contributors
           </li>
         </ul>
       )}
-      {note && <p className="mt-1 text-xs text-slate-500">{note}</p>}
+      {note && <p className="mt-1 text-xs text-[#5B6A78]">{note}</p>}
     </div>
   );
 }

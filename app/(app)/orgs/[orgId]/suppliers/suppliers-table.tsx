@@ -30,13 +30,13 @@ interface SupplierPerformance {
 
 const trendIcon = {
   improving: <TrendingUp className="h-4 w-4 text-green-600" />,
-  stable: <Minus className="h-4 w-4 text-gray-600" />,
+  stable: <Minus className="h-4 w-4 text-[#41505F]" />,
   declining: <TrendingDown className="h-4 w-4 text-red-600" />,
 };
 
 const trendColor = {
   improving: 'text-green-600 font-medium',
-  stable: 'text-gray-600',
+  stable: 'text-[#41505F]',
   declining: 'text-red-600 font-medium',
 };
 
@@ -78,17 +78,17 @@ export function SuppliersTable({ orgId, filters }: { orgId: string; filters: Rec
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <div className="text-center py-8 text-[#5B6A78]">Loading...</div>
           ) : error ? (
             <div className="text-center py-8 text-red-500">
               Error: {error}
             </div>
           ) : suppliers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-[#5B6A78]">
               No suppliers with submission history
             </div>
           ) : shown.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-[#5B6A78]">
               No suppliers match these filters.
             </div>
           ) : (
@@ -109,7 +109,7 @@ export function SuppliersTable({ orgId, filters }: { orgId: string; filters: Rec
                   {shown.map((supplier) => (
                     <TableRow
                       key={supplier.supplierId}
-                      className="hover:bg-gray-50 cursor-pointer"
+                      className="hover:bg-[#F9FAFC] cursor-pointer"
                     >
                       <TableCell className="font-medium">
                         <Link

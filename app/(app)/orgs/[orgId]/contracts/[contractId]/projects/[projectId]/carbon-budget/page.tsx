@@ -123,9 +123,9 @@ function SetBudgetModal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">{existing ? "Edit" : "Set"} carbon budget</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">{existing ? "Edit" : "Set"} carbon budget</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
@@ -146,7 +146,7 @@ function SetBudgetModal({
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-gray-600">Budget by phase</p>
+              <p className="text-xs font-medium text-[#41505F]">Budget by phase</p>
               <button type="button" onClick={() => setPhases([...phases, { name: "", budgetTco2e: "", notes: "" }])}
                 className="text-xs text-[#c2410c] hover:text-[#c2410c] font-medium">+ Add phase</button>
             </div>
@@ -158,7 +158,7 @@ function SetBudgetModal({
                     className={`${inputCls} flex-1`} />
                   <input type="number" min="0" step="0.01" value={phase.budgetTco2e} placeholder="tCO₂e"
                     onChange={(e) => setPhases(phases.map((p, j) => j === i ? { ...p, budgetTco2e: e.target.value } : p))}
-                    className="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15" />
+                    className="w-28 rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15" />
                   <button type="button" onClick={() => setPhases(phases.filter((_, j) => j !== i))}
                     className="h-8 w-8 rounded-lg hover:bg-red-50 flex items-center justify-center flex-shrink-0">
                     <X className="h-3.5 w-3.5 text-gray-300 hover:text-red-500" />
@@ -236,26 +236,26 @@ function PhaseRow({
     <div className="px-6 py-4">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-900">{phase.name}</span>
+          <span className="text-sm font-medium text-[#131d29]">{phase.name}</span>
           {phaseAlert && (
             <span className={`rounded-full px-2 py-0.5 text-xs font-medium border ${phaseAlert.cls}`}>
               {phaseAlert.label}
             </span>
           )}
           {!phaseAlert && phaseActual === 0 && (
-            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-[#5B6A78] border border-[#E3E8EE]">
               Not started
             </span>
           )}
-          <span className="text-xs text-gray-500">{Number(phase.percentComplete).toFixed(0)}% complete</span>
+          <span className="text-xs text-[#5B6A78]">{Number(phase.percentComplete).toFixed(0)}% complete</span>
           {phase.plannedCompletionDate && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-[#5B6A78]">
               Planned {new Date(phase.plannedCompletionDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
             </span>
           )}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500 tabular-nums">
+          <span className="text-sm text-[#5B6A78] tabular-nums">
             {phaseActual.toFixed(1)} / {phaseBudget.toFixed(1)} tCO₂e ({phasePct}%)
           </span>
           {!editing && (
@@ -271,7 +271,7 @@ function PhaseRow({
       <ProgressBar actual={phaseActual} budget={phaseBudget} />
 
       {editing && (
-        <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg bg-gray-50 p-3">
+        <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg bg-[#F9FAFC] p-3">
           <FormField label="Actual (tCO₂e)" htmlFor="f-actual-tco-e" optional>
             <input id="f-actual-tco-e"
               type="number" min="0" step="0.01" value={actual}
@@ -302,7 +302,7 @@ function PhaseRow({
           </button>
           <button
             onClick={() => setEditing(false)}
-            className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+            className="rounded-md border border-[#E3E8EE] px-3 py-1.5 text-xs font-medium text-[#41505F] hover:bg-gray-100"
           >
             Cancel
           </button>
@@ -323,16 +323,16 @@ function CarbonEvmCard({ phases }: { phases: Phase[] }) {
   );
 
   const cpiLabel = evm.cpi == null ? "Not yet available" : evm.cpi.toFixed(2);
-  const cpiTone = evm.cpi == null ? "text-gray-500" : evm.cpi >= 1 ? "text-green-700" : "text-red-600";
+  const cpiTone = evm.cpi == null ? "text-[#5B6A78]" : evm.cpi >= 1 ? "text-green-700" : "text-red-600";
   const varianceTone = evm.varianceAtCompletionTco2e >= 0 ? "text-green-700" : "text-red-600";
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
         <Gauge className="h-4 w-4 text-[#c2410c]" />
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Carbon earned value</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h3 className="text-sm font-semibold text-[#131d29]">Carbon earned value</h3>
+          <p className="text-xs text-[#5B6A78] mt-0.5">
             {evm.method === "cpi_trend"
               ? "Forecast follows the current carbon performance trend."
               : "Forecast assumes remaining work goes exactly to budget (not enough progress yet for a performance trend)."}
@@ -341,26 +341,26 @@ function CarbonEvmCard({ phases }: { phases: Phase[] }) {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-50">
         <div className="p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Earned value</div>
-          <div className="text-xl font-semibold text-gray-900 tabular-nums">{evm.earnedValueTco2e.toFixed(1)}</div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO₂e of budgeted work done</div>
+          <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">Earned value</div>
+          <div className="text-xl font-semibold text-[#131d29] tabular-nums">{evm.earnedValueTco2e.toFixed(1)}</div>
+          <div className="text-xs text-[#5B6A78] mt-0.5">tCO₂e of budgeted work done</div>
         </div>
         <div className="p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Carbon performance index</div>
+          <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">Carbon performance index</div>
           <div className={`text-xl font-semibold tabular-nums ${cpiTone}`}>{cpiLabel}</div>
-          <div className="text-xs text-gray-500 mt-0.5">Above 1.00 is ahead of budget</div>
+          <div className="text-xs text-[#5B6A78] mt-0.5">Above 1.00 is ahead of budget</div>
         </div>
         <div className="p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Forecast at completion</div>
-          <div className="text-xl font-semibold text-gray-900 tabular-nums">{evm.forecastAtCompletionTco2e.toFixed(1)}</div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO₂e, vs {evm.budgetAtCompletionTco2e.toFixed(1)} budgeted</div>
+          <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">Forecast at completion</div>
+          <div className="text-xl font-semibold text-[#131d29] tabular-nums">{evm.forecastAtCompletionTco2e.toFixed(1)}</div>
+          <div className="text-xs text-[#5B6A78] mt-0.5">tCO₂e, vs {evm.budgetAtCompletionTco2e.toFixed(1)} budgeted</div>
         </div>
         <div className="p-5">
-          <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Variance at completion</div>
+          <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">Variance at completion</div>
           <div className={`text-xl font-semibold tabular-nums ${varianceTone}`}>
             {evm.varianceAtCompletionTco2e >= 0 ? "+" : ""}{evm.varianceAtCompletionTco2e.toFixed(1)}
           </div>
-          <div className="text-xs text-gray-500 mt-0.5">tCO₂e {evm.varianceAtCompletionTco2e >= 0 ? "under" : "over"} budget</div>
+          <div className="text-xs text-[#5B6A78] mt-0.5">tCO₂e {evm.varianceAtCompletionTco2e >= 0 ? "under" : "over"} budget</div>
         </div>
       </div>
     </div>
@@ -418,8 +418,8 @@ export default function CarbonBudgetPage() {
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Carbon Budget</h1>
-          <p className="text-sm text-gray-500 mt-1">Track emissions against project carbon budget in real time.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Carbon Budget</h1>
+          <p className="text-sm text-[#5B6A78] mt-1">Track emissions against project carbon budget in real time.</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -431,24 +431,24 @@ export default function CarbonBudgetPage() {
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
+        <div className="p-12 text-center text-sm text-[#5B6A78]">Loading...</div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-12 text-center">
           <p className="text-sm font-medium text-red-600">{loadError}</p>
           <button
             onClick={load}
-            className="mt-4 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="mt-4 rounded-lg border border-[#E3E8EE] bg-white px-4 py-2 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC]"
           >
             Try again
           </button>
         </div>
       ) : !budget ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+        <div className="rounded-xl border border-[#E3E8EE] bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
             <Target className="h-5 w-5 text-[#c2410c]" />
           </div>
-          <p className="text-sm font-medium text-gray-700">No carbon budget set</p>
-          <p className="text-xs text-gray-500 mt-1">Set a tCO₂e limit to track project emissions against your budget.</p>
+          <p className="text-sm font-medium text-[#41505F]">No carbon budget set</p>
+          <p className="text-xs text-[#5B6A78] mt-1">Set a tCO₂e limit to track project emissions against your budget.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -463,27 +463,27 @@ export default function CarbonBudgetPage() {
           {/* Summary cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: "Budget", value: `${budgetTco2e.toFixed(1)}`, unit: "tCO₂e", color: "text-gray-900" },
-              { label: "Actual", value: `${totalActualTco2e.toFixed(1)}`, unit: "tCO₂e", color: usedPct >= 100 ? "text-red-600" : "text-gray-900" },
+              { label: "Budget", value: `${budgetTco2e.toFixed(1)}`, unit: "tCO₂e", color: "text-[#131d29]" },
+              { label: "Actual", value: `${totalActualTco2e.toFixed(1)}`, unit: "tCO₂e", color: usedPct >= 100 ? "text-red-600" : "text-[#131d29]" },
               { label: "Remaining", value: `${Math.abs(remaining).toFixed(1)}`, unit: remaining < 0 ? "tCO₂e over" : "tCO₂e left", color: remaining < 0 ? "text-red-600" : "text-green-700" },
-              { label: "Used", value: `${usedPct}%`, unit: "of budget", color: usedPct >= 100 ? "text-red-600" : "text-gray-900" },
+              { label: "Used", value: `${usedPct}%`, unit: "of budget", color: usedPct >= 100 ? "text-red-600" : "text-[#131d29]" },
             ].map(({ label, value, unit, color }) => (
-              <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
-                <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">{label}</div>
+              <div key={label} className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+                <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">{label}</div>
                 <div className={`text-2xl font-semibold tabular-nums ${color}`}>{value}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
+                <div className="text-xs text-[#5B6A78] mt-0.5">{unit}</div>
               </div>
             ))}
           </div>
 
           {/* Overall progress */}
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <div className="rounded-xl border border-[#E3E8EE] bg-white p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold text-gray-900">Overall progress</span>
-              <span className="text-sm font-medium tabular-nums text-gray-600">{usedPct}%</span>
+              <span className="text-sm font-semibold text-[#131d29]">Overall progress</span>
+              <span className="text-sm font-medium tabular-nums text-[#41505F]">{usedPct}%</span>
             </div>
             <ProgressBar actual={totalActualTco2e} budget={budgetTco2e} />
-            <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <div className="flex justify-between mt-2 text-xs text-[#5B6A78]">
               <span>0</span>
               <span className="text-amber-500">80% ({(budgetTco2e * 0.8).toFixed(0)} tCO₂e)</span>
               <span>{budgetTco2e.toFixed(0)} tCO₂e</span>
@@ -496,23 +496,23 @@ export default function CarbonBudgetPage() {
           {(intensityPerM2 || intensityPerMGbp) && (
             <div className="grid grid-cols-2 gap-4">
               {intensityPerM2 && (
-                <div className="rounded-xl border border-gray-200 bg-white p-5">
+                <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="h-4 w-4 text-[#c2410c]" />
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Budget intensity</span>
+                    <span className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest">Budget intensity</span>
                   </div>
-                  <div className="text-xl font-semibold text-gray-900 tabular-nums">{intensityPerM2}</div>
-                  <div className="text-xs text-gray-500">tCO₂e / m2</div>
+                  <div className="text-xl font-semibold text-[#131d29] tabular-nums">{intensityPerM2}</div>
+                  <div className="text-xs text-[#5B6A78]">tCO₂e / m2</div>
                 </div>
               )}
               {intensityPerMGbp && (
-                <div className="rounded-xl border border-gray-200 bg-white p-5">
+                <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="h-4 w-4 text-[#c2410c]" />
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-widest">Spend intensity</span>
+                    <span className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest">Spend intensity</span>
                   </div>
-                  <div className="text-xl font-semibold text-gray-900 tabular-nums">{intensityPerMGbp}</div>
-                  <div className="text-xs text-gray-500">tCO₂e / £1M spend</div>
+                  <div className="text-xl font-semibold text-[#131d29] tabular-nums">{intensityPerMGbp}</div>
+                  <div className="text-xs text-[#5B6A78]">tCO₂e / £1M spend</div>
                 </div>
               )}
             </div>
@@ -520,10 +520,10 @@ export default function CarbonBudgetPage() {
 
           {/* Phases */}
           {budget.phases.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-900">Budget by phase</h3>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <h3 className="text-sm font-semibold text-[#131d29]">Budget by phase</h3>
+                <p className="text-xs text-[#5B6A78] mt-0.5">
                   Actual tCO₂e and percent complete are reconciled manually per phase.
                 </p>
               </div>
@@ -547,9 +547,9 @@ export default function CarbonBudgetPage() {
 
           {/* Notes */}
           {budget.notes && (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
-              <p className="text-xs font-medium text-gray-500 mb-1">Notes</p>
-              <p className="text-sm text-gray-700">{budget.notes}</p>
+            <div className="rounded-xl border border-[#E3E8EE] bg-[#F9FAFC] px-5 py-4">
+              <p className="text-xs font-medium text-[#5B6A78] mb-1">Notes</p>
+              <p className="text-sm text-[#41505F]">{budget.notes}</p>
             </div>
           )}
 
@@ -569,7 +569,7 @@ export default function CarbonBudgetPage() {
                   : usedPct >= 80 ? "Approaching budget limit"
                   : "On track"}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-[#5B6A78] mt-0.5">
                 {remaining >= 0
                   ? `${remaining.toFixed(1)} tCO₂e remaining (${100 - usedPct}% headroom)`
                   : `${Math.abs(remaining).toFixed(1)} tCO₂e over budget`}

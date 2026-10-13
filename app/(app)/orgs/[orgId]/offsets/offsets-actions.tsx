@@ -24,7 +24,7 @@ export const STATUS_COLORS: Record<string, string> = {
   blue_carbon:        "bg-blue-100 text-blue-700",
   soil_carbon:        "bg-amber-100 text-amber-700",
   direct_air_capture: "bg-rose-100 text-rose-700",
-  other:              "bg-gray-100 text-gray-600",
+  other:              "bg-gray-100 text-[#41505F]",
 };
 
 const STANDARDS = ["VCS", "Gold_Standard", "REDD+", "Plan_Vivo", "ACR", "CAR", "Other"];
@@ -81,9 +81,9 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Add carbon offset</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">Add carbon offset</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
@@ -202,7 +202,7 @@ export function OffsetRowActions({ orgId, id, retirementRef, retirementVerified 
         <button onClick={handleVerify} disabled={verifying} title="Verify via OffsetsDB"
           className="h-7 w-7 rounded-lg hover:bg-green-50 flex items-center justify-center group disabled:opacity-50">
           {verifying
-            ? <Loader2 className="h-3.5 w-3.5 text-gray-500 animate-spin" />
+            ? <Loader2 className="h-3.5 w-3.5 text-[#5B6A78] animate-spin" />
             : <ShieldCheck className="h-3.5 w-3.5 text-gray-300 group-hover:text-green-600 transition-colors" />
           }
         </button>

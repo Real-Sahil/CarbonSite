@@ -122,16 +122,16 @@ export function EnvironmentalPermitEditor({
   const disabled = !canEdit || isLockedStatus("environmental-permits", status);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F9FAFC]">
       <div className="sticky top-0 z-10 bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">{title || "Untitled"}</h1>
-            <p className="text-sm text-gray-600">v{initialPermit.version}</p>
+            <p className="text-sm text-[#41505F]">v{initialPermit.version}</p>
           </div>
           <div className="flex gap-2">
             {saveStatus === "saving" && (
-              <span className="flex items-center gap-1 text-sm text-gray-600">
+              <span className="flex items-center gap-1 text-sm text-[#41505F]">
                 <Loader2 className="w-4 h-4 animate-spin" /> Saving...
               </span>
             )}

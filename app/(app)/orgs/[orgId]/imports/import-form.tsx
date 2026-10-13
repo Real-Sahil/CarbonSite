@@ -162,7 +162,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
 
   if (periods.length === 0) {
     return (
-      <p className="text-sm text-[#374151] tracking-[-0.42px]">
+      <p className="text-sm text-[#41505F] tracking-[-0.42px]">
         Create a reporting period before importing data.
       </p>
     );
@@ -195,7 +195,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
   // Mapping review step
   if (phase === "mapping" && previewData) {
     return (
-      <div className="rounded-xl border border-[#E5E7EB] bg-white p-5">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
         <ColumnMapper
           headers={previewData.headers}
           previewRows={previewData.previewRows}
@@ -219,7 +219,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
       : "Next: review columns";
 
   return (
-    <form onSubmit={handleUploadClick} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleUploadClick} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="What are you importing?" description="The period and template tell the importer how to read each row." cols={3}>
         <FormField label="Reporting period" htmlFor="f-reporting-period">
           <Select value={periodId} onValueChange={setPeriodId} disabled={busy}>

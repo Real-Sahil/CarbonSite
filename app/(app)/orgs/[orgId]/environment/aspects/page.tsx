@@ -78,8 +78,8 @@ export default async function AspectsPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">Aspects and impacts register</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-lg font-semibold text-[#131d29]">Aspects and impacts register</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             ISO 14001 clause 6.1.2. Each activity has an aspect that causes an impact, scored for
             severity, likelihood and legal exposure. Significant and high aspects need a
             documented control or a planned action.
@@ -102,7 +102,7 @@ export default async function AspectsPage({ params }: PageProps) {
 
       {aspects.length === 0 ? (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">
+          <CardContent className="py-6 text-sm text-[#5B6A78]">
             No aspects recorded. Start with the activities that could cause harm if something went
             wrong: fuel storage, waste handling, discharges, plant emissions.
           </CardContent>
@@ -130,26 +130,26 @@ export default async function AspectsPage({ params }: PageProps) {
                   return (
                     <TableRow key={a.id}>
                       <TableCell className="pl-4">
-                        <div className="max-w-[26ch] font-medium leading-snug text-zinc-900">
+                        <div className="max-w-[26ch] font-medium leading-snug text-[#131d29]">
                           {a.activity}
                         </div>
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-[#5B6A78]">
                           {a.facility?.name ?? "Organisation wide"}
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-[34ch] text-xs leading-relaxed text-zinc-600">
-                        <span className="text-zinc-900">{a.aspect}</span>
-                        <span className="text-zinc-500"> causing </span>
+                      <TableCell className="max-w-[34ch] text-xs leading-relaxed text-[#41505F]">
+                        <span className="text-[#131d29]">{a.aspect}</span>
+                        <span className="text-[#5B6A78]"> causing </span>
                         {a.impact}
                       </TableCell>
-                      <TableCell className="text-sm capitalize text-zinc-500">
+                      <TableCell className="text-sm capitalize text-[#5B6A78]">
                         {a.operatingCondition}
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="font-mono text-sm tabular-nums text-zinc-900">
+                        <span className="font-mono text-sm tabular-nums text-[#131d29]">
                           {a.significanceScore}
                         </span>
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-[#5B6A78]">
                           {a.severityScore}×{a.likelihoodScore}×{a.legalScore}
                         </div>
                       </TableCell>
@@ -158,7 +158,7 @@ export default async function AspectsPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="pr-4">
                         {!needsControl ? (
-                          <span className="text-xs text-zinc-500">Not required</span>
+                          <span className="text-xs text-[#5B6A78]">Not required</span>
                         ) : hasControl ? (
                           <Badge variant="outline" className="text-xs">
                             Recorded
@@ -198,8 +198,8 @@ function SignificanceBadge({ significance }: { significance: string }) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the aspects register.
       </p>
     </div>

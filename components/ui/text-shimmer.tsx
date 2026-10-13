@@ -25,7 +25,7 @@ export function TextShimmer({
   spread?: number;
 }) {
   const reduce = useReducedMotion();
-  if (reduce) return <span className={cn("text-zinc-600", className)}>{children}</span>;
+  if (reduce) return <span className={cn("text-[#41505F]", className)}>{children}</span>;
   return (
     <MotionSpan
       className={cn(

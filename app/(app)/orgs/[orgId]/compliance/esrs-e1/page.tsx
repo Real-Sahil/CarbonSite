@@ -401,8 +401,8 @@ export default function EsrsE1GapPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">CSRD ESRS E1 Gap Analysis</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl text-[#131d29]">CSRD ESRS E1 Gap Analysis</h1>
+          <p className="mt-2 text-[#41505F]">
             Maps your MetricOra data against ESRS E1 disclosure requirements (E1-1 through E1-9)
           </p>
         </div>
@@ -417,24 +417,24 @@ export default function EsrsE1GapPage() {
       </div>
 
       {/* Summary bar */}
-      <div className="rounded-xl border border-gray-200 bg-white p-5">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
         <div className="flex flex-wrap items-center gap-6">
           <div>
-            <div className="text-3xl font-bold text-gray-900">{coverageScore}%</div>
-            <div className="text-sm text-gray-500">Data coverage score</div>
+            <div className="text-3xl font-bold text-[#131d29]">{coverageScore}%</div>
+            <div className="text-sm text-[#5B6A78]">Data coverage score</div>
           </div>
           <div className="flex gap-4">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <span className="text-sm text-gray-700"><span className="font-semibold">{summary.met}</span> met</span>
+              <span className="text-sm text-[#41505F]"><span className="font-semibold">{summary.met}</span> met</span>
             </div>
             <div className="flex items-center gap-1.5">
               <AlertCircle className="h-4 w-4 text-amber-500" />
-              <span className="text-sm text-gray-700"><span className="font-semibold">{summary.partial}</span> partial</span>
+              <span className="text-sm text-[#41505F]"><span className="font-semibold">{summary.partial}</span> partial</span>
             </div>
             <div className="flex items-center gap-1.5">
               <XCircle className="h-4 w-4 text-red-500" />
-              <span className="text-sm text-gray-700"><span className="font-semibold">{summary.gap}</span> gaps</span>
+              <span className="text-sm text-[#41505F]"><span className="font-semibold">{summary.gap}</span> gaps</span>
             </div>
           </div>
           <div className="flex-1 min-w-32">
@@ -464,11 +464,11 @@ export default function EsrsE1GapPage() {
                     <Badge className={`text-xs font-mono ${allMet ? 'bg-green-100 text-green-800' : anyGap ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>
                       {disc.code}
                     </Badge>
-                    <span className="text-sm font-semibold text-gray-900">{disc.name}</span>
+                    <span className="text-sm font-semibold text-[#131d29]">{disc.name}</span>
                   </div>
-                  <p className="text-xs text-gray-500">{disc.description}</p>
+                  <p className="text-xs text-[#5B6A78]">{disc.description}</p>
                 </div>
-                <div className="text-xs text-gray-500 shrink-0 tabular-nums">
+                <div className="text-xs text-[#5B6A78] shrink-0 tabular-nums">
                   {metCount}/{disc.dataPoints.length}
                 </div>
               </div>
@@ -479,7 +479,7 @@ export default function EsrsE1GapPage() {
                   <div key={dp.id} className="flex items-start gap-2.5 rounded-lg bg-white border border-gray-100 px-3 py-2.5">
                     <StatusIcon status={dp.status} />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-800">{dp.label}</p>
+                      <p className="text-sm font-medium text-[#131d29]">{dp.label}</p>
                       <p className={`text-xs mt-0.5 ${dp.status === 'met' ? 'text-green-700' : dp.status === 'gap' ? 'text-red-600' : 'text-amber-600'}`}>
                         {dp.detail}
                       </p>

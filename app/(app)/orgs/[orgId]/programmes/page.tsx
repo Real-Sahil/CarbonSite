@@ -10,7 +10,7 @@ const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-800",
   on_hold: "bg-yellow-100 text-yellow-800",
   completed: "bg-blue-100 text-blue-800",
-  cancelled: "bg-gray-100 text-gray-700",
+  cancelled: "bg-gray-100 text-[#41505F]",
 };
 
 interface PageProps {
@@ -48,7 +48,7 @@ export default async function ProgrammesPage({ params }: PageProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Programmes</h1>
+          <h1 className="text-2xl tracking-tight">Programmes</h1>
           <p className="text-sm text-muted-foreground mt-1">Group projects under programmes for portfolio-level carbon tracking.</p>
         </div>
         {canEdit && <NewProgrammeButton orgId={orgId} />}
@@ -63,7 +63,7 @@ export default async function ProgrammesPage({ params }: PageProps) {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{p.name}</CardTitle>
-                  <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status] ?? "bg-gray-100 text-gray-700"}`}>
+                  <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status] ?? "bg-gray-100 text-[#41505F]"}`}>
                     {p.status.replaceAll("_", " ")}
                   </span>
                 </div>

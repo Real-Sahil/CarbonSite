@@ -125,17 +125,17 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
   const topInitiatives = maccCurve.slice(0, 5);
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <Compass className="h-4 w-4 text-[#111827]" />
+              <Compass className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Strategy</span>
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Strategy</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Decarbonisation pathway</h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Decarbonisation pathway</h1>
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Where the target line says you need to be, what it costs to get there, and what data is still
             missing to trust the number — in one place instead of three.
           </p>
@@ -144,11 +144,11 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {/* SBTi target trajectory */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE] flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-sm font-semibold text-[#111827]">Target trajectory</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Target trajectory</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 {pathway ? "Expected vs. actual, from your committed SBTi pathway." : "No SBTi target set yet."}
               </CardDescription>
             </div>
@@ -162,7 +162,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
                   <Target className="h-6 w-6 text-[#c2410c]" />
                 </div>
-                <p className="text-sm text-[#374151] max-w-sm">
+                <p className="text-sm text-[#41505F] max-w-sm">
                   Set a Science-Based Target to see a real target line here, checked against your actual
                   emissions every year.
                 </p>
@@ -188,10 +188,10 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                       unit: "of tracked years",
                     },
                   ].map(({ label, value, unit }) => (
-                    <div key={label} className="rounded-lg border border-[#E5E7EB] p-4">
-                      <div className="text-xs font-medium text-[#6B7280] uppercase tracking-wide mb-1">{label}</div>
-                      <div className="text-xl font-semibold text-[#111827] tabular-nums">{value}</div>
-                      {unit && <div className="text-xs text-[#6B7280] mt-0.5">{unit}</div>}
+                    <div key={label} className="rounded-lg border border-[#E3E8EE] p-4">
+                      <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-wide mb-1">{label}</div>
+                      <div className="text-xl font-semibold text-[#131d29] tabular-nums">{value}</div>
+                      {unit && <div className="text-xs text-[#5B6A78] mt-0.5">{unit}</div>}
                     </div>
                   ))}
                 </div>
@@ -213,7 +213,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                       );
                     })}
                     {pathway.alerts.length > 2 && (
-                      <p className="text-xs text-[#6B7280]">
+                      <p className="text-xs text-[#5B6A78]">
                         +{pathway.alerts.length - 2} more on the{" "}
                         <Link href={`/orgs/${orgId}/sbti`} className="underline">full trajectory page</Link>.
                       </p>
@@ -226,11 +226,11 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
         </Card>
 
         {/* Completeness */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE] flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-sm font-semibold text-[#111827]">Data you're trusting this on</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Data you're trusting this on</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 {currentPeriod ? `Completeness for ${currentPeriod.label}.` : "No reporting period found."}
               </CardDescription>
             </div>
@@ -242,9 +242,9 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             {!completenessSummary || completenessSummary.totalRequired === 0 ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
-                  <Grid3x3 className="h-6 w-6 text-[#111827]" />
+                  <Grid3x3 className="h-6 w-6 text-[#131d29]" />
                 </div>
-                <p className="text-sm text-[#374151] max-w-sm">
+                <p className="text-sm text-[#41505F] max-w-sm">
                   No completeness requirements configured yet — set which facility/category combinations
                   you expect data for on the completeness matrix.
                 </p>
@@ -252,10 +252,10 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             ) : (
               <div className="flex items-center gap-8">
                 <div>
-                  <div className="text-3xl font-semibold text-[#111827] tabular-nums">
+                  <div className="text-3xl font-semibold text-[#131d29] tabular-nums">
                     {completenessSummary.completenessPercent.toFixed(0)}%
                   </div>
-                  <div className="text-xs text-[#6B7280]">of required cells have approved data</div>
+                  <div className="text-xs text-[#5B6A78]">of required cells have approved data</div>
                 </div>
                 <div className="flex gap-4 text-sm">
                   <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />{completenessSummary.green} green</span>
@@ -268,11 +268,11 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
         </Card>
 
         {/* MACC-ranked initiatives */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB] flex-row items-center justify-between space-y-0">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE] flex-row items-center justify-between space-y-0">
             <div>
-              <CardTitle className="text-sm font-semibold text-[#111827]">Cheapest initiatives first</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Cheapest initiatives first</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Ranked by {currency} per tCO₂e abated. A gap badge means this measure also closes a red or amber
                 completeness cell.
                 {netPrice != null && ` Net figures take off your internal carbon price of ${formatMoney(netPrice, currency, 2)}/tCO₂e.`}
@@ -289,7 +289,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
                   <TrendingDown className="h-6 w-6 text-[#c2410c]" />
                 </div>
-                <p className="text-sm text-[#374151] max-w-sm">
+                <p className="text-sm text-[#41505F] max-w-sm">
                   No initiatives with an estimated impact yet.{" "}
                   <Link href={`/orgs/${orgId}/targets`} className="underline">Add one</Link> with a cost and
                   expected reduction to rank it here.
@@ -307,7 +307,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                     <div key={entry.id} className="px-6 py-3.5 flex items-center justify-between gap-4">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-[#111827] truncate">{entry.name}</span>
+                          <span className="text-sm font-medium text-[#131d29] truncate">{entry.name}</span>
                           {initiative?.facility && (
                             <Badge variant="outline" className="text-xs font-normal">{initiative.facility.name}</Badge>
                           )}
@@ -320,24 +320,24 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                             </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-[#6B7280] mt-0.5">
+                        <div className="text-xs text-[#5B6A78] mt-0.5">
                           {entry.abatementTco2e.toFixed(1)} tCO₂e/yr abated
                         </div>
                       </div>
                       <div className="text-right shrink-0">
-                        <div className={`text-sm font-semibold tabular-nums ${entry.marginalCostPerTco2e < 0 ? "text-emerald-600" : "text-[#111827]"}`}>
+                        <div className={`text-sm font-semibold tabular-nums ${entry.marginalCostPerTco2e < 0 ? "text-emerald-600" : "text-[#131d29]"}`}>
                           {money(entry.marginalCostPerTco2e)}/tCO₂e
                         </div>
                         {netPrice != null && (() => {
                           const net = netOfCarbonPrice(entry.marginalCostPerTco2e, netPrice);
                           return (
-                            <div className={`text-xs tabular-nums ${net.paysAtPrice ? "text-emerald-600" : "text-[#6B7280]"}`}>
+                            <div className={`text-xs tabular-nums ${net.paysAtPrice ? "text-emerald-600" : "text-[#5B6A78]"}`}>
                               {money(net.netCostPerTco2e)}/t net{net.paysAtPrice ? ", pays at your carbon price" : ""}
                             </div>
                           );
                         })()}
                         {entry.paybackYears != null && (
-                          <div className="text-xs text-[#6B7280]">pays back in {entry.paybackYears.toFixed(1)}y</div>
+                          <div className="text-xs text-[#5B6A78]">pays back in {entry.paybackYears.toFixed(1)}y</div>
                         )}
                       </div>
                     </div>

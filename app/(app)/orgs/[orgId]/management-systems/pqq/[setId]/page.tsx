@@ -18,7 +18,7 @@ export default async function PqqSetPage({ params }: { params: Promise<{ orgId: 
     role = membership.role;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view pre-qualification answers.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view pre-qualification answers.</div>;
   }
   const set = await loadQuestionSet(orgId, setId);
   if (!set) notFound();
@@ -56,10 +56,10 @@ export default async function PqqSetPage({ params }: { params: Promise<{ orgId: 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems/pqq`} className="text-xs text-[#6B7280] hover:text-[#111827]">Pre-qualification answers</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">{set.name}</h1>
-        <p className="text-sm text-[#6B7280]">{[set.issuer, set.version, set.dueOn ? `Due ${set.dueOn}` : null].filter(Boolean).join(" · ")}</p>
-        {set.note && <p className="mt-1 max-w-[80ch] text-xs text-[#6B7280]">{set.note}{set.sourceUrl ? " " : ""}{set.sourceUrl && <a href={set.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>}</p>}
+        <Link href={`/orgs/${orgId}/management-systems/pqq`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Pre-qualification answers</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">{set.name}</h1>
+        <p className="text-sm text-[#5B6A78]">{[set.issuer, set.version, set.dueOn ? `Due ${set.dueOn}` : null].filter(Boolean).join(" · ")}</p>
+        {set.note && <p className="mt-1 max-w-[80ch] text-xs text-[#5B6A78]">{set.note}{set.sourceUrl ? " " : ""}{set.sourceUrl && <a href={set.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>}</p>}
       </div>
       <PqqWorkspace
         orgId={orgId}

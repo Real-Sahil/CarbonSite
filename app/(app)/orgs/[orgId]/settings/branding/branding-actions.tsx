@@ -146,7 +146,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       {/* Report logo (white-label) */}
       <FormSection title="Report logo" description="Appears on every PDF export." cols={2}>
         <div className="flex items-center gap-4 @md:col-span-full">
-          <div className="flex h-16 w-32 items-center justify-center rounded-[10px] border border-dashed border-slate-200 bg-slate-50 overflow-hidden shrink-0">
+          <div className="flex h-16 w-32 items-center justify-center rounded-[10px] border border-dashed border-[#E3E8EE] bg-[#F9FAFC] overflow-hidden shrink-0">
             {logoPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -155,7 +155,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
                 className="max-h-14 max-w-[120px] object-contain"
               />
             ) : (
-              <span className="text-xs text-slate-500">No logo</span>
+              <span className="text-xs text-[#5B6A78]">No logo</span>
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -171,7 +171,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
               type="button"
               onClick={() => document.getElementById("logo-upload")?.click()}
               disabled={uploadingLogo || isPending}
-              className="px-3 py-1.5 rounded-md border border-slate-200 bg-slate-50 text-sm font-medium text-slate-900 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed w-fit transition-colors"
+              className="px-3 py-1.5 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] text-sm font-medium text-[#131d29] hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed w-fit transition-colors"
             >
               {uploadingLogo ? "Uploading…" : "Choose File"}
             </button>
@@ -184,7 +184,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
                 Remove logo
               </button>
             )}
-            <p className="text-xs text-slate-500 tracking-[-0.36px]">
+            <p className="text-xs text-[#5B6A78] tracking-[-0.36px]">
               PNG, JPEG, WEBP or SVG · up to 2 MB. A transparent PNG looks best.
             </p>
           </div>
@@ -197,7 +197,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       <FormField label="Primary colour" htmlFor="primaryHex">
         <div className="flex items-center gap-3">
           <div
-            className="h-9 w-9 rounded-[7px] border border-slate-200 shrink-0"
+            className="h-9 w-9 rounded-[7px] border border-[#E3E8EE] shrink-0"
             style={{ backgroundColor: primaryHex }}
             aria-hidden="true"
           />
@@ -205,7 +205,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={primaryHex}
             onChange={(e) => handlePrimaryHexChange(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
+            className="h-9 w-9 cursor-pointer rounded-[7px] border border-[#E3E8EE] bg-transparent p-0"
             aria-label="Primary colour picker"
           />
           <Input
@@ -223,7 +223,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
       <FormField label="Accent colour" htmlFor="accentHex">
         <div className="flex items-center gap-3">
           <div
-            className="h-9 w-9 rounded-[7px] border border-slate-200 shrink-0"
+            className="h-9 w-9 rounded-[7px] border border-[#E3E8EE] shrink-0"
             style={{ backgroundColor: accentHex }}
             aria-hidden="true"
           />
@@ -231,7 +231,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
             type="color"
             value={accentHex}
             onChange={(e) => handleAccentHexChange(e.target.value)}
-            className="h-9 w-9 cursor-pointer rounded-[7px] border border-slate-200 bg-transparent p-0"
+            className="h-9 w-9 cursor-pointer rounded-[7px] border border-[#E3E8EE] bg-transparent p-0"
             aria-label="Accent colour picker"
           />
           <Input

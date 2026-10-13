@@ -137,12 +137,12 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         </p>
       )}
       {success && (
-        <p className="text-sm text-[#111827]" role="status">
+        <p className="text-sm text-[#131d29]" role="status">
           {success}
         </p>
       )}
       {inviteUrl && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-3">
           <Label htmlFor="latest-invite-url">Invite link</Label>
           <div className="mt-2 flex gap-2">
             <Input
@@ -156,7 +156,7 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-[#5B6A78]">
             Share this link with the mobile user if the email invite is delayed.
           </p>
         </div>

@@ -9,7 +9,7 @@ import { DOCUMENT_TYPE_LABELS } from "@/lib/field-submissions/list-filters";
 type Option = { id: string; label: string };
 
 const FIELD =
-  "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
 
 /**
  * Document type, period, facility and contract (the status tabs above stay as
@@ -41,7 +41,7 @@ export function SubmissionsFilters({
 
   const select = (key: string, label: string, options: Option[]) => (
     <div className="space-y-1">
-      <Label htmlFor={`submissions-filter-${key}`} className="text-xs text-[#6B7280]">{label}</Label>
+      <Label htmlFor={`submissions-filter-${key}`} className="text-xs text-[#5B6A78]">{label}</Label>
       <select
         id={`submissions-filter-${key}`}
         className={FIELD}

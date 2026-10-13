@@ -104,7 +104,7 @@ export function RequestSubmissionForm({ orgId, contractId }: { orgId: string; co
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="Request subcontractor carbon data" cols={2}>
           <FormField label="Subcontractor" htmlFor="sub-name">
             <Input id="sub-name" name="subcontractorName" required placeholder="Subcontractor name" value={subName} onChange={(e) => setSubName(e.target.value)} />
@@ -149,10 +149,10 @@ export function SubcontractorSummaryStrip({ summary }: { summary: SubcontractorS
   return (
     <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {items.map((item) => (
-        <div key={item.label} className="rounded-lg border border-[#E5E7EB] bg-white p-3">
-          <dt className="text-xs text-[#6B7280]">{item.label}</dt>
-          <dd className="mt-1 text-lg font-medium tabular-nums text-[#111827]">{item.value}</dd>
-          <dd className="text-xs text-[#6B7280]">{item.hint}</dd>
+        <div key={item.label} className="rounded-lg border border-[#E3E8EE] bg-white p-3">
+          <dt className="text-xs text-[#5B6A78]">{item.label}</dt>
+          <dd className="mt-1 text-lg font-medium tabular-nums text-[#131d29]">{item.value}</dd>
+          <dd className="text-xs text-[#5B6A78]">{item.hint}</dd>
         </div>
       ))}
     </dl>
@@ -283,44 +283,44 @@ export function SubmissionRow({
 
   return (
     <>
-      <tr className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors align-top">
-        <td className="py-3.5 pl-6 text-sm font-medium text-[#111827]">
+      <tr className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors align-top">
+        <td className="py-3.5 pl-6 text-sm font-medium text-[#131d29]">
           {submission.subcontractorName}
           {submission.contactEmail && (
-            <div className="text-xs font-normal text-[#6B7280]">{submission.contactEmail}</div>
+            <div className="text-xs font-normal text-[#5B6A78]">{submission.contactEmail}</div>
           )}
         </td>
-        <td className="py-3.5 text-sm text-[#374151]">{submission.reportingPeriodLabel}</td>
-        <td className="py-3.5 text-sm text-[#374151] tabular-nums">{formatDate(submission.dueDate)}</td>
+        <td className="py-3.5 text-sm text-[#41505F]">{submission.reportingPeriodLabel}</td>
+        <td className="py-3.5 text-sm text-[#41505F] tabular-nums">{formatDate(submission.dueDate)}</td>
         <td className="py-3.5">
           {statusBadge(submission.status)}
           {submission.submittedVia && (
-            <div className="mt-1.5 text-xs text-[#6B7280]">{channelLabel(submission.submittedVia)}</div>
+            <div className="mt-1.5 text-xs text-[#5B6A78]">{channelLabel(submission.submittedVia)}</div>
           )}
           {submission.linkSentAt && (
-            <div className="text-xs text-[#6B7280]">Link sent {formatDate(submission.linkSentAt)}</div>
+            <div className="text-xs text-[#5B6A78]">Link sent {formatDate(submission.linkSentAt)}</div>
           )}
           {submission.openedAt && (
-            <div className="text-xs text-[#6B7280]">Opened {formatDate(submission.openedAt)}</div>
+            <div className="text-xs text-[#5B6A78]">Opened {formatDate(submission.openedAt)}</div>
           )}
           {submission.reminderCount > 0 && submission.lastReminderAt && (
-            <div className="text-xs text-[#6B7280]">
+            <div className="text-xs text-[#5B6A78]">
               {submission.reminderCount} reminder{submission.reminderCount === 1 ? "" : "s"}, last {formatDate(submission.lastReminderAt)}
             </div>
           )}
           {canSendLink && linkLive && submission.tokenExpiresAt && (
-            <div className="text-xs text-[#6B7280]">Link valid to {formatDate(submission.tokenExpiresAt)}</div>
+            <div className="text-xs text-[#5B6A78]">Link valid to {formatDate(submission.tokenExpiresAt)}</div>
           )}
         </td>
-        <td className="py-3.5 text-sm text-[#374151] tabular-nums">
+        <td className="py-3.5 text-sm text-[#41505F] tabular-nums">
           S1 {formatTco2e(submission.scope1Tco2e)}<br />
           S2 {formatTco2e(submission.scope2Tco2e)}<br />
           S3 {formatTco2e(submission.scope3Tco2e)}
           {submission.submitterName && (
-            <div className="mt-1.5 text-xs text-[#6B7280]">From {submission.submitterName}</div>
+            <div className="mt-1.5 text-xs text-[#5B6A78]">From {submission.submitterName}</div>
           )}
           {submission.submitterNote && (
-            <div className="max-w-[28ch] text-xs text-[#6B7280]">{submission.submitterNote}</div>
+            <div className="max-w-[28ch] text-xs text-[#5B6A78]">{submission.submitterNote}</div>
           )}
         </td>
         <td className="py-3.5 pr-6">
@@ -349,7 +349,7 @@ export function SubmissionRow({
                 Evidence
               </Button>
             )}
-            {linkNotice && <p className="text-xs text-[#374151]">{linkNotice}</p>}
+            {linkNotice && <p className="text-xs text-[#41505F]">{linkNotice}</p>}
             {linkError && <p className="max-w-[20ch] text-xs text-red-600">{linkError}</p>}
           </div>
           <div className="mt-2">
@@ -376,9 +376,9 @@ export function SubmissionRow({
                 </div>
               </div>
             )}
-            {rejectNotice && <p className="mt-2 text-xs text-[#374151] max-w-[24ch]">{rejectNotice}</p>}
+            {rejectNotice && <p className="mt-2 text-xs text-[#41505F] max-w-[24ch]">{rejectNotice}</p>}
             {editing && (
-              <div className="flex flex-col gap-2 rounded-md border border-[#E5E7EB] bg-white p-3">
+              <div className="flex flex-col gap-2 rounded-md border border-[#E3E8EE] bg-white p-3">
                 <div className="flex gap-2">
                   <Input placeholder="Scope 1" value={scope1} onChange={(e) => setScope1(e.target.value)} className="h-8 w-20 text-xs" type="number" min="0" step="0.01" />
                   <Input placeholder="Scope 2" value={scope2} onChange={(e) => setScope2(e.target.value)} className="h-8 w-20 text-xs" type="number" min="0" step="0.01" />
@@ -413,7 +413,7 @@ export function SubmissionRow({
         </td>
       </tr>
       {linkUrl && (
-        <tr className="border-b border-[#F3F4F6] bg-[#F9FAFB]">
+        <tr className="border-b border-[#F3F4F6] bg-[#F9FAFC]">
           <td colSpan={6} className="px-6 py-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input
@@ -433,7 +433,7 @@ export function SubmissionRow({
                 </Button>
               </div>
             </div>
-            <p className="mt-2 text-xs text-[#6B7280]">
+            <p className="mt-2 text-xs text-[#5B6A78]">
               Shown once{linkExpiresAt ? `, expires ${formatDate(linkExpiresAt)}` : ""}. Issuing a new link replaces this one.
             </p>
           </td>

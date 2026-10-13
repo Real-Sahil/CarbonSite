@@ -5,7 +5,7 @@ import { PLAN_ORDER, type Plan } from "@/lib/billing/limits";
 
 const PLAN_CLASSES: Record<Plan, string> = {
   trial: "bg-amber-100 text-amber-800 border border-amber-300",
-  essentials: "bg-slate-100 text-slate-800 border border-slate-300",
+  essentials: "bg-slate-100 text-[#131d29] border border-slate-300",
   starter: "bg-blue-100 text-blue-800 border border-blue-300",
   growth: "bg-emerald-100 text-emerald-800 border border-emerald-300",
   enterprise: "bg-purple-100 text-purple-800 border border-purple-300",
@@ -29,7 +29,7 @@ export function PlanSelector({
 
   const planClass = isPlan(plan)
     ? PLAN_CLASSES[plan]
-    : "bg-zinc-100 text-zinc-800 border border-zinc-300";
+    : "bg-zinc-100 text-[#131d29] border border-zinc-300";
 
   async function handleChange(newPlan: string) {
     setPlan(newPlan);

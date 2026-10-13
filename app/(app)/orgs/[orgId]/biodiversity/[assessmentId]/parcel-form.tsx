@@ -177,7 +177,7 @@ export function AddParcelForm({
   }
 
   return (
-    <div className="w-full space-y-4 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-4 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Stage" htmlFor="p-stage">
           <Select id="p-stage" value={stage} onChange={setStage}>
@@ -260,9 +260,9 @@ export function AddParcelForm({
       </div>
 
       {isFuture && (
-        <div className="space-y-3 rounded-md border border-zinc-200 bg-white p-3">
-          <p className="text-sm font-medium text-zinc-700">Delivery risk</p>
-          <p className="text-xs leading-relaxed text-zinc-500">
+        <div className="space-y-3 rounded-md border border-[#E3E8EE] bg-white p-3">
+          <p className="text-sm font-medium text-[#41505F]">Delivery risk</p>
+          <p className="text-xs leading-relaxed text-[#5B6A78]">
             Habitat that does not exist yet is discounted for how hard it is to create, how long it
             takes to reach target condition, and how far from the site it sits.
           </p>
@@ -301,15 +301,15 @@ export function AddParcelForm({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-zinc-200 bg-white px-3 py-2">
-        <span className="text-sm text-zinc-500">Biodiversity units</span>
-        <span className="font-mono text-lg font-semibold tabular-nums text-zinc-900">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#E3E8EE] bg-white px-3 py-2">
+        <span className="text-sm text-[#5B6A78]">Biodiversity units</span>
+        <span className="font-mono text-lg font-semibold tabular-nums text-[#131d29]">
           {units.toFixed(3)}
         </span>
       </div>
 
       {distinctiveness === "very_low" && (
-        <p className="text-xs leading-relaxed text-zinc-500">
+        <p className="text-xs leading-relaxed text-[#5B6A78]">
           Very low distinctiveness habitat scores zero units. Record it anyway: the baseline needs
           to account for the whole site, including hardstanding and buildings.
         </p>
@@ -368,7 +368,7 @@ function Select({
       id={id}
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+      className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
     >
       {children}
     </select>

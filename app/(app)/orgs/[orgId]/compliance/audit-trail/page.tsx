@@ -52,8 +52,8 @@ const actionColorMap: Record<string, string> = {
   "snapshot.published": "bg-green-100 text-green-800",
   "report.generated": "bg-blue-100 text-blue-800",
   "field_submission.reviewed": "bg-indigo-100 text-indigo-800",
-  "auth.login": "bg-gray-100 text-gray-800",
-  "auth.logout": "bg-gray-100 text-gray-800",
+  "auth.login": "bg-gray-100 text-[#131d29]",
+  "auth.logout": "bg-gray-100 text-[#131d29]",
   "user.created": "bg-green-100 text-green-800",
   "user.role_changed": "bg-orange-100 text-orange-800",
 };
@@ -111,8 +111,8 @@ export default function AuditTrailPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Audit Trail</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl tracking-tight">Audit Trail</h1>
+        <p className="text-[#41505F] mt-2">
           Complete record of all actions and changes in your organization.
         </p>
       </div>
@@ -189,7 +189,7 @@ export default function AuditTrailPage() {
                         {format(new Date(log.timestamp), "MMM d, yyyy HH:mm:ss")}
                       </TableCell>
                       <TableCell>
-                        <Badge className={actionColorMap[log.action] || "bg-gray-100 text-gray-800"}>
+                        <Badge className={actionColorMap[log.action] || "bg-gray-100 text-[#131d29]"}>
                           {log.action}
                         </Badge>
                       </TableCell>
@@ -199,12 +199,12 @@ export default function AuditTrailPage() {
                       <TableCell className="text-sm">
                         {log.actor?.name || log.actor?.email || "System"}
                       </TableCell>
-                      <TableCell className="text-sm text-gray-500">{log.ipAddress || "—"}</TableCell>
+                      <TableCell className="text-sm text-[#5B6A78]">{log.ipAddress || "—"}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-500 py-8">
+                    <TableCell colSpan={5} className="text-center text-[#5B6A78] py-8">
                       No audit logs found
                     </TableCell>
                   </TableRow>
@@ -214,7 +214,7 @@ export default function AuditTrailPage() {
           </div>
 
           <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-[#41505F]">
               Page {currentPage} of {pages}
             </div>
             <div className="flex gap-2">

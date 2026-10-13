@@ -20,12 +20,12 @@ export function KpiPicker({ chosen, periodId, periods }: { chosen: string[]; per
   }
 
   return (
-    <fieldset className="rounded-xl border border-gray-200 bg-white p-4" aria-busy={pending}>
-      <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-gray-500">Choose what to show</legend>
+    <fieldset className="rounded-xl border border-[#E3E8EE] bg-white p-4" aria-busy={pending}>
+      <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">Choose what to show</legend>
       <div className="flex flex-wrap items-start gap-x-6 gap-y-3">
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {KPIS.map((k) => (
-            <label key={k.id} className="flex items-center gap-2 text-sm text-gray-800">
+            <label key={k.id} className="flex items-center gap-2 text-sm text-[#131d29]">
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300"
@@ -38,7 +38,7 @@ export function KpiPicker({ chosen, periodId, periods }: { chosen: string[]; per
         </div>
         {periods.length > 0 && (
           <div className="space-y-1">
-            <label htmlFor="kpi-period" className="block text-xs text-gray-500">Period</label>
+            <label htmlFor="kpi-period" className="block text-xs text-[#5B6A78]">Period</label>
             <select id="kpi-period" value={periodId ?? ""} onChange={(e) => go({ periodId: e.target.value || null })} className="h-9 rounded-md border border-gray-300 bg-white px-2 text-sm">
               {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>

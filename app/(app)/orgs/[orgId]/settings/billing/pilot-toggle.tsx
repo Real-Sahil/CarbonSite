@@ -57,10 +57,10 @@ export function PilotToggle({ orgId, initialIsPilot }: PilotToggleProps) {
       <CardContent>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-[#131d29]">
               {isPilot ? "Pilot enabled" : "Pilot disabled"}
             </p>
-            <p className="text-xs text-slate-600 mt-1">
+            <p className="text-xs text-[#41505F] mt-1">
               Admin only. Changes are audited.
             </p>
           </div>

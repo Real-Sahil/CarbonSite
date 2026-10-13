@@ -9,7 +9,7 @@ interface SubmissionEvidenceDownloadsProps {
 
 export function SubmissionEvidenceDownloads({ orgId, files }: SubmissionEvidenceDownloadsProps) {
   return (
-    <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E5E7EB]">
+    <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E3E8EE]">
       {files.map((file) => (
         <a
           key={file.id}
@@ -18,8 +18,8 @@ export function SubmissionEvidenceDownloads({ orgId, files }: SubmissionEvidence
           rel="noopener noreferrer"
           className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-[#FFF7ED] transition-colors"
         >
-          <span className="text-sm text-[#111827] tracking-[-0.42px]">{file.filename}</span>
-          <ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0 text-[#374151]" />
+          <span className="text-sm text-[#131d29] tracking-[-0.42px]">{file.filename}</span>
+          <ExternalLink aria-hidden="true" className="h-4 w-4 shrink-0 text-[#41505F]" />
         </a>
       ))}
     </div>

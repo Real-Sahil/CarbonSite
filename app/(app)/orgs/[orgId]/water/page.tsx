@@ -68,8 +68,8 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Water</h1>
-          <p className="text-sm text-gray-500 mt-1">Track withdrawal, discharge and consumption for CSRD ESRS E3.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Water</h1>
+          <p className="text-sm text-[#5B6A78] mt-1">Track withdrawal, discharge and consumption for CSRD ESRS E3.</p>
         </div>
         {canEdit && <WaterAddButtons orgId={orgId} facilities={facilities} periods={rawPeriods} />}
       </div>
@@ -81,49 +81,49 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
           { label: "Consumption",              value: (totals.consumption ?? 0).toFixed(1), unit: "m3" },
           { label: "In water-stressed areas",  value: `${stressedPct}%`,                    unit: "of withdrawal" },
         ].map(({ label, value, unit }) => (
-          <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">{label}</div>
-            <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
+          <div key={label} className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+            <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">{label}</div>
+            <div className="text-2xl font-semibold text-[#131d29] tabular-nums">{value}</div>
+            <div className="text-xs text-[#5B6A78] mt-0.5">{unit}</div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
         {records.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center">
-              <Droplets className="h-5 w-5 text-gray-500" />
+            <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F9FAFC] flex items-center justify-center">
+              <Droplets className="h-5 w-5 text-[#5B6A78]" />
             </div>
-            <p className="text-sm font-medium text-gray-700">No water records</p>
-            <p className="text-xs text-gray-500 mt-1">Add your first water record to start tracking ESRS E3 disclosures.</p>
+            <p className="text-sm font-medium text-[#41505F]">No water records</p>
+            <p className="text-xs text-[#5B6A78] mt-1">Add your first water record to start tracking ESRS E3 disclosures.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
                 {["Metric", "Facility", "Source", "Volume (m3)", "Water-stressed", "Date", ""].map((h) => (
-                  <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
+                  <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {records.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="py-3 pl-6 pr-4 font-medium text-gray-900">{METRIC_LABELS[r.metricType] ?? r.metricType}</td>
-                  <td className="py-3 px-4 text-gray-600">{r.facility?.name ?? "-"}</td>
-                  <td className="py-3 px-4 text-gray-600">
+                <tr key={r.id} className="hover:bg-[#F9FAFC] transition-colors">
+                  <td className="py-3 pl-6 pr-4 font-medium text-[#131d29]">{METRIC_LABELS[r.metricType] ?? r.metricType}</td>
+                  <td className="py-3 px-4 text-[#41505F]">{r.facility?.name ?? "-"}</td>
+                  <td className="py-3 px-4 text-[#41505F]">
                     {SOURCE_OPTIONS.find((s) => s.value === r.source)?.label ?? r.source}
                   </td>
-                  <td className="py-3 px-4 text-gray-900 tabular-nums">{r.volumeM3.toFixed(3)}</td>
+                  <td className="py-3 px-4 text-[#131d29] tabular-nums">{r.volumeM3.toFixed(3)}</td>
                   <td className="py-3 px-4">
                     {r.isWaterStressedArea ? (
                       <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">Stressed</span>
                     ) : (
-                      <span className="text-xs text-gray-500">-</span>
+                      <span className="text-xs text-[#5B6A78]">-</span>
                     )}
                   </td>
-                  <td className="py-3 px-4 text-gray-500 tabular-nums">
+                  <td className="py-3 px-4 text-[#5B6A78] tabular-nums">
                     {new Date(r.recordedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                   </td>
                   <td className="py-3 pl-4 pr-6">

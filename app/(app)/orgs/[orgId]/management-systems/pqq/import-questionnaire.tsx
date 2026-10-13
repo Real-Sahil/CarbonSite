@@ -47,9 +47,9 @@ export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: 
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
-      <h2 className="text-sm font-semibold text-[#111827]">Add a client&apos;s questionnaire</h2>
-      <p className="max-w-[75ch] text-sm text-[#6B7280]">
+    <section className="flex flex-col gap-4 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
+      <h2 className="text-sm font-semibold text-[#131d29]">Add a client&apos;s questionnaire</h2>
+      <p className="max-w-[75ch] text-sm text-[#5B6A78]">
         Paste the questions, one per line, with their numbers if they have them. Each is matched to an answer topic so anything you have answered before comes up
         answered; check the matches before saving. A question that matches nothing gets its own answer.
       </p>
@@ -72,16 +72,16 @@ export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: 
       </form>
       {questions && (
         <div className="flex flex-col gap-3">
-          <ol className="flex flex-col divide-y divide-[#F3F4F6] rounded-md border border-[#E5E7EB]">
+          <ol className="flex flex-col divide-y divide-[#F3F4F6] rounded-md border border-[#E3E8EE]">
             {questions.map((q, i) => (
               <li key={`${q.ref}-${i}`} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
-                <span className="w-14 shrink-0 font-mono text-xs text-[#6B7280]">{q.ref}</span>
-                <span className="flex-1 text-sm text-[#111827]">{q.text}</span>
+                <span className="w-14 shrink-0 font-mono text-xs text-[#5B6A78]">{q.ref}</span>
+                <span className="flex-1 text-sm text-[#131d29]">{q.text}</span>
                 <select
                   aria-label={`Answer topic for question ${q.ref}`}
                   value={q.topicKey}
                   onChange={(e) => setQuestions(questions.map((x, j) => (j === i ? { ...x, topicKey: e.target.value } : x)))}
-                  className="h-9 max-w-[320px] rounded-md border border-[#E5E7EB] bg-white px-2 text-sm"
+                  className="h-9 max-w-[320px] rounded-md border border-[#E3E8EE] bg-white px-2 text-sm"
                 >
                   {q.own && <option value={q.own}>Its own answer</option>}
                   {sections.map(([s, label]) => (

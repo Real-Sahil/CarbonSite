@@ -26,8 +26,8 @@ export default async function CaseStudiesPage({ params }: { params: Promise<{ or
   return (
     <div className="mx-auto flex max-w-[1000px] flex-col gap-6 px-4 py-8 sm:px-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Case studies</h1>
-        <p className="mt-2 max-w-[70ch] text-sm text-[#374151]">
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Case studies</h1>
+        <p className="mt-2 max-w-[70ch] text-sm text-[#41505F]">
           Short project stories for a site noticeboard or a bid: the problem, what you did, what the results are measured against, and the
           results. Figures here are your own statement, not calculated from your records, so the board says so. Give the baseline and the
           assumptions. Published case studies appear on the site noticeboard of their contract (Reports, type &ldquo;Site noticeboard&rdquo;).

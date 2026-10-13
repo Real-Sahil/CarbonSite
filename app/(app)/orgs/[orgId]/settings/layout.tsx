@@ -30,12 +30,12 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   return (
     <div className="min-h-[100dvh] bg-[#F8F9FA]">
       {/* Page header */}
-      <div className="border-b border-[#E5E7EB] bg-white">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8 pb-0">
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Settings
           </h1>
-          <p className="mt-1 text-sm text-[#6B7280]">
+          <p className="mt-1 text-sm text-[#5B6A78]">
             Manage your organisation, members, and configuration.
           </p>
 
@@ -44,7 +44,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <select
               value={activeSegment}
               onChange={(e) => router.push(`/orgs/${orgId}/settings/${e.target.value}`)}
-              className="w-full rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/40"
+              className="w-full rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/40"
               aria-label="Settings section"
             >
               {TABS.map((tab) => (
@@ -68,7 +68,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                     "px-4 py-2 text-sm font-normal tracking-[-0.42px] border-b-2 -mb-px transition-colors whitespace-nowrap",
                     isActive
                       ? "border-[#c2410c] text-[#c2410c]"
-                      : "border-transparent text-[#6B7280] hover:text-[#374151]",
+                      : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
                   )}
                 >
                   {tab.label}

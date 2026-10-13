@@ -56,10 +56,10 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-white">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#131d29] mb-2">
             Access denied
           </h1>
-          <p className="text-sm text-[#6B7280]">
+          <p className="text-sm text-[#5B6A78]">
             {message}
           </p>
         </div>
@@ -80,10 +80,10 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-white">
         <div className="text-center max-w-sm px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111827] mb-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#131d29] mb-2">
             Temporary error
           </h1>
-          <p className="text-sm text-[#6B7280] mb-4">
+          <p className="text-sm text-[#5B6A78] mb-4">
             The database is updating. Refresh in a moment.
           </p>
           <a
@@ -128,10 +128,10 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-white">
         <div className="text-center max-w-sm px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#111827] mb-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-[#131d29] mb-2">
             Temporary error
           </h1>
-          <p className="text-sm text-[#6B7280] mb-4">
+          <p className="text-sm text-[#5B6A78] mb-4">
             {dataFetchError}
           </p>
           <a

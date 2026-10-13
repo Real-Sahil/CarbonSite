@@ -83,7 +83,7 @@ const STATUS_FILTERS = [
 
 function statusBadge(row: RequestRow) {
   if (row.expired) {
-    return <Badge variant="outline" className="text-slate-500">Expired</Badge>;
+    return <Badge variant="outline" className="text-[#5B6A78]">Expired</Badge>;
   }
   if (row.status === "submitted") {
     return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Submitted</Badge>;
@@ -91,7 +91,7 @@ function statusBadge(row: RequestRow) {
   if (row.status === "opened") {
     return <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-100">Opened</Badge>;
   }
-  return <Badge variant="outline" className="text-slate-500">Awaiting</Badge>;
+  return <Badge variant="outline" className="text-[#5B6A78]">Awaiting</Badge>;
 }
 
 function fmtDate(iso: string | null) {
@@ -214,7 +214,7 @@ export function SupplierRequestsTable({
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-lg border border-slate-200 bg-white p-1 gap-0.5">
+        <div className="flex rounded-lg border border-[#E3E8EE] bg-white p-1 gap-0.5">
           {STATUS_FILTERS.map((f) => (
             <button
               key={f.value}
@@ -222,13 +222,13 @@ export function SupplierRequestsTable({
               className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
                 currentStatus === f.value
                   ? "bg-slate-900 text-white"
-                  : "text-slate-600 hover:bg-slate-50"
+                  : "text-[#41505F] hover:bg-[#F9FAFC]"
               }`}
             >
               {f.label}
               {counts[f.value] > 0 && (
                 <span className={`ml-1.5 text-xs ${
-                  currentStatus === f.value ? "text-slate-300" : "text-slate-500"
+                  currentStatus === f.value ? "text-slate-300" : "text-[#5B6A78]"
                 }`}>
                   {counts[f.value]}
                 </span>
@@ -260,8 +260,8 @@ export function SupplierRequestsTable({
         <Card>
           <CardContent className="py-12 text-center">
             <Send className="mx-auto mb-3 h-8 w-8 text-slate-300" />
-            <p className="text-sm font-medium text-slate-600">No requests found</p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="text-sm font-medium text-[#41505F]">No requests found</p>
+            <p className="mt-1 text-xs text-[#5B6A78]">
               {currentStatus !== "all"
                 ? "Try changing the filter above."
                 : "Send a supplier data campaign from the Supplier Data Requests API."}
@@ -272,10 +272,10 @@ export function SupplierRequestsTable({
 
       {/* Table */}
       {filtered.length > 0 && (
-        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-[#E3E8EE] bg-white">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-medium text-slate-500">
+              <tr className="border-b border-slate-100 bg-[#F9FAFC] text-left text-xs font-medium text-[#5B6A78]">
                 <th className="px-4 py-3">Supplier</th>
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Period</th>
@@ -291,29 +291,29 @@ export function SupplierRequestsTable({
                 return (
                   <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="font-medium text-slate-900">
+                      <p className="font-medium text-[#131d29]">
                         {row.supplierName ?? row.supplierEmail}
                       </p>
                       {row.supplierName && (
-                        <p className="text-xs text-slate-500">{row.supplierEmail}</p>
+                        <p className="text-xs text-[#5B6A78]">{row.supplierEmail}</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="capitalize text-slate-700">{row.categoryName}</span>
-                      <p className="text-xs text-slate-500">{row.categoryCode}</p>
+                      <span className="capitalize text-[#41505F]">{row.categoryName}</span>
+                      <p className="text-xs text-[#5B6A78]">{row.categoryCode}</p>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{row.periodLabel}</td>
+                    <td className="px-4 py-3 text-[#41505F]">{row.periodLabel}</td>
                     <td className="px-4 py-3">{statusBadge(row)}</td>
                     <td className="px-4 py-3">
                       {row.submittedData ? (
-                        <span className="font-mono text-slate-800">
+                        <span className="font-mono text-[#131d29]">
                           {row.submittedData.quantity.toLocaleString("en-GB")} {row.submittedData.unit}
                         </span>
                       ) : (
                         <span className="text-slate-300">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">
+                    <td className="px-4 py-3 text-[#5B6A78] text-xs">
                       <div className="flex items-center gap-1">
                         {row.status === "opened" || row.status === "submitted"
                           ? <MailOpen className="h-3 w-3" />
@@ -366,27 +366,27 @@ export function SupplierRequestsTable({
           {reviewRow && (
             <div className="flex flex-col gap-4 py-2">
               {/* Submission summary */}
-              <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+              <div className="rounded-lg border border-slate-100 bg-[#F9FAFC] px-4 py-3 text-sm">
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                   <div>
-                    <dt className="text-slate-500 text-xs">Supplier</dt>
+                    <dt className="text-[#5B6A78] text-xs">Supplier</dt>
                     <dd className="font-medium">{reviewRow.supplierName ?? reviewRow.supplierEmail}</dd>
                   </div>
                   <div>
-                    <dt className="text-slate-500 text-xs">Category</dt>
+                    <dt className="text-[#5B6A78] text-xs">Category</dt>
                     <dd className="capitalize">{reviewRow.categoryName}</dd>
                   </div>
                   <div>
-                    <dt className="text-slate-500 text-xs">Period</dt>
+                    <dt className="text-[#5B6A78] text-xs">Period</dt>
                     <dd>{reviewRow.periodLabel}</dd>
                   </div>
                   <div>
-                    <dt className="text-slate-500 text-xs">Submitted</dt>
+                    <dt className="text-[#5B6A78] text-xs">Submitted</dt>
                     <dd>{fmtDate(reviewRow.submittedAt)}</dd>
                   </div>
                 </dl>
                 {reviewRow.submittedData?.description && (
-                  <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-slate-500">
+                  <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-[#5B6A78]">
                     {reviewRow.submittedData.description}
                   </p>
                 )}
@@ -419,7 +419,7 @@ export function SupplierRequestsTable({
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="convert-notes">
                   Notes{" "}
-                  <span className="font-normal text-slate-500">(optional)</span>
+                  <span className="font-normal text-[#5B6A78]">(optional)</span>
                 </Label>
                 <Textarea
                   id="convert-notes"
@@ -437,7 +437,7 @@ export function SupplierRequestsTable({
                 </p>
               )}
 
-              <div className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+              <div className="rounded-md border border-slate-100 bg-[#F9FAFC] px-3 py-2 text-xs text-[#5B6A78]">
                 The record will be created with <strong>draft</strong> review
                 status and must be approved before it is included in a
                 calculation run.

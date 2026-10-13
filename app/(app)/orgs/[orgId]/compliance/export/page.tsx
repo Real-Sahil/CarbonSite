@@ -28,8 +28,8 @@ export default function EvidenceExportPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Compliance Evidence Export</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl tracking-tight">Compliance Evidence Export</h1>
+        <p className="text-[#41505F] mt-2">
           Generate audit trails and evidence packages for regulatory compliance frameworks
         </p>
       </div>
@@ -87,7 +87,7 @@ export default function EvidenceExportPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Full record of all actions, calculations, and data changes with timestamps and actor information
             </p>
           </CardContent>
@@ -101,7 +101,7 @@ export default function EvidenceExportPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Complete traceability from source documents through calculations to published reports
             </p>
           </CardContent>
@@ -115,7 +115,7 @@ export default function EvidenceExportPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Evidence packages mapped to specific regulatory frameworks (CSRD, SBTi, CDP, GHG Protocol, ISO 14064)
             </p>
           </CardContent>
@@ -131,7 +131,7 @@ export default function EvidenceExportPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <h3 className="font-semibold text-sm">Audit Information</h3>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
                   <span className="text-blue-600">✓</span>
                   <span>Complete action audit trail (50+ event types)</span>
@@ -153,7 +153,7 @@ export default function EvidenceExportPage() {
 
             <div className="space-y-3">
               <h3 className="font-semibold text-sm">Calculation Evidence</h3>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
                   <span className="text-blue-600">✓</span>
                   <span>Emission factor library versions and selections</span>
@@ -177,7 +177,7 @@ export default function EvidenceExportPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-3">
               <h3 className="font-semibold text-sm">Data Integrity</h3>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
                   <span className="text-blue-600">✓</span>
                   <span>Data lineage from source to published output</span>
@@ -199,7 +199,7 @@ export default function EvidenceExportPage() {
 
             <div className="space-y-3">
               <h3 className="font-semibold text-sm">Compliance Mapping</h3>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
                   <span className="text-blue-600">✓</span>
                   <span>Framework-specific requirement mapping</span>
@@ -234,7 +234,7 @@ export default function EvidenceExportPage() {
                 <Clock className="w-4 h-4 text-orange-600" />
                 <h3 className="font-medium text-sm">Regulatory Audits</h3>
               </div>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-[#41505F]">
                 Provide complete evidence packages to regulators during compliance audits
               </p>
             </div>
@@ -244,7 +244,7 @@ export default function EvidenceExportPage() {
                 <Users className="w-4 h-4 text-blue-600" />
                 <h3 className="font-medium text-sm">Third-Party Verification</h3>
               </div>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-[#41505F]">
                 Share audit trails with external auditors and verification bodies
               </p>
             </div>
@@ -254,7 +254,7 @@ export default function EvidenceExportPage() {
                 <ShieldCheck className="w-4 h-4 text-green-600" />
                 <h3 className="font-medium text-sm">Framework Disclosure</h3>
               </div>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-[#41505F]">
                 Generate framework-specific evidence for CSRD, SBTi, CDP reporting
               </p>
             </div>
@@ -263,9 +263,9 @@ export default function EvidenceExportPage() {
       </Card>
 
       {/* Footer Note */}
-      <Card className="bg-gray-50">
+      <Card className="bg-[#F9FAFC]">
         <CardContent className="pt-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-[#41505F]">
             <strong>Note:</strong> All evidence packages are generated on-demand and include only data from the date range you specify. Each export includes a verification timestamp and digital signature. Your organization&apos;s data remains completely private and secure.
           </p>
         </CardContent>

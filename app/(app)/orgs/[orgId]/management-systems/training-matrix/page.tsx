@@ -21,7 +21,7 @@ export default async function TrainingMatrixPage({ params }: { params: Promise<{
     await requireOrgMember(orgId, ...MS_READERS);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view management systems.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view management systems.</div>;
   }
   const [competences, records] = await Promise.all([
     prisma.msCompetence.findMany({ where: { organizationId: orgId }, select: { id: true, title: true, validityMonths: true, appliesTo: true }, orderBy: { title: "asc" } }),
@@ -36,20 +36,20 @@ export default async function TrainingMatrixPage({ params }: { params: Promise<{
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#6B7280] hover:text-[#111827]">Management systems</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Training matrix</h1>
-        <p className="max-w-[75ch] text-sm text-[#6B7280]">
+        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Management systems</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Training matrix</h1>
+        <p className="max-w-[75ch] text-sm text-[#5B6A78]">
           Each person&apos;s latest record for each competence requirement (ISO clause 7.2). Amber expires within {EXPIRING_DAYS} days, red has expired; an empty cell has no record.
           Add requirements under <Link href={reg("competences")} className="underline underline-offset-2">Competence requirements</Link> and records under <Link href={reg("training-records")} className="underline underline-offset-2">Training records</Link>.
         </p>
-        <p className="text-sm tabular-nums text-[#374151]">{totals.expired} expired · {totals.expiring} expiring soon · {rows.length} people</p>
+        <p className="text-sm tabular-nums text-[#41505F]">{totals.expired} expired · {totals.expiring} expiring soon · {rows.length} people</p>
       </div>
       {competences.length === 0 || rows.length === 0 ? (
         <EmptyState title="No training recorded yet" description="Record training against a competence and each person's expiry shows here." />
       ) : (
-        <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB] bg-white">
+        <div className="overflow-x-auto rounded-[14px] border border-[#E3E8EE] bg-white">
           <table className="text-left text-xs">
-            <thead className="border-b border-[#E5E7EB] text-[#6B7280]">
+            <thead className="border-b border-[#E3E8EE] text-[#5B6A78]">
               <tr>
                 <th className="sticky left-0 bg-white px-3 py-2 font-medium">Person</th>
                 {competences.map((c) => (
@@ -60,9 +60,9 @@ export default async function TrainingMatrixPage({ params }: { params: Promise<{
             <tbody className="divide-y divide-[#F3F4F6]">
               {rows.map((r) => (
                 <tr key={r.key}>
-                  <th scope="row" className="sticky left-0 whitespace-nowrap bg-white px-3 py-2 text-left font-medium text-[#111827]">
+                  <th scope="row" className="sticky left-0 whitespace-nowrap bg-white px-3 py-2 text-left font-medium text-[#131d29]">
                     {r.name}
-                    {r.employer && <span className="block font-normal text-[#6B7280]">{r.employer}</span>}
+                    {r.employer && <span className="block font-normal text-[#5B6A78]">{r.employer}</span>}
                   </th>
                   {competences.map((c) => {
                     const cell = r.cells[c.id];

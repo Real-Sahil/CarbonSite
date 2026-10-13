@@ -49,7 +49,7 @@ export default async function TnfdPage({ params }: { params: Promise<{ orgId: st
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">TNFD Scenarios</h1>
+          <h1 className="text-2xl tracking-tight">TNFD Scenarios</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Nature-related financial disclosure scenarios using the LEAP framework.
           </p>
@@ -104,7 +104,7 @@ export default async function TnfdPage({ params }: { params: Promise<{ orgId: st
                   <td className="px-4 py-3 capitalize">{s.timeHorizon?.replaceAll("_", " ") ?? "-"}</td>
                   <td className="px-4 py-3">
                     {s.riskRating ? (
-                      <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${RISK_CLASSES[s.riskRating] ?? "bg-gray-100 text-gray-700"}`}>
+                      <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${RISK_CLASSES[s.riskRating] ?? "bg-gray-100 text-[#41505F]"}`}>
                         {s.riskRating}
                       </span>
                     ) : "-"}

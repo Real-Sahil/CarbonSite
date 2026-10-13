@@ -73,7 +73,7 @@ export function EcoLoader({
           {TAGLINES.map((t, i) => (
             <p
               key={t}
-              className="eco-tagline absolute inset-0 text-sm text-[#374151]"
+              className="eco-tagline absolute inset-0 text-sm text-[#41505F]"
               style={{ animationDelay: `${i * 3}s` }}
             >
               {t}

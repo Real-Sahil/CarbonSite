@@ -144,7 +144,7 @@ export function InviteLinkGenerator({
       <div className="flex flex-col gap-2">
         <label
           htmlFor="invite-site"
-          className="text-xs font-medium text-[#374151] uppercase tracking-wide"
+          className="text-xs font-medium text-[#41505F] uppercase tracking-wide"
         >
           Assign to site
         </label>
@@ -154,7 +154,7 @@ export function InviteLinkGenerator({
             value={selectedSiteId}
             onChange={(e) => setSelectedSiteId(e.target.value)}
             disabled={loading}
-            className="h-9 rounded-md border border-[#E5E7EB] bg-white px-3 text-sm min-w-[16rem]"
+            className="h-9 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm min-w-[16rem]"
           >
             <option value="">No specific site (org-wide)</option>
             {sites.map((s) => (
@@ -176,7 +176,7 @@ export function InviteLinkGenerator({
               value={expiresInDays}
               onChange={(e) => setExpiresInDays(Number(e.target.value))}
               disabled={loading || reusable}
-              className="h-9 rounded-md border border-[#E5E7EB] bg-white px-3 text-sm disabled:opacity-50"
+              className="h-9 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm disabled:opacity-50"
             >
               <option value={7}>7 days</option>
               <option value={30}>30 days</option>
@@ -193,9 +193,9 @@ export function InviteLinkGenerator({
                 checked={reusable}
                 onChange={(e) => setReusable(e.target.checked)}
                 disabled={loading}
-                className="h-4 w-4 rounded border-[#E5E7EB] accent-blue-600"
+                className="h-4 w-4 rounded border-[#E3E8EE] accent-blue-600"
               />
-              <span className="text-xs text-[#374151]">
+              <span className="text-xs text-[#41505F]">
                 Never expires, multi-use
               </span>
             </label>
@@ -205,7 +205,7 @@ export function InviteLinkGenerator({
         <div className="flex items-center gap-3 flex-wrap mt-1">
           <div className="flex flex-col gap-1">
             <label htmlFor="invite-email" className="text-xs text-[#555555]">
-              Send invite by email <span className="text-[#6B7280]">(optional)</span>
+              Send invite by email <span className="text-[#5B6A78]">(optional)</span>
             </label>
             <Input
               id="invite-email"
@@ -260,7 +260,7 @@ export function InviteLinkGenerator({
 
       {links.length > 0 && (
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium text-[#374151] uppercase tracking-wide">
+          <p className="text-xs font-medium text-[#41505F] uppercase tracking-wide">
             Active invite links
           </p>
           <p className="text-xs text-[#555555]">
@@ -275,7 +275,7 @@ export function InviteLinkGenerator({
             return (
               <div
                 key={link.id}
-                className="flex flex-col gap-2 p-[9px] rounded-[7px] border border-[#E5E7EB] bg-[#F0FDFA]"
+                className="flex flex-col gap-2 p-[9px] rounded-[7px] border border-[#E3E8EE] bg-[#F0FDFA]"
               >
                 {/* Badges row — only rendered when badges exist */}
                 {(link.reusable || link.site) && (
@@ -286,7 +286,7 @@ export function InviteLinkGenerator({
                       </span>
                     )}
                     {link.site && (
-                      <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#111827] whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1 shrink-0 rounded-full bg-[#cfe7d3] px-2 py-1 text-xs text-[#131d29] whitespace-nowrap">
                         <MapPin className="h-3 w-3" />
                         {link.site.project ? `${link.site.project.name} · ` : ""}
                         {link.site.name}
@@ -299,7 +299,7 @@ export function InviteLinkGenerator({
                   <Input
                     readOnly
                     value={url}
-                    className="text-xs h-7 min-w-0 flex-1 bg-white text-[#374151] font-mono border-[#E5E7EB]"
+                    className="text-xs h-7 min-w-0 flex-1 bg-white text-[#41505F] font-mono border-[#E3E8EE]"
                     onFocus={(e) => e.target.select()}
                   />
                   <Button
@@ -310,12 +310,12 @@ export function InviteLinkGenerator({
                     title="Copy link"
                   >
                     {isCopied ? (
-                      <Check className="h-3.5 w-3.5 text-[#111827]" />
+                      <Check className="h-3.5 w-3.5 text-[#131d29]" />
                     ) : (
                       <Copy className="h-3.5 w-3.5" />
                     )}
                   </Button>
-                  <span className="text-xs text-[#374151] shrink-0 whitespace-nowrap tracking-[-0.36px]">
+                  <span className="text-xs text-[#41505F] shrink-0 whitespace-nowrap tracking-[-0.36px]">
                     {link.reusable
                       ? "Never expires"
                       : `Expires ${expiresAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}

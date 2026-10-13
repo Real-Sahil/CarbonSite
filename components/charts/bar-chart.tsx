@@ -806,7 +806,7 @@ const ChartCore = memo(function ChartCore({
           </g>
         </svg>
         {readoutIndex !== null && readout && data[readoutIndex] ? (
-          <div className="pointer-events-none absolute left-2 top-1 z-10 rounded-md border border-slate-200 bg-white/95 px-2.5 py-1.5 text-xs shadow-sm">
+          <div className="pointer-events-none absolute left-2 top-1 z-10 rounded-md border border-[#E3E8EE] bg-white/95 px-2.5 py-1.5 text-xs shadow-sm">
             {readout(data[readoutIndex])}
           </div>
         ) : null}

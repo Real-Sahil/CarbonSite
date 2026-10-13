@@ -92,14 +92,14 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
   }
 
   return (
-    <div className="rounded-[14px] border border-[#E5E7EB] p-[21px] flex flex-col gap-4">
+    <div className="rounded-[14px] border border-[#E3E8EE] p-[21px] flex flex-col gap-4">
       <div>
-        <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">Import from Find a Tender</p>
-        <p className="mt-1 text-xs text-[#6B7280]">
+        <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">Import from Find a Tender</p>
+        <p className="mt-1 text-xs text-[#5B6A78]">
           Paste the notice number (for example 091200-2026) or its web address. An award notice gives the buyer, awarded value and dates.
         </p>
       </div>
-      <form onSubmit={lookUp} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <form onSubmit={lookUp} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
         <FormField label="Notice number or link" htmlFor="fts-notice">
           <Input id="fts-notice" value={notice} onChange={(e) => setNotice(e.target.value)} placeholder="091200-2026" className={field} required />
         </FormField>
@@ -109,8 +109,8 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
       </form>
 
       {preview && draft && (
-        <div className="flex flex-col gap-4 border-t border-[#E5E7EB] pt-4">
-          <p className="text-xs text-[#6B7280]">
+        <div className="flex flex-col gap-4 border-t border-[#E3E8EE] pt-4">
+          <p className="text-xs text-[#5B6A78]">
             {preview.stage === "award" ? "Award notice" : "Tender notice"} ·{" "}
             <a href={preview.noticeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
               View on Find a Tender
@@ -152,7 +152,7 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
                   <Input id="fts-end" type="date" value={draft.endDate ?? ""} onChange={(e) => setDraft({ ...draft, endDate: e.target.value || null })} className={field} />
                 </FormField>
               </div>
-              <p className="text-xs text-[#6B7280]">
+              <p className="text-xs text-[#5B6A78]">
                 Reference: {draft.ftsNoticeId}
                 {draft.tenderReference ? ` · Buyer's reference: ${draft.tenderReference}` : ""}
               </p>

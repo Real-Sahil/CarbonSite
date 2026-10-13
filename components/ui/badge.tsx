@@ -12,7 +12,7 @@ const badgeVariants = cva(
         secondary:
           "bg-emerald-50 text-emerald-700 border border-emerald-200",
         outline:
-          "text-[#374151] border border-[#E5E7EB]",
+          "text-[#41505F] border border-[#E3E8EE]",
         destructive:
           "bg-red-50 text-red-700 border border-red-200",
       },

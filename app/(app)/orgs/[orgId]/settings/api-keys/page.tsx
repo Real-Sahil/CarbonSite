@@ -28,7 +28,7 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="p-1 rounded text-zinc-500 hover:text-zinc-700 transition-colors"
+      className="p-1 rounded text-[#5B6A78] hover:text-[#41505F] transition-colors"
       aria-label="Copy key"
     >
       {copied ? (
@@ -114,8 +114,8 @@ export default function ApiKeysPage() {
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
       <div>
-        <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">API Keys</h2>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#131d29]">API Keys</h2>
+        <p className="text-sm text-[#5B6A78] mt-0.5">
           Use API keys to authenticate requests from BI tools, automations, or integrations.
           Keys are only shown once on creation.
         </p>
@@ -156,46 +156,46 @@ export default function ApiKeysPage() {
       </form>
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="overflow-x-auto rounded-[10px] border border-[#E5E7EB]">
+      <div className="overflow-x-auto rounded-[10px] border border-[#E3E8EE]">
         <Table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Name</th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Prefix</th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Created</th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Last used</th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Expires</th>
+            <tr className="border-b border-[#E3E8EE] bg-[#F9FAFC]">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Name</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Prefix</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Created</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Last used</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Expires</th>
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
           <tbody className="divide-y divide-[#e5e7eb]">
             {loading && keys.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-sm text-zinc-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-sm text-[#5B6A78]">
                   Loading...
                 </td>
               </tr>
             )}
             {!loading && keys.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-zinc-500">
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-[#5B6A78]">
                   No API keys yet. Create one above.
                 </td>
               </tr>
             )}
             {keys.map((k) => (
-              <tr key={k.id} className="hover:bg-[#f9fafb] transition-colors">
-                <td className="px-4 py-2.5 font-medium text-zinc-800">{k.name}</td>
-                <td className="px-4 py-2.5 font-mono text-zinc-500 text-xs">{k.prefix}...</td>
-                <td className="px-4 py-2.5 text-xs text-zinc-500">
+              <tr key={k.id} className="hover:bg-[#F9FAFC] transition-colors">
+                <td className="px-4 py-2.5 font-medium text-[#131d29]">{k.name}</td>
+                <td className="px-4 py-2.5 font-mono text-[#5B6A78] text-xs">{k.prefix}...</td>
+                <td className="px-4 py-2.5 text-xs text-[#5B6A78]">
                   {new Date(k.createdAt).toLocaleDateString("en-GB")}
                 </td>
-                <td className="px-4 py-2.5 text-xs text-zinc-500">
+                <td className="px-4 py-2.5 text-xs text-[#5B6A78]">
                   {k.lastUsedAt
                     ? new Date(k.lastUsedAt).toLocaleDateString("en-GB")
                     : "Never"}
                 </td>
-                <td className="px-4 py-2.5 text-xs text-zinc-500">
+                <td className="px-4 py-2.5 text-xs text-[#5B6A78]">
                   {k.expiresAt
                     ? new Date(k.expiresAt).toLocaleDateString("en-GB")
                     : "No expiry"}
@@ -204,7 +204,7 @@ export default function ApiKeysPage() {
                   <button
                     onClick={() => handleDelete(k.id)}
                     disabled={deletingId === k.id}
-                    className="p-1.5 rounded text-zinc-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                    className="p-1.5 rounded text-[#5B6A78] hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                     aria-label={`Delete ${k.name}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -216,9 +216,9 @@ export default function ApiKeysPage() {
         </Table>
       </div>
 
-      <div className="rounded-[10px] border border-[#E5E7EB] bg-[#f9fafb] p-4 text-sm text-zinc-600">
-        <p className="font-medium text-zinc-800 mb-1">Using the API</p>
-        <p className="text-xs text-zinc-500 mb-2">
+      <div className="rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-sm text-[#41505F]">
+        <p className="font-medium text-[#131d29] mb-1">Using the API</p>
+        <p className="text-xs text-[#5B6A78] mb-2">
           Authenticate REST API requests with your key in the Authorization header:
         </p>
         <pre className="bg-zinc-900 text-zinc-100 rounded px-3 py-2 text-xs font-mono overflow-x-auto">

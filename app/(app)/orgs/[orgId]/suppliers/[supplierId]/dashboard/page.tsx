@@ -47,7 +47,7 @@ const COLORS = ['#10b981', '#ef4444', '#f59e0b'];
 
 const trendIcon = {
   improving: <TrendingUp className="h-5 w-5 text-green-600" />,
-  stable: <Minus className="h-5 w-5 text-gray-600" />,
+  stable: <Minus className="h-5 w-5 text-[#41505F]" />,
   declining: <TrendingDown className="h-5 w-5 text-red-600" />,
 };
 
@@ -80,7 +80,7 @@ export default function SupplierDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-[#5B6A78]">
         Loading supplier performance...
       </div>
     );
@@ -110,8 +110,8 @@ export default function SupplierDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Supplier Performance Dashboard</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl">Supplier Performance Dashboard</h1>
+        <p className="text-[#41505F] mt-2">
           Detailed analytics for supplier submissions and data quality
         </p>
       </div>
@@ -120,7 +120,7 @@ export default function SupplierDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Total Submissions
             </CardTitle>
           </CardHeader>
@@ -133,7 +133,7 @@ export default function SupplierDashboardPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Data Quality Score
             </CardTitle>
           </CardHeader>
@@ -142,11 +142,11 @@ export default function SupplierDashboardPage() {
               <div className="text-3xl font-bold">
                 {Math.round(performance.dataQualityScore)}
               </div>
-              <span className="text-gray-500">/100</span>
+              <span className="text-[#5B6A78]">/100</span>
             </div>
             <div className="mt-2 flex items-center gap-1">
               {trendIcon[performance.trend]}
-              <span className="text-sm capitalize text-gray-600">
+              <span className="text-sm capitalize text-[#41505F]">
                 {performance.trend}
               </span>
             </div>
@@ -155,7 +155,7 @@ export default function SupplierDashboardPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Approval Rate
             </CardTitle>
           </CardHeader>
@@ -168,7 +168,7 @@ export default function SupplierDashboardPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               On-Time Rate
             </CardTitle>
           </CardHeader>
@@ -292,15 +292,15 @@ export default function SupplierDashboardPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="border-l-4 border-green-500 pl-4">
-              <p className="text-sm text-gray-600">Approved Submissions</p>
+              <p className="text-sm text-[#41505F]">Approved Submissions</p>
               <p className="text-2xl font-bold">{performance.approvedCount}</p>
             </div>
             <div className="border-l-4 border-red-500 pl-4">
-              <p className="text-sm text-gray-600">Rejected Submissions</p>
+              <p className="text-sm text-[#41505F]">Rejected Submissions</p>
               <p className="text-2xl font-bold">{performance.rejectedCount}</p>
             </div>
             <div className="border-l-4 border-blue-500 pl-4">
-              <p className="text-sm text-gray-600">On-Time Submissions</p>
+              <p className="text-sm text-[#41505F]">On-Time Submissions</p>
               <p className="text-2xl font-bold">{performance.onTimeCount}</p>
             </div>
           </div>

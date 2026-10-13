@@ -116,8 +116,8 @@ export function ClassificationActions({ orgId, id, status, canApprove }: { orgId
   const act = (action: string) => run(() => send(`/api/orgs/${orgId}/material/classifications/${id}`, "PATCH", { action }), "Saved");
   return (
     <span className="flex flex-wrap items-center justify-end gap-3">
-      {status !== "approved" && status !== "withdrawn" && <button type="button" disabled={busy || !canApprove} title={canApprove ? undefined : "Complete the details first"} onClick={() => void act("approve")} className="text-xs font-medium text-[#111827] underline underline-offset-2 disabled:no-underline disabled:opacity-40">Approve</button>}
-      {status !== "withdrawn" && <button type="button" disabled={busy} onClick={() => void act("withdraw")} className="text-xs text-[#374151] underline underline-offset-2">Withdraw</button>}
+      {status !== "approved" && status !== "withdrawn" && <button type="button" disabled={busy || !canApprove} title={canApprove ? undefined : "Complete the details first"} onClick={() => void act("approve")} className="text-xs font-medium text-[#131d29] underline underline-offset-2 disabled:no-underline disabled:opacity-40">Approve</button>}
+      {status !== "withdrawn" && <button type="button" disabled={busy} onClick={() => void act("withdraw")} className="text-xs text-[#41505F] underline underline-offset-2">Withdraw</button>}
       {error && <span role="alert" className="text-xs text-red-600">{error}</span>}
     </span>
   );
@@ -233,7 +233,7 @@ function EditToggle({ label, children }: { label: string; children: (close: () =
   return (
     <div>
       <button type="button" className="text-xs underline underline-offset-2" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? "Close" : label}</button>
-      {open && <div className="mt-3 rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB] p-4 text-left">{children(() => setOpen(false))}</div>}
+      {open && <div className="mt-3 rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-left">{children(() => setOpen(false))}</div>}
     </div>
   );
 }

@@ -110,8 +110,8 @@ export default async function PermitsPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">Permits and consents</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-lg font-semibold text-[#131d29]">Permits and consents</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             Every permit, consent, licence and registration the organisation holds, with
             compliance tracked per numbered condition.
           </p>
@@ -121,7 +121,7 @@ export default async function PermitsPage({ params }: PageProps) {
 
       {rows.length === 0 ? (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">
+          <CardContent className="py-6 text-sm text-[#5B6A78]">
             No permits recorded. Add the permits, consents and registrations this organisation
             holds so renewals are tracked before they lapse.
           </CardContent>
@@ -151,27 +151,27 @@ export default async function PermitsPage({ params }: PageProps) {
                       <TableCell className="pl-4">
                         <Link
                           href={`/orgs/${orgId}/environmental-permits/${p.id}`}
-                          className="block font-medium text-zinc-900 underline-offset-2 hover:underline"
+                          className="block font-medium text-[#131d29] underline-offset-2 hover:underline"
                         >
                           {p.title}
                         </Link>
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-[#5B6A78]">
                           {PERMIT_TYPE_LABEL[p.type] ?? p.type} · {p.reference}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-zinc-500">{p.issuingAuthority}</TableCell>
-                      <TableCell className="text-sm text-zinc-500">
+                      <TableCell className="text-sm text-[#5B6A78]">{p.issuingAuthority}</TableCell>
+                      <TableCell className="text-sm text-[#5B6A78]">
                         {p.facility?.name ?? "Organisation wide"}
                       </TableCell>
                       <TableCell className="text-sm">
                         {p.conditions.length === 0 ? (
-                          <span className="text-zinc-500">None recorded</span>
+                          <span className="text-[#5B6A78]">None recorded</span>
                         ) : breaches > 0 ? (
                           <span className="font-medium text-red-700">
                             {breaches} of {p.conditions.length} in breach
                           </span>
                         ) : (
-                          <span className="text-zinc-500">{p.conditions.length} tracked</span>
+                          <span className="text-[#5B6A78]">{p.conditions.length} tracked</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -189,7 +189,7 @@ export default async function PermitsPage({ params }: PageProps) {
                             {days} days
                           </Badge>
                         ) : (
-                          <span className="font-mono text-sm tabular-nums text-zinc-500">
+                          <span className="font-mono text-sm tabular-nums text-[#5B6A78]">
                             {p.expiresOn
                               ? p.expiresOn.toLocaleDateString("en-GB", {
                                   day: "numeric",
@@ -215,8 +215,8 @@ export default async function PermitsPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the permit register.
       </p>
     </div>

@@ -136,7 +136,7 @@ function TileMap({ sites, styleUrl, locale, selectedId, locateKey, me, onSelect 
   return (
     <div>
       {failed ? <p role="status" className="mb-2 rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">The map tiles could not be loaded. The table below has the same figures.</p> : null}
-      <div ref={el} className="h-[420px] w-full overflow-hidden rounded-[12px] border border-[#E5E7EB]" role="img" aria-label="Map of sites sized by emissions. The table below lists the same figures." />
+      <div ref={el} className="h-[420px] w-full overflow-hidden rounded-[12px] border border-[#E3E8EE]" role="img" aria-label="Map of sites sized by emissions. The table below lists the same figures." />
     </div>
   );
 }
@@ -148,15 +148,15 @@ function Schematic({ sites, locale, selectedId, onSelect }: { sites: SiteTotal[]
   // Keep the map frame when nothing is placed yet, so the page still reads as a map and says where to add a pin.
   if (placed.length === 0)
     return (
-      <div role="img" aria-label="Site map with no positioned sites yet" className="flex aspect-[2/1] w-full items-center justify-center rounded-[12px] border border-dashed border-[#D1D5DB] bg-[#F9FAFB] bg-[linear-gradient(#E5E7EB_1px,transparent_1px),linear-gradient(90deg,#E5E7EB_1px,transparent_1px)] bg-[length:40px_40px] p-6 text-center">
-        <p className="max-w-md rounded-[10px] bg-white/90 px-4 py-3 text-sm text-[#374151] shadow-sm">No site has a position yet. Add an address in Settings, Operations, and choose a suggestion to place it.</p>
+      <div role="img" aria-label="Site map with no positioned sites yet" className="flex aspect-[2/1] w-full items-center justify-center rounded-[12px] border border-dashed border-[#D1D5DB] bg-[#F9FAFC] bg-[linear-gradient(#E5E7EB_1px,transparent_1px),linear-gradient(90deg,#E5E7EB_1px,transparent_1px)] bg-[length:40px_40px] p-6 text-center">
+        <p className="max-w-md rounded-[10px] bg-white/90 px-4 py-3 text-sm text-[#41505F] shadow-sm">No site has a position yet. Add an address in Settings, Operations, and choose a suggestion to place it.</p>
       </div>
     );
   const project = fitProjection(placed as { latitude: number; longitude: number }[], W, H, 64);
   const max = Math.max(1, ...placed.map((s) => s.kg));
   return (
     <div>
-    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[12px] border border-[#E5E7EB] bg-[#F9FAFB]" role="img" aria-label="Sites placed by latitude and longitude, sized by emissions. The table below lists the same figures.">
+    <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[12px] border border-[#E3E8EE] bg-[#F9FAFC]" role="img" aria-label="Sites placed by latitude and longitude, sized by emissions. The table below lists the same figures.">
       {placed.map((s) => {
         const { x, y } = project(s as { latitude: number; longitude: number });
         return (
@@ -260,12 +260,12 @@ export function SiteMap({
   return (
     <div className="space-y-4">
       {snapshots.length > 1 ? (
-        <div className="rounded-[14px] border border-[#E5E7EB] bg-white p-4">
-          <label htmlFor="snapshot-scrubber" className="mb-2 block text-sm font-medium text-[#111827]">
-            Published snapshot: {snap?.label} <span className="font-normal text-[#6B7280]">({new Date(snap.publishedAt).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })})</span>
+        <div className="rounded-[14px] border border-[#E3E8EE] bg-white p-4">
+          <label htmlFor="snapshot-scrubber" className="mb-2 block text-sm font-medium text-[#131d29]">
+            Published snapshot: {snap?.label} <span className="font-normal text-[#5B6A78]">({new Date(snap.publishedAt).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })})</span>
           </label>
           <div className="flex items-center gap-3">
-            <button type="button" className="rounded-md border border-[#E5E7EB] px-2 py-1 text-sm disabled:opacity-40" disabled={index === 0} onClick={() => setIndex(index - 1)} aria-label="Earlier snapshot">‹</button>
+            <button type="button" className="rounded-md border border-[#E3E8EE] px-2 py-1 text-sm disabled:opacity-40" disabled={index === 0} onClick={() => setIndex(index - 1)} aria-label="Earlier snapshot">‹</button>
             <input
               id="snapshot-scrubber"
               type="range"
@@ -277,15 +277,15 @@ export function SiteMap({
               aria-valuetext={snap?.label}
               className="w-full"
             />
-            <button type="button" className="rounded-md border border-[#E5E7EB] px-2 py-1 text-sm disabled:opacity-40" disabled={index === snapshots.length - 1} onClick={() => setIndex(index + 1)} aria-label="Later snapshot">›</button>
+            <button type="button" className="rounded-md border border-[#E3E8EE] px-2 py-1 text-sm disabled:opacity-40" disabled={index === snapshots.length - 1} onClick={() => setIndex(index + 1)} aria-label="Later snapshot">›</button>
           </div>
-          <div className="mt-1 flex justify-between text-[11px] text-[#6B7280]">
+          <div className="mt-1 flex justify-between text-[11px] text-[#5B6A78]">
             <span>{snapshots[0].label}</span>
             <span>{snapshots[snapshots.length - 1].label}</span>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-[#374151]">Showing {snap?.label}. Publish another period to scrub through time.</p>
+        <p className="text-sm text-[#41505F]">Showing {snap?.label}. Publish another period to scrub through time.</p>
       )}
       {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
 
@@ -301,51 +301,51 @@ export function SiteMap({
       <div ref={mapSection} className="scroll-mt-6 space-y-2">
         {styleUrl ? (
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={locateMe} disabled={locating} className="rounded-lg border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#F9FAFB] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">
+            <button type="button" onClick={locateMe} disabled={locating} className="rounded-lg border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">
               {locating ? "Finding you..." : "Locate me"}
             </button>
-            {me ? <span className="text-xs text-[#6B7280]">Blue dot: your position when you pressed Locate me.</span> : null}
+            {me ? <span className="text-xs text-[#5B6A78]">Blue dot: your position when you pressed Locate me.</span> : null}
             {geoError ? <span role="status" className="text-sm text-red-700">{geoError}</span> : null}
           </div>
         ) : null}
         {styleUrl ? <TileMap sites={sites} styleUrl={styleUrl} locale={locale} selectedId={selectedId} locateKey={locateKey} me={me} onSelect={setSelectedId} /> : <Schematic sites={sites} locale={locale} selectedId={selectedId} onSelect={setSelectedId} />}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#374151]" aria-label="Map key">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#41505F]" aria-label="Map key">
         <span className="inline-flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full" style={{ background: MARKER, opacity: 0.7 }} aria-hidden="true" />Offices and depots</span>
         {hasSites ? <span className="inline-flex items-center gap-1.5"><span className="inline-block h-3 w-3 rounded-full" style={{ background: SITE_MARKER, opacity: 0.7 }} aria-hidden="true" />Project sites</span> : null}
-        <span className="text-[#6B7280]">Bigger pin, more emissions. Click a pin or a row to see its details.</span>
+        <span className="text-[#5B6A78]">Bigger pin, more emissions. Click a pin or a row to see its details.</span>
       </div>
 
       {selected ? (
-        <section aria-live="polite" aria-label={`Details for ${selected.name}`} className="rounded-[14px] border border-[#E5E7EB] bg-white p-4 shadow-sm">
+        <section aria-live="polite" aria-label={`Details for ${selected.name}`} className="rounded-[14px] border border-[#E3E8EE] bg-white p-4 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">{kindLabel(selected)}{selected.detail ? ` · ${selected.detail}` : ""}</p>
-              <h2 className="mt-0.5 text-lg font-semibold text-[#111827]">{selected.name}</h2>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#5B6A78]">{kindLabel(selected)}{selected.detail ? ` · ${selected.detail}` : ""}</p>
+              <h2 className="mt-0.5 text-lg font-semibold text-[#131d29]">{selected.name}</h2>
             </div>
-            <button type="button" onClick={() => setSelectedId(null)} className="rounded-md border border-[#E5E7EB] px-2 py-1 text-xs text-[#374151] hover:bg-[#F9FAFB]">Close</button>
+            <button type="button" onClick={() => setSelectedId(null)} className="rounded-md border border-[#E3E8EE] px-2 py-1 text-xs text-[#41505F] hover:bg-[#F9FAFC]">Close</button>
           </div>
           <dl className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-            <div><dt className="text-xs text-[#6B7280]">Emissions</dt><dd className="font-semibold tabular-nums text-[#111827]">{tonnes(selected.kg, locale)}</dd></div>
-            <div><dt className="text-xs text-[#6B7280]">Share of {selected.kind === "site" ? "project sites" : "offices and depots"}</dt><dd className="font-semibold tabular-nums text-[#111827]">{totalOf(selected.kind ?? "facility") > 0 ? `${((selected.kg / totalOf(selected.kind ?? "facility")) * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%` : "-"}</dd></div>
-            <div><dt className="text-xs text-[#6B7280]">Records</dt><dd className="font-semibold tabular-nums text-[#111827]">{selected.recordCount}</dd></div>
-            <div><dt className="text-xs text-[#6B7280]">Position</dt><dd className="text-[#111827]">{hasPosition(selected) ? `${selected.latitude.toFixed(4)}, ${selected.longitude.toFixed(4)}` : "Not placed"}</dd></div>
+            <div><dt className="text-xs text-[#5B6A78]">Emissions</dt><dd className="font-semibold tabular-nums text-[#131d29]">{tonnes(selected.kg, locale)}</dd></div>
+            <div><dt className="text-xs text-[#5B6A78]">Share of {selected.kind === "site" ? "project sites" : "offices and depots"}</dt><dd className="font-semibold tabular-nums text-[#131d29]">{totalOf(selected.kind ?? "facility") > 0 ? `${((selected.kg / totalOf(selected.kind ?? "facility")) * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%` : "-"}</dd></div>
+            <div><dt className="text-xs text-[#5B6A78]">Records</dt><dd className="font-semibold tabular-nums text-[#131d29]">{selected.recordCount}</dd></div>
+            <div><dt className="text-xs text-[#5B6A78]">Position</dt><dd className="text-[#131d29]">{hasPosition(selected) ? `${selected.latitude.toFixed(4)}, ${selected.longitude.toFixed(4)}` : "Not placed"}</dd></div>
           </dl>
           <div className="mt-3 flex flex-wrap gap-2 text-sm">
             <Link href={selected.kind === "site" ? `/orgs/${orgId}/dashboard?projectId=${selected.projectId ?? ""}` : `/orgs/${orgId}/dashboard?facilityId=${selected.id}`} className="rounded-lg bg-[#c2410c] px-3 py-1.5 font-medium text-white hover:bg-[#9a3412]">Open on the dashboard</Link>
-            {selected.kind !== "site" ? <Link href={`/orgs/${orgId}/records?facilityId=${selected.id}`} className="rounded-lg border border-[#E5E7EB] px-3 py-1.5 font-medium text-[#374151] hover:bg-[#F9FAFB]">See its records</Link> : null}
-            {!hasPosition(selected) ? <Link href={selected.kind === "site" ? `/orgs/${orgId}/contracts` : `/orgs/${orgId}/settings/operations`} className="rounded-lg border border-[#E5E7EB] px-3 py-1.5 font-medium text-[#374151] hover:bg-[#F9FAFB]">Add its location</Link> : null}
+            {selected.kind !== "site" ? <Link href={`/orgs/${orgId}/records?facilityId=${selected.id}`} className="rounded-lg border border-[#E3E8EE] px-3 py-1.5 font-medium text-[#41505F] hover:bg-[#F9FAFC]">See its records</Link> : null}
+            {!hasPosition(selected) ? <Link href={selected.kind === "site" ? `/orgs/${orgId}/contracts` : `/orgs/${orgId}/settings/operations`} className="rounded-lg border border-[#E3E8EE] px-3 py-1.5 font-medium text-[#41505F] hover:bg-[#F9FAFC]">Add its location</Link> : null}
           </div>
         </section>
       ) : null}
 
       {groups.map((g) => (
-        <div key={g.kind} className="overflow-auto rounded-[14px] border border-[#E5E7EB] bg-white">
+        <div key={g.kind} className="overflow-auto rounded-[14px] border border-[#E3E8EE] bg-white">
           <table className="w-full text-left text-sm">
-            <caption className="border-b border-[#E5E7EB] px-4 py-2 text-left text-sm font-semibold text-[#111827]">{g.label} <span className="font-normal text-[#6B7280]">in {snap?.label}</span></caption>
+            <caption className="border-b border-[#E3E8EE] px-4 py-2 text-left text-sm font-semibold text-[#131d29]">{g.label} <span className="font-normal text-[#5B6A78]">in {snap?.label}</span></caption>
             <thead>
-              <tr className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+              <tr className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
                 <th scope="col" className="px-4 py-2 font-medium">Name</th>
                 <th scope="col" className="px-4 py-2 text-right font-medium">tCO₂e</th>
                 <th scope="col" className="px-4 py-2 text-right font-medium">Share</th>
@@ -356,18 +356,18 @@ export function SiteMap({
             <tbody>
               {g.rows.map((s) => (
                 <tr key={s.id} className={`border-b border-[#F3F4F6] ${s.id === selectedId ? "bg-orange-50/60" : ""}`}>
-                  <td className="px-4 py-2 text-[#111827]">
+                  <td className="px-4 py-2 text-[#131d29]">
                     <button type="button" onClick={() => setSelectedId(s.id)} aria-pressed={s.id === selectedId} className="text-left font-medium underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">{s.name}</button>
-                    {s.detail ? <span className="block text-xs text-[#6B7280]">{s.detail}</span> : null}
+                    {s.detail ? <span className="block text-xs text-[#5B6A78]">{s.detail}</span> : null}
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums">{(s.kg / 1000).toLocaleString(locale, { maximumFractionDigits: 2 })}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{g.total > 0 ? `${((s.kg / g.total) * 100).toLocaleString(locale, { maximumFractionDigits: 1 })}%` : "-"}</td>
                   <td className="px-4 py-2 text-right tabular-nums">{s.recordCount}</td>
-                  <td className="px-4 py-2 text-[#6B7280]">
+                  <td className="px-4 py-2 text-[#5B6A78]">
                     {hasPosition(s) ? (
                       <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         <span className="tabular-nums">{`${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}`}</span>
-                        <button type="button" onClick={() => locate(s.id)} aria-label={`Locate ${s.name} on the map`} className="rounded-md border border-[#E5E7EB] px-2 py-0.5 text-xs font-medium text-[#374151] hover:bg-[#F9FAFB] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">Locate</button>
+                        <button type="button" onClick={() => locate(s.id)} aria-label={`Locate ${s.name} on the map`} className="rounded-md border border-[#E3E8EE] px-2 py-0.5 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">Locate</button>
                       </span>
                     ) : "Not placed"}
                   </td>

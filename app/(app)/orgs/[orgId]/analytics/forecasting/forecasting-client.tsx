@@ -51,7 +51,7 @@ export function ForecastingClient() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Time-Series Forecasting</h1>
+        <h1 className="text-3xl tracking-tight">Time-Series Forecasting</h1>
         <p className="text-muted-foreground mt-2">
           Predict future emissions, supplier quality trends, and anomaly rates using historical data
         </p>

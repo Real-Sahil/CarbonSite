@@ -69,7 +69,7 @@ export function CreateSiteForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="New site" cols={3}>
           <FormField label="Name" htmlFor="site-name">
             <Input id="site-name" name="name" required placeholder="Site name" />

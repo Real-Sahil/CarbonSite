@@ -151,16 +151,16 @@ export function EnvironmentalIncidentEditor({
   const disabled = !canEdit || isLockedStatus("environmental-incidents", status);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F9FAFC]">
       <div className="sticky top-0 z-10 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-xl font-semibold">{title || "Untitled"}</h1>
-            <p className="text-sm text-gray-600">v{initialReport.version}</p>
+            <p className="text-sm text-[#41505F]">v{initialReport.version}</p>
           </div>
           <div className="flex gap-2">
             {saveStatus === "saving" && (
-              <span className="flex items-center gap-1 text-sm text-gray-600">
+              <span className="flex items-center gap-1 text-sm text-[#41505F]">
                 <Loader2 className="w-4 h-4 animate-spin" /> Saving...
               </span>
             )}
@@ -214,7 +214,7 @@ export function EnvironmentalIncidentEditor({
                   className={`w-full text-left px-4 py-2 rounded font-medium transition-colors ${
                     activeNav === section.id
                       ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-100"
+                      : "text-[#41505F] hover:bg-gray-100"
                   }`}
                 >
                   {section.label}

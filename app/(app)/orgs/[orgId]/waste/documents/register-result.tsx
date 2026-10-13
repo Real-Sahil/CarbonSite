@@ -9,7 +9,7 @@ const TONES: Record<Tone, { icon: LucideIcon; ring: string; chip: string; tile: 
   ok: { icon: ShieldCheck, ring: "border-emerald-200", chip: "bg-emerald-50 text-emerald-800", tile: "bg-emerald-100 text-emerald-700" },
   warn: { icon: ShieldAlert, ring: "border-amber-200", chip: "bg-amber-50 text-amber-900", tile: "bg-amber-100 text-amber-700" },
   bad: { icon: ShieldX, ring: "border-red-200", chip: "bg-red-50 text-red-800", tile: "bg-red-100 text-red-700" },
-  idle: { icon: CircleHelp, ring: "border-slate-200", chip: "bg-slate-100 text-slate-700", tile: "bg-slate-100 text-slate-600" },
+  idle: { icon: CircleHelp, ring: "border-[#E3E8EE]", chip: "bg-slate-100 text-[#41505F]", tile: "bg-slate-100 text-[#41505F]" },
 };
 
 /**
@@ -27,7 +27,7 @@ export function RegisterResultCard({ tone, title, subtitle, facts, children, att
   const t = TONES[tone];
   const Icon = tone === "idle" && !facts ? CircleAlert : t.icon;
   return (
-    <section aria-label={title} className={cn("overflow-hidden rounded-xl border bg-white text-xs text-slate-700 shadow-sm", t.ring)}>
+    <section aria-label={title} className={cn("overflow-hidden rounded-xl border bg-white text-xs text-[#41505F] shadow-sm", t.ring)}>
       <div className="flex items-start gap-3 p-3">
         <span className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", t.tile)}>
           <Icon className="h-4 w-4" aria-hidden="true" />
@@ -35,22 +35,22 @@ export function RegisterResultCard({ tone, title, subtitle, facts, children, att
         <div className="min-w-0 flex-1">
           <p className="flex flex-wrap items-center gap-2">
             <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-semibold", t.chip)}>{title}</span>
-            {subtitle && <span className="truncate text-slate-500">{subtitle}</span>}
+            {subtitle && <span className="truncate text-[#5B6A78]">{subtitle}</span>}
           </p>
           {facts && facts.length > 0 && (
             <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
               {facts.map((f) => (
                 <div key={f.label} className="contents">
-                  <dt className="text-slate-500">{f.label}</dt>
-                  <dd className="font-medium text-slate-900">{f.value}</dd>
+                  <dt className="text-[#5B6A78]">{f.label}</dt>
+                  <dd className="font-medium text-[#131d29]">{f.value}</dd>
                 </div>
               ))}
             </dl>
           )}
-          {children && <div className="mt-2 leading-relaxed text-slate-600">{children}</div>}
+          {children && <div className="mt-2 leading-relaxed text-[#41505F]">{children}</div>}
         </div>
       </div>
-      {attribution && <p className="border-t border-slate-100 bg-slate-50 px-3 py-1.5 text-[10px] text-slate-500">{attribution}</p>}
+      {attribution && <p className="border-t border-slate-100 bg-[#F9FAFC] px-3 py-1.5 text-[10px] text-[#5B6A78]">{attribution}</p>}
     </section>
   );
 }

@@ -31,7 +31,7 @@ export function BklitCategoryBar({
   if (data.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-sm text-slate-500"
+        className="flex items-center justify-center text-sm text-[#5B6A78]"
         style={{ height }}
         role="img"
         aria-label={ariaLabel}
@@ -80,9 +80,9 @@ export function BklitCategoryBar({
                 className="inline-block h-2 w-2 rounded-full shrink-0"
                 style={{ background: scopeColor(d.scope) }}
               />
-              <span className="truncate text-slate-600">{d.name}</span>
+              <span className="truncate text-[#41505F]">{d.name}</span>
             </div>
-            <span className="shrink-0 text-slate-500 tabular-nums">
+            <span className="shrink-0 text-[#5B6A78] tabular-nums">
               {tonnes(d.value)} tCO₂e
             </span>
           </div>

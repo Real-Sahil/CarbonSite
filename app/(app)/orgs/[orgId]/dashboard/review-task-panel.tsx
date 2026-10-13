@@ -112,9 +112,9 @@ export function ReviewTaskPanel({
   return (
     <div className="space-y-4">
       {candidates.length > 0 && assignees.length > 0 && (
-        <div className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E5E7EB] p-4">
+        <div className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E3E8EE] p-4">
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Assign item</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Assign item</label>
             <Select value={selectedCandidate} onValueChange={setSelectedCandidate}>
               <SelectTrigger className="w-64">
                 <SelectValue placeholder="Select item to assign" />
@@ -127,7 +127,7 @@ export function ReviewTaskPanel({
             </Select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Assignee</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Assignee</label>
             <Select value={assigneeId} onValueChange={setAssigneeId}>
               <SelectTrigger className="w-44">
                 <SelectValue placeholder="Select assignee" />
@@ -156,24 +156,24 @@ export function ReviewTaskPanel({
 
       {visibleTasks.length === 0 ? (
         <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px]">
-          <p className="font-normal text-[#111827] tracking-[-0.42px]">No open review tasks</p>
-          <p className="mt-1 text-sm text-[#374151] tracking-[-0.42px]">
+          <p className="font-normal text-[#131d29] tracking-[-0.42px]">No open review tasks</p>
+          <p className="mt-1 text-sm text-[#41505F] tracking-[-0.42px]">
             Assign items above to create tasks for reviewers.
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E5E7EB]">
+        <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E3E8EE]">
           {visibleTasks.map((task) => (
             <div key={task.id} className="flex items-start justify-between gap-4 p-4">
               <div className="min-w-0">
                 <Link
                   href={task.href}
-                  className="text-sm font-normal text-[#111827] hover:underline underline-offset-2 tracking-[-0.42px]"
+                  className="text-sm font-normal text-[#131d29] hover:underline underline-offset-2 tracking-[-0.42px]"
                 >
                   {task.label}
                 </Link>
-                <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">{task.detail}</p>
-                <p className="mt-0.5 text-xs text-[#374151] tracking-[-0.36px]">
+                <p className="mt-0.5 text-xs text-[#41505F] tracking-[-0.36px]">{task.detail}</p>
+                <p className="mt-0.5 text-xs text-[#41505F] tracking-[-0.36px]">
                   Assigned to {task.assigneeLabel} · {task.createdAt}
                 </p>
               </div>
@@ -187,7 +187,7 @@ export function ReviewTaskPanel({
                   className="h-7 w-7 p-0"
                   title="Close task"
                 >
-                  <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-[#111827]" />
+                  <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-[#131d29]" />
                 </Button>
               </div>
             </div>

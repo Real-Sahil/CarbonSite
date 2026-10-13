@@ -172,7 +172,7 @@ export default async function LocalSpendPage({ params, searchParams }: Props) {
                     <TableCell className="text-xs">
                       {s.companyNumber ? (
                         <span className="space-y-1">
-                          <span className="block text-gray-600">{s.companyNumber}</span>
+                          <span className="block text-[#41505F]">{s.companyNumber}</span>
                           <CompanyFlags flags={((s.companyCheck as { flags?: { level: "red" | "amber"; text: string }[] } | null)?.flags) ?? []} />
                         </span>
                       ) : <span className="text-gray-400">Not matched</span>}

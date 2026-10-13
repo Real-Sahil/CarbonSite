@@ -55,7 +55,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
   const fill = (id: string, v: string) => { const el = document.getElementById(id) as HTMLInputElement | null; if (el) el.value = v; };
   const finder = (id: string) => !dis && <CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => valueOf(id)} label="Find company" onPick={(p) => fill(id, p.company.name)} />;
   return (
-    <form onSubmit={save} className="space-y-6 rounded-xl border border-gray-200 bg-white p-5 print:border-0 print:p-0">
+    <form onSubmit={save} className="space-y-6 rounded-xl border border-[#E3E8EE] bg-white p-5 print:border-0 print:p-0">
       <FormSection title="Responsibilities" cols={3}>
         <FormField label="Person responsible for the plan" htmlFor="sp-person"><Input id="sp-person" name="responsiblePerson" defaultValue={plan.responsiblePerson ?? ""} maxLength={160} disabled={dis} /></FormField>
         <FormField label="Principal contractor" htmlFor="sp-pc"><Input id="sp-pc" name="principalContractor" defaultValue={plan.principalContractor ?? ""} maxLength={160} disabled={dis} />{finder("sp-pc")}</FormField>
@@ -63,10 +63,10 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
       </FormSection>
 
       <section aria-labelledby="sp-lines" className="space-y-2">
-        <h3 id="sp-lines" className="text-sm font-semibold text-zinc-900">Waste expected</h3>
+        <h3 id="sp-lines" className="text-sm font-semibold text-[#131d29]">Waste expected</h3>
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
-            <thead><tr className="text-left text-xs text-gray-500"><th className="pb-1 pr-2">Waste type</th><th className="pb-1 pr-2">EWC code</th><th className="pb-1 pr-2">Forecast (t)</th><th className="pb-1 pr-2">Planned route</th><th /></tr></thead>
+            <thead><tr className="text-left text-xs text-[#5B6A78]"><th className="pb-1 pr-2">Waste type</th><th className="pb-1 pr-2">EWC code</th><th className="pb-1 pr-2">Forecast (t)</th><th className="pb-1 pr-2">Planned route</th><th /></tr></thead>
             <tbody>
               {lines.map((l, i) => (
                 <tr key={i}>
@@ -97,7 +97,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
 
       <div className="space-y-2 print:hidden">
         <FormError>{error}</FormError>
-        {note && <p role="status" className="text-sm text-gray-600">{note}</p>}
+        {note && <p role="status" className="text-sm text-[#41505F]">{note}</p>}
         <FormActions start={<Button type="button" variant="ghost" onClick={() => window.print()}>Print or save as PDF</Button>}>
           {canEdit && <Button type="submit" variant="outline" disabled={busy}>{busy ? "Saving…" : "Save"}</Button>}
           {canApprove && status !== "approved" && <Button type="button" disabled={busy} onClick={() => void approve()}>Approve plan</Button>}

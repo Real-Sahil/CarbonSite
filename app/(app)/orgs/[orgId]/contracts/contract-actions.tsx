@@ -50,7 +50,7 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="New contract" cols={3}>
           <FormField label="Name" span={4} htmlFor="contract-name">
             <Input id="contract-name" name="name" required placeholder="Contract name" />
@@ -90,17 +90,17 @@ export function CreateContractForm({ orgId }: { orgId: string }) {
           </FormField>
         </FormSection>
       <fieldset className="space-y-2">
-        <legend className="text-sm font-semibold text-zinc-900">Reports the client requires</legend>
+        <legend className="text-sm font-semibold text-[#131d29]">Reports the client requires</legend>
         <div className="flex flex-wrap gap-5">
-          <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-[#41505F] tracking-[-0.42px] cursor-pointer">
             <input type="checkbox" name="ppn0621Required" className="h-4 w-4 rounded border-gray-300" />
             PPN 06/21 required
           </label>
-          <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-[#41505F] tracking-[-0.42px] cursor-pointer">
             <input type="checkbox" name="nhsEvergreenRequired" className="h-4 w-4 rounded border-gray-300" />
             NHS Evergreen required
           </label>
-          <label className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px] cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-[#41505F] tracking-[-0.42px] cursor-pointer">
             <input type="checkbox" name="breeamRequired" className="h-4 w-4 rounded border-gray-300" />
             BREEAM required
           </label>

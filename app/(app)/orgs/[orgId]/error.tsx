@@ -33,7 +33,7 @@ export default function OrgError({
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-6">
       <div className="text-center max-w-md">
-        <h1 className="text-[32px] leading-tight text-[#111827] mb-3">
+        <h1 className="text-[32px] leading-tight text-[#131d29] mb-3">
           Something went wrong
         </h1>
         <p className="text-sm text-[#555] mb-2 leading-relaxed">
@@ -54,7 +54,7 @@ export default function OrgError({
           </button>
           <button
             onClick={() => { window.location.href = "/"; }}
-            className="px-5 py-2.5 bg-[#fff7ed] text-[#111827] rounded-lg text-sm font-medium hover:bg-[#FFEDD5] transition-colors"
+            className="px-5 py-2.5 bg-[#fff7ed] text-[#131d29] rounded-lg text-sm font-medium hover:bg-[#FFEDD5] transition-colors"
           >
             Go home
           </button>

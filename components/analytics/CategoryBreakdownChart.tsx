@@ -63,7 +63,7 @@ export function CategoryBreakdownChart({ orgId }: { orgId: string }) {
       </ResponsiveContainer>
       <div className="mt-2 flex max-h-24 flex-wrap justify-center gap-x-4 gap-y-1 overflow-y-auto px-2">
         {chartData.map((entry) => (
-          <div key={entry.code} className="flex items-center gap-1.5 text-xs text-[#4B5563]">
+          <div key={entry.code} className="flex items-center gap-1.5 text-xs text-[#41505F]">
             <span
               className="h-2 w-2 shrink-0 rounded-full"
               style={{ backgroundColor: scopeColor(entry.scope) }}

@@ -173,7 +173,7 @@ export function CreateSocialValueRecordForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="Where it counts" description="Link the record to a contract and a reporting period." cols={2}>
         <FormField label="Contract" htmlFor="f-contract">
           <Select value={contractId} onValueChange={setContractId}>
@@ -226,7 +226,7 @@ export function CreateSocialValueRecordForm({
             </SelectContent>
           </Select>
           {selectedMeasure && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#5B6A78]">
               Unit: {selectedMeasure.unit} · {formatGbp(selectedMeasure.valuePerUnit)} per unit
             </p>
           )}
@@ -234,7 +234,7 @@ export function CreateSocialValueRecordForm({
         <FormField label="Quantity" htmlFor="f-quantity">
           <Input id="f-quantity" type="number" min="0.0001" step="any" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="e.g. 5" />
           {computedValue !== null && (
-            <p className="text-xs font-medium text-zinc-900">
+            <p className="text-xs font-medium text-[#131d29]">
               {"≈"} {formatGbp(computedValue)}
             </p>
           )}
@@ -463,7 +463,7 @@ export function SocialValueTargetsSection({
               Set target
             </Button>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+            <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
               <FormSection title="Target" description="What you commit to deliver on a contract in a reporting period." cols={2}>
                 <FormField label="Contract" htmlFor="f-contract">
                   <Select
@@ -525,8 +525,8 @@ export function SocialValueTargetsSection({
 
       {targets.length === 0 ? (
         <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-          <p className="font-normal text-[#111827] tracking-[-0.42px]">No targets set yet</p>
-          <p className="text-sm text-[#374151] tracking-[-0.42px] max-w-sm">
+          <p className="font-normal text-[#131d29] tracking-[-0.42px]">No targets set yet</p>
+          <p className="text-sm text-[#41505F] tracking-[-0.42px] max-w-sm">
             Set a social value target per contract and reporting period to track progress against commitments.
           </p>
         </div>
@@ -534,14 +534,14 @@ export function SocialValueTargetsSection({
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Contract</TableHead>
-                <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
-                <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Baseline</TableHead>
-                <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Target</TableHead>
-                <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Actual</TableHead>
-                <TableHead className="text-xs font-medium text-[#6B7280] py-3">Progress</TableHead>
-                {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />}
+              <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Contract</TableHead>
+                <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Period</TableHead>
+                <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Baseline</TableHead>
+                <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Target</TableHead>
+                <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Actual</TableHead>
+                <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Progress</TableHead>
+                {canEdit && <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6" />}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -551,16 +551,16 @@ export function SocialValueTargetsSection({
                   : 0;
                 const onTrack = target.actualPounds >= target.targetPounds;
                 return (
-                  <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                    <TableCell className="text-sm text-[#374151] py-3.5 pl-6">{target.contractName}</TableCell>
-                    <TableCell className="text-sm text-[#374151] py-3.5">{target.periodLabel}</TableCell>
-                    <TableCell className="text-right text-sm text-[#6B7280] tabular-nums py-3.5">
+                  <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                    <TableCell className="text-sm text-[#41505F] py-3.5 pl-6">{target.contractName}</TableCell>
+                    <TableCell className="text-sm text-[#41505F] py-3.5">{target.periodLabel}</TableCell>
+                    <TableCell className="text-right text-sm text-[#5B6A78] tabular-nums py-3.5">
                       {target.baselinePounds !== null ? formatGbp(target.baselinePounds) : "—"}
                     </TableCell>
-                    <TableCell className="text-right text-sm font-medium text-[#111827] tabular-nums py-3.5">
+                    <TableCell className="text-right text-sm font-medium text-[#131d29] tabular-nums py-3.5">
                       {formatGbp(target.targetPounds)}
                     </TableCell>
-                    <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
+                    <TableCell className="text-right text-sm font-semibold text-[#131d29] tabular-nums py-3.5">
                       {formatGbp(target.actualPounds)}
                     </TableCell>
                     <TableCell className="py-3.5">
@@ -571,7 +571,7 @@ export function SocialValueTargetsSection({
                             style={{ width: `${pct}%` }}
                           />
                         </div>
-                        <span className="text-xs text-[#6B7280] tabular-nums">{pct}%</span>
+                        <span className="text-xs text-[#5B6A78] tabular-nums">{pct}%</span>
                       </div>
                     </TableCell>
                     {canEdit && (

@@ -75,7 +75,7 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 
 function Note({ tone = "info", children }: { tone?: "info" | "warn" | "ok"; children: React.ReactNode }) {
   const cls =
-    tone === "warn" ? "border-amber-200 bg-amber-50 text-amber-900" : tone === "ok" ? "border-green-200 bg-green-50 text-green-900" : "border-gray-200 bg-gray-50 text-gray-700";
+    tone === "warn" ? "border-amber-200 bg-amber-50 text-amber-900" : tone === "ok" ? "border-green-200 bg-green-50 text-green-900" : "border-[#E3E8EE] bg-[#F9FAFC] text-[#41505F]";
   return <div className={`rounded border px-3 py-2 text-sm ${cls}`}>{children}</div>;
 }
 
@@ -83,7 +83,7 @@ function Checks({ checks, section, orgId }: { checks: CrpCheck[]; section: CrpSe
   const mine = checks.filter((c) => c.section === section);
   if (!mine.length) return null;
   return (
-    <ul className="space-y-1.5 rounded border border-gray-200 bg-white p-3">
+    <ul className="space-y-1.5 rounded border border-[#E3E8EE] bg-white p-3">
       {mine.map((c) => (
         <li key={c.id} className="flex gap-2 text-sm">
           {c.passed ? (
@@ -92,11 +92,11 @@ function Checks({ checks, section, orgId }: { checks: CrpCheck[]; section: CrpSe
             <AlertCircle aria-hidden="true" className={`mt-0.5 h-4 w-4 flex-shrink-0 ${c.required ? "text-red-600" : "text-amber-600"}`} />
           )}
           <span>
-            <span className={c.passed ? "text-gray-700" : "text-gray-900"}>
+            <span className={c.passed ? "text-[#41505F]" : "text-[#131d29]"}>
               {c.label}
-              {!c.passed ? <span className="ml-1 text-xs text-gray-500">({c.required ? "required" : "recommended"})</span> : null}
+              {!c.passed ? <span className="ml-1 text-xs text-[#5B6A78]">({c.required ? "required" : "recommended"})</span> : null}
             </span>
-            {c.fix ? <span className="block text-xs text-gray-600">{c.fix}</span> : null}
+            {c.fix ? <span className="block text-xs text-[#41505F]">{c.fix}</span> : null}
             {c.link ? (
               <Link className="block text-xs font-medium text-[#c2410c] underline underline-offset-2" href={`/orgs/${orgId}/${c.link.path}`}>
                 {c.link.label}
@@ -111,9 +111,9 @@ function Checks({ checks, section, orgId }: { checks: CrpCheck[]; section: CrpSe
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded border border-gray-200 bg-white px-3 py-2">
-      <p className="text-xs text-gray-500">{label}</p>
-      <p className="text-sm font-semibold tabular-nums text-gray-900">{value}</p>
+    <div className="rounded border border-[#E3E8EE] bg-white px-3 py-2">
+      <p className="text-xs text-[#5B6A78]">{label}</p>
+      <p className="text-sm font-semibold tabular-nums text-[#131d29]">{value}</p>
     </div>
   );
 }
@@ -136,7 +136,7 @@ function MeasureRows({
     <div className="space-y-3">
       {rows.length === 0 ? <p className="text-xs text-gray-400">None added.</p> : null}
       {rows.map((m, i) => (
-        <div key={m.id} className="rounded border border-gray-200 bg-white p-3">
+        <div key={m.id} className="rounded border border-[#E3E8EE] bg-white p-3">
           <div className="grid gap-3 sm:grid-cols-[1fr_110px_150px_32px]">
             <FieldRow label={`Measure ${i + 1}`} htmlFor={`${idPrefix}-${m.id}-name`}>
               <input id={`${idPrefix}-${m.id}-name`} className={inputCls} disabled={disabled} value={m.name} placeholder="e.g. HVO in all site plant" onChange={(e) => set(m.id, "name", e.target.value)} />
@@ -148,8 +148,8 @@ function MeasureRows({
               <input id={`${idPrefix}-${m.id}-saving`} type="number" min={0} step="any" className={inputCls} disabled={disabled} value={m.savingTco2e} onChange={(e) => set(m.id, "savingTco2e", e.target.value)} />
             </FieldRow>
             {!disabled ? (
-              <button type="button" aria-label={`Remove measure ${i + 1}`} onClick={() => onChange(rows.filter((r) => r.id !== m.id))} className="mt-5 flex h-9 w-8 items-center justify-center rounded border border-gray-200 hover:bg-gray-50">
-                <Trash2 className="h-3.5 w-3.5 text-gray-500" />
+              <button type="button" aria-label={`Remove measure ${i + 1}`} onClick={() => onChange(rows.filter((r) => r.id !== m.id))} className="mt-5 flex h-9 w-8 items-center justify-center rounded border border-[#E3E8EE] hover:bg-[#F9FAFC]">
+                <Trash2 className="h-3.5 w-3.5 text-[#5B6A78]" />
               </button>
             ) : null}
           </div>
@@ -164,7 +164,7 @@ function MeasureRows({
         <button
           type="button"
           onClick={() => onChange([...rows, { id: rid(), name: "", year: "", description: "", savingTco2e: "" }])}
-          className="flex items-center gap-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-1 rounded border border-[#E3E8EE] px-2 py-1 text-xs text-[#41505F] hover:text-[#131d29]"
         >
           <Plus className="h-3 w-3" /> Add measure
         </button>
@@ -278,7 +278,7 @@ export function CrpWizard({
   if (error && !data) return <div className="p-8 text-sm text-red-700">{error}</div>;
   if (!data || !sections) {
     return (
-      <div className="flex items-center gap-2 p-8 text-sm text-gray-600">
+      <div className="flex items-center gap-2 p-8 text-sm text-[#41505F]">
         <Loader2 className="h-4 w-4 animate-spin" /> Loading plan…
       </div>
     );
@@ -294,7 +294,7 @@ export function CrpWizard({
 
   const period = (
     <div className="space-y-5">
-      <p className="text-sm text-gray-700">
+      <p className="text-sm text-[#41505F]">
         This plan reports <strong>{ctx.period.label}</strong> (
         {new Date(ctx.period.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} to{" "}
         {new Date(ctx.period.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}). PPN 006 asks for your most recent
@@ -306,7 +306,7 @@ export function CrpWizard({
         <Stat label="Scope 2 records" value={ctx.records.byScope["2"].toLocaleString("en-GB")} />
         <Stat label="Scope 3 records" value={ctx.records.byScope["3"].toLocaleString("en-GB")} />
       </div>
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-[#41505F]">
         {ctx.records.approved.toLocaleString("en-GB")} of {ctx.records.total.toLocaleString("en-GB")} records are approved. Add missing data under{" "}
         <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/imports`}>
           Imports
@@ -352,21 +352,21 @@ export function CrpWizard({
       </FieldRow>
       <div>
         <p className={labelCls}>Exclusions</p>
-        <p className="mb-2 text-xs text-gray-500">Anything inside the boundary that is not reported, with the reason (for example immaterial, or data not available).</p>
+        <p className="mb-2 text-xs text-[#5B6A78]">Anything inside the boundary that is not reported, with the reason (for example immaterial, or data not available).</p>
         <div className="space-y-2">
           {s.organisation.exclusions.map((ex, i) => (
             <div key={ex.id} className="grid gap-2 sm:grid-cols-[1fr_1.4fr_32px]">
               <input aria-label={`Exclusion ${i + 1}`} className={inputCls} disabled={disabled} value={ex.item} placeholder="Excluded site or activity" onChange={(e) => update((p) => ({ ...p, organisation: { ...p.organisation, exclusions: p.organisation.exclusions.map((x) => (x.id === ex.id ? { ...x, item: e.target.value } : x)) } }))} />
               <input aria-label={`Reason for exclusion ${i + 1}`} className={inputCls} disabled={disabled} value={ex.reason} placeholder="Reason" onChange={(e) => update((p) => ({ ...p, organisation: { ...p.organisation, exclusions: p.organisation.exclusions.map((x) => (x.id === ex.id ? { ...x, reason: e.target.value } : x)) } }))} />
               {!disabled ? (
-                <button type="button" aria-label={`Remove exclusion ${i + 1}`} onClick={() => update((p) => ({ ...p, organisation: { ...p.organisation, exclusions: p.organisation.exclusions.filter((x) => x.id !== ex.id) } }))} className="flex h-9 w-8 items-center justify-center rounded border border-gray-200 hover:bg-gray-50">
-                  <Trash2 className="h-3.5 w-3.5 text-gray-500" />
+                <button type="button" aria-label={`Remove exclusion ${i + 1}`} onClick={() => update((p) => ({ ...p, organisation: { ...p.organisation, exclusions: p.organisation.exclusions.filter((x) => x.id !== ex.id) } }))} className="flex h-9 w-8 items-center justify-center rounded border border-[#E3E8EE] hover:bg-[#F9FAFC]">
+                  <Trash2 className="h-3.5 w-3.5 text-[#5B6A78]" />
                 </button>
               ) : null}
             </div>
           ))}
           {!disabled ? (
-            <button type="button" onClick={() => update((p) => ({ ...p, organisation: { ...p.organisation, exclusions: [...p.organisation.exclusions, { id: rid(), item: "", reason: "" }] } }))} className="flex items-center gap-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:text-gray-900">
+            <button type="button" onClick={() => update((p) => ({ ...p, organisation: { ...p.organisation, exclusions: [...p.organisation.exclusions, { id: rid(), item: "", reason: "" }] } }))} className="flex items-center gap-1 rounded border border-[#E3E8EE] px-2 py-1 text-xs text-[#41505F] hover:text-[#131d29]">
               <Plus className="h-3 w-3" /> Add exclusion
             </button>
           ) : null}
@@ -397,7 +397,7 @@ export function CrpWizard({
                 api(`${base}/calculation-runs`, { method: "POST", body: JSON.stringify({ reportingPeriodId: ctx.period.id, ...ctx.runDefaults }) }),
               )
             }
-            className="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50"
+            className="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50"
           >
             {busy === "calculate" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Calculate {ctx.period.label}
           </button>
@@ -413,7 +413,7 @@ export function CrpWizard({
           >
             {busy === "publish" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Publish latest calculation
           </button>
-          {ctx.latestRun && ctx.latestRun.status !== "succeeded" ? <span className="self-center text-xs text-gray-600">Latest run: {ctx.latestRun.status}</span> : null}
+          {ctx.latestRun && ctx.latestRun.status !== "succeeded" ? <span className="self-center text-xs text-[#41505F]">Latest run: {ctx.latestRun.status}</span> : null}
         </div>
       ) : null}
       {ctx.snapshot ? (
@@ -425,17 +425,17 @@ export function CrpWizard({
         </div>
       ) : null}
       <div>
-        <p className="text-sm font-medium text-gray-900">Scope 3 categories PPN 006 requires</p>
-        <p className="mb-3 text-xs text-gray-600">Each must be reported, or its absence explained. Categories with emissions in the published figures are reported automatically.</p>
+        <p className="text-sm font-medium text-[#131d29]">Scope 3 categories PPN 006 requires</p>
+        <p className="mb-3 text-xs text-[#41505F]">Each must be reported, or its absence explained. Categories with emissions in the published figures are reported automatically.</p>
         <div className="space-y-3">
           {ctx.ppnScope3.map((c) => {
             const row = s.scope3.find((r) => r.code === c.code)!;
             const hasData = c.tonnes != null && c.tonnes > 0;
             return (
-              <div key={c.code} className="rounded border border-gray-200 bg-white p-3">
+              <div key={c.code} className="rounded border border-[#E3E8EE] bg-white p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-gray-900">{c.label}</p>
-                  <p className="text-sm tabular-nums text-gray-700">{hasData ? fmtT(c.tonnes) : "No emissions recorded"}</p>
+                  <p className="text-sm font-medium text-[#131d29]">{c.label}</p>
+                  <p className="text-sm tabular-nums text-[#41505F]">{hasData ? fmtT(c.tonnes) : "No emissions recorded"}</p>
                 </div>
                 {!hasData ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-[220px_1fr]">
@@ -484,7 +484,7 @@ export function CrpWizard({
       </FieldRow>
       <div>
         <p className={labelCls}>Interim reduction targets</p>
-        <p className="mb-2 text-xs text-gray-500">Percentage reduction against the baseline, by a year after this period. For example 50% of Scope 1 and 2 by 2030.</p>
+        <p className="mb-2 text-xs text-[#5B6A78]">Percentage reduction against the baseline, by a year after this period. For example 50% of Scope 1 and 2 by 2030.</p>
         <div className="space-y-2">
           {s.targets.interim.map((t, i) => (
             <div key={t.id} className="grid gap-2 sm:grid-cols-[120px_140px_1fr_32px]">
@@ -495,14 +495,14 @@ export function CrpWizard({
                 <option value="s1s2s3">Scopes 1, 2 and 3</option>
               </select>
               {!disabled ? (
-                <button type="button" aria-label={`Remove target ${i + 1}`} onClick={() => update((p) => ({ ...p, targets: { ...p.targets, interim: p.targets.interim.filter((x) => x.id !== t.id) } }))} className="flex h-9 w-8 items-center justify-center rounded border border-gray-200 hover:bg-gray-50">
-                  <Trash2 className="h-3.5 w-3.5 text-gray-500" />
+                <button type="button" aria-label={`Remove target ${i + 1}`} onClick={() => update((p) => ({ ...p, targets: { ...p.targets, interim: p.targets.interim.filter((x) => x.id !== t.id) } }))} className="flex h-9 w-8 items-center justify-center rounded border border-[#E3E8EE] hover:bg-[#F9FAFC]">
+                  <Trash2 className="h-3.5 w-3.5 text-[#5B6A78]" />
                 </button>
               ) : null}
             </div>
           ))}
           {!disabled ? (
-            <button type="button" onClick={() => update((p) => ({ ...p, targets: { ...p.targets, interim: [...p.targets.interim, { id: rid(), year: "", reductionPct: "", scopes: "s1s2" }] } }))} className="flex items-center gap-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-600 hover:text-gray-900">
+            <button type="button" onClick={() => update((p) => ({ ...p, targets: { ...p.targets, interim: [...p.targets.interim, { id: rid(), year: "", reductionPct: "", scopes: "s1s2" }] } }))} className="flex items-center gap-1 rounded border border-[#E3E8EE] px-2 py-1 text-xs text-[#41505F] hover:text-[#131d29]">
               <Plus className="h-3 w-3" /> Add target
             </button>
           ) : null}
@@ -545,13 +545,13 @@ export function CrpWizard({
         </Note>
       ) : null}
       <div>
-        <p className="text-sm font-medium text-gray-900">Completed since the baseline</p>
-        <p className="mb-3 text-xs text-gray-600">Measures already in place, with the year completed and the saving you estimate.</p>
+        <p className="text-sm font-medium text-[#131d29]">Completed since the baseline</p>
+        <p className="mb-3 text-xs text-[#41505F]">Measures already in place, with the year completed and the saving you estimate.</p>
         <MeasureRows idPrefix="done" yearLabel="Year completed" rows={s.measures.completed} disabled={disabled} onChange={(rows) => update((p) => ({ ...p, measures: { ...p.measures, completed: rows } }))} />
       </div>
       <div>
-        <p className="text-sm font-medium text-gray-900">Planned, including during the contract</p>
-        <p className="mb-3 text-xs text-gray-600">Measures you will implement, with the year you expect to.</p>
+        <p className="text-sm font-medium text-[#131d29]">Planned, including during the contract</p>
+        <p className="mb-3 text-xs text-[#41505F]">Measures you will implement, with the year you expect to.</p>
         <MeasureRows idPrefix="plan" yearLabel="Planned year" rows={s.measures.planned} disabled={disabled} onChange={(rows) => update((p) => ({ ...p, measures: { ...p.measures, planned: rows } }))} />
       </div>
       <FieldRow label="Further commitments" htmlFor="crp-future" hint="Optional. For example supplier engagement, fleet replacement or site energy policy.">
@@ -590,7 +590,7 @@ export function CrpWizard({
 
   const declaration = (
     <div className="space-y-4">
-      <p className="text-sm text-gray-700">A director, or equivalent, signs the plan off. The printed declaration follows the Cabinet Office template.</p>
+      <p className="text-sm text-[#41505F]">A director, or equivalent, signs the plan off. The printed declaration follows the Cabinet Office template.</p>
       <div className="grid gap-4 sm:grid-cols-3">
         <FieldRow label="Name *" htmlFor="crp-sig-name">
           <input id="crp-sig-name" className={inputCls} disabled={disabled} value={s.declaration.signatoryName} onChange={(e) => update((p) => ({ ...p, declaration: { ...p.declaration, signatoryName: e.target.value } }))} />
@@ -602,7 +602,7 @@ export function CrpWizard({
           <input id="crp-sig-date" type="date" className={inputCls} disabled={disabled} value={s.declaration.signedDate} onChange={(e) => update((p) => ({ ...p, declaration: { ...p.declaration, signedDate: e.target.value } }))} />
         </FieldRow>
       </div>
-      <div className="rounded border border-gray-200 bg-white p-2">
+      <div className="rounded border border-[#E3E8EE] bg-white p-2">
         <CheckRow id="crp-board" label="This plan has been reviewed and signed off by the board of directors (or equivalent management body)." checked={s.declaration.boardApproved} disabled={disabled} onChange={(v) => update((p) => ({ ...p, declaration: { ...p.declaration, boardApproved: v } }))} />
         <CheckRow id="crp-method" label="Emissions are reported under the GHG Protocol Corporate Standard with the UK Government conversion factors, and the required Scope 3 categories under the reporting standard for Carbon Reduction Plans." checked={s.declaration.methodologyConfirmed} disabled={disabled} onChange={(v) => update((p) => ({ ...p, declaration: { ...p.declaration, methodologyConfirmed: v } }))} />
       </div>
@@ -659,7 +659,7 @@ export function CrpWizard({
         if (!mine.length) return null;
         return (
           <div key={sec.key}>
-            <button type="button" onClick={() => setActive(sec.key)} className="mb-1 text-sm font-medium text-gray-900 underline-offset-2 hover:underline">
+            <button type="button" onClick={() => setActive(sec.key)} className="mb-1 text-sm font-medium text-[#131d29] underline-offset-2 hover:underline">
               {sec.label}
             </button>
             <Checks orgId={orgId} checks={data.checks} section={sec.key as CrpSectionKey} />
@@ -671,7 +671,7 @@ export function CrpWizard({
           <button type="button" disabled={!data.ready || !!busy || pending} onClick={generate} className="flex items-center gap-1 rounded bg-[#c2410c] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-50">
             {busy === "generate" ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Generate Carbon Reduction Plan{s.secr.include ? " and SECR report" : ""}
           </button>
-          {pending ? <span className="text-xs text-gray-500">Saving your latest changes first…</span> : null}
+          {pending ? <span className="text-xs text-[#5B6A78]">Saving your latest changes first…</span> : null}
         </div>
       ) : null}
       {generated || data.plan.lastReportId ? (
@@ -704,13 +704,13 @@ export function CrpWizard({
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex flex-shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 py-2.5">
           <button className="flex h-8 w-8 items-center justify-center rounded hover:bg-gray-100 md:hidden" onClick={() => setNavOpen(true)} aria-label="Open sections">
-            <Menu className="h-4 w-4 text-gray-500" />
+            <Menu className="h-4 w-4 text-[#5B6A78]" />
           </button>
-          <Link href={`/orgs/${orgId}/carbon-reduction-plan`} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800">
+          <Link href={`/orgs/${orgId}/carbon-reduction-plan`} className="flex items-center gap-1 text-xs text-[#5B6A78] hover:text-[#131d29]">
             <ChevronLeft className="h-3.5 w-3.5" /> Carbon Reduction Plans
           </Link>
           <span className="text-gray-300">/</span>
-          <span className="truncate text-sm font-medium text-gray-800">{ctx.period.label}</span>
+          <span className="truncate text-sm font-medium text-[#131d29]">{ctx.period.label}</span>
           <span className={`ml-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${data.plan.status === "generated" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
             {data.plan.status === "generated" ? "Generated" : "Draft"}
           </span>
@@ -742,7 +742,7 @@ export function CrpWizard({
         ) : null}
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-3xl px-6 py-6">
-            <h2 className="mb-5 text-base font-semibold text-gray-900">{SECTIONS.find((x) => x.key === active)?.label}</h2>
+            <h2 className="mb-5 text-base font-semibold text-[#131d29]">{SECTIONS.find((x) => x.key === active)?.label}</h2>
             {bodies[active]}
           </div>
         </div>
@@ -788,10 +788,10 @@ function BaselineSection({
             Base year <strong>{by.label}</strong> ({by.periodLabel}) is {by.status === "active" ? "active" : "a draft"}.{" "}
             {by.status !== "active" ? "Make it active so the plan can report against it." : null}
           </Note>
-          <div className="overflow-x-auto rounded border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded border border-[#E3E8EE] bg-white">
             <table className="w-full min-w-[420px] text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left text-xs text-gray-500">
+                <tr className="border-b border-gray-100 text-left text-xs text-[#5B6A78]">
                   <th className="px-3 py-2 font-medium">Scope</th>
                   <th className="px-3 py-2 text-right font-medium">Baseline</th>
                   <th className="px-3 py-2 text-right font-medium">{ctx.period.label}</th>
@@ -832,9 +832,9 @@ function BaselineSection({
         <Note tone="warn">No base year yet. Choose the earliest year with complete, published Scope 1 and 2 data.</Note>
       )}
       {canSetBaseYear ? (
-        <div className="rounded border border-gray-200 bg-white p-3">
-          <p className="text-sm font-medium text-gray-900">{by ? "Set a different base year" : "Set the base year"}</p>
-          <p className="mb-3 text-xs text-gray-600">Its totals are frozen from the period&apos;s calculations when you set it, and kept beside any later recalculation.</p>
+        <div className="rounded border border-[#E3E8EE] bg-white p-3">
+          <p className="text-sm font-medium text-[#131d29]">{by ? "Set a different base year" : "Set the base year"}</p>
+          <p className="mb-3 text-xs text-[#41505F]">Its totals are frozen from the period&apos;s calculations when you set it, and kept beside any later recalculation.</p>
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-[200px]">
               <FieldRow label="Baseline period" htmlFor="crp-by-period">
@@ -860,14 +860,14 @@ function BaselineSection({
                   await api(`${base}/base-years/${created.id}`, { method: "PATCH", body: JSON.stringify({ status: "active" }) });
                 })
               }
-              className="h-9 rounded border border-gray-300 bg-white px-3 text-sm font-medium text-gray-800 hover:bg-gray-50 disabled:opacity-50"
+              className="h-9 rounded border border-gray-300 bg-white px-3 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50"
             >
               {busy === "baseyear" ? "Setting…" : "Set as active base year"}
             </button>
           </div>
         </div>
       ) : (
-        <p className="text-xs text-gray-600">Only administrators and sustainability directors can set the base year.</p>
+        <p className="text-xs text-[#41505F]">Only administrators and sustainability directors can set the base year.</p>
       )}
       <FieldRow label="Why this baseline year was chosen *" htmlFor="crp-by-why" hint="For example: the first year with complete metered energy and fuel records for all sites.">
         <textarea id="crp-by-why" rows={3} className={textareaCls} disabled={disabled} value={s.baseline.rationale} onChange={(e) => update((p) => ({ ...p, baseline: { ...p.baseline, rationale: e.target.value } }))} />

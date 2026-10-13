@@ -35,40 +35,40 @@ export default async function MaterialityAssessmentPage({ params }: { params: Pr
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 py-8 sm:px-8">
       <div>
-        <Link href={`/orgs/${orgId}/materiality`} className="text-xs text-[#6B7280] underline underline-offset-2">All assessments</Link>
+        <Link href={`/orgs/${orgId}/materiality`} className="text-xs text-[#5B6A78] underline underline-offset-2">All assessments</Link>
         <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#111827]">{assessment.name}</h1>
-            <p className="mt-2 max-w-[70ch] text-sm text-[#374151]">{FRAMEWORK_NOTE}</p>
+            <h1 className="text-2xl tracking-tight text-[#131d29]">{assessment.name}</h1>
+            <p className="mt-2 max-w-[70ch] text-sm text-[#41505F]">{FRAMEWORK_NOTE}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-[#6B7280]">Status</p>
-            <p className="text-sm font-medium text-[#111827]">{STATUS_LABELS[assessment.status] ?? assessment.status}</p>
+            <p className="text-xs text-[#5B6A78]">Status</p>
+            <p className="text-sm font-medium text-[#131d29]">{STATUS_LABELS[assessment.status] ?? assessment.status}</p>
           </div>
         </div>
       </div>
 
-      <section className="grid grid-cols-1 gap-4 rounded-[10px] border border-[#E5E7EB] bg-white p-5 sm:grid-cols-3">
-        <div><p className="text-xs text-[#6B7280]">Topics</p><p className="text-lg font-semibold tabular-nums">{assessment.topics.length}</p></div>
-        <div><p className="text-xs text-[#6B7280]">Material (score 3 or more on either dimension)</p><p className="text-lg font-semibold tabular-nums">{material}</p></div>
-        <div><p className="text-xs text-[#6B7280]">Not yet scored</p><p className="text-lg font-semibold tabular-nums">{unscored}</p></div>
+      <section className="grid grid-cols-1 gap-4 rounded-[10px] border border-[#E3E8EE] bg-white p-5 sm:grid-cols-3">
+        <div><p className="text-xs text-[#5B6A78]">Topics</p><p className="text-lg font-semibold tabular-nums">{assessment.topics.length}</p></div>
+        <div><p className="text-xs text-[#5B6A78]">Material (score 3 or more on either dimension)</p><p className="text-lg font-semibold tabular-nums">{material}</p></div>
+        <div><p className="text-xs text-[#5B6A78]">Not yet scored</p><p className="text-lg font-semibold tabular-nums">{unscored}</p></div>
       </section>
 
       {canEdit && (
-        <section className="rounded-[10px] border border-[#E5E7EB] bg-white p-5">
-          <h2 className="text-base font-semibold text-[#111827]">Status</h2>
-          <p className="mt-1 max-w-[70ch] text-xs text-[#6B7280]">
+        <section className="rounded-[10px] border border-[#E3E8EE] bg-white p-5">
+          <h2 className="text-base font-semibold text-[#131d29]">Status</h2>
+          <p className="mt-1 max-w-[70ch] text-xs text-[#5B6A78]">
             Move the assessment through stakeholder review to approval once the board has signed it off. An approved or published assessment cannot have its topics changed until it is set back to draft. Approved and published assessments feed the sustainability report.
           </p>
           <StatusControl orgId={orgId} assessmentId={assessment.id} status={assessment.status} approvedAt={assessment.approvedAt?.toISOString().slice(0, 10) ?? ""} />
         </section>
       )}
 
-      <section className="rounded-[10px] border border-[#E5E7EB] bg-white">
+      <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F3F4F6] px-5 py-4">
           <div>
-            <h2 className="text-base font-semibold text-[#111827]">Topics</h2>
-            <p className="mt-1 max-w-[70ch] text-xs text-[#6B7280]">
+            <h2 className="text-base font-semibold text-[#131d29]">Topics</h2>
+            <p className="mt-1 max-w-[70ch] text-xs text-[#5B6A78]">
               Score each impact, risk or opportunity from 1 to 5 for impact materiality (your effect on people and the environment) and for financial materiality (its effect on you). A topic is material when either score is 3 or more; you can override that. Say why.
             </p>
           </div>

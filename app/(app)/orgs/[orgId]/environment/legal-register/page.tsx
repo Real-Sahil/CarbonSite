@@ -69,8 +69,8 @@ export default async function LegalRegisterPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">Compliance obligations register</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-lg font-semibold text-[#131d29]">Compliance obligations register</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             The environmental legislation that applies to this organisation and the compliance
             position against each entry. ISO 14001 clause 6.1.3, re-evaluated under clause 9.1.2.
           </p>
@@ -80,7 +80,7 @@ export default async function LegalRegisterPage({ params }: PageProps) {
 
       {entries.length === 0 ? (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">
+          <CardContent className="py-6 text-sm text-[#5B6A78]">
             No entries yet. A legal register lists each instrument that binds the organisation,
             what it requires in practice, and the evidence that the requirement is being met.
           </CardContent>
@@ -105,17 +105,17 @@ export default async function LegalRegisterPage({ params }: PageProps) {
                   return (
                     <TableRow key={e.id}>
                       <TableCell className="pl-4">
-                        <div className="max-w-[36ch] font-medium leading-snug text-zinc-900">
+                        <div className="max-w-[36ch] font-medium leading-snug text-[#131d29]">
                           {e.title}
                         </div>
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-[#5B6A78]">
                           {[e.citation, e.jurisdiction].filter(Boolean).join(" · ")}
                         </div>
                       </TableCell>
-                      <TableCell className="max-w-[40ch] text-xs leading-relaxed text-zinc-600">
+                      <TableCell className="max-w-[40ch] text-xs leading-relaxed text-[#41505F]">
                         {e.obligation}
                       </TableCell>
-                      <TableCell className="text-sm text-zinc-500">
+                      <TableCell className="text-sm text-[#5B6A78]">
                         {e.owner?.name ?? e.owner?.email ?? "Unassigned"}
                       </TableCell>
                       <TableCell>
@@ -123,13 +123,13 @@ export default async function LegalRegisterPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="pr-4">
                         {e.nextReviewOn === null ? (
-                          <span className="text-xs text-zinc-500">Not scheduled</span>
+                          <span className="text-xs text-[#5B6A78]">Not scheduled</span>
                         ) : overdue ? (
                           <Badge className="bg-amber-100 text-xs text-amber-900 hover:bg-amber-100">
                             Overdue
                           </Badge>
                         ) : (
-                          <span className="font-mono text-sm tabular-nums text-zinc-500">
+                          <span className="font-mono text-sm tabular-nums text-[#5B6A78]">
                             {e.nextReviewOn.toLocaleDateString("en-GB", {
                               day: "numeric",
                               month: "short",
@@ -172,8 +172,8 @@ function ComplianceBadge({ status }: { status: string }) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the legal register.
       </p>
     </div>

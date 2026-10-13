@@ -109,7 +109,7 @@ export function InitiativeStartDate({ orgId, initiativeId, value }: { orgId: str
         defaultValue={value ?? ""}
         disabled={isPending}
         onChange={(e) => save(e.target.value)}
-        className="h-8 w-36 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm disabled:opacity-60"
+        className="h-8 w-36 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm disabled:opacity-60"
       />
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>

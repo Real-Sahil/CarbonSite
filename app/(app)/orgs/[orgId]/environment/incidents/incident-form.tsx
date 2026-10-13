@@ -132,14 +132,14 @@ export function ReportIncidentForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Field label="Type" htmlFor="i-type">
           <select
             id="i-type"
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             {TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -158,7 +158,7 @@ export function ReportIncidentForm({
             id="i-sev"
             value={severity}
             onChange={(e) => setSeverity(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             {SEVERITIES.map((s) => (
               <option key={s.value} value={s.value}>
@@ -173,7 +173,7 @@ export function ReportIncidentForm({
             id="i-fac"
             value={facilityId}
             onChange={(e) => setFacilityId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">Organisation wide</option>
             {facilities.map((f) => (
@@ -211,7 +211,7 @@ export function ReportIncidentForm({
             id="i-permit"
             value={permitId}
             onChange={(e) => setPermitId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">None</option>
             {permits.map((p) => (

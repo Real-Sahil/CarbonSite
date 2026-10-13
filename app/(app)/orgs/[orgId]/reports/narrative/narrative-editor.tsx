@@ -10,7 +10,7 @@ import { TextShimmer } from "@/components/ui/text-shimmer";
 
 type Saved = { executiveSummary: string; keyFindings: string[]; recommendations: string; aiDrafted: boolean } | null;
 
-const EDITOR_CLASS = "min-h-[96px] rounded-[10px] border border-[#E5E7EB] bg-white px-3 py-2 text-sm text-[#111827] focus-within:ring-2 focus-within:ring-amber-400/50 [&_.ProseMirror]:outline-none [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_p]:my-1";
+const EDITOR_CLASS = "min-h-[96px] rounded-[10px] border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus-within:ring-2 focus-within:ring-amber-400/50 [&_.ProseMirror]:outline-none [&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-5 [&_.ProseMirror_p]:my-1";
 
 // Plain text is all a report prints, so the editors allow paragraphs (and one bullet list) only.
 const textKit = StarterKit.configure({ heading: false, bulletList: false, orderedList: false, listItem: false, listKeymap: false, blockquote: false, codeBlock: false, code: false, horizontalRule: false, bold: false, italic: false, strike: false, link: false, underline: false });
@@ -19,8 +19,8 @@ const listKit = StarterKit.configure({ heading: false, orderedList: false, block
 function Field({ id, label, hint, editor }: { id: string; label: string; hint: string; editor: Editor | null }) {
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="text-sm font-medium text-[#111827]">{label}</label>
-      <p className="text-xs text-[#6B7280]">{hint}</p>
+      <label htmlFor={id} className="text-sm font-medium text-[#131d29]">{label}</label>
+      <p className="text-xs text-[#5B6A78]">{hint}</p>
       <div className={EDITOR_CLASS}>
         <EditorContent editor={editor} id={id} aria-label={label} />
       </div>
@@ -117,10 +117,10 @@ export function NarrativeEditor({
   return (
     <div className="space-y-5">
       <div className="space-y-1">
-        <label htmlFor="narrative-period" className="text-sm font-medium text-[#111827]">Reporting period</label>
+        <label htmlFor="narrative-period" className="text-sm font-medium text-[#131d29]">Reporting period</label>
         <select
           id="narrative-period"
-          className="h-9 w-full max-w-xs rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm"
+          className="h-9 w-full max-w-xs rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm"
           value={periodId}
           onChange={(e) => router.push(`/orgs/${orgId}/reports/narrative?periodId=${encodeURIComponent(e.target.value)}`)}
         >
@@ -132,7 +132,7 @@ export function NarrativeEditor({
       <Field id="narrative-summary" label="Executive summary" hint="Two or three short paragraphs: the emissions profile and what drives it." editor={summary} />
       <Field id="narrative-findings" label="Key findings" hint="One bullet each." editor={findings} />
       <Field id="narrative-recommendations" label="Recommendations" hint="What you will do about reporting and data quality, in your own words." editor={recs} />
-      {aiDrafted ? <p className="text-xs text-[#374151]">This text began as an AI-assisted draft. The report will say it was written by your team starting from one.</p> : null}
+      {aiDrafted ? <p className="text-xs text-[#41505F]">This text began as an AI-assisted draft. The report will say it was written by your team starting from one.</p> : null}
       {canEdit ? (
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" onClick={save} disabled={busy}>Save narrative</Button>
@@ -141,9 +141,9 @@ export function NarrativeEditor({
           {busy ? <span role="status" className="text-sm"><TextShimmer>Working on it</TextShimmer></span> : null}
         </div>
       ) : (
-        <p className="text-sm text-[#6B7280]">Only editors can change this text.</p>
+        <p className="text-sm text-[#5B6A78]">Only editors can change this text.</p>
       )}
-      {message ? <p role={message.ok ? "status" : "alert"} className={`text-sm ${message.ok ? "text-[#374151]" : "text-red-700"}`}>{message.text}</p> : null}
+      {message ? <p role={message.ok ? "status" : "alert"} className={`text-sm ${message.ok ? "text-[#41505F]" : "text-red-700"}`}>{message.text}</p> : null}
     </div>
   );
 }

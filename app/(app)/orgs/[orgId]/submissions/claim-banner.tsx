@@ -61,14 +61,14 @@ export function SubmissionClaimBanner({ orgId, submissionId, claimedBy, claimedA
 
   if (!claimed && !claimOwner) {
     return (
-      <div className="mb-[21px] rounded-[14px] border border-[#E5E7EB] bg-[#f9fafb] px-5 py-3 flex items-center justify-between gap-4">
-        <p className="text-xs text-[#374151] tracking-[-0.36px]">
+      <div className="mb-[21px] rounded-[14px] border border-[#E3E8EE] bg-[#F9FAFC] px-5 py-3 flex items-center justify-between gap-4">
+        <p className="text-xs text-[#41505F] tracking-[-0.36px]">
           Claim this submission to let other reviewers know you are working on it.
         </p>
         <button
           onClick={handleClaim}
           disabled={isPending}
-          className="shrink-0 rounded-full border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#111827] hover:bg-[#f0f9ff] transition-colors disabled:opacity-50"
+          className="shrink-0 rounded-full border border-[#E3E8EE] bg-white px-3 py-1.5 text-xs font-medium text-[#131d29] hover:bg-[#f0f9ff] transition-colors disabled:opacity-50"
         >
           {isPending ? "Claiming..." : "Claim"}
         </button>
@@ -80,13 +80,13 @@ export function SubmissionClaimBanner({ orgId, submissionId, claimedBy, claimedA
   if (claimed) {
     return (
       <div className="mb-[21px] rounded-[14px] border border-[#FED7AA] bg-[#FFF7ED] px-5 py-3 flex items-center justify-between gap-4">
-        <p className="text-xs text-[#374151] tracking-[-0.36px]">
+        <p className="text-xs text-[#41505F] tracking-[-0.36px]">
           You have claimed this submission for review.
         </p>
         <button
           onClick={handleRelease}
           disabled={isPending}
-          className="shrink-0 rounded-full border border-[#E5E7EB] bg-white px-3 py-1.5 text-xs font-medium text-[#374151] hover:bg-[#f9fafb] transition-colors disabled:opacity-50"
+          className="shrink-0 rounded-full border border-[#E3E8EE] bg-white px-3 py-1.5 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] transition-colors disabled:opacity-50"
         >
           {isPending ? "Releasing..." : "Release claim"}
         </button>

@@ -69,7 +69,7 @@ export function SupplierForm({ orgId }: { orgId: string }) {
         <CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => name} onPick={(p) => { setName(p.company.name); if (p.company.postcode) setPostcode(p.company.postcode); setFound({ number: p.company.number, sic: p.company.sicCodes, flags: p.flags, smeHint: p.smeHint }); }} />
       </FormSection>
       {found && (
-        <p className="space-y-1 text-xs text-gray-600">
+        <p className="space-y-1 text-xs text-[#41505F]">
           <CompanyFlags flags={found.flags} />{found.flags.length > 0 && <br />}
           {found.smeHint && <>{found.smeHint}<br /></>}
           Companies House {found.number}. {found.sic.length ? `SIC codes: ${found.sic.join(", ")}. Pick the one that matches what you buy when you add the industry code to a spend record.` : "No SIC codes filed."} Contains public sector information licensed under the Open Government Licence v3.0.

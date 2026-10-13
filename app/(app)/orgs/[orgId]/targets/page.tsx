@@ -159,22 +159,22 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
   }));
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <Target className="h-4 w-4 text-[#111827]" />
+              <Target className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Strategy
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Targets
           </h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Reduction targets and initiatives connected to reporting periods.
           </p>
         </div>
@@ -184,19 +184,19 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         <TargetProgressSection targets={targetsWithProgress} />
 
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               Reduction targets{" "}
-              <span className="ml-1 text-xs font-normal text-[#6B7280]">({targets.length})</span>
+              <span className="ml-1 text-xs font-normal text-[#5B6A78]">({targets.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Targets compare a baseline period with a target period.
             </CardDescription>
           </CardHeader>
           <CardContent className={targets.length === 0 ? "pb-8" : "p-0 pb-2"}>
             {canEdit && (
-              <div className="px-6 py-5 border-b border-[#E5E7EB]">
+              <div className="px-6 py-5 border-b border-[#E3E8EE]">
                 <CreateTargetForm orgId={orgId} periods={periods} />
               </div>
             )}
@@ -209,27 +209,27 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Baseline</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Target period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Reduction</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Created by</TableHead>
-                      {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Actions</TableHead>}
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Baseline</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Target period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Reduction</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Created by</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {targets.map((target) => (
-                      <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                        <TableCell className="text-sm font-medium text-[#111827] capitalize py-3.5 pl-6">
+                      <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableCell className="text-sm font-medium text-[#131d29] capitalize py-3.5 pl-6">
                           {target.targetType}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">{target.baselinePeriod.label}</TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">{target.targetPeriod.label}</TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5">{target.baselinePeriod.label}</TableCell>
+                        <TableCell className="text-sm text-[#41505F] py-3.5">{target.targetPeriod.label}</TableCell>
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {Number(target.reductionAmount).toLocaleString(L)} kgCO2e
                         </TableCell>
-                        <TableCell className="text-sm text-[#6B7280] py-3.5">
+                        <TableCell className="text-sm text-[#5B6A78] py-3.5">
                           {target.createdBy.name ?? target.createdBy.email}
                         </TableCell>
                         {canEdit && (
@@ -250,19 +250,19 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               Reduction initiatives{" "}
-              <span className="ml-1 text-xs font-normal text-[#6B7280]">({initiatives.length})</span>
+              <span className="ml-1 text-xs font-normal text-[#5B6A78]">({initiatives.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Operational actions planned or underway to reduce emissions.
             </CardDescription>
           </CardHeader>
           <CardContent className={initiatives.length === 0 ? "pb-8" : "p-0 pb-2"}>
             {canEdit && (
-              <div className="px-6 py-5 border-b border-[#E5E7EB]">
+              <div className="px-6 py-5 border-b border-[#E3E8EE]">
                 <CreateInitiativeForm
                   orgId={orgId}
                   members={memberOptions}
@@ -282,21 +282,21 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Name</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Linked to</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Owner</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Starts</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Expected impact</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Cost</TableHead>
-                      {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Actions</TableHead>}
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Name</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Linked to</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Owner</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Starts</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Expected impact</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Cost</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {initiatives.map((initiative) => (
-                      <TableRow key={initiative.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                        <TableCell className="text-sm font-medium text-[#111827] py-3.5 pl-6">{initiative.name}</TableCell>
+                      <TableRow key={initiative.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableCell className="text-sm font-medium text-[#131d29] py-3.5 pl-6">{initiative.name}</TableCell>
                         <TableCell className="py-3.5">
                           <Badge variant={initiative.status === "complete" ? "default" : "outline"}>
                             {initiative.status.replaceAll("_", " ")}
@@ -313,13 +313,13 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                               )}
                             </div>
                           ) : (
-                            <span className="text-xs text-[#6B7280]">Org-wide</span>
+                            <span className="text-xs text-[#5B6A78]">Org-wide</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
                           {initiative.owner?.name ?? initiative.owner?.email ?? "Unassigned"}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {canEdit ? (
                             <InitiativeStartDate
                               orgId={orgId}
@@ -332,12 +332,12 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                             "Not scheduled"
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {initiative.expectedImpactCo2e
                             ? `${Number(initiative.expectedImpactCo2e).toLocaleString(L)} kgCO2e`
                             : "Not estimated"}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {initiative.costAmount
                             ? `${initiative.costCurrency ?? "GBP"} ${Number(initiative.costAmount).toLocaleString(L)}`
                             : "Not set"}

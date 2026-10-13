@@ -31,7 +31,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-[#6B7280]">
+        <div className="p-8 text-sm text-[#5B6A78]">
           You do not have permission to view imports.
         </div>
       );
@@ -93,29 +93,29 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-                  <Upload className="h-4 w-4 text-[#111827]" />
+                  <Upload className="h-4 w-4 text-[#131d29]" />
                 </div>
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
                   Data intake
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">
                 Imports
               </h1>
-              <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#5B6A78] max-w-[65ch]">
                 Upload, validate, and commit activity data. CSV and XLSX templates accepted up to 50 MB.
               </p>
               {isAdminOrEditor ? (
                 <p className="mt-2 text-sm">
-                  <Link href={`/orgs/${orgId}/imports/from-accounting`} className="font-medium text-[#111827] underline underline-offset-4">
+                  <Link href={`/orgs/${orgId}/imports/from-accounting`} className="font-medium text-[#131d29] underline underline-offset-4">
                     Stage lines from your accounting system
                   </Link>
                 </p>
@@ -138,10 +138,10 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {/* Upload card */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">Upload a file</CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">Upload a file</CardTitle>
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Select a reporting period and how to read the file. A saved ERP export profile reads your finance system&apos;s ledger export as it is.
             </CardDescription>
           </CardHeader>
@@ -152,15 +152,15 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         </Card>
 
         {/* Batches table */}
-        <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">
                 Import batches
                 {importStats.total > 0 && (
-                  <span className="ml-2 text-xs font-normal text-[#6B7280]">({importStats.total.toLocaleString("en-GB")})</span>
+                  <span className="ml-2 text-xs font-normal text-[#5B6A78]">({importStats.total.toLocaleString("en-GB")})</span>
                 )}
               </CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Source files and validation exports stored using organisation-scoped keys.
               </CardDescription>
             </CardHeader>
@@ -187,11 +187,11 @@ function StatPill({
   accent?: "green" | "amber" | "red";
 }) {
   const colors = {
-    green: "bg-[#FFF7ED] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#131d29]",
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
+  const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
       <span className="tabular-nums font-semibold">{value}</span>

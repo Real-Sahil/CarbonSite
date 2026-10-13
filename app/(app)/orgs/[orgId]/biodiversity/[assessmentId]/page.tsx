@@ -146,7 +146,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <Link
         href={`/orgs/${orgId}/biodiversity`}
-        className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1 text-sm text-[#5B6A78] hover:text-[#131d29]"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         All assessments
@@ -154,8 +154,8 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">{assessment.name}</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold text-[#131d29]">{assessment.name}</h1>
+          <p className="mt-0.5 text-sm text-[#5B6A78]">
             {[
               assessment.project?.name,
               assessment.site?.name,
@@ -166,7 +166,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
               .join(" · ") || "No project or planning reference recorded"}
           </p>
           {assessment.ecologistName && (
-            <p className="mt-0.5 text-xs text-zinc-500">
+            <p className="mt-0.5 text-xs text-[#5B6A78]">
               Surveyed by {assessment.ecologistName}
               {assessment.ecologistOrganisation ? `, ${assessment.ecologistOrganisation}` : ""}
             </p>
@@ -175,7 +175,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
         <div className="flex items-center gap-2">
           <Link
             href={`/orgs/${orgId}/biodiversity-assessments/${assessmentId}`}
-            className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+            className="text-sm font-medium text-[#41505F] underline-offset-2 hover:underline"
           >
             Open assessment report
           </Link>
@@ -204,31 +204,31 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                   key={m.module}
                   className={
                     notEngaged
-                      ? "rounded-md border border-zinc-200 p-3 opacity-50"
+                      ? "rounded-md border border-[#E3E8EE] p-3 opacity-50"
                       : m.meetsRequirement
-                        ? "rounded-md border border-zinc-200 p-3"
+                        ? "rounded-md border border-[#E3E8EE] p-3"
                         : "rounded-md border border-amber-200 bg-amber-50 p-3"
                   }
                 >
-                  <p className="text-xs font-medium text-zinc-500">{MODULE_LABEL[m.module]}</p>
+                  <p className="text-xs font-medium text-[#5B6A78]">{MODULE_LABEL[m.module]}</p>
                   {notEngaged ? (
-                    <p className="mt-1 text-sm text-zinc-500">Not engaged by this scheme</p>
+                    <p className="mt-1 text-sm text-[#5B6A78]">Not engaged by this scheme</p>
                   ) : (
                     <>
                       <p
                         className={
                           m.meetsRequirement
-                            ? "mt-1 font-mono text-xl font-semibold tabular-nums text-zinc-900"
+                            ? "mt-1 font-mono text-xl font-semibold tabular-nums text-[#131d29]"
                             : "mt-1 font-mono text-xl font-semibold tabular-nums text-amber-700"
                         }
                       >
                         {m.netGainPercent >= 0 ? "+" : ""}
                         {m.netGainPercent.toFixed(1)}%
                       </p>
-                      <p className="text-xs tabular-nums text-zinc-500">
+                      <p className="text-xs tabular-nums text-[#5B6A78]">
                         {m.baselineUnits.toFixed(3)} to {m.postInterventionUnits.toFixed(3)} units
                       </p>
-                      <p className="mt-1 text-xs text-zinc-500">
+                      <p className="mt-1 text-xs text-[#5B6A78]">
                         Requires {(m.baselineUnits * 1.1).toFixed(3)} units for{" "}
                         {REQUIRED_NET_GAIN_PERCENT}%
                       </p>
@@ -265,12 +265,12 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 )}
                 <div>
-                  <span className="font-medium text-zinc-900">{c.habitatType}</span>
-                  <span className="text-zinc-500">
+                  <span className="font-medium text-[#131d29]">{c.habitatType}</span>
+                  <span className="text-[#5B6A78]">
                     {" "}
                     ({DISTINCTIVENESS_LABEL[c.distinctiveness]} distinctiveness)
                   </span>
-                  <p className="text-xs leading-relaxed text-zinc-500">{c.reason}</p>
+                  <p className="text-xs leading-relaxed text-[#5B6A78]">{c.reason}</p>
                 </div>
               </div>
             ))}
@@ -280,12 +280,12 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-zinc-900">Habitat parcels</h2>
+          <h2 className="text-lg font-semibold text-[#131d29]">Habitat parcels</h2>
           {canManage && !locked && <AddParcelForm orgId={orgId} assessmentId={assessmentId} />}
         </div>
 
         {locked && (
-          <p className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+          <p className="rounded-md border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-sm text-[#41505F]">
             This assessment is {assessment.status} and forms the basis of a planning position, so
             its parcels can no longer be edited. Create a revision if the scheme changes.
           </p>
@@ -293,7 +293,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
 
         {assessment.parcels.length === 0 ? (
           <Card>
-            <CardContent className="py-6 text-sm text-zinc-500">
+            <CardContent className="py-6 text-sm text-[#5B6A78]">
               No habitat recorded. Start with the baseline: every parcel on the site as surveyed,
               including hardstanding and buildings, which score zero but define the site area.
             </CardContent>
@@ -317,32 +317,32 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                   {assessment.parcels.map((p) => (
                     <TableRow key={p.id}>
                       <TableCell className="pl-4">
-                        <div className="font-medium text-zinc-900">{p.habitatType}</div>
-                        <div className="text-xs text-zinc-500">{p.broadHabitat}</div>
+                        <div className="font-medium text-[#131d29]">{p.habitatType}</div>
+                        <div className="text-xs text-[#5B6A78]">{p.broadHabitat}</div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
                           {STAGE_LABEL[p.stage] ?? p.stage}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-zinc-500">
+                      <TableCell className="text-sm text-[#5B6A78]">
                         {MODULE_LABEL[p.module]}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-sm tabular-nums text-zinc-600">
+                      <TableCell className="text-right font-mono text-sm tabular-nums text-[#41505F]">
                         {Number(p.size).toFixed(3)} {MODULE_UNIT[p.module]}
                       </TableCell>
-                      <TableCell className="text-sm capitalize text-zinc-600">
+                      <TableCell className="text-sm capitalize text-[#41505F]">
                         {DISTINCTIVENESS_LABEL[p.distinctiveness]}
                       </TableCell>
-                      <TableCell className="text-sm capitalize text-zinc-500">
+                      <TableCell className="text-sm capitalize text-[#5B6A78]">
                         {p.condition.replace(/_/g, " ")}
                       </TableCell>
                       <TableCell className="pr-4 text-right">
-                        <div className="font-mono text-sm font-semibold tabular-nums text-zinc-900">
+                        <div className="font-mono text-sm font-semibold tabular-nums text-[#131d29]">
                           {Number(p.units).toFixed(3)}
                         </div>
                         {p.calculation && (
-                          <div className="max-w-[34ch] text-xs leading-snug text-zinc-500">
+                          <div className="max-w-[34ch] text-xs leading-snug text-[#5B6A78]">
                             {p.calculation}
                           </div>
                         )}
@@ -383,7 +383,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
 
       {assessment.speciesRecords.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-zinc-900">Protected species</h2>
+          <h2 className="text-lg font-semibold text-[#131d29]">Protected species</h2>
           <Card>
             <CardContent className="overflow-x-auto p-0">
               <Table>
@@ -399,10 +399,10 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                   {assessment.speciesRecords.map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="pl-4">
-                        <div className="font-medium text-zinc-900">{r.species}</div>
-                        <div className="text-xs text-zinc-500">{r.legalProtection}</div>
+                        <div className="font-medium text-[#131d29]">{r.species}</div>
+                        <div className="text-xs text-[#5B6A78]">{r.legalProtection}</div>
                       </TableCell>
-                      <TableCell className="max-w-[36ch] text-xs leading-relaxed text-zinc-600">
+                      <TableCell className="max-w-[36ch] text-xs leading-relaxed text-[#41505F]">
                         {r.findings}
                       </TableCell>
                       <TableCell>
@@ -411,7 +411,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
                           expiresOn={r.licenceExpiresOn}
                         />
                       </TableCell>
-                      <TableCell className="pr-4 text-xs text-zinc-500">
+                      <TableCell className="pr-4 text-xs text-[#5B6A78]">
                         {r.seasonalConstraint ?? "None recorded"}
                       </TableCell>
                     </TableRow>
@@ -453,8 +453,8 @@ function LicenceBadge({ status, expiresOn }: { status: string; expiresOn: Date |
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view this assessment.
       </p>
     </div>

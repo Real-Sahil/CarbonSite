@@ -95,7 +95,7 @@ export default function N8nPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">n8n Workflows</h1>
+          <h1 className="text-3xl tracking-tight">n8n Workflows</h1>
           <p className="text-muted-foreground mt-2">
             Automate tasks and notifications across your emissions tracking
           </p>

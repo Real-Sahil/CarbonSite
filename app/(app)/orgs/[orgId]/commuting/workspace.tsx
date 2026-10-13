@@ -42,7 +42,7 @@ export function CommutingWorkspace({
 }: { orgId: string; orgName: string; canEdit: boolean; sites: SiteRow[]; imports: ImportRow[] }) {
   if (sites.length === 0) {
     return (
-      <p className="rounded-lg border border-[#E5E7EB] bg-white p-6 text-sm text-[#374151]">
+      <p className="rounded-lg border border-[#E3E8EE] bg-white p-6 text-sm text-[#41505F]">
         No sites yet. Add a site to a project to import attendance for it.
       </p>
     );
@@ -98,10 +98,10 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
   }
 
   return (
-    <Card className="border-[#E5E7EB] shadow-none">
-      <CardHeader className="border-b border-[#E5E7EB] px-6 py-4">
-        <CardTitle className="text-sm font-semibold text-[#111827]">Import site attendance</CardTitle>
-        <CardDescription className="mt-0.5 text-xs text-[#6B7280]">
+    <Card className="border-[#E3E8EE] shadow-none">
+      <CardHeader className="border-b border-[#E3E8EE] px-6 py-4">
+        <CardTitle className="text-sm font-semibold text-[#131d29]">Import site attendance</CardTitle>
+        <CardDescription className="mt-0.5 text-xs text-[#5B6A78]">
           A CSV or Excel export from MSite, Biosite, Sitemetric or a spreadsheet, one row per sign-in, with the date,
           the person (id or name) and their employer. The file is read and discarded: only days on site are kept.
           Home postcodes are never read. Each day is priced from the site&apos;s travel survey.
@@ -109,20 +109,20 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
       </CardHeader>
       <CardContent className="flex flex-col gap-4 px-6 py-5">
         <div className="flex flex-wrap items-end gap-4">
-          <label className="flex flex-col gap-1 text-xs font-medium text-[#374151]" htmlFor="commute-site">
+          <label className="flex flex-col gap-1 text-xs font-medium text-[#41505F]" htmlFor="commute-site">
             Site
             <select
               id="commute-site"
               value={siteId}
               onChange={(e) => { setSiteId(e.target.value); setPreview(null); }}
-              className="h-9 min-w-[220px] rounded-md border border-[#E5E7EB] bg-white px-2 text-sm"
+              className="h-9 min-w-[220px] rounded-md border border-[#E3E8EE] bg-white px-2 text-sm"
             >
               {sites.map((s) => (
                 <option key={s.id} value={s.id}>{s.name} ({s.project})</option>
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs font-medium text-[#374151]" htmlFor="commute-file">
+          <label className="flex flex-col gap-1 text-xs font-medium text-[#41505F]" htmlFor="commute-file">
             Attendance file
             <input
               id="commute-file"
@@ -143,8 +143,8 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
         )}
 
         {preview && (
-          <div className="flex flex-col gap-4 rounded-md border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-            <p className="text-xs text-[#374151]">
+          <div className="flex flex-col gap-4 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
+            <p className="text-xs text-[#41505F]">
               Read {preview.months.map((m) => `${monthName(m.month)} (${fmt(m.days)} days)`).join(", ")}. Columns used: date
               &ldquo;{preview.columns.date}&rdquo;, person {preview.columns.worker ? `“${preview.columns.worker}”` : "none"}, employer{" "}
               {preview.columns.employer ? `“${preview.columns.employer}”` : "none"}.
@@ -155,9 +155,9 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
               </ul>
             )}
             <fieldset className="flex flex-col gap-1.5">
-              <legend className="mb-1 text-xs font-semibold text-[#111827]">Which employers are your own staff? Only they count in the inventory.</legend>
+              <legend className="mb-1 text-xs font-semibold text-[#131d29]">Which employers are your own staff? Only they count in the inventory.</legend>
               {preview.employers.map((e) => (
-                <label key={e.employer} className="flex items-center gap-2 text-sm text-[#374151]">
+                <label key={e.employer} className="flex items-center gap-2 text-sm text-[#41505F]">
                   <input
                     type="checkbox"
                     id={`own-${e.employer}`}
@@ -170,11 +170,11 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
                     }}
                   />
                   {e.employer || "(no employer given)"}
-                  <span className="text-xs text-[#6B7280]">{fmt(e.days)} days</span>
+                  <span className="text-xs text-[#5B6A78]">{fmt(e.days)} days</span>
                 </label>
               ))}
             </fieldset>
-            <p className="text-xs text-[#6B7280]">
+            <p className="text-xs text-[#5B6A78]">
               Distances for {site.name}: {site.split.source}
               {site.split.averageRoundTripMiles != null && `, average round trip ${site.split.averageRoundTripMiles} miles`}.
             </p>
@@ -182,11 +182,11 @@ function AttendanceImport({ orgId, orgName, sites }: { orgId: string; orgName: s
               <Button size="sm" disabled={busy || own.size === 0 || !site.split.ready} onClick={() => send(true)}>
                 {busy ? "Importing" : "Create commuting records"}
               </Button>
-              {own.size === 0 && <span className="ml-3 text-xs text-[#6B7280]">Tick at least one employer.</span>}
+              {own.size === 0 && <span className="ml-3 text-xs text-[#5B6A78]">Tick at least one employer.</span>}
             </div>
           </div>
         )}
-        {message && <p className={`text-sm ${message.tone === "error" ? "text-red-700" : "text-[#111827]"}`}>{message.text}</p>}
+        {message && <p className={`text-sm ${message.tone === "error" ? "text-red-700" : "text-[#131d29]"}`}>{message.text}</p>}
       </CardContent>
     </Card>
   );
@@ -211,10 +211,10 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
   }
 
   return (
-    <Card className="border-[#E5E7EB] shadow-none">
-      <CardHeader className="border-b border-[#E5E7EB] px-6 py-4">
-        <CardTitle className="text-sm font-semibold text-[#111827]">How people travel to each site</CardTitle>
-        <CardDescription className="mt-0.5 text-xs text-[#6B7280]">
+    <Card className="border-[#E3E8EE] shadow-none">
+      <CardHeader className="border-b border-[#E3E8EE] px-6 py-4">
+        <CardTitle className="text-sm font-semibold text-[#131d29]">How people travel to each site</CardTitle>
+        <CardDescription className="mt-0.5 text-xs text-[#5B6A78]">
           Share a site&apos;s survey link (site board, toolbox talk or text). No names or postcodes: how people travel,
           how many share the vehicle, who employs them and their round trip in miles. Commuting is worked out once a
           site has 5 answers with a distance; each person&apos;s miles count at their own way of travelling.
@@ -224,7 +224,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#6B7280]">
+              <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#5B6A78]">
                 <th className="px-6 py-2 font-medium">Site</th>
                 <th className="px-3 py-2 font-medium">Answers</th>
                 <th className="px-3 py-2 font-medium">How people travel</th>
@@ -237,21 +237,21 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
                 return (
                   <tr key={s.id} className="border-b border-[#F3F4F6] align-top last:border-0">
                     <td className="px-6 py-3">
-                      <div className="font-medium text-[#111827]">{s.name}</div>
-                      <div className="text-xs text-[#6B7280]">{s.project}</div>
+                      <div className="font-medium text-[#131d29]">{s.name}</div>
+                      <div className="text-xs text-[#5B6A78]">{s.project}</div>
                     </td>
                     <td className="px-3 py-3 tabular-nums">
                       {s.survey?.withDistance ?? 0}
                       {s.survey && s.survey.responses > s.survey.withDistance && (
-                        <div className="text-xs text-[#6B7280]">+{s.survey.responses - s.survey.withDistance} without distance</div>
+                        <div className="text-xs text-[#5B6A78]">+{s.survey.responses - s.survey.withDistance} without distance</div>
                       )}
                     </td>
-                    <td className="px-3 py-3 text-xs text-[#374151]">
+                    <td className="px-3 py-3 text-xs text-[#41505F]">
                       {!s.split.ready
                         ? `Not enough answers yet (${s.survey?.withDistance ?? 0} of 5)`
                         : s.split.parts.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(", ")}
                       {s.split.ready && (
-                        <div className="text-[#6B7280]">
+                        <div className="text-[#5B6A78]">
                           Share of people, average round trip {s.split.averageRoundTripMiles} miles. Shared vehicles count once.
                         </div>
                       )}
@@ -259,7 +259,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
                     <td className="px-6 py-3">
                       {s.survey ? (
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className={`text-xs ${s.survey.isOpen ? "text-[#111827]" : "text-[#6B7280]"}`}>{s.survey.isOpen ? "Open" : "Closed"}</span>
+                          <span className={`text-xs ${s.survey.isOpen ? "text-[#131d29]" : "text-[#5B6A78]"}`}>{s.survey.isOpen ? "Open" : "Closed"}</span>
                           {s.survey.isOpen && link && (
                             <Button
                               size="sm"
@@ -280,7 +280,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
                           Start survey
                         </Button>
                       ) : (
-                        <span className="text-xs text-[#6B7280]">None</span>
+                        <span className="text-xs text-[#5B6A78]">None</span>
                       )}
                     </td>
                   </tr>
@@ -311,10 +311,10 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
   }
 
   return (
-    <Card className="border-[#E5E7EB] shadow-none">
-      <CardHeader className="border-b border-[#E5E7EB] px-6 py-4">
-        <CardTitle className="text-sm font-semibold text-[#111827]">Imported months</CardTitle>
-        <CardDescription className="mt-0.5 text-xs text-[#6B7280]">
+    <Card className="border-[#E3E8EE] shadow-none">
+      <CardHeader className="border-b border-[#E3E8EE] px-6 py-4">
+        <CardTitle className="text-sm font-semibold text-[#131d29]">Imported months</CardTitle>
+        <CardDescription className="mt-0.5 text-xs text-[#5B6A78]">
           Own staff kilometres go into the inventory once approved. Subcontractor kilometres are their employer&apos;s
           emissions (your Category 1) and are shown for project reporting only.
         </CardDescription>
@@ -322,12 +322,12 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
       <CardContent className="p-0">
         {error && <p className="px-6 pt-3 text-sm text-red-700">{error}</p>}
         {imports.length === 0 ? (
-          <p className="px-6 py-5 text-sm text-[#6B7280]">Nothing imported yet.</p>
+          <p className="px-6 py-5 text-sm text-[#5B6A78]">Nothing imported yet.</p>
         ) : (
           <div className="overflow-x-auto">
             <Table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#6B7280]">
+                <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#5B6A78]">
                   <th className="px-6 py-2 font-medium">Month</th>
                   <th className="px-3 py-2 font-medium">Site</th>
                   <th className="px-3 py-2 text-right font-medium">Own staff days</th>
@@ -340,12 +340,12 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
               <tbody>
                 {imports.map((i) => (
                   <tr key={i.id} className="border-b border-[#F3F4F6] last:border-0">
-                    <td className="px-6 py-3 text-[#111827]">{monthName(i.month)}</td>
-                    <td className="px-3 py-3 text-[#374151]">{i.site}</td>
+                    <td className="px-6 py-3 text-[#131d29]">{monthName(i.month)}</td>
+                    <td className="px-3 py-3 text-[#41505F]">{i.site}</td>
                     <td className="px-3 py-3 text-right tabular-nums">{fmt(i.ownDays)}</td>
                     <td className="px-3 py-3 text-right tabular-nums">{fmt(i.ownKm)}</td>
-                    <td className="px-3 py-3 text-right tabular-nums text-[#6B7280]">{fmt(i.subcontractorKm)}</td>
-                    <td className="px-3 py-3 text-xs text-[#374151]">{i.records === 0 ? "None (no own staff)" : `${i.approved} of ${i.records} approved`}</td>
+                    <td className="px-3 py-3 text-right tabular-nums text-[#5B6A78]">{fmt(i.subcontractorKm)}</td>
+                    <td className="px-3 py-3 text-xs text-[#41505F]">{i.records === 0 ? "None (no own staff)" : `${i.approved} of ${i.records} approved`}</td>
                     <td className="px-6 py-3 text-right">
                       {canEdit && i.approved === 0 && (
                         <Button size="sm" variant="ghost" onClick={() => remove(i.id)}>Delete</Button>

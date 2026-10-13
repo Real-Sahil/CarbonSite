@@ -59,7 +59,7 @@ export default async function HsIncidentsPage({ params }: PageProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">H&S Incident Register</h1>
+          <h1 className="text-2xl tracking-tight">H&S Incident Register</h1>
           <p className="text-sm text-muted-foreground mt-1">Track, investigate, and close health and safety incidents.</p>
         </div>
         {canEdit && <ReportIncidentButton orgId={orgId} />}
@@ -106,7 +106,7 @@ export default async function HsIncidentsPage({ params }: PageProps) {
                   <td className="px-4 py-3 capitalize">{inc.incidentType.replaceAll("_", " ")}</td>
                   <td className="px-4 py-3">{new Date(inc.occurredAt).toLocaleDateString("en-GB")}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[inc.status] ?? "bg-gray-100 text-gray-700"}`}>
+                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[inc.status] ?? "bg-gray-100 text-[#41505F]"}`}>
                       {inc.status.replaceAll("_", " ")}
                     </span>
                   </td>

@@ -166,8 +166,8 @@ export default function N8nWorkflowsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">n8n Workflows</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl tracking-tight">n8n Workflows</h1>
+          <p className="text-[#41505F] mt-1">
             Automate tasks and integrations with n8n workflows
           </p>
         </div>
@@ -279,13 +279,13 @@ export default function N8nWorkflowsPage() {
       {isLoading ? (
         <Card>
           <CardContent className="p-8">
-            <p className="text-gray-600 text-center">Loading workflows...</p>
+            <p className="text-[#41505F] text-center">Loading workflows...</p>
           </CardContent>
         </Card>
       ) : workflows.length === 0 ? (
         <Card>
           <CardContent className="p-8">
-            <p className="text-gray-600 text-center">
+            <p className="text-[#41505F] text-center">
               No workflows configured yet. Create one to get started.
             </p>
           </CardContent>
@@ -322,7 +322,7 @@ export default function N8nWorkflowsPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600">Trigger</p>
+                    <p className="text-[#41505F]">Trigger</p>
                     <p className="font-medium">
                       {TRIGGER_OPTIONS.find(
                         (opt) => opt.value === workflow.trigger
@@ -330,7 +330,7 @@ export default function N8nWorkflowsPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Action</p>
+                    <p className="text-[#41505F]">Action</p>
                     <p className="font-medium">
                       {ACTION_OPTIONS.find(
                         (opt) => opt.value === workflow.action
@@ -351,12 +351,12 @@ export default function N8nWorkflowsPage() {
 
                 <div className="flex items-center justify-between pt-2">
                   {workflow.lastTriggeredAt ? (
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-[#41505F]">
                       Last triggered:{' '}
                       {new Date(workflow.lastTriggeredAt).toLocaleString()}
                     </p>
                   ) : (
-                    <p className="text-xs text-gray-600">Never triggered</p>
+                    <p className="text-xs text-[#41505F]">Never triggered</p>
                   )}
 
                   <div className="flex gap-2">

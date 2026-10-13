@@ -177,7 +177,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white">
       <PanelHeader title="Organisation profile" description="Who you are and how you report." />
       <form
         onSubmit={(e) => { e.preventDefault(); save(); }}
@@ -205,8 +205,8 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
               ))}
             </select>
           </FormField>
-          <div className="@md:col-span-full rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-600" aria-live="polite">
-            <p className="font-medium text-zinc-800">What this changes for {countryOf(hqCountry)?.name ?? "an unset country"}</p>
+          <div className="@md:col-span-full rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-3 text-xs text-[#41505F]" aria-live="polite">
+            <p className="font-medium text-[#131d29]">What this changes for {countryOf(hqCountry)?.name ?? "an unset country"}</p>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
               {countryProfile(hqCountry).notes.map((n) => <li key={n}>{n}</li>)}
               <li>Reports led in the picker: {countryProfile(hqCountry).recommendedReports.slice(0, 3).map(reportLabel).join(", ")}. Every report stays available.</li>
@@ -286,7 +286,7 @@ function FactorImportPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white">
       <PanelHeader
         title="Emission factor import"
         description="Add your own factors, such as supplier-specific or EPD figures. Calculations use a matching organisation factor before the shared library, and record which one they used."
@@ -310,7 +310,7 @@ function FactorImportPanel({
             accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             required
             disabled={isPending}
-            className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full min-w-0 h-9 rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
           />
         </Field>
         <div className="flex items-end">
@@ -319,11 +319,11 @@ function FactorImportPanel({
             Import factors
           </Button>
         </div>
-        <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
+        <p className="text-xs leading-5 text-[#5B6A78] lg:col-span-3">
           Required columns: scope, input_unit, emission_category_code, and at least one of co2e, co2, ch4, or n2o. Optional: activity_type, geography_country, geography_region, effective_start_date, effective_end_date, uncertainty_rating, usage_notes. A row matching an existing factor&apos;s category, activity, country and unit becomes its next version.
         </p>
         {!canEdit && (
-          <p className="text-xs leading-5 text-slate-500 lg:col-span-3">
+          <p className="text-xs leading-5 text-[#5B6A78] lg:col-span-3">
             Only your organisation&apos;s calculations use these factors. The shared DEFRA and EPA libraries are maintained by the MetricOra team.
           </p>
         )}
@@ -375,12 +375,12 @@ function MaterialImportPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white">
       <PanelHeader
         title="Embodied carbon material library"
         description="Add or correct materials in the shared library used for whole-life carbon assessments. Re-importing an existing material name updates it in place, rather than creating a duplicate."
       />
-      <div className="border-t border-slate-100 p-4 text-sm text-slate-600">
+      <div className="border-t border-slate-100 p-4 text-sm text-[#41505F]">
         {materialLibrary.total} material{materialLibrary.total === 1 ? "" : "s"} in the library.{" "}
         {materialLibrary.missingEndOfLife > 0 && (
           <>
@@ -404,7 +404,7 @@ function MaterialImportPanel({
               accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               required
               disabled={isPending}
-              className="w-full min-w-0 h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full min-w-0 h-9 rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm shadow-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
             />
           </Field>
           <div className="flex items-end">
@@ -413,7 +413,7 @@ function MaterialImportPanel({
               Import materials
             </Button>
           </div>
-          <p className="text-xs leading-5 text-slate-500 md:col-span-2">
+          <p className="text-xs leading-5 text-[#5B6A78] md:col-span-2">
             Required columns: name, category, gwp_a1_a3. Optional columns: description, gwp_a4, gwp_a5, gwp_c1_c4
             (lumped end-of-life), or the granular gwp_c1/gwp_c2/gwp_c3/gwp_c4, gwp_d, replacement_cycle_years,
             declared_unit (kg, m3 or m2), density, source, source_url.
@@ -484,7 +484,7 @@ function ReportingPeriodsPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white">
       <PanelHeader
         title="Reporting periods"
         description="Define the periods used by imports, field submissions, calculations, snapshots, and reports."
@@ -529,7 +529,7 @@ function ReportingPeriodsPanel({
         ) : (
           <div className="overflow-x-auto">
             <Table className="w-full text-sm">
-              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <thead className="bg-[#F9FAFC] text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">
                 <tr>
                   <th className="px-4 py-3">Label</th>
                   <th className="px-4 py-3">Type</th>
@@ -621,7 +621,7 @@ function ReportingPeriodRow({
             </option>
           ))}
         </select>
-        {locked && <p className="mt-1 text-xs text-slate-500">Locked periods cannot be edited.</p>}
+        {locked && <p className="mt-1 text-xs text-[#5B6A78]">Locked periods cannot be edited.</p>}
       </td>
       <td className="px-4 py-3">
         <Button type="button" size="icon" variant="outline" title="Save period" disabled={isPending || locked || !changed} onClick={save}>
@@ -748,7 +748,7 @@ function EntityPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white max-w-full overflow-hidden">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white max-w-full overflow-hidden">
       <PanelHeader title={title} description={description} />
       {children}
     </div>
@@ -757,7 +757,7 @@ function EntityPanel({
 
 function SharedLibraryNotice() {
   return (
-    <p className="border-t border-slate-100 p-4 text-sm text-slate-600">
+    <p className="border-t border-slate-100 p-4 text-sm text-[#41505F]">
       This library is shared by every organisation on MetricOra, so only the MetricOra team can change it. To report
       a wrong or missing figure, contact support with the source document.
     </p>
@@ -767,8 +767,8 @@ function SharedLibraryNotice() {
 function PanelHeader({ title, description }: { title: string; description: string }) {
   return (
     <div className="p-4">
-      <h2 className="text-base font-semibold text-slate-900">{title}</h2>
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
+      <h2 className="text-base font-semibold text-[#131d29]">{title}</h2>
+      <p className="mt-1 text-sm text-[#5B6A78]">{description}</p>
     </div>
   );
 }
@@ -776,7 +776,7 @@ function PanelHeader({ title, description }: { title: string; description: strin
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label className="mb-1.5 block text-xs font-medium text-slate-600">{label}</Label>
+      <Label className="mb-1.5 block text-xs font-medium text-[#41505F]">{label}</Label>
       {children}
     </div>
   );
@@ -836,4 +836,4 @@ function toDateInput(value: string) {
 }
 
 const selectClass =
-  "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";

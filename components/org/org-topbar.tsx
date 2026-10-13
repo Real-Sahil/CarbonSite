@@ -52,22 +52,22 @@ export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
               <AvatarImage src={undefined} alt={user.name ?? user.email} />
               <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{initialsOf(user.name, user.email)}</AvatarFallback>
             </Avatar>
-            <span className="max-w-[200px] truncate text-xs font-medium text-slate-700">{user.name ?? user.email}</span>
-            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+            <span className="max-w-[200px] truncate text-xs font-medium text-[#41505F]">{user.name ?? user.email}</span>
+            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-[#5B6A78] shrink-0" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl bg-white border-slate-200 shadow-lg">
+        <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl bg-white border-[#E3E8EE] shadow-lg">
           {user.name && (
             <>
               <DropdownMenuLabel className="font-normal">
-                <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>
-                <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                <p className="text-xs font-medium text-[#41505F] truncate">{user.name}</p>
+                <p className="text-[11px] text-[#5B6A78] truncate">{user.email}</p>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-200" />
             </>
           )}
           <DropdownMenuItem asChild>
-            <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
+            <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-slate-100">
               <Users aria-hidden="true" className="h-4 w-4 mr-2" />
               Members and settings
             </Link>

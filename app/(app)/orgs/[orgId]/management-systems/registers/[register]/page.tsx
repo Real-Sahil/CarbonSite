@@ -22,7 +22,7 @@ export default async function RegisterPage({ params }: { params: Promise<{ orgId
     userId = session.user.id;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view management systems.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view management systems.</div>;
   }
   const config = REGISTERS[register];
   const refKeys = [...new Set(config.fields.flatMap((f) => (f.type === "row" && f.ref ? [f.ref] : [])))] as RegisterKey[];
@@ -53,9 +53,9 @@ export default async function RegisterPage({ params }: { params: Promise<{ orgId
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#6B7280] hover:text-[#111827]">Management systems</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">{config.label}</h1>
-        <p className="max-w-[75ch] text-sm text-[#6B7280]">{config.intro}</p>
+        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Management systems</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">{config.label}</h1>
+        <p className="max-w-[75ch] text-sm text-[#5B6A78]">{config.intro}</p>
         {register === "training-records" || register === "competences" ? (
           <Link href={`/orgs/${orgId}/management-systems/training-matrix`} className="mt-1 self-start text-sm underline underline-offset-2">Open the training matrix</Link>
         ) : null}
@@ -63,13 +63,13 @@ export default async function RegisterPage({ params }: { params: Promise<{ orgId
       <nav aria-label="Registers" className="flex flex-col gap-2">
         {REGISTER_GROUPS.map((g) => (
           <div key={g.label} className="flex flex-wrap items-center gap-2">
-            <span className="w-32 shrink-0 text-xs font-medium text-[#6B7280]">{g.label}</span>
+            <span className="w-32 shrink-0 text-xs font-medium text-[#5B6A78]">{g.label}</span>
             {g.keys.map((k) => (
               <Link
                 key={k}
                 href={`/orgs/${orgId}/management-systems/registers/${k}`}
                 aria-current={k === register ? "page" : undefined}
-                className={`rounded-full px-3 py-1 text-xs ${k === register ? "bg-[#111827] text-white" : "border border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]"}`}
+                className={`rounded-full px-3 py-1 text-xs ${k === register ? "bg-[#131d29] text-white" : "border border-[#E3E8EE] text-[#41505F] hover:bg-[#F9FAFC]"}`}
               >
                 {REGISTERS[k].label}
               </Link>

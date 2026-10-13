@@ -35,10 +35,10 @@ export default async function AiAssistPage({ params }: Props) {
             data is discarded and the standard wording is used instead. Off by default.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4 text-sm text-[#374151]">
+        <CardContent className="flex flex-col gap-4 text-sm text-[#41505F]">
           <AiAssistToggle orgId={orgId} enabled={org?.aiAssistEnabled === true} available={providers.length > 0} />
           <div>
-            <p className="font-medium text-[#111827]">What is sent</p>
+            <p className="font-medium text-[#131d29]">What is sent</p>
             <p className="mt-1 max-w-[70ch]">
               Totals, categories and the text of the document being read. Not your organisation&apos;s name, and
               never names or contact details of people. The providers below do not train models on it: Groq by
@@ -46,7 +46,7 @@ export default async function AiAssistPage({ params }: Props) {
             </p>
           </div>
           <div>
-            <p className="font-medium text-[#111827]">Providers, in the order tried</p>
+            <p className="font-medium text-[#131d29]">Providers, in the order tried</p>
             <p className="mt-1">
               {providers.length > 0 ? providers.map((p) => PROVIDER_NAMES[p] ?? p).join(", then ") : "None configured on this service."}
             </p>

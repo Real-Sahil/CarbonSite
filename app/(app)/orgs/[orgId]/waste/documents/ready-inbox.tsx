@@ -27,8 +27,8 @@ export function ReadyInbox({ orgId, items }: { orgId: string; items: ReadyItem[]
     <section aria-labelledby="ready-h" className="mb-6 rounded-xl border border-green-200 bg-green-50/50 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 id="ready-h" className="text-sm font-semibold text-gray-900">Ready to approve ({items.length})</h2>
-          <p className="text-xs text-gray-600">Read from the file, carrier found on the Environment Agency register, and the same facility and route as this carrier's earlier loads. Check the figures, then approve.</p>
+          <h2 id="ready-h" className="text-sm font-semibold text-[#131d29]">Ready to approve ({items.length})</h2>
+          <p className="text-xs text-[#41505F]">Read from the file, carrier found on the Environment Agency register, and the same facility and route as this carrier's earlier loads. Check the figures, then approve.</p>
         </div>
         <Button type="button" disabled={busy || picked.size === 0} onClick={() => void approve()}>{busy ? "Recording…" : `Approve ${picked.size} selected`}</Button>
       </div>
@@ -37,13 +37,13 @@ export function ReadyInbox({ orgId, items }: { orgId: string; items: ReadyItem[]
           <li key={i.id} className="flex items-start gap-3 py-2">
             <input type="checkbox" className="mt-1 h-4 w-4" checked={picked.has(i.id)} onChange={() => toggle(i.id)} aria-label={`Select ${i.title}`} />
             <div className="min-w-0">
-              <div className="font-medium text-gray-900">{i.carrier ?? i.title} <span className="font-normal text-gray-500">· {i.reference}</span></div>
-              <div className="text-xs text-gray-600">{i.tonnes} t · EWC {i.ewc} · {i.date} · {i.route} · {i.facility}</div>
+              <div className="font-medium text-[#131d29]">{i.carrier ?? i.title} <span className="font-normal text-[#5B6A78]">· {i.reference}</span></div>
+              <div className="text-xs text-[#41505F]">{i.tonnes} t · EWC {i.ewc} · {i.date} · {i.route} · {i.facility}</div>
             </div>
           </li>
         ))}
       </ul>
-      {note && <p role="status" className="mt-2 text-xs text-gray-700">{note}</p>}
+      {note && <p role="status" className="mt-2 text-xs text-[#41505F]">{note}</p>}
     </section>
   );
 }

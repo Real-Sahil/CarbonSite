@@ -75,7 +75,7 @@ export function CommandPalette({ orgId, role, canUseViews }: { orgId: string; ro
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40" />
         <Dialog.Content
-          className="fixed left-1/2 top-[15%] z-50 w-[min(560px,92vw)] -translate-x-1/2 rounded-[14px] border border-[#E5E7EB] bg-white p-3 shadow-xl"
+          className="fixed left-1/2 top-[15%] z-50 w-[min(560px,92vw)] -translate-x-1/2 rounded-[14px] border border-[#E3E8EE] bg-white p-3 shadow-xl"
           onOpenAutoFocus={(e) => { e.preventDefault(); input.current?.focus(); }}
         >
           <Dialog.Title className="sr-only">Quick find</Dialog.Title>
@@ -95,10 +95,10 @@ export function CommandPalette({ orgId, role, canUseViews }: { orgId: string; ro
             aria-expanded
             aria-controls="palette-results"
             aria-activedescendant={results[active] ? `palette-${results[active].key}` : undefined}
-            className="h-10 w-full rounded-[10px] border border-[#E5E7EB] px-3 text-sm outline-none focus:ring-2 focus:ring-amber-400/50"
+            className="h-10 w-full rounded-[10px] border border-[#E3E8EE] px-3 text-sm outline-none focus:ring-2 focus:ring-amber-400/50"
           />
           <ul id="palette-results" role="listbox" className="mt-2 max-h-80 overflow-auto">
-            {results.length === 0 ? <li className="px-3 py-6 text-center text-sm text-[#6B7280]">Nothing matches.</li> : null}
+            {results.length === 0 ? <li className="px-3 py-6 text-center text-sm text-[#5B6A78]">Nothing matches.</li> : null}
             {results.map((r, i) => (
               <li
                 key={r.key}
@@ -109,12 +109,12 @@ export function CommandPalette({ orgId, role, canUseViews }: { orgId: string; ro
                 onClick={() => go(r.href)}
                 className={`flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm ${i === active ? "bg-amber-50" : ""}`}
               >
-                <span className="text-[#111827]">{r.label}</span>
-                <span className="text-xs text-[#6B7280]">{r.hint}</span>
+                <span className="text-[#131d29]">{r.label}</span>
+                <span className="text-xs text-[#5B6A78]">{r.hint}</span>
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex items-center gap-3 border-t border-[#E5E7EB] pt-2 text-xs text-[#6B7280]" aria-hidden="true">
+          <div className="mt-3 flex items-center gap-3 border-t border-[#E3E8EE] pt-2 text-xs text-[#5B6A78]" aria-hidden="true">
             <span className="inline-flex items-center gap-1"><KbdGroup><Kbd>↑</Kbd><Kbd>↓</Kbd></KbdGroup> move</span>
             <span className="inline-flex items-center gap-1"><Kbd>Enter</Kbd> open</span>
             <span className="inline-flex items-center gap-1"><Kbd>Esc</Kbd> close</span>

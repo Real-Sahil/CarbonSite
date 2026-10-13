@@ -539,11 +539,11 @@ export function HsIncidentReportEditor({
   }, [sections, title, projectId, siteId, incidentDate, debouncedAutoSave]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F9FAFC]">
       <div className="lg:flex h-screen">
         {/* Mobile menu toggle */}
         <div className="lg:hidden p-4 bg-white border-b flex items-center justify-between">
-          <h1 className="font-bold">{title || "H&S Incident Report"}</h1>
+          <h1>{title || "H&S Incident Report"}</h1>
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 hover:bg-gray-100 rounded">
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -551,7 +551,7 @@ export function HsIncidentReportEditor({
 
         {/* Navigation */}
         {(
-          <div className={`${mobileMenuOpen ? "block" : "hidden"} lg:block w-full lg:w-64 bg-white border-r border-gray-200 p-4 space-y-2 overflow-y-auto`}>
+          <div className={`${mobileMenuOpen ? "block" : "hidden"} lg:block w-full lg:w-64 bg-white border-r border-[#E3E8EE] p-4 space-y-2 overflow-y-auto`}>
             {NAV_SECTIONS.map((sec) => (
               <button
                 key={sec.id}
@@ -572,10 +572,10 @@ export function HsIncidentReportEditor({
         {/* Main content */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="hidden lg:flex bg-white border-b border-gray-200 p-4 items-center justify-between">
+          <div className="hidden lg:flex bg-white border-b border-[#E3E8EE] p-4 items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">{title || "H&S Incident Report"}</h1>
-              <p className="text-sm text-gray-600">Version {report.version}</p>
+              <h1 className="text-2xl">{title || "H&S Incident Report"}</h1>
+              <p className="text-sm text-[#41505F]">Version {report.version}</p>
             </div>
             <div className="flex items-center space-x-2">
               <StatusBadge form="hs-incident-reports" status={status} />

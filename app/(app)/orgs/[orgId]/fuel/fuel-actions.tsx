@@ -144,7 +144,7 @@ export function RetireStoreButton({ orgId, storeId, active }: { orgId: string; s
   const { busy, error, run } = useSubmit(() => {});
   return (
     <>
-      <button type="button" disabled={busy} className="text-xs text-[#374151] underline underline-offset-2 disabled:opacity-50" onClick={() => void run(() => send(`/api/orgs/${orgId}/fuel/stores/${storeId}`, "PATCH", { active: !active }), "Saved")}>
+      <button type="button" disabled={busy} className="text-xs text-[#41505F] underline underline-offset-2 disabled:opacity-50" onClick={() => void run(() => send(`/api/orgs/${orgId}/fuel/stores/${storeId}`, "PATCH", { active: !active }), "Saved")}>
         {active ? "Retire" : "Reactivate"}
       </button>
       {error && <span role="alert" className="ml-2 text-xs text-red-600">{error}</span>}

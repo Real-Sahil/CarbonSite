@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { HEALTH_LABELS } from "@/lib/suppliers/filter";
 
 const FIELD =
-  "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
 
 const TRENDS = [
   ["improving", "Improving"],
@@ -31,7 +31,7 @@ export function SuppliersFilters({ filters }: { filters: Record<string, string> 
 
   const select = (key: string, label: string, options: readonly (readonly [string, string])[]) => (
     <div className="space-y-1">
-      <Label htmlFor={`suppliers-filter-${key}`} className="text-xs text-[#6B7280]">{label}</Label>
+      <Label htmlFor={`suppliers-filter-${key}`} className="text-xs text-[#5B6A78]">{label}</Label>
       <select
         id={`suppliers-filter-${key}`}
         className={FIELD}
@@ -50,7 +50,7 @@ export function SuppliersFilters({ filters }: { filters: Record<string, string> 
     <div className="space-y-3" aria-busy={pending}>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1">
-          <Label htmlFor="suppliers-filter-q" className="text-xs text-[#6B7280]">Supplier</Label>
+          <Label htmlFor="suppliers-filter-q" className="text-xs text-[#5B6A78]">Supplier</Label>
           <input
             key={filters.q ?? ""}
             id="suppliers-filter-q"

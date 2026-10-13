@@ -95,7 +95,7 @@ export default async function EngagementDetailPage({ params }: PageProps) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href={`/orgs/${orgId}/assurance`}
-          className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900"
+          className="inline-flex items-center gap-1 text-sm text-[#5B6A78] hover:text-[#131d29]"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           All engagements
@@ -104,7 +104,7 @@ export default async function EngagementDetailPage({ params }: PageProps) {
           {packSnapshot && canDownloadPack && (
             <a
               href={`/api/orgs/${orgId}/snapshots/${packSnapshot.id}/assurance-pack?engagementId=${engagementId}`}
-              className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+              className="text-sm font-medium text-[#41505F] underline-offset-2 hover:underline"
               title="Calculations, factors, evidence files, sample results and the audit trail, with a SHA-256 manifest"
             >
               Download assurance pack (ZIP)
@@ -112,7 +112,7 @@ export default async function EngagementDetailPage({ params }: PageProps) {
           )}
           <Link
             href={`/orgs/${orgId}/assurance-engagements/${engagementId}`}
-            className="text-sm font-medium text-zinc-700 underline-offset-2 hover:underline"
+            className="text-sm font-medium text-[#41505F] underline-offset-2 hover:underline"
           >
             Open engagement report
           </Link>
@@ -181,8 +181,8 @@ export default async function EngagementDetailPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">You do not have permission to view this engagement.</p>
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">You do not have permission to view this engagement.</p>
     </div>
   );
 }

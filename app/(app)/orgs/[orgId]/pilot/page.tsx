@@ -50,14 +50,14 @@ export default async function PilotPage({ params }: PilotPageProps) {
         {/* Header */}
         <div className="mb-8 md:mb-12">
           <div className="space-y-2 mb-4">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-slate-900">
+            <h1 className="text-4xl md:text-5xl tracking-tighter text-[#131d29]">
               Pilot Program Documentation
             </h1>
-            <p className="text-xl text-slate-600 max-w-2xl">
+            <p className="text-xl text-[#41505F] max-w-2xl">
               Generate a comprehensive documentation kit for your organization's 90-day pilot program with MetricOra.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
+          <div className="flex items-center gap-2 text-sm text-[#5B6A78]">
             <span className="font-semibold">Organization:</span>
             <span>{org.name}</span>
           </div>

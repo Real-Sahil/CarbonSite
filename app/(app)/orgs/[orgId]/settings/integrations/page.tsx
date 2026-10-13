@@ -345,7 +345,7 @@ export default function IntegrationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+        <Loader2 className="h-6 w-6 animate-spin text-[#5B6A78]" />
       </div>
     );
   }
@@ -358,10 +358,10 @@ export default function IntegrationsPage() {
     <div className="flex flex-col gap-[28px] max-w-4xl">
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Settings className="h-5 w-5 text-zinc-600" />
-          <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">Integration Settings</h2>
+          <Settings className="h-5 w-5 text-[#41505F]" />
+          <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#131d29]">Integration Settings</h2>
         </div>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-[#5B6A78] mt-0.5">
           Configure third-party services for emissions calculation, accounting, and workflow automation.
         </p>
       </div>
@@ -380,9 +380,9 @@ export default function IntegrationsPage() {
 
       <div className="space-y-6">
         {/* AI assistance moved to its own settings tab */}
-        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
-          <h3 className="text-base font-medium text-zinc-900">AI assistance</h3>
-          <p className="mt-2 text-sm text-zinc-600">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-6">
+          <h3 className="text-base font-medium text-[#131d29]">AI assistance</h3>
+          <p className="mt-2 text-sm text-[#41505F]">
             AI wording and suggestions are switched on or off in{" "}
             <a href={`/orgs/${orgId}/settings/ai`} className="underline underline-offset-2">Settings, AI assistance</a>.
             MetricOra provides the AI service; no token is needed.
@@ -390,9 +390,9 @@ export default function IntegrationsPage() {
         </div>
 
         {/* Xero Integration */}
-        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-medium text-zinc-900">Xero Accounting</h3>
+            <h3 className="text-base font-medium text-[#131d29]">Xero Accounting</h3>
             {isXeroConnected ? (
               <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
                 <CheckCircle className="h-4 w-4" />
@@ -407,7 +407,7 @@ export default function IntegrationsPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#5B6A78]">
               Enter your Xero OAuth 2.0 app credentials, save them, then click Connect to authorise
               invoice access. Invoices are used for Scope 3 spend-based anomaly detection. Leave both
               fields blank to fall back to the server&apos;s <code>XERO_CLIENT_ID</code> /{" "}
@@ -416,7 +416,7 @@ export default function IntegrationsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client ID</label>
+                <label className="text-xs text-[#5B6A78]">Client ID</label>
                 <Input
                   value={xeroClientId}
                   onChange={(e) => setXeroClientId(e.target.value)}
@@ -425,7 +425,7 @@ export default function IntegrationsPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client Secret</label>
+                <label className="text-xs text-[#5B6A78]">Client Secret</label>
                 <Input
                   type="password"
                   value={xeroClientSecret}
@@ -488,7 +488,7 @@ export default function IntegrationsPage() {
               )}
 
               {isXeroConnected && xeroConn?.connectedAt && (
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-[#5B6A78]">
                   Connected {new Date(xeroConn.connectedAt).toLocaleDateString()}
                 </span>
               )}
@@ -502,9 +502,9 @@ export default function IntegrationsPage() {
         </div>
 
         {/* QuickBooks Integration */}
-        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-medium text-zinc-900">QuickBooks Online</h3>
+            <h3 className="text-base font-medium text-[#131d29]">QuickBooks Online</h3>
             {isQuickbooksConnected ? (
               <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
                 <CheckCircle className="h-4 w-4" />
@@ -519,7 +519,7 @@ export default function IntegrationsPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#5B6A78]">
               Enter your QuickBooks OAuth 2.0 app credentials, save them, then click Connect to
               authorise invoice access. Invoices are used for Scope 3 spend-based anomaly detection.
               Leave both fields blank to fall back to the server&apos;s <code>QUICKBOOKS_CLIENT_ID</code>{" "}
@@ -528,7 +528,7 @@ export default function IntegrationsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client ID</label>
+                <label className="text-xs text-[#5B6A78]">Client ID</label>
                 <Input
                   value={quickbooksClientId}
                   onChange={(e) => setQuickbooksClientId(e.target.value)}
@@ -537,7 +537,7 @@ export default function IntegrationsPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client Secret</label>
+                <label className="text-xs text-[#5B6A78]">Client Secret</label>
                 <Input
                   type="password"
                   value={quickbooksClientSecret}
@@ -582,7 +582,7 @@ export default function IntegrationsPage() {
                     Disconnect
                   </Button>
                   {quickbooksConn?.connectedAt && (
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-[#5B6A78]">
                       Connected {new Date(quickbooksConn.connectedAt).toLocaleDateString()}
                     </span>
                   )}
@@ -598,9 +598,9 @@ export default function IntegrationsPage() {
         </div>
 
         {/* Sage Integration */}
-        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-medium text-zinc-900">Sage Accounting</h3>
+            <h3 className="text-base font-medium text-[#131d29]">Sage Accounting</h3>
             {isSageConnected ? (
               <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
                 <CheckCircle className="h-4 w-4" />
@@ -615,7 +615,7 @@ export default function IntegrationsPage() {
           </div>
 
           <div className="space-y-4">
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#5B6A78]">
               Enter your Sage OAuth 2.0 app credentials, save them, then click Connect to authorise
               invoice access. Invoices are used for Scope 3 spend-based anomaly detection. Leave both
               fields blank to fall back to the server&apos;s <code>SAGE_CLIENT_ID</code> /{" "}
@@ -624,7 +624,7 @@ export default function IntegrationsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client ID</label>
+                <label className="text-xs text-[#5B6A78]">Client ID</label>
                 <Input
                   value={sageClientId}
                   onChange={(e) => setSageClientId(e.target.value)}
@@ -633,7 +633,7 @@ export default function IntegrationsPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client Secret</label>
+                <label className="text-xs text-[#5B6A78]">Client Secret</label>
                 <Input
                   type="password"
                   value={sageClientSecret}
@@ -678,7 +678,7 @@ export default function IntegrationsPage() {
                     Disconnect
                   </Button>
                   {sageConn?.connectedAt && (
-                    <span className="text-xs text-zinc-500">
+                    <span className="text-xs text-[#5B6A78]">
                       Connected {new Date(sageConn.connectedAt).toLocaleDateString()}
                     </span>
                   )}
@@ -694,9 +694,9 @@ export default function IntegrationsPage() {
         </div>
 
         {/* OIDC Integration */}
-        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-medium text-zinc-900">OIDC / SSO</h3>
+            <h3 className="text-base font-medium text-[#131d29]">OIDC / SSO</h3>
             {config?.oidcProvider && (
               <div className="flex items-center gap-1.5 text-emerald-700 text-sm">
                 <CheckCircle className="h-4 w-4" />
@@ -708,11 +708,11 @@ export default function IntegrationsPage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Provider</label>
+                <label className="text-xs text-[#5B6A78]">Provider</label>
                 <select
                   value={oidcProvider}
                   onChange={(e) => setOidcProvider(e.target.value as "google" | "okta" | "azure" | "generic")}
-                  className="h-8 text-sm border border-[#E5E7EB] rounded px-2"
+                  className="h-8 text-sm border border-[#E3E8EE] rounded px-2"
                 >
                   <option value="google">Google</option>
                   <option value="okta">Okta</option>
@@ -721,7 +721,7 @@ export default function IntegrationsPage() {
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Issuer URL</label>
+                <label className="text-xs text-[#5B6A78]">Issuer URL</label>
                 <Input
                   value={oidcIssuerUrl}
                   onChange={(e) => setOidcIssuerUrl(e.target.value)}
@@ -733,7 +733,7 @@ export default function IntegrationsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client ID</label>
+                <label className="text-xs text-[#5B6A78]">Client ID</label>
                 <Input
                   value={oidcClientId}
                   onChange={(e) => setOidcClientId(e.target.value)}
@@ -742,7 +742,7 @@ export default function IntegrationsPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-500">Client Secret</label>
+                <label className="text-xs text-[#5B6A78]">Client Secret</label>
                 <Input
                   type="password"
                   value={oidcClientSecret}
@@ -768,14 +768,14 @@ export default function IntegrationsPage() {
         </div>
 
         {/* n8n Webhooks */}
-        <div className="rounded-[10px] border border-[#E5E7EB] p-6">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-medium text-zinc-900">n8n Workflow Webhooks</h3>
+            <h3 className="text-base font-medium text-[#131d29]">n8n Workflow Webhooks</h3>
           </div>
 
           <div className="space-y-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Reports Webhook URL</label>
+              <label className="text-xs text-[#5B6A78]">Reports Webhook URL</label>
               <div className="flex items-center gap-2">
                 <Input
                   type="password"
@@ -800,7 +800,7 @@ export default function IntegrationsPage() {
             </div>
 
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-zinc-500">Submissions Webhook URL</label>
+              <label className="text-xs text-[#5B6A78]">Submissions Webhook URL</label>
               <div className="flex items-center gap-2">
                 <Input
                   type="password"
@@ -836,7 +836,7 @@ export default function IntegrationsPage() {
       </div>
 
       {config?.lastTestedAt && (
-        <div className="text-xs text-zinc-500">
+        <div className="text-xs text-[#5B6A78]">
           Last tested: {new Date(config.lastTestedAt).toLocaleString()}
         </div>
       )}

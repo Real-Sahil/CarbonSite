@@ -72,7 +72,7 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
       <Card>
         <CardContent className="py-8 flex items-center justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-blue-600 mr-2" />
-          <span className="text-gray-600">Analyzing data quality...</span>
+          <span className="text-[#41505F]">Analyzing data quality...</span>
         </CardContent>
       </Card>
     );
@@ -130,7 +130,7 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
                 <div className={`text-5xl font-bold ${scoreColor}`}>
                   {scorePercentage}%
                 </div>
-                <p className="text-sm text-gray-600 mt-2">
+                <p className="text-sm text-[#41505F] mt-2">
                   {qualityScore.checksPassed} of {qualityScore.checksTotal} checks passed
                 </p>
               </div>
@@ -179,17 +179,17 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
                   <p className="font-medium text-sm">{check.name}</p>
                   {!check.passed && check.failureSamples && check.failureSamples.length > 0 && (
                     <div className="mt-2 space-y-1">
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-[#41505F]">
                         {check.failuresCount} row(s) affected. Sample failures:
                       </p>
-                      <div className="bg-gray-50 p-2 rounded text-xs font-mono">
+                      <div className="bg-[#F9FAFC] p-2 rounded text-xs font-mono">
                         {check.failureSamples.slice(0, 3).map((sample, idx) => (
-                          <div key={idx} className="text-gray-700">
+                          <div key={idx} className="text-[#41505F]">
                             Row {sample.rowNumber} ({sample.field}): &quot;{String(sample.value)}&quot; (expected: {sample.expected})
                           </div>
                         ))}
                         {check.failureSamples.length > 3 && (
-                          <div className="text-gray-500 mt-1">
+                          <div className="text-[#5B6A78] mt-1">
                             +{check.failureSamples.length - 3} more...
                           </div>
                         )}
@@ -207,7 +207,7 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
       <Card>
         <CardContent className="pt-6">
           <div className="space-y-3">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               {qualityScore.canCommit
                 ? 'This import meets quality standards and is ready to be committed to your emissions inventory.'
                 : 'Please review the failing checks above. You can still commit this import, but data quality issues should be resolved before using the data in calculations.'}

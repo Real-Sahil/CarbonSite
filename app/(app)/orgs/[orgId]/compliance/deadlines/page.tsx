@@ -328,7 +328,7 @@ function getDaysUntil(dateStr: string): number {
 }
 
 function getUrgencyColor(days: number): string {
-  if (days < 0) return 'bg-gray-100 text-gray-500 border-gray-200';
+  if (days < 0) return 'bg-gray-100 text-[#5B6A78] border-[#E3E8EE]';
   if (days <= 30) return 'bg-red-100 text-red-800 border-red-200';
   if (days <= 90) return 'bg-amber-100 text-amber-800 border-amber-200';
   return 'bg-green-100 text-green-800 border-green-200';
@@ -343,7 +343,7 @@ function getCategoryBadge(cat: string) {
     case 'au': return 'bg-orange-100 text-orange-800';
     case 'ca': return 'bg-rose-100 text-rose-800';
     case 'de': return 'bg-violet-100 text-violet-800';
-    default: return 'bg-gray-100 text-gray-700';
+    default: return 'bg-gray-100 text-[#41505F]';
   }
 }
 
@@ -397,9 +397,9 @@ export default function RegulatoryCalendarPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Regulatory Calendar</h1>
-          <p className="mt-2 text-gray-600">Statutory reporting deadlines for the UK, EU, UAE and international frameworks</p>
-          <p className="mt-1 text-xs text-gray-500">Dates and thresholds checked against the official sources on {LAST_CHECKED}. Confirm your own dates with your adviser.</p>
+          <h1 className="text-3xl text-[#131d29]">Regulatory Calendar</h1>
+          <p className="mt-2 text-[#41505F]">Statutory reporting deadlines for the UK, EU, UAE and international frameworks</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">Dates and thresholds checked against the official sources on {LAST_CHECKED}. Confirm your own dates with your adviser.</p>
         </div>
         <Link
           href={`/orgs/${orgId}/compliance`}
@@ -410,7 +410,7 @@ export default function RegulatoryCalendarPage() {
       </div>
 
       {scope && scope.regions.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-3 text-sm text-[#41505F]">
           <span>
             {showAll ? 'Showing every region.' : `Showing ${scope.regions.map((r) => r.toUpperCase()).join(', ')} and international, from your headquarters and sites.`}
             {!showAll && scope.unloaded.length > 0 && ` No rules are loaded yet for ${scope.unloaded.join(', ')}.`}
@@ -434,17 +434,17 @@ export default function RegulatoryCalendarPage() {
       )}
 
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Upcoming Deadlines</h2>
+        <h2 className="text-lg font-semibold text-[#131d29]">Upcoming Deadlines</h2>
         {upcoming.map((deadline) => {
           const days = getDaysUntil(deadline.dueDate);
           const orgRecord = getOrgStatus(deadline);
           return (
-            <Card key={deadline.id} className="border-gray-200">
+            <Card key={deadline.id} className="border-[#E3E8EE]">
               <CardContent className="pt-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="font-semibold text-gray-900">{deadline.framework}</span>
+                      <span className="font-semibold text-[#131d29]">{deadline.framework}</span>
                       <Badge className={`text-xs ${getCategoryBadge(deadline.category)}`}>
                         {deadline.category.toUpperCase()}
                       </Badge>
@@ -455,11 +455,11 @@ export default function RegulatoryCalendarPage() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-700 mb-2">{deadline.description}</p>
-                    <p className="text-xs text-gray-500 mb-1"><span className="font-medium">Applies to:</span> {deadline.applicability}</p>
-                    <p className="text-xs text-gray-500 mb-1"><span className="font-medium">Authority:</span> {deadline.authority}</p>
+                    <p className="text-sm text-[#41505F] mb-2">{deadline.description}</p>
+                    <p className="text-xs text-[#5B6A78] mb-1"><span className="font-medium">Applies to:</span> {deadline.applicability}</p>
+                    <p className="text-xs text-[#5B6A78] mb-1"><span className="font-medium">Authority:</span> {deadline.authority}</p>
                     {deadline.dueNote && (
-                      <p className="text-xs text-gray-500 mb-1"><span className="font-medium">Date:</span> {deadline.dueNote}</p>
+                      <p className="text-xs text-[#5B6A78] mb-1"><span className="font-medium">Date:</span> {deadline.dueNote}</p>
                     )}
                     {deadline.penalty && (
                       <p className="text-xs text-red-600"><span className="font-medium">Penalty:</span> {deadline.penalty}</p>
@@ -474,10 +474,10 @@ export default function RegulatoryCalendarPage() {
                       <Clock className="h-3.5 w-3.5" />
                       {days} days
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-[#5B6A78]">
                       {new Date(deadline.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
-                    <p className="text-xs text-gray-500">FY{deadline.reportingYear}</p>
+                    <p className="text-xs text-[#5B6A78]">FY{deadline.reportingYear}</p>
                   </div>
                 </div>
               </CardContent>
@@ -488,7 +488,7 @@ export default function RegulatoryCalendarPage() {
 
       {past.length > 0 && (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-500">Past Deadlines</h2>
+          <h2 className="text-lg font-semibold text-[#5B6A78]">Past Deadlines</h2>
           {past.map((deadline) => {
             const orgRecord = getOrgStatus(deadline);
             return (
@@ -497,23 +497,23 @@ export default function RegulatoryCalendarPage() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-600">{deadline.framework}</span>
+                        <span className="font-medium text-[#41505F]">{deadline.framework}</span>
                         <Badge className={`text-xs ${getCategoryBadge(deadline.category)}`}>
                           {deadline.category.toUpperCase()}
                         </Badge>
                         {orgRecord ? (
                           <Badge className="text-xs bg-green-100 text-green-800">{orgRecord.status}</Badge>
                         ) : (
-                          <Badge className="text-xs bg-gray-100 text-gray-500">Not recorded</Badge>
+                          <Badge className="text-xs bg-gray-100 text-[#5B6A78]">Not recorded</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-gray-500">{deadline.description}</p>
+                      <p className="text-sm text-[#5B6A78]">{deadline.description}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-[#5B6A78]">
                         {new Date(deadline.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
-                      <p className="text-xs text-gray-500">FY{deadline.reportingYear}</p>
+                      <p className="text-xs text-[#5B6A78]">FY{deadline.reportingYear}</p>
                     </div>
                   </div>
                 </CardContent>

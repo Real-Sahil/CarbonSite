@@ -85,7 +85,7 @@ export function FactorsPanel({
 
   return (
     <div className="mt-6 flex flex-col gap-8">
-      <form onSubmit={save} className="rounded-[12px] border border-[#E5E7EB] bg-white p-5">
+      <form onSubmit={save} className="rounded-[12px] border border-[#E3E8EE] bg-white p-5">
         <FormSection title="Add a factor" description="Kilograms of CO2e per one unit of activity, as the source states it." cols={3}>
           <FormField label="Category *" htmlFor="f-cat" span={2}>
             <select id="f-cat" className={fieldClass} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
@@ -132,13 +132,13 @@ export function FactorsPanel({
       </form>
 
       <section aria-labelledby="mine-h">
-        <h3 id="mine-h" className="text-base font-semibold text-[#111827]">Your factors ({factors.length})</h3>
+        <h3 id="mine-h" className="text-base font-semibold text-[#131d29]">Your factors ({factors.length})</h3>
         {factors.length === 0 ? (
-          <p className="mt-2 text-sm text-[#6B7280]">None yet. Records use the run&apos;s library until you add one.</p>
+          <p className="mt-2 text-sm text-[#5B6A78]">None yet. Records use the run&apos;s library until you add one.</p>
         ) : (
-          <div className="mt-3 overflow-x-auto rounded-[12px] border border-[#E5E7EB] bg-white">
+          <div className="mt-3 overflow-x-auto rounded-[12px] border border-[#E3E8EE] bg-white">
             <Table className="w-full text-left text-sm">
-              <thead className="border-b border-[#E5E7EB] bg-[#F9FAFB] text-xs uppercase tracking-wide text-[#6B7280]">
+              <thead className="border-b border-[#E3E8EE] bg-[#F9FAFC] text-xs uppercase tracking-wide text-[#5B6A78]">
                 <tr>
                   <th className="px-4 py-2 font-medium">Category</th>
                   <th className="px-4 py-2 font-medium">Fuel or activity</th>
@@ -153,13 +153,13 @@ export function FactorsPanel({
                     <td className="px-4 py-3">{f.category}</td>
                     <td className="px-4 py-3">{f.activityType ?? "Any"}</td>
                     <td className="px-4 py-3 text-right tabular-nums">
-                      {f.co2e ?? "–"} <span className="text-xs text-[#6B7280]">/ {f.unit}</span>
+                      {f.co2e ?? "–"} <span className="text-xs text-[#5B6A78]">/ {f.unit}</span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-[#6B7280]">
+                    <td className="px-4 py-3 text-xs text-[#5B6A78]">
                       {f.from ?? "always"} to {f.to ?? "open"}
                       {f.country ? ` · ${f.country}` : ""}
                     </td>
-                    <td className="px-4 py-3 text-xs">{f.source} <span className="text-[#6B7280]">(v{f.version})</span></td>
+                    <td className="px-4 py-3 text-xs">{f.source} <span className="text-[#5B6A78]">(v{f.version})</span></td>
                   </tr>
                 ))}
               </tbody>

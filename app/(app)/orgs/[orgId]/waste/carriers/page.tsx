@@ -7,7 +7,7 @@ import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { loadCarrierScorecard } from "@/lib/waste/scorecard-load";
 import { MIN_MEASURED } from "@/lib/waste/scorecard";
 
-const CELL = "px-4 py-3 text-sm text-gray-600";
+const CELL = "px-4 py-3 text-sm text-[#41505F]";
 
 export default async function CarrierScorecardPage({ params }: { params: Promise<{ orgId: string }> }) {
   const { orgId } = await params;
@@ -22,8 +22,8 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Carrier scorecard</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">Carrier scorecard</h1>
+        <p className="mt-1 text-sm text-[#5B6A78]">
           What each carrier&apos;s loads and transfer notes show. Flags say what to look at; nothing here is a verdict on a carrier.
           Edit counts start once a carrier has {MIN_MEASURED} approved notes.
         </p>
@@ -31,14 +31,14 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
       </header>
 
       {rows.length === 0 ? (
-        <p className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">No loads or transfer notes yet.</p>
+        <p className="rounded-xl border border-[#E3E8EE] bg-white p-10 text-center text-sm text-[#5B6A78]">No loads or transfer notes yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-[#E3E8EE] bg-white">
           <Table className="text-sm">
             <thead className="border-b border-gray-100">
               <tr>
                 {["Carrier", "Loads", "Tonnes", "Median load", "Notes in / recorded", "Edits per note", "Flags"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{h}</th>
+                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -46,8 +46,8 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
               {rows.map((r) => (
                 <tr key={r.key}>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{r.name}</div>
-                    {r.registration && <div className="text-xs text-gray-500">{r.registration}</div>}
+                    <div className="font-medium text-[#131d29]">{r.name}</div>
+                    {r.registration && <div className="text-xs text-[#5B6A78]">{r.registration}</div>}
                   </td>
                   <td className={CELL}>{r.loads}</td>
                   <td className={CELL}>{r.totalTonnes}</td>

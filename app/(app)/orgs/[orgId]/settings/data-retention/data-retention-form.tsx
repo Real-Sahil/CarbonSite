@@ -72,7 +72,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Mode toggle */}
       <fieldset className="space-y-2">
-        <legend className="text-sm font-medium text-[#111827]">Retention period</legend>
+        <legend className="text-sm font-medium text-[#131d29]">Retention period</legend>
 
         <label className="flex items-start gap-3 cursor-pointer">
           <input
@@ -84,8 +84,8 @@ export function DataRetentionForm({ orgId, current }: Props) {
             className="mt-0.5 accent-[#c2410c]"
           />
           <div>
-            <span className="text-sm font-medium text-[#111827]">Keep forever</span>
-            <p className="text-xs text-[#6B7280] mt-0.5">
+            <span className="text-sm font-medium text-[#131d29]">Keep forever</span>
+            <p className="text-xs text-[#5B6A78] mt-0.5">
               Files are never automatically deleted. Recommended default.
             </p>
           </div>
@@ -101,10 +101,10 @@ export function DataRetentionForm({ orgId, current }: Props) {
             className="mt-0.5 accent-[#c2410c]"
           />
           <div className="flex-1">
-            <span className="text-sm font-medium text-[#111827]">
+            <span className="text-sm font-medium text-[#131d29]">
               Delete after a set number of days
             </span>
-            <p className="text-xs text-[#6B7280] mt-0.5">
+            <p className="text-xs text-[#5B6A78] mt-0.5">
               Minimum 90 days. Maximum 3650 days (10 years).
             </p>
           </div>
@@ -124,7 +124,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 className={`rounded-full px-3 py-1 text-xs transition-colors border ${
                   days === String(opt.value)
                     ? "bg-[#c2410c] text-white border-[#f97316]"
-                    : "border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
+                    : "border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                 }`}
               >
                 {opt.label}
@@ -144,11 +144,11 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 setSaved(false);
                 setError(null);
               }}
-              className="w-24 rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-sm text-[#111827] focus:border-[#c2410c] focus:outline-none focus:ring-1 focus:ring-[#c2410c]"
+              className="w-24 rounded-lg border border-[#E3E8EE] px-3 py-1.5 text-sm text-[#131d29] focus:border-[#c2410c] focus:outline-none focus:ring-1 focus:ring-[#c2410c]"
             />
-            <span className="text-sm text-[#6B7280]">days</span>
+            <span className="text-sm text-[#5B6A78]">days</span>
             {days && !isNaN(numDays) && numDays >= 90 && (
-              <span className="text-xs text-[#6B7280]">
+              <span className="text-xs text-[#5B6A78]">
                 (~{(numDays / 365).toFixed(1)} years)
               </span>
             )}
@@ -167,7 +167,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
         <button
           type="submit"
           disabled={isPending || !daysValid}
-          className="rounded-full bg-[#111827] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f2937] transition-colors disabled:opacity-40"
+          className="rounded-full bg-[#131d29] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f2937] transition-colors disabled:opacity-40"
         >
           {isPending ? "Saving..." : "Save policy"}
         </button>

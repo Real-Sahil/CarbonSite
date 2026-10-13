@@ -33,7 +33,7 @@ const FRAMEWORKS = [
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  draft:       { label: "Draft",       cls: "bg-gray-100 text-gray-600" },
+  draft:       { label: "Draft",       cls: "bg-gray-100 text-[#41505F]" },
   in_progress: { label: "In progress", cls: "bg-amber-100 text-amber-700" },
   submitted:   { label: "Submitted",   cls: "bg-blue-100 text-blue-700" },
   verified:    { label: "Verified",    cls: "bg-green-100 text-green-700" },
@@ -119,11 +119,11 @@ export default function CompliancePage() {
     r.notes || r.owner || r.actionSteps || r.externalLink;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto bg-[#F9FAFB]">
+    <div className="p-8 max-w-5xl mx-auto bg-[#F9FAFC]">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Compliance</h1>
-          <p className="text-sm text-gray-500 mt-1">Track regulatory and framework disclosure obligations, owners, and next steps.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Compliance</h1>
+          <p className="text-sm text-[#5B6A78] mt-1">Track regulatory and framework disclosure obligations, owners, and next steps.</p>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
@@ -136,8 +136,8 @@ export default function CompliancePage() {
 
       {/* Add form */}
       {showAdd && (
-        <div className="rounded-xl border border-gray-200 bg-white p-6 mb-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Track a compliance obligation</h2>
+        <div className="rounded-xl border border-[#E3E8EE] bg-white p-6 mb-6">
+          <h2 className="text-sm font-semibold text-[#131d29] mb-4">Track a compliance obligation</h2>
           <form onSubmit={handleSave} className="grid grid-cols-2 gap-4">
             <FormField label="Framework" htmlFor="f-framework" span={2}>
               <select id="f-framework" value={form.framework} onChange={(e) => setForm((f) => ({ ...f, framework: e.target.value }))} className={inputCls}>
@@ -194,7 +194,7 @@ export default function CompliancePage() {
                 {saving ? "Saving..." : "Save"}
               </button>
               <button type="button" onClick={() => setShowAdd(false)}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                className="rounded-lg border border-[#E3E8EE] px-4 py-2 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC] transition-colors">
                 Cancel
               </button>
             </div>
@@ -203,23 +203,23 @@ export default function CompliancePage() {
       )}
 
       {/* Records table */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
+          <div className="p-12 text-center text-sm text-[#5B6A78]">Loading...</div>
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#fff7ed] flex items-center justify-center">
               <ShieldCheck className="h-5 w-5 text-[#c2410c]" />
             </div>
-            <p className="text-sm font-medium text-gray-700">No compliance records</p>
-            <p className="text-xs text-gray-500 mt-1">Add your first regulatory framework to start tracking obligations.</p>
+            <p className="text-sm font-medium text-[#41505F]">No compliance records</p>
+            <p className="text-xs text-[#5B6A78] mt-1">Add your first regulatory framework to start tracking obligations.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
                 {["Framework", "Year", "Status", "Owner", "Due date", "Submitted", ""].map((h, i) => (
-                  <th key={i} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6">{h}</th>
+                  <th key={i} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -230,15 +230,15 @@ export default function CompliancePage() {
                 const showExpander = hasGuidance(r);
                 return (
                   <>
-                    <tr key={r.id} className={`transition-colors ${isExpanded ? "bg-gray-50" : "hover:bg-gray-50"}`}>
-                      <td className="py-3 pl-6 pr-4 font-medium text-gray-900">
+                    <tr key={r.id} className={`transition-colors ${isExpanded ? "bg-[#F9FAFC]" : "hover:bg-[#F9FAFC]"}`}>
+                      <td className="py-3 pl-6 pr-4 font-medium text-[#131d29]">
                         {FRAMEWORKS.find((f) => f.value === r.framework)?.label.split(" (")[0] ?? r.framework}
                       </td>
-                      <td className="py-3 px-4 text-gray-600 tabular-nums">{r.reportingYear}</td>
+                      <td className="py-3 px-4 text-[#41505F] tabular-nums">{r.reportingYear}</td>
                       <td className="py-3 px-4">
                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${sc.cls}`}>{sc.label}</span>
                       </td>
-                      <td className="py-3 px-4 text-gray-500 max-w-[140px] truncate" title={r.owner ?? undefined}>
+                      <td className="py-3 px-4 text-[#5B6A78] max-w-[140px] truncate" title={r.owner ?? undefined}>
                         {r.owner ? (
                           <span className="inline-flex items-center gap-1">
                             <User className="h-3 w-3 shrink-0" />
@@ -248,17 +248,17 @@ export default function CompliancePage() {
                           <span className="text-gray-300">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-gray-500 tabular-nums">
+                      <td className="py-3 px-4 text-[#5B6A78] tabular-nums">
                         {r.dueDate ? new Date(r.dueDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
                       </td>
-                      <td className="py-3 px-4 text-gray-500 tabular-nums">
+                      <td className="py-3 px-4 text-[#5B6A78] tabular-nums">
                         {r.submittedAt ? new Date(r.submittedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-"}
                       </td>
                       <td className="py-3 px-4 pr-6">
                         {showExpander && (
                           <button
                             onClick={() => setExpandedId(isExpanded ? null : r.id)}
-                            className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-600 transition-colors"
+                            className="inline-flex items-center gap-1 text-xs text-[#5B6A78] hover:text-[#41505F] transition-colors"
                             aria-label={isExpanded ? "Collapse guidance" : "Show guidance"}
                           >
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -270,32 +270,32 @@ export default function CompliancePage() {
 
                     {/* Expanded guidance row */}
                     {isExpanded && (
-                      <tr key={`${r.id}-detail`} className="bg-gray-50">
+                      <tr key={`${r.id}-detail`} className="bg-[#F9FAFC]">
                         <td colSpan={7} className="px-6 pb-5 pt-0">
-                          <div className="rounded-lg border border-gray-200 bg-white p-4 grid gap-4 md:grid-cols-2">
+                          <div className="rounded-lg border border-[#E3E8EE] bg-white p-4 grid gap-4 md:grid-cols-2">
                             {r.notes && (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                  <FileText className="h-3.5 w-3.5 text-gray-500" />
-                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Notes</span>
+                                  <FileText className="h-3.5 w-3.5 text-[#5B6A78]" />
+                                  <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Notes</span>
                                 </div>
-                                <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{r.notes}</p>
+                                <p className="text-sm text-[#41505F] whitespace-pre-line leading-relaxed">{r.notes}</p>
                               </div>
                             )}
                             {r.actionSteps && (
                               <div>
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                  <ListChecks className="h-3.5 w-3.5 text-gray-500" />
-                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Action steps</span>
+                                  <ListChecks className="h-3.5 w-3.5 text-[#5B6A78]" />
+                                  <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Action steps</span>
                                 </div>
-                                <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">{r.actionSteps}</p>
+                                <p className="text-sm text-[#41505F] whitespace-pre-line leading-relaxed">{r.actionSteps}</p>
                               </div>
                             )}
                             {r.externalLink && (
                               <div className="md:col-span-2">
                                 <div className="flex items-center gap-1.5 mb-1.5">
-                                  <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
-                                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Guidance link</span>
+                                  <ExternalLink className="h-3.5 w-3.5 text-[#5B6A78]" />
+                                  <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Guidance link</span>
                                 </div>
                                 <a
                                   href={r.externalLink}
@@ -321,13 +321,13 @@ export default function CompliancePage() {
       </div>
 
       {/* Framework reference */}
-      <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5">
+      <div className="mt-6 rounded-xl border border-[#E3E8EE] bg-white p-5">
         <button
-          className="flex items-center justify-between w-full text-sm font-semibold text-gray-900"
+          className="flex items-center justify-between w-full text-sm font-semibold text-[#131d29]"
           onClick={(e) => (e.currentTarget.nextElementSibling as HTMLElement).classList.toggle("hidden")}
         >
           Regulatory framework reference (UK)
-          <ChevronDown className="h-4 w-4 text-gray-500" />
+          <ChevronDown className="h-4 w-4 text-[#5B6A78]" />
         </button>
         <div className="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
@@ -338,9 +338,9 @@ export default function CompliancePage() {
             { name: "CDP",  desc: "Voluntary but increasingly expected by investors. Annual climate, water, and forest questionnaires." },
             { name: "SBTi", desc: "Science-based emissions reduction targets aligned with 1.5°C pathway. Near-term and net-zero targets." },
           ].map((fw) => (
-            <div key={fw.name} className="rounded-lg bg-gray-50 p-3">
-              <p className="text-xs font-semibold text-gray-700">{fw.name}</p>
-              <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{fw.desc}</p>
+            <div key={fw.name} className="rounded-lg bg-[#F9FAFC] p-3">
+              <p className="text-xs font-semibold text-[#41505F]">{fw.name}</p>
+              <p className="text-xs text-[#5B6A78] mt-0.5 leading-relaxed">{fw.desc}</p>
             </div>
           ))}
         </div>

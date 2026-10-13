@@ -112,8 +112,8 @@ export default async function IncidentsPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900">Incident register</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-lg font-semibold text-[#131d29]">Incident register</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             Spills, exceedances, complaints and near misses, with the corrective actions that
             follow from them. An incident cannot be closed while its actions remain open.
           </p>
@@ -125,7 +125,7 @@ export default async function IncidentsPage({ params }: PageProps) {
 
       {incidents.length === 0 ? (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">
+          <CardContent className="py-6 text-sm text-[#5B6A78]">
             No incidents recorded. A register with nothing in it usually means under-reporting
             rather than a clean record, so make sure site teams know how to raise one.
           </CardContent>
@@ -161,18 +161,18 @@ export default async function IncidentsPage({ params }: PageProps) {
                       <TableCell className="pl-4">
                         <Link
                           href={`/orgs/${orgId}/environmental-incidents/${i.id}`}
-                          className="font-medium text-zinc-900 underline-offset-2 hover:underline"
+                          className="font-medium text-[#131d29] underline-offset-2 hover:underline"
                         >
                           {i.reference}
                         </Link>
-                        <div className="max-w-[32ch] truncate text-xs text-zinc-500">
+                        <div className="max-w-[32ch] truncate text-xs text-[#5B6A78]">
                           {i.facility?.name ?? "Organisation wide"}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-zinc-600">
+                      <TableCell className="text-sm text-[#41505F]">
                         {TYPE_LABEL[i.type] ?? i.type}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-zinc-500">
+                      <TableCell className="whitespace-nowrap text-sm text-[#5B6A78]">
                         {i.occurredAt.toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -184,7 +184,7 @@ export default async function IncidentsPage({ params }: PageProps) {
                       </TableCell>
                       <TableCell className="text-sm">
                         {actions.length === 0 ? (
-                          <span className="text-zinc-500">None</span>
+                          <span className="text-[#5B6A78]">None</span>
                         ) : overdueActions > 0 ? (
                           <span className="font-medium text-red-700">
                             {overdueActions} overdue
@@ -192,12 +192,12 @@ export default async function IncidentsPage({ params }: PageProps) {
                         ) : openActions > 0 ? (
                           <span className="text-amber-700">{openActions} open</span>
                         ) : (
-                          <span className="text-zinc-500">All resolved</span>
+                          <span className="text-[#5B6A78]">All resolved</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {!i.regulatorNotifiable ? (
-                          <span className="text-xs text-zinc-500">Not notifiable</span>
+                          <span className="text-xs text-[#5B6A78]">Not notifiable</span>
                         ) : i.regulatorNotifiedAt ? (
                           <Badge variant="outline" className="text-xs">
                             Notified
@@ -218,7 +218,7 @@ export default async function IncidentsPage({ params }: PageProps) {
                             {i.status.replace(/_/g, " ")}
                           </Badge>
                           {i.status !== "closed" && !closure.canClose && (
-                            <p className="max-w-[28ch] text-xs leading-snug text-zinc-500">
+                            <p className="max-w-[28ch] text-xs leading-snug text-[#5B6A78]">
                               {closure.reasons[0]}
                             </p>
                           )}
@@ -256,8 +256,8 @@ function SeverityBadge({ severity }: { severity: string }) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the incident register.
       </p>
     </div>

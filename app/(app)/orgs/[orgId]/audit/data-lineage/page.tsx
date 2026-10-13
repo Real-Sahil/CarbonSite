@@ -37,8 +37,8 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
   if (!selectedId) {
     return (
       <div className="p-6 md:p-8">
-        <h1 className="text-2xl font-semibold text-[#111827]">Data lineage</h1>
-        <p className="mt-2 max-w-xl text-sm text-[#6B7280]">
+        <h1 className="text-2xl font-semibold text-[#131d29]">Data lineage</h1>
+        <p className="mt-2 max-w-xl text-sm text-[#5B6A78]">
           Lineage traces a published snapshot back to its records. Publish a calculation run from{" "}
           <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/calculations`}>
             Calculations
@@ -155,21 +155,21 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
     <div className="space-y-6 p-6 md:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#111827]">Data lineage</h1>
-          <p className="mt-1 text-sm text-[#6B7280]">How the published figures for {snapshot.reportingPeriod.label} were produced, from records to reports.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29]">Data lineage</h1>
+          <p className="mt-1 text-sm text-[#5B6A78]">How the published figures for {snapshot.reportingPeriod.label} were produced, from records to reports.</p>
         </div>
         <form className="flex items-center gap-2">
-          <label htmlFor="snapshotId" className="text-sm text-[#374151]">
+          <label htmlFor="snapshotId" className="text-sm text-[#41505F]">
             Snapshot
           </label>
-          <select id="snapshotId" name="snapshotId" defaultValue={selectedId} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+          <select id="snapshotId" name="snapshotId" defaultValue={selectedId} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
             {snapshots.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.reportingPeriod.label} v{s.version}
               </option>
             ))}
           </select>
-          <button type="submit" className="h-9 rounded-md border border-[#E5E7EB] px-3 text-sm hover:bg-[#F9FAFB]">
+          <button type="submit" className="h-9 rounded-md border border-[#E3E8EE] px-3 text-sm hover:bg-[#F9FAFC]">
             Show
           </button>
         </form>
@@ -191,7 +191,7 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
                 ) : null}
               </CardHeader>
               <CardContent>
-                <ul className="space-y-1 text-sm text-[#374151]">
+                <ul className="space-y-1 text-sm text-[#41505F]">
                   {stage.lines.map((line) => (
                     <li key={line}>{line}</li>
                   ))}
@@ -201,7 +201,7 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
           </li>
         ))}
       </ol>
-      <p className="text-xs text-[#6B7280]">
+      <p className="text-xs text-[#5B6A78]">
         <Badge variant="outline" className="mr-2">
           Read only
         </Badge>

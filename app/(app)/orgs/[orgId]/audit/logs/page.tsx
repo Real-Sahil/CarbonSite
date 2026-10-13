@@ -106,8 +106,8 @@ export default function AuditLogsPage() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Audit Logs</h1>
-        <p className="mt-2 text-gray-600">Complete audit trail of all system activities</p>
+        <h1 className="text-3xl text-[#131d29]">Audit Logs</h1>
+        <p className="mt-2 text-[#41505F]">Complete audit trail of all system activities</p>
       </div>
 
       {/* Filters */}
@@ -147,15 +147,15 @@ export default function AuditLogsPage() {
         <CardContent>
           {logs.length === 0 ? (
             <div className="text-center py-8">
-              <AlertCircle className="mx-auto h-8 w-8 text-gray-500 mb-2" />
-              <p className="text-gray-600">No audit logs found</p>
+              <AlertCircle className="mx-auto h-8 w-8 text-[#5B6A78] mb-2" />
+              <p className="text-[#41505F]">No audit logs found</p>
             </div>
           ) : (
             <div className="space-y-3">
               {logs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-start gap-4 border rounded-lg p-4 hover:bg-gray-50"
+                  className="flex items-start gap-4 border rounded-lg p-4 hover:bg-[#F9FAFC]"
                 >
                   <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
                     <Shield className="h-4 w-4" />
@@ -163,16 +163,16 @@ export default function AuditLogsPage() {
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <Badge className={actionColors[log.action] || 'bg-gray-100 text-gray-800'}>
+                      <Badge className={actionColors[log.action] || 'bg-gray-100 text-[#131d29]'}>
                         {log.action}
                       </Badge>
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-[#131d29]">
                         {log.resourceType}
                       </span>
-                      <span className="text-xs text-gray-500">{log.resourceId}</span>
+                      <span className="text-xs text-[#5B6A78]">{log.resourceId}</span>
                     </div>
 
-                    <p className="mt-1 text-sm text-gray-600">
+                    <p className="mt-1 text-sm text-[#41505F]">
                       {log.actor ? (
                         <>
                           By <strong>{log.actor.name || log.actor.email}</strong>
@@ -196,13 +196,13 @@ export default function AuditLogsPage() {
                       </div>
                     )}
 
-                    <p className="mt-2 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-[#5B6A78]">
                       {new Date(log.timestamp).toLocaleString()}
                       {log.ipAddress && ` • IP: ${log.ipAddress}`}
                     </p>
                   </div>
 
-                  <ChevronRight className="h-5 w-5 text-gray-500" />
+                  <ChevronRight className="h-5 w-5 text-[#5B6A78]" />
                 </div>
               ))}
             </div>

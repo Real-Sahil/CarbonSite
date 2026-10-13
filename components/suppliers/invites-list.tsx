@@ -47,7 +47,7 @@ export function SupplierInvitesList({
     if (new Date() > expiresAt && inviteMethod === "magic-link") {
       return {
         label: "Expired",
-        color: "bg-slate-100 text-slate-500 border-slate-200",
+        color: "bg-slate-100 text-[#5B6A78] border-[#E3E8EE]",
         icon: <XCircle className="h-4 w-4" />,
       };
     }
@@ -60,9 +60,9 @@ export function SupplierInvitesList({
   };
 
   return (
-    <Card className="border-[#E5E7EB] bg-white shadow-sm">
+    <Card className="border-[#E3E8EE] bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-slate-900 flex items-center gap-2">
+        <CardTitle className="text-[#131d29] flex items-center gap-2">
           <Users className="h-5 w-5 text-[#c2410c]" />
           Supplier Invitations
         </CardTitle>
@@ -73,9 +73,9 @@ export function SupplierInvitesList({
       <CardContent>
         {invites.length === 0 ? (
           <div className="text-center py-8">
-            <Truck className="h-12 w-12 text-slate-500 mx-auto mb-3" />
-            <p className="text-slate-500">No suppliers invited yet</p>
-            <p className="text-sm text-slate-500 mt-1">
+            <Truck className="h-12 w-12 text-[#5B6A78] mx-auto mb-3" />
+            <p className="text-[#5B6A78]">No suppliers invited yet</p>
+            <p className="text-sm text-[#5B6A78] mt-1">
               Send your first invitation above to get started
             </p>
           </div>
@@ -91,15 +91,15 @@ export function SupplierInvitesList({
               return (
                 <div
                   key={invite.id}
-                  className="flex items-center justify-between p-4 bg-white border border-[#E5E7EB] rounded-lg hover:border-slate-300 transition-colors"
+                  className="flex items-center justify-between p-4 bg-white border border-[#E3E8EE] rounded-lg hover:border-slate-300 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <div>
-                        <p className="font-medium text-slate-900">
+                        <p className="font-medium text-[#131d29]">
                           {invite.companyName || "Unknown Company"}
                         </p>
-                        <p className="text-sm text-slate-500">{invite.email}</p>
+                        <p className="text-sm text-[#5B6A78]">{invite.email}</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -110,18 +110,18 @@ export function SupplierInvitesList({
                         {status.icon}
                         {status.label}
                       </Badge>
-                      <Badge variant="outline" className="text-xs border-slate-300 text-slate-600">
+                      <Badge variant="outline" className="text-xs border-slate-300 text-[#41505F]">
                         {invite.inviteMethod === "magic-link"
                           ? "Magic Link"
                           : "Account Created"}
                       </Badge>
                       {invite.inviteMethod === "magic-link" && !invite.usedAt && (
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-[#5B6A78]">
                           Expires {new Date(invite.expiresAt).toLocaleDateString()}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-2">
+                    <p className="text-xs text-[#5B6A78] mt-2">
                       Invited by {invite.createdBy.name || invite.createdBy.email} on{" "}
                       {new Date(invite.createdAt).toLocaleDateString()}
                     </p>

@@ -38,7 +38,7 @@ function Sentence({ segments, delay = 0 }: { segments: HeroSegment[]; delay?: nu
             initial={reduce ? false : { opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: at, duration: 0.32, ease: "easeOut" }}
-            className={token.emphasis ? "font-semibold text-[#111827]" : undefined}
+            className={token.emphasis ? "font-semibold text-[#131d29]" : undefined}
           >
             {token.text}
           </motion.span>
@@ -59,15 +59,15 @@ export function SummaryHero({ facts }: { facts: HeroFacts }) {
         initial={reduce ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
-        className="text-xs font-medium uppercase tracking-wide text-[#6B7280]"
+        className="text-xs font-medium uppercase tracking-wide text-[#5B6A78]"
       >
         {facts.eyebrow}
       </motion.p>
-      <h2 id="summary-title" className="mt-2 max-w-3xl text-2xl font-normal leading-tight tracking-[-0.6px] text-[#374151] md:text-3xl">
+      <h2 id="summary-title" className="mt-2 max-w-3xl text-2xl font-normal leading-tight tracking-[-0.6px] text-[#41505F] md:text-3xl">
         <Sentence segments={facts.headline} />
       </h2>
       {facts.standfirst.length > 0 ? (
-        <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#374151]">
+        <p className="mt-3 max-w-3xl text-base leading-relaxed text-[#41505F]">
           <Sentence segments={facts.standfirst} delay={standfirstDelay} />
         </p>
       ) : null}

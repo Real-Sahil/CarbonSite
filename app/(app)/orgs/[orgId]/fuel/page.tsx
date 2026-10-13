@@ -55,31 +55,31 @@ export default async function FuelPage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-[42px]">
       {scope && (
-        <p className="rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+        <p className="rounded-lg bg-[#F9FAFC] px-4 py-2 text-sm text-[#41505F]">
           Showing <span className="font-medium">{scope.project.name}</span> only{scope.siteIds.length === 0 ? ", which has no sites yet. Add a site to the project to see its fuel, machines and loads here" : ""}. Choose All projects in the sidebar to see everything.
         </p>
       )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Fuel</h1>
-          <p className="mt-2 max-w-[65ch] text-sm text-[#374151]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Fuel</h1>
+          <p className="mt-2 max-w-[65ch] text-sm text-[#41505F]">
             Bowsers and tanks on your sites, what each received by fuel type, what was issued to which machine, and whether the
             levels you measure agree. Your inventory still counts the fuel on your receipts and bills; this page shows where it went
             and where the records disagree.
           </p>
         </div>
-        <nav className="flex items-center gap-1 rounded-md border border-[#E5E7EB] p-1 text-sm" aria-label="Month">
-          <Link className="rounded px-3 py-1 text-[#374151] hover:bg-[#F3F4F6]" href={qs(shiftMonth(month, -1))}>Earlier</Link>
-          <span aria-current="page" className="rounded bg-[#111827] px-3 py-1 text-white">{month}</span>
-          <Link className="rounded px-3 py-1 text-[#374151] hover:bg-[#F3F4F6]" href={qs(shiftMonth(month, 1))}>Later</Link>
+        <nav className="flex items-center gap-1 rounded-md border border-[#E3E8EE] p-1 text-sm" aria-label="Month">
+          <Link className="rounded px-3 py-1 text-[#41505F] hover:bg-[#F3F4F6]" href={qs(shiftMonth(month, -1))}>Earlier</Link>
+          <span aria-current="page" className="rounded bg-[#131d29] px-3 py-1 text-white">{month}</span>
+          <Link className="rounded px-3 py-1 text-[#41505F] hover:bg-[#F3F4F6]" href={qs(shiftMonth(month, 1))}>Later</Link>
         </nav>
       </div>
 
       {sites.length > 1 && (
         <nav className="flex flex-wrap gap-2 text-sm" aria-label="Site">
-          <Link href={`?month=${month}`} aria-current={!siteId ? "page" : undefined} className={`rounded-full border px-3 py-1 ${!siteId ? "border-[#111827] bg-[#111827] text-white" : "border-[#E5E7EB] text-[#374151]"}`}>All sites</Link>
+          <Link href={`?month=${month}`} aria-current={!siteId ? "page" : undefined} className={`rounded-full border px-3 py-1 ${!siteId ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>All sites</Link>
           {sites.map((s) => (
-            <Link key={s.id} href={`?month=${month}&siteId=${s.id}`} aria-current={siteId === s.id ? "page" : undefined} className={`rounded-full border px-3 py-1 ${siteId === s.id ? "border-[#111827] bg-[#111827] text-white" : "border-[#E5E7EB] text-[#374151]"}`}>{s.name}</Link>
+            <Link key={s.id} href={`?month=${month}&siteId=${s.id}`} aria-current={siteId === s.id ? "page" : undefined} className={`rounded-full border px-3 py-1 ${siteId === s.id ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>{s.name}</Link>
           ))}
         </nav>
       )}
@@ -101,11 +101,11 @@ export default async function FuelPage({ params, searchParams }: Props) {
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {stores.length === 0 ? (
-            <p className="text-sm text-[#374151]">No fuel stores yet. Add a bowser or tank below.</p>
+            <p className="text-sm text-[#41505F]">No fuel stores yet. Add a bowser or tank below.</p>
           ) : (
             <Table className="text-sm tabular-nums">
               <thead>
-                <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
+                <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#41505F]">
                   <th className="py-2 pr-3 font-normal">Store</th>
                   <th className="py-2 pr-3 font-normal">Site</th>
                   <th className="py-2 pr-3 text-right font-normal">In (L)</th>
@@ -120,18 +120,18 @@ export default async function FuelPage({ params, searchParams }: Props) {
                 {stores.map((s) => (
                   <tr key={s.store.id} className={`border-b border-[#F3F4F6] ${s.store.active ? "" : "opacity-60"}`}>
                     <td className="py-2.5 pr-3">
-                      <p className="font-medium text-[#111827]">{s.store.name}</p>
-                      <p className="text-xs text-[#6B7280]">{[s.store.kind.replace("_", " "), s.store.fuelType, `${n(s.store.capacityLitres)} L`, s.store.ownership === "hired" ? "Hired" : null, s.store.active ? null : "Retired"].filter(Boolean).join(" · ")}</p>
+                      <p className="font-medium text-[#131d29]">{s.store.name}</p>
+                      <p className="text-xs text-[#5B6A78]">{[s.store.kind.replace("_", " "), s.store.fuelType, `${n(s.store.capacityLitres)} L`, s.store.ownership === "hired" ? "Hired" : null, s.store.active ? null : "Retired"].filter(Boolean).join(" · ")}</p>
                     </td>
-                    <td className="py-2.5 pr-3 text-[#374151]">{s.store.siteName ?? "No site"}</td>
+                    <td className="py-2.5 pr-3 text-[#41505F]">{s.store.siteName ?? "No site"}</td>
                     <td className="py-2.5 pr-3 text-right">{n(s.litresIn)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(s.litresOut)}</td>
                     <td className="py-2.5 pr-3 text-right">
-                      {s.lastDip ? <>{n(s.lastDip.litres)}<span className="block text-xs text-[#6B7280]">{day(s.lastDip.on)}</span></> : "No dip"}
+                      {s.lastDip ? <>{n(s.lastDip.litres)}<span className="block text-xs text-[#5B6A78]">{day(s.lastDip.on)}</span></> : "No dip"}
                       {s.overCapacity && <span className="block text-xs text-red-600">Over capacity</span>}
                     </td>
                     <td className="py-2.5 pr-3 text-right">{n(s.expected)}</td>
-                    <td className={`py-2.5 pr-3 text-right ${s.flagged ? "font-medium text-red-600" : "text-[#374151]"}`}>
+                    <td className={`py-2.5 pr-3 text-right ${s.flagged ? "font-medium text-red-600" : "text-[#41505F]"}`}>
                       {s.variance == null ? "Needs two dips" : `${s.variance > 0 ? "+" : ""}${n(s.variance)}`}
                     </td>
                     {canEdit && <td className="py-2.5 text-right"><RetireStoreButton orgId={orgId} storeId={s.store.id} active={s.store.active} /></td>}
@@ -150,11 +150,11 @@ export default async function FuelPage({ params, searchParams }: Props) {
         </CardHeader>
         <CardContent className="overflow-x-auto">
           {machines.length === 0 ? (
-            <p className="text-sm text-[#374151]">Nothing issued this month, and no telematics readings.</p>
+            <p className="text-sm text-[#41505F]">Nothing issued this month, and no telematics readings.</p>
           ) : (
             <Table className="text-sm tabular-nums">
               <thead>
-                <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
+                <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#41505F]">
                   <th className="py-2 pr-3 font-normal">Machine</th>
                   <th className="py-2 pr-3 text-right font-normal">Issued (L)</th>
                   <th className="py-2 pr-3 text-right font-normal">Telematics (L)</th>
@@ -166,7 +166,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
               <tbody>
                 {machines.map((m) => (
                   <tr key={m.id ?? m.label} className="border-b border-[#F3F4F6]">
-                    <td className="py-2.5 pr-3 font-medium text-[#111827]">{m.label}{!m.id && <span className="ml-2 text-xs font-normal text-[#6B7280]">not in register</span>}</td>
+                    <td className="py-2.5 pr-3 font-medium text-[#131d29]">{m.label}{!m.id && <span className="ml-2 text-xs font-normal text-[#5B6A78]">not in register</span>}</td>
                     <td className="py-2.5 pr-3 text-right">{n(m.issued)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(m.telematicsLitres)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(m.hours, 1)}</td>
@@ -192,7 +192,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
           <CardContent className="overflow-x-auto">
             <Table className="text-sm tabular-nums">
               <thead>
-                <tr className="border-b border-[#E5E7EB] text-left text-xs text-[#374151]">
+                <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#41505F]">
                   <th className="py-2 pr-3 font-normal">Site</th>
                   <th className="py-2 pr-3 text-right font-normal">Delivered (L)</th>
                   <th className="py-2 pr-3 text-right font-normal">Recorded (L)</th>
@@ -202,10 +202,10 @@ export default async function FuelPage({ params, searchParams }: Props) {
               <tbody>
                 {siteRows.filter((r) => r.siteId).map((r) => (
                   <tr key={r.siteId} className="border-b border-[#F3F4F6]">
-                    <td className="py-2.5 pr-3 text-[#111827]">{r.siteName}</td>
+                    <td className="py-2.5 pr-3 text-[#131d29]">{r.siteName}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.delivered)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.recorded)}</td>
-                    <td className="py-2.5 text-right text-[#374151]">{r.gap == null ? "–" : `${r.gap > 0 ? "+" : ""}${n(r.gap)} L`}</td>
+                    <td className="py-2.5 text-right text-[#41505F]">{r.gap == null ? "–" : `${r.gap > 0 ? "+" : ""}${n(r.gap)} L`}</td>
                   </tr>
                 ))}
               </tbody>
@@ -218,17 +218,17 @@ export default async function FuelPage({ params, searchParams }: Props) {
         <CardHeader><CardTitle className="text-base">Entries this month</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           {entries.length === 0 ? (
-            <p className="text-sm text-[#374151]">No deliveries, issues or dips in {month}.</p>
+            <p className="text-sm text-[#41505F]">No deliveries, issues or dips in {month}.</p>
           ) : (
             <Table className="text-sm tabular-nums">
               <tbody>
                 {entries.map((e) => (
                   <tr key={`${e.kind}${e.id}`} className="border-b border-[#F3F4F6]">
-                    <td className="py-2 pr-3 text-[#374151]">{day(e.on)}</td>
-                    <td className="py-2 pr-3 font-medium text-[#111827]">{KIND[e.kind]}</td>
-                    <td className="py-2 pr-3 text-[#374151]">{storeName.get(e.storeId) ?? ""}</td>
+                    <td className="py-2 pr-3 text-[#41505F]">{day(e.on)}</td>
+                    <td className="py-2 pr-3 font-medium text-[#131d29]">{KIND[e.kind]}</td>
+                    <td className="py-2 pr-3 text-[#41505F]">{storeName.get(e.storeId) ?? ""}</td>
                     <td className="py-2 pr-3 text-right">{n(e.litres, 1)} L</td>
-                    <td className="py-2 pr-3 text-[#374151]">{e.detail}</td>
+                    <td className="py-2 pr-3 text-[#41505F]">{e.detail}</td>
                     {canEdit && <td className="py-2 text-right"><DeleteEntryButton orgId={orgId} kind={e.kind} id={e.id} /></td>}
                   </tr>
                 ))}
@@ -243,7 +243,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
           <Card>
             <CardHeader><CardTitle className="text-base">Record fuel</CardTitle><CardDescription>A delivery, an issue to a machine, or a dip.</CardDescription></CardHeader>
             <CardContent>
-              {active.length === 0 ? <p className="text-sm text-[#374151]">Add a store first.</p> : <AddEntryForm orgId={orgId} stores={active.map((s) => ({ id: s.store.id, name: s.store.name }))} machines={assets} />}
+              {active.length === 0 ? <p className="text-sm text-[#41505F]">Add a store first.</p> : <AddEntryForm orgId={orgId} stores={active.map((s) => ({ id: s.store.id, name: s.store.name }))} machines={assets} />}
             </CardContent>
           </Card>
           <Card>
@@ -258,10 +258,10 @@ export default async function FuelPage({ params, searchParams }: Props) {
 
 function Kpi({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: "good" | "warn" }) {
   return (
-    <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4">
-      <p className="text-xs text-[#374151]">{label}</p>
-      <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{value}</p>
-      {note && <p className={`mt-1 text-xs ${tone === "good" ? "text-green-700" : tone === "warn" ? "text-amber-700" : "text-[#6B7280]"}`}>{note}</p>}
+    <div className="rounded-[10px] border border-[#E3E8EE] bg-white p-4">
+      <p className="text-xs text-[#41505F]">{label}</p>
+      <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{value}</p>
+      {note && <p className={`mt-1 text-xs ${tone === "good" ? "text-green-700" : tone === "warn" ? "text-amber-700" : "text-[#5B6A78]"}`}>{note}</p>}
     </div>
   );
 }

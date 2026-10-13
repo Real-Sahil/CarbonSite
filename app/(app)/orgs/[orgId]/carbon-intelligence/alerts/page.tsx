@@ -72,19 +72,19 @@ export default async function AlertsPage({ params, searchParams }: Props) {
   const resolvedCount = await prisma.impactAlert.count({ where: { organizationId: orgId, resolvedAt: { not: null } } });
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF]">
-              <AlertTriangle className="h-4 w-4 text-[#111827]" />
+              <AlertTriangle className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Carbon Intelligence</span>
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Carbon Intelligence</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Impact Alerts</h1>
-              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">Impact Alerts</h1>
+              <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
                 Threshold breaches, anomalies, and environment alerts.
               </p>
             </div>
@@ -92,33 +92,33 @@ export default async function AlertsPage({ params, searchParams }: Props) {
           </div>
 
           <div className="mt-6 flex gap-6">
-            <a href={`/orgs/${orgId}/carbon-intelligence/alerts`} className={`flex items-baseline gap-2 pb-0.5 border-b-2 ${!showResolved ? "border-[#111827]" : "border-transparent hover:border-[#E5E7EB]"}`}>
-              <span className="text-xl font-bold text-[#111827] tabular-nums">{openCount}</span>
-              <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Open</span>
+            <a href={`/orgs/${orgId}/carbon-intelligence/alerts`} className={`flex items-baseline gap-2 pb-0.5 border-b-2 ${!showResolved ? "border-[#131d29]" : "border-transparent hover:border-[#E3E8EE]"}`}>
+              <span className="text-xl font-bold text-[#131d29] tabular-nums">{openCount}</span>
+              <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Open</span>
             </a>
-            <a href={`/orgs/${orgId}/carbon-intelligence/alerts?resolved=true`} className={`flex items-baseline gap-2 pb-0.5 border-b-2 ${showResolved ? "border-[#111827]" : "border-transparent hover:border-[#E5E7EB]"}`}>
-              <span className="text-xl font-bold text-[#111827] tabular-nums">{resolvedCount}</span>
-              <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Resolved</span>
+            <a href={`/orgs/${orgId}/carbon-intelligence/alerts?resolved=true`} className={`flex items-baseline gap-2 pb-0.5 border-b-2 ${showResolved ? "border-[#131d29]" : "border-transparent hover:border-[#E3E8EE]"}`}>
+              <span className="text-xl font-bold text-[#131d29] tabular-nums">{resolvedCount}</span>
+              <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Resolved</span>
             </a>
           </div>
         </div>
       </div>
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               {showResolved ? "Resolved" : "Open"} alerts
-              <span className="ml-2 text-xs font-normal text-[#6B7280]">({alerts.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#5B6A78]">({alerts.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Up to 100 shown.
             </CardDescription>
           </CardHeader>
           <CardContent className={alerts.length === 0 ? "py-10" : "p-0"}>
             {alerts.length === 0 ? (
               <div className="text-center">
-                <p className="text-sm text-[#6B7280]">
+                <p className="text-sm text-[#5B6A78]">
                   {showResolved ? "No resolved alerts." : "No open alerts. All clear."}
                 </p>
               </div>
@@ -126,30 +126,30 @@ export default async function AlertsPage({ params, searchParams }: Props) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Alert</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Severity</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Raised</TableHead>
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Alert</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Severity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Raised</TableHead>
                       {showResolved && (
                         <>
-                          <TableHead className="text-xs font-medium text-[#6B7280] py-3">Resolved</TableHead>
-                          <TableHead className="text-xs font-medium text-[#6B7280] py-3">By</TableHead>
+                          <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Resolved</TableHead>
+                          <TableHead className="text-xs font-medium text-[#5B6A78] py-3">By</TableHead>
                         </>
                       )}
                       {canManage && !showResolved && (
-                        <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6" />
                       )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {alerts.map((a) => (
-                      <TableRow key={a.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                      <TableRow key={a.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6 max-w-[280px]">
-                          <p className="text-sm font-medium text-[#111827] truncate">{a.title}</p>
-                          <p className="text-xs text-[#6B7280] truncate">{a.message}</p>
+                          <p className="text-sm font-medium text-[#131d29] truncate">{a.title}</p>
+                          <p className="text-xs text-[#5B6A78] truncate">{a.message}</p>
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
                           <span className="font-mono text-xs">{a.alertType}</span>
                         </TableCell>
                         <TableCell className="py-3.5">
@@ -157,17 +157,17 @@ export default async function AlertsPage({ params, searchParams }: Props) {
                             {a.severity}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#5B6A78] tabular-nums py-3.5">
                           {new Date(a.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </TableCell>
                         {showResolved && (
                           <>
-                            <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5">
+                            <TableCell className="text-sm text-[#5B6A78] tabular-nums py-3.5">
                               {a.resolvedAt
                                 ? new Date(a.resolvedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
                                 : "-"}
                             </TableCell>
-                            <TableCell className="text-sm text-[#374151] py-3.5">
+                            <TableCell className="text-sm text-[#41505F] py-3.5">
                               {a.resolvedBy?.name ?? "-"}
                             </TableCell>
                           </>

@@ -9,7 +9,7 @@ import { RUN_STATUS_LABELS } from "@/lib/calculation/run-list-filters";
 type Option = { id: string; label: string };
 
 const FIELD =
-  "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
 
 /** Status, period and factor library. The URL is the state, as on the records page. */
 export function CalculationsFilters({
@@ -35,7 +35,7 @@ export function CalculationsFilters({
 
   const select = (key: string, label: string, options: Option[]) => (
     <div className="space-y-1">
-      <Label htmlFor={`calculations-filter-${key}`} className="text-xs text-[#6B7280]">{label}</Label>
+      <Label htmlFor={`calculations-filter-${key}`} className="text-xs text-[#5B6A78]">{label}</Label>
       <select
         id={`calculations-filter-${key}`}
         className={FIELD}

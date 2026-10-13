@@ -36,18 +36,18 @@ export function ChartFrame({
       aria-pressed={view === value}
       onClick={() => setView(value)}
       className={`rounded-full px-3 py-1 text-xs transition-colors ${
-        view === value ? "bg-[#111827] text-white" : "border border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]"
+        view === value ? "bg-[#131d29] text-white" : "border border-[#E3E8EE] text-[#41505F] hover:bg-[#F9FAFC]"
       }`}
     >
       {label}
     </button>
   );
   return (
-    <figure className="m-0 rounded-[14px] border border-[#E5E7EB] bg-white p-5" aria-labelledby={`${id}-title`}>
+    <figure className="m-0 rounded-[14px] border border-[#E3E8EE] bg-white p-5" aria-labelledby={`${id}-title`}>
       <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 id={`${id}-title`} className="text-sm font-medium text-[#111827]">{title}</h3>
-          {description ? <p className="mt-0.5 text-xs text-[#6B7280]">{description}</p> : null}
+          <h3 id={`${id}-title`} className="text-sm font-medium text-[#131d29]">{title}</h3>
+          {description ? <p className="mt-0.5 text-xs text-[#5B6A78]">{description}</p> : null}
         </div>
         <div className="flex items-center gap-1.5">
           <div className="flex gap-1.5" role="group" aria-label={`${title}: view`}>
@@ -60,16 +60,16 @@ export function ChartFrame({
                 <button
                   type="button"
                   aria-label={`Expand ${title}`}
-                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#E5E7EB] text-[#374151] transition-colors hover:bg-[#F9FAFB]"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#E3E8EE] text-[#41505F] transition-colors hover:bg-[#F9FAFC]"
                 >
                   <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-[min(96vw,1200px)] p-5">
-                <DialogTitle className="text-sm font-medium text-[#111827]">{title}</DialogTitle>
-                {description ? <DialogDescription className="text-xs text-[#6B7280]">{description}</DialogDescription> : null}
+                <DialogTitle className="text-sm font-medium text-[#131d29]">{title}</DialogTitle>
+                {description ? <DialogDescription className="text-xs text-[#5B6A78]">{description}</DialogDescription> : null}
                 <div className="mt-3">{render(true)}</div>
-                {footnote ? <p className="mt-3 text-xs text-[#6B7280]">{footnote}</p> : null}
+                {footnote ? <p className="mt-3 text-xs text-[#5B6A78]">{footnote}</p> : null}
               </DialogContent>
             </Dialog>
           ) : null}
@@ -82,7 +82,7 @@ export function ChartFrame({
           <table className="w-full text-left text-xs">
             <caption className="sr-only">{title}</caption>
             <thead>
-              <tr className="border-b border-[#E5E7EB] text-[#6B7280]">
+              <tr className="border-b border-[#E3E8EE] text-[#5B6A78]">
                 {table.columns.map((c, i) => (
                   <th key={c} scope="col" className={`py-1.5 pr-3 font-medium ${i > 0 ? "text-right" : ""}`}>{c}</th>
                 ))}
@@ -90,7 +90,7 @@ export function ChartFrame({
             </thead>
             <tbody>
               {table.rows.map((row, r) => (
-                <tr key={r} className="border-b border-[#F3F4F6] text-[#111827]">
+                <tr key={r} className="border-b border-[#F3F4F6] text-[#131d29]">
                   {row.map((cell, i) => (
                     <td key={i} className={`py-1.5 pr-3 tabular-nums ${i > 0 ? "text-right" : ""}`}>{cell}</td>
                   ))}
@@ -100,7 +100,7 @@ export function ChartFrame({
           </table>
         </div>
       )}
-      {footnote ? <figcaption className="mt-3 text-xs text-[#6B7280]">{footnote}</figcaption> : null}
+      {footnote ? <figcaption className="mt-3 text-xs text-[#5B6A78]">{footnote}</figcaption> : null}
     </figure>
   );
 }

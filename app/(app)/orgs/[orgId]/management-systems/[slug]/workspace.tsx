@@ -18,12 +18,12 @@ const STATE_LABELS: Record<RequirementState, string> = {
   not_applicable: "Not applicable",
 };
 const STATE_STYLES: Record<RequirementState, string> = {
-  not_started: "bg-[#F3F4F6] text-[#374151]",
+  not_started: "bg-[#F3F4F6] text-[#41505F]",
   in_progress: "bg-amber-50 text-amber-800",
   implemented: "bg-emerald-50 text-emerald-800",
-  not_applicable: "bg-slate-100 text-slate-500",
+  not_applicable: "bg-slate-100 text-[#5B6A78]",
 };
-const TONE_STYLES = { ok: "border-emerald-200 bg-emerald-50/50", attention: "border-amber-200 bg-amber-50/60", empty: "border-[#E5E7EB] bg-[#F9FAFB]" };
+const TONE_STYLES = { ok: "border-emerald-200 bg-emerald-50/50", attention: "border-amber-200 bg-amber-50/60", empty: "border-[#E3E8EE] bg-[#F9FAFC]" };
 const ADOPTION_STATUSES: [string, string][] = [["implementing", "Implementing"], ["certified", "Certified"], ["lapsed", "Certificate lapsed"], ["withdrawn", "Withdrawn"]];
 const EVIDENCE_KINDS: [string, string][] = [
   ["evidence_file", "Evidence file"],
@@ -102,10 +102,10 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#6B7280] hover:text-[#111827]">Management systems</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">{framework.name}</h1>
-        <p className="text-sm text-[#6B7280]">{framework.edition} · {framework.publisher}{framework.jurisdiction ? ` · ${framework.jurisdiction}` : ""}</p>
-        <p className="mt-1 max-w-[80ch] text-xs text-[#6B7280]">
+        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Management systems</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">{framework.name}</h1>
+        <p className="text-sm text-[#5B6A78]">{framework.edition} · {framework.publisher}{framework.jurisdiction ? ` · ${framework.jurisdiction}` : ""}</p>
+        <p className="mt-1 max-w-[80ch] text-xs text-[#5B6A78]">
           {framework.contentNote}{" "}
           <a href={framework.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">Source</a>
         </p>
@@ -118,8 +118,8 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
       {error && <p role="alert" className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
       {!adoption || adoption.status === "withdrawn" ? (
-        <section className="flex flex-col items-start gap-3 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
-          <p className="text-sm text-[#374151]">
+        <section className="flex flex-col items-start gap-3 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
+          <p className="text-sm text-[#41505F]">
             {adoption ? "This framework was withdrawn. Adopt it again to carry on where you left off." : "Adopt this framework to assess each requirement and link your evidence."}
           </p>
           {canEdit && (
@@ -138,7 +138,7 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
         </FormField>
         {framework.tagLabels && (
           <FormField label="Show" htmlFor="ms-tag">
-            <select id="ms-tag" value={tag} onChange={(e) => setTag(e.target.value)} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+            <select id="ms-tag" value={tag} onChange={(e) => setTag(e.target.value)} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
               <option value="">All requirements</option>
               {Object.entries(framework.tagLabels).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
@@ -153,7 +153,7 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
             type="button"
             onClick={() => setFilter(key)}
             aria-pressed={filter === key}
-            className={`rounded-full px-3 py-1 text-xs transition-colors ${filter === key ? "bg-[#111827] text-white" : "border border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]"}`}
+            className={`rounded-full px-3 py-1 text-xs transition-colors ${filter === key ? "bg-[#131d29] text-white" : "border border-[#E3E8EE] text-[#41505F] hover:bg-[#F9FAFC]"}`}
           >
             {label}
             {key !== "all" && (
@@ -171,8 +171,8 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
           .map((q) =>
             q.heading ? (
               <li key={q.code} id={anchor(q.code)} className={q.depth === 0 ? "mt-4 first:mt-0" : "mt-1"} style={{ paddingLeft: `${q.depth * 16}px` }}>
-                <p className={q.depth === 0 ? "text-sm font-semibold text-[#111827]" : "text-sm font-medium text-[#374151]"}>
-                  <span className="mr-2 font-mono text-xs text-[#6B7280]">{q.code}</span>{q.title}
+                <p className={q.depth === 0 ? "text-sm font-semibold text-[#131d29]" : "text-sm font-medium text-[#41505F]"}>
+                  <span className="mr-2 font-mono text-xs text-[#5B6A78]">{q.code}</span>{q.title}
                 </p>
               </li>
             ) : (
@@ -190,7 +190,7 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
             ),
           )}
       </ol>
-      {visibleCodes.size === 0 && <p className="text-sm text-[#6B7280]">No requirements match this filter.</p>}
+      {visibleCodes.size === 0 && <p className="text-sm text-[#5B6A78]">No requirements match this filter.</p>}
     </div>
   );
 }
@@ -243,40 +243,40 @@ function AdoptionPanel({
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-[14px] border border-[#E5E7EB] bg-white p-5">
+    <section className="flex flex-col gap-4 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-[240px] flex-1">
           <div className="flex items-baseline justify-between text-sm">
-            <span className="text-[#374151]">Implemented</span>
-            <span className="text-lg font-semibold tabular-nums text-[#111827]">{r.percent == null ? "-" : `${r.percent}%`}</span>
+            <span className="text-[#41505F]">Implemented</span>
+            <span className="text-lg font-semibold tabular-nums text-[#131d29]">{r.percent == null ? "-" : `${r.percent}%`}</span>
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F3F4F6]" aria-hidden="true">
             <div className="h-full rounded-full bg-[#c2410c]" style={{ width: `${r.percent ?? 0}%` }} />
           </div>
-          <p className="mt-2 text-xs tabular-nums text-[#6B7280]">
+          <p className="mt-2 text-xs tabular-nums text-[#5B6A78]">
             {r.implemented} of {r.total - r.notApplicable} applicable requirements implemented · {r.inProgress} in progress · {r.notStarted} not started
             {r.notApplicable ? ` · ${r.notApplicable} not applicable` : ""}
           </p>
           {r.implementedWithoutEvidence > 0 && <p className="mt-1 text-xs text-amber-700">{r.implementedWithoutEvidence} implemented without evidence linked</p>}
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[#374151]">
+        <div className="flex flex-col gap-1 text-sm text-[#41505F]">
           <p>
-            <span className="text-[#6B7280]">Status:</span> {ADOPTION_STATUSES.find(([k]) => k === adoption.status)?.[1] ?? adoption.status}
+            <span className="text-[#5B6A78]">Status:</span> {ADOPTION_STATUSES.find(([k]) => k === adoption.status)?.[1] ?? adoption.status}
           </p>
-          {adoption.targetDate && <p><span className="text-[#6B7280]">Target:</span> {adoption.targetDate}</p>}
+          {adoption.targetDate && <p><span className="text-[#5B6A78]">Target:</span> {adoption.targetDate}</p>}
           {certifiable && adoption.certificateNumber && (
-            <p><span className="text-[#6B7280]">Certificate:</span> {adoption.certificateNumber}{adoption.certificationBody ? ` (${adoption.certificationBody})` : ""}</p>
+            <p><span className="text-[#5B6A78]">Certificate:</span> {adoption.certificateNumber}{adoption.certificationBody ? ` (${adoption.certificationBody})` : ""}</p>
           )}
-          {certifiable && adoption.certifiedUntil && <p><span className="text-[#6B7280]">Valid until:</span> {adoption.certifiedUntil}</p>}
+          {certifiable && adoption.certifiedUntil && <p><span className="text-[#5B6A78]">Valid until:</span> {adoption.certifiedUntil}</p>}
           {canEdit && !editing && (
             <Button size="sm" variant="outline" className="mt-1 self-start" onClick={() => setEditing(true)}>Edit details</Button>
           )}
         </div>
       </div>
-      {adoption.scope && !editing && <p className="max-w-[80ch] text-sm text-[#374151]"><span className="text-[#6B7280]">Scope:</span> {adoption.scope}</p>}
+      {adoption.scope && !editing && <p className="max-w-[80ch] text-sm text-[#41505F]"><span className="text-[#5B6A78]">Scope:</span> {adoption.scope}</p>}
 
       {editing && (
-        <form onSubmit={save} className="space-y-6 border-t border-[#E5E7EB] pt-4">
+        <form onSubmit={save} className="space-y-6 border-t border-[#E3E8EE] pt-4">
           <FormSection title="Adoption" cols={2}>
             <FormField label="Status" htmlFor="ad-status">
               <select id="ad-status" value={form.status} onChange={set("status")} className={fieldClass}>
@@ -365,19 +365,19 @@ function RequirementCard({
   }
 
   return (
-    <div className="rounded-[12px] border border-[#E5E7EB] bg-white">
+    <div className="rounded-[12px] border border-[#E3E8EE] bg-white">
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-start gap-3 p-4 text-left">
-        <span className="mt-0.5 w-14 shrink-0 font-mono text-xs text-[#6B7280]">{q.code}</span>
+        <span className="mt-0.5 w-14 shrink-0 font-mono text-xs text-[#5B6A78]">{q.code}</span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-[#111827]">
+          <span className="block text-sm font-medium text-[#131d29]">
             {q.title}
             {q.editionChange && (
-              <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-normal ${q.editionChange.kind === "new" ? "bg-sky-50 text-sky-800" : q.editionChange.kind === "changed" ? "bg-violet-50 text-violet-800" : "bg-slate-100 text-slate-600"}`}>
+              <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-normal ${q.editionChange.kind === "new" ? "bg-sky-50 text-sky-800" : q.editionChange.kind === "changed" ? "bg-violet-50 text-violet-800" : "bg-slate-100 text-[#41505F]"}`}>
                 {q.editionChange.kind === "new" ? "New in this edition" : q.editionChange.kind === "changed" ? "Changed" : "Renumbered"}
               </span>
             )}
           </span>
-          <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#6B7280]">
+          <span className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#5B6A78]">
             {q.ownerName && <span>Owner: {q.ownerName}</span>}
             {q.dueOn && <span>Due {q.dueOn}</span>}
             <span>{q.evidence.length} evidence</span>
@@ -387,9 +387,9 @@ function RequirementCard({
       </button>
 
       {open && (
-        <div className="flex flex-col gap-5 border-t border-[#E5E7EB] p-4">
+        <div className="flex flex-col gap-5 border-t border-[#E3E8EE] p-4">
           {q.editionChange && (
-            <p className="max-w-[80ch] rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-2 text-sm text-[#374151]">
+            <p className="max-w-[80ch] rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-2 text-sm text-[#41505F]">
               <span className="font-medium">Edition change{q.editionChange.from?.length ? ` (from ${q.editionChange.from.join(", ")})` : ""}: </span>
               {q.editionChange.note}
             </p>
@@ -397,53 +397,53 @@ function RequirementCard({
           {q.interpretation && (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2">
               <p className="text-xs font-medium uppercase tracking-wide text-emerald-800">Your organisation&apos;s interpretation</p>
-              <p className="mt-1 max-w-[80ch] whitespace-pre-wrap text-sm leading-relaxed text-[#111827]">{q.interpretation}</p>
+              <p className="mt-1 max-w-[80ch] whitespace-pre-wrap text-sm leading-relaxed text-[#131d29]">{q.interpretation}</p>
             </div>
           )}
           {q.guidance &&
             (q.interpretation ? (
-              <details className="text-sm text-[#374151]">
-                <summary className="cursor-pointer text-xs font-medium text-[#6B7280]">MetricOra guidance</summary>
+              <details className="text-sm text-[#41505F]">
+                <summary className="cursor-pointer text-xs font-medium text-[#5B6A78]">MetricOra guidance</summary>
                 <p className="mt-2 max-w-[80ch] leading-relaxed">{q.guidance}</p>
               </details>
             ) : (
-              <p className="max-w-[80ch] text-sm leading-relaxed text-[#374151]">{q.guidance}</p>
+              <p className="max-w-[80ch] text-sm leading-relaxed text-[#41505F]">{q.guidance}</p>
             ))}
           {q.url && (
-            <a href={q.url} target="_blank" rel="noreferrer" className="self-start text-sm text-[#111827] underline underline-offset-2">
+            <a href={q.url} target="_blank" rel="noreferrer" className="self-start text-sm text-[#131d29] underline underline-offset-2">
               Read the official text
             </a>
           )}
           {q.officialText && (
-            <details className="text-sm text-[#374151]" open={!q.guidance}>
-              <summary className="cursor-pointer text-xs font-medium text-[#6B7280]">Official text</summary>
+            <details className="text-sm text-[#41505F]" open={!q.guidance}>
+              <summary className="cursor-pointer text-xs font-medium text-[#5B6A78]">Official text</summary>
               <p className="mt-2 max-w-[80ch] whitespace-pre-wrap">{q.officialText}</p>
             </details>
           )}
           {q.examples.length > 0 && (
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Examples from the source</p>
-              <ul className="mt-1 list-disc pl-5 text-sm text-[#374151]">{q.examples.map((h) => <li key={h}>{h}</li>)}</ul>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#5B6A78]">Examples from the source</p>
+              <ul className="mt-1 list-disc pl-5 text-sm text-[#41505F]">{q.examples.map((h) => <li key={h}>{h}</li>)}</ul>
             </div>
           )}
           {q.evidenceHints.length > 0 && (
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Evidence that usually satisfies it</p>
-              <ul className="mt-1 list-disc pl-5 text-sm text-[#374151]">{q.evidenceHints.map((h) => <li key={h}>{h}</li>)}</ul>
+              <p className="text-xs font-medium uppercase tracking-wide text-[#5B6A78]">Evidence that usually satisfies it</p>
+              <ul className="mt-1 list-disc pl-5 text-sm text-[#41505F]">{q.evidenceHints.map((h) => <li key={h}>{h}</li>)}</ul>
             </div>
           )}
           {q.signals.length > 0 && (
             <div className="grid gap-2 sm:grid-cols-2">
               {q.signals.map((s) => (
                 <Link key={s.key} href={s.href} className={`rounded-lg border px-3 py-2 text-sm hover:underline ${TONE_STYLES[s.tone]}`}>
-                  <span className="block text-xs font-medium text-[#374151]">{s.label}</span>
-                  <span className="text-[#111827]">{s.summary}</span>
+                  <span className="block text-xs font-medium text-[#41505F]">{s.label}</span>
+                  <span className="text-[#131d29]">{s.summary}</span>
                 </Link>
               ))}
             </div>
           )}
           {q.alsoCovers.length > 0 && (
-            <p className="text-xs text-[#6B7280]">
+            <p className="text-xs text-[#5B6A78]">
               Same requirement in:{" "}
               {q.alsoCovers.map((c, i) => (
                 <span key={`${c.slug}-${c.code}`}>
@@ -458,24 +458,24 @@ function RequirementCard({
           )}
 
           <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-[#6B7280]">Evidence</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-[#5B6A78]">Evidence</p>
             {q.evidence.length === 0 ? (
-              <p className="text-sm text-[#6B7280]">None linked yet.</p>
+              <p className="text-sm text-[#5B6A78]">None linked yet.</p>
             ) : (
-              <ul className="flex flex-col divide-y divide-[#F3F4F6] rounded-lg border border-[#E5E7EB]">
+              <ul className="flex flex-col divide-y divide-[#F3F4F6] rounded-lg border border-[#E3E8EE]">
                 {q.evidence.map((e) => (
                   <li key={e.id} className="flex items-start justify-between gap-3 px-3 py-2 text-sm">
                     <span className="min-w-0">
-                      <span className="text-xs text-[#6B7280]">{e.kindLabel}: </span>
+                      <span className="text-xs text-[#5B6A78]">{e.kindLabel}: </span>
                       {e.href ? (
-                        <a href={e.href} target={e.kind === "url" ? "_blank" : undefined} rel="noreferrer" className="break-words text-[#111827] underline underline-offset-2">{e.label}</a>
+                        <a href={e.href} target={e.kind === "url" ? "_blank" : undefined} rel="noreferrer" className="break-words text-[#131d29] underline underline-offset-2">{e.label}</a>
                       ) : (
-                        <span className="text-[#111827]">{e.label}</span>
+                        <span className="text-[#131d29]">{e.label}</span>
                       )}
-                      {e.note && <span className="block whitespace-pre-line text-xs text-[#6B7280]">{e.note}</span>}
+                      {e.note && <span className="block whitespace-pre-line text-xs text-[#5B6A78]">{e.note}</span>}
                     </span>
                     {canEdit && (
-                      <button type="button" onClick={() => unlink(e.id)} disabled={isPending} className="shrink-0 text-xs text-[#6B7280] hover:text-red-600">Remove</button>
+                      <button type="button" onClick={() => unlink(e.id)} disabled={isPending} className="shrink-0 text-xs text-[#5B6A78] hover:text-red-600">Remove</button>
                     )}
                   </li>
                 ))}
@@ -485,7 +485,7 @@ function RequirementCard({
           </div>
 
           {canEdit ? (
-            <form onSubmit={save} className="space-y-6 border-t border-[#E5E7EB] pt-4">
+            <form onSubmit={save} className="space-y-6 border-t border-[#E3E8EE] pt-4">
               <FormSection title="Status" cols={3}>
                 <FormField label="Status" htmlFor={`st-${q.code}`}>
                   <select id={`st-${q.code}`} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as RequirementState })} className={fieldClass}>
@@ -527,7 +527,7 @@ function RequirementCard({
               </FormActions>
             </form>
           ) : (
-            q.notes && <p className="whitespace-pre-line border-t border-[#E5E7EB] pt-4 text-sm text-[#374151]">{q.notes}</p>
+            q.notes && <p className="whitespace-pre-line border-t border-[#E3E8EE] pt-4 text-sm text-[#41505F]">{q.notes}</p>
           )}
         </div>
       )}
@@ -580,10 +580,10 @@ function AddEvidence({ orgId, reqUrl, onError }: { orgId: string; reqUrl: string
   }
 
   return (
-    <form onSubmit={add} className="flex flex-col gap-2 rounded-lg bg-[#F9FAFB] p-3">
+    <form onSubmit={add} className="flex flex-col gap-2 rounded-lg bg-[#F9FAFC] p-3">
       <div className="flex flex-wrap items-end gap-2">
         <FormField label="Add evidence" htmlFor={`ek-${reqUrl}`}>
-          <select id={`ek-${reqUrl}`} value={kind} onChange={(e) => { setKind(e.target.value); setTargetId(""); setOptions([]); }} className="h-9 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+          <select id={`ek-${reqUrl}`} value={kind} onChange={(e) => { setKind(e.target.value); setTargetId(""); setOptions([]); }} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
             <option value="">Choose a type…</option>
             {EVIDENCE_KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
@@ -591,7 +591,7 @@ function AddEvidence({ orgId, reqUrl, onError }: { orgId: string; reqUrl: string
         {isRecord && (
           <>
             <Input aria-label="Search records" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-9 w-40 bg-white" />
-            <select aria-label="Record" value={targetId} onChange={(e) => setTargetId(e.target.value)} className="h-9 min-w-[200px] max-w-full rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+            <select aria-label="Record" value={targetId} onChange={(e) => setTargetId(e.target.value)} className="h-9 min-w-[200px] max-w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
               <option value="">{options.length ? "Choose a record…" : "No records found"}</option>
               {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select>
@@ -633,7 +633,7 @@ function GuidanceNote({ base, adoption, canEdit }: { orgId: string; base: string
   }
 
   return (
-    <section aria-label="About this guidance" className="flex flex-col gap-3 rounded-[14px] border border-[#E5E7EB] bg-[#F9FAFB] p-4 text-sm text-[#374151]">
+    <section aria-label="About this guidance" className="flex flex-col gap-3 rounded-[14px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-sm text-[#41505F]">
       <p className="max-w-[90ch]">
         The guidance on this page is MetricOra&apos;s summary to help you work through the framework. It is not legal advice and does not
         replace the official text. A competent person in your organisation should review it and decide how each requirement applies to you:
@@ -655,7 +655,7 @@ function GuidanceNote({ base, adoption, canEdit }: { orgId: string; base: string
             </Button>
           )}
           {canEdit && review && !signing && (
-            <button type="button" onClick={() => send({ guidanceReviewed: false })} disabled={isPending} className="text-xs text-[#6B7280] underline underline-offset-2">
+            <button type="button" onClick={() => send({ guidanceReviewed: false })} disabled={isPending} className="text-xs text-[#5B6A78] underline underline-offset-2">
               Withdraw review
             </button>
           )}
@@ -697,9 +697,9 @@ function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: Framewor
 
   if (successor) {
     return (
-      <section className="flex flex-col gap-2 rounded-[14px] border border-sky-200 bg-sky-50/60 p-4 text-sm text-[#374151]">
+      <section className="flex flex-col gap-2 rounded-[14px] border border-sky-200 bg-sky-50/60 p-4 text-sm text-[#41505F]">
         <p>
-          <span className="font-medium text-[#111827]">{successor.shortName} replaces this edition.</span>{" "}
+          <span className="font-medium text-[#131d29]">{successor.shortName} replaces this edition.</span>{" "}
           {successor.transitionDeadline ? `Certificates to this edition must move by ${successor.transitionDeadline}. ` : ""}
           {successor.adopted
             ? "You have adopted it; keep this edition until your certificate moves, then withdraw it."
@@ -710,7 +710,7 @@ function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: Framewor
             <Link href={`/orgs/${orgId}/management-systems/${successor.slug}`} className="text-sm font-medium underline underline-offset-2">Open {successor.shortName}</Link>
           ) : (
             held && canEdit && (
-              <Button size="sm" onClick={transition} disabled={isPending} className="bg-[#111827] text-white hover:bg-black">
+              <Button size="sm" onClick={transition} disabled={isPending} className="bg-[#131d29] text-white hover:bg-black">
                 {isPending ? "Starting…" : `Start transition to ${successor.shortName}`}
               </Button>
             )
@@ -723,13 +723,13 @@ function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: Framewor
   if (predecessor) {
     const changed = view.requirements.filter((q) => q.editionChange && q.editionChange.kind !== "renumbered" && !q.heading).length;
     return (
-      <section className="flex flex-col gap-2 rounded-[14px] border border-violet-200 bg-violet-50/50 p-4 text-sm text-[#374151]">
+      <section className="flex flex-col gap-2 rounded-[14px] border border-violet-200 bg-violet-50/50 p-4 text-sm text-[#41505F]">
         <p>
           This edition replaces {predecessor.shortName}. {changed} requirements are new or changed and are marked below.{" "}
           {predecessor.adopted && !held && canEdit ? "Use Start transition on the old edition's page to carry your work across." : ""}
         </p>
         {view.framework.editionSources?.length ? (
-          <p className="text-xs text-[#6B7280]">
+          <p className="text-xs text-[#5B6A78]">
             Changes summarised from:{" "}
             {view.framework.editionSources.map((s, i) => (
               <span key={s.url}>

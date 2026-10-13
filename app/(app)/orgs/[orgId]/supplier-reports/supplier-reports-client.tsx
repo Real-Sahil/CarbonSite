@@ -67,7 +67,7 @@ const METHOD_LABELS: Record<string, string> = {
 };
 
 function qualityColor(score: number | null) {
-  if (score === null) return "text-slate-500";
+  if (score === null) return "text-[#5B6A78]";
   if (score >= 80) return "text-emerald-600";
   if (score >= 60) return "text-amber-600";
   return "text-red-600";
@@ -136,10 +136,10 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-20 text-center px-4">
         <div className="rounded-full bg-slate-100 p-4 mb-4">
-          <Package className="h-8 w-8 text-slate-500" />
+          <Package className="h-8 w-8 text-[#5B6A78]" />
         </div>
-        <p className="text-sm font-medium text-slate-700">No supplier reports</p>
-        <p className="mt-1 text-xs text-slate-500 max-w-xs">
+        <p className="text-sm font-medium text-[#41505F]">No supplier reports</p>
+        <p className="mt-1 text-xs text-[#5B6A78] max-w-xs">
           {status === "submitted"
             ? "No supplier reports are awaiting review. Reports appear here when suppliers submit data via their invite link."
             : `No reports with status "${status}".`}
@@ -161,42 +161,42 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
             return (
               <div
                 key={report.id}
-                className="rounded-xl border border-[#E5E7EB] bg-white shadow-sm overflow-hidden"
+                className="rounded-xl border border-[#E3E8EE] bg-white shadow-sm overflow-hidden"
               >
                 {/* Row header */}
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : report.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[#F9FAFC] transition-colors"
                 >
                   <div className="shrink-0">
                     {isExpanded
-                      ? <ChevronDown className="h-4 w-4 text-slate-500" />
-                      : <ChevronRight className="h-4 w-4 text-slate-500" />}
+                      ? <ChevronDown className="h-4 w-4 text-[#5B6A78]" />
+                      : <ChevronRight className="h-4 w-4 text-[#5B6A78]" />}
                   </div>
 
                   {/* Supplier */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                      <Building2 className="h-3.5 w-3.5 text-slate-500" />
+                      <Building2 className="h-3.5 w-3.5 text-[#5B6A78]" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
+                      <p className="text-sm font-medium text-[#131d29] truncate">
                         {report.supplierName ?? report.supplierEmail}
                       </p>
                       {report.supplierName && (
-                        <p className="text-[11px] text-slate-500 truncate">{report.supplierEmail}</p>
+                        <p className="text-[11px] text-[#5B6A78] truncate">{report.supplierEmail}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Category */}
-                  <div className="hidden sm:block shrink-0 text-xs text-slate-600 w-36 truncate">
+                  <div className="hidden sm:block shrink-0 text-xs text-[#41505F] w-36 truncate">
                     {report.emissionCategory?.name ?? "—"}
                   </div>
 
                   {/* Amount */}
-                  <div className="hidden md:block shrink-0 text-sm font-mono text-slate-600 w-32 text-right">
+                  <div className="hidden md:block shrink-0 text-sm font-mono text-[#41505F] w-32 text-right">
                     {formatAmount(report.totalAmount, report.unit)}
                   </div>
 
@@ -206,7 +206,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                   </div>
 
                   {/* Year */}
-                  <div className="hidden sm:flex shrink-0 items-center gap-1 text-xs text-slate-600 w-12">
+                  <div className="hidden sm:flex shrink-0 items-center gap-1 text-xs text-[#41505F] w-12">
                     <Calendar className="h-3 w-3" />
                     {report.reportingYear}
                   </div>
@@ -275,27 +275,27 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
 
                 {/* Expanded detail */}
                 {isExpanded && (
-                  <div className="border-t border-[#E5E7EB] px-4 py-4 bg-slate-50">
+                  <div className="border-t border-[#E3E8EE] px-4 py-4 bg-[#F9FAFC]">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                       <div>
-                        <p className="text-slate-500 mb-0.5">Method</p>
-                        <p className="text-slate-700">{METHOD_LABELS[report.calculationMethod] ?? report.calculationMethod}</p>
+                        <p className="text-[#5B6A78] mb-0.5">Method</p>
+                        <p className="text-[#41505F]">{METHOD_LABELS[report.calculationMethod] ?? report.calculationMethod}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 mb-0.5">Scope</p>
-                        <p className="text-slate-700">Scope {report.emissionCategory?.scope ?? "—"} — {report.emissionCategory?.code ?? "—"}</p>
+                        <p className="text-[#5B6A78] mb-0.5">Scope</p>
+                        <p className="text-[#41505F]">Scope {report.emissionCategory?.scope ?? "—"} — {report.emissionCategory?.code ?? "—"}</p>
                       </div>
                       <div>
-                        <p className="text-slate-500 mb-0.5">Submitted</p>
-                        <p className="text-slate-700">{new Date(report.submittedAt).toLocaleDateString()}</p>
+                        <p className="text-[#5B6A78] mb-0.5">Submitted</p>
+                        <p className="text-[#41505F]">{new Date(report.submittedAt).toLocaleDateString()}</p>
                       </div>
                       {report.reviewedAt && (
                         <div>
-                          <p className="text-slate-500 mb-0.5">Reviewed</p>
-                          <p className="text-slate-700">
+                          <p className="text-[#5B6A78] mb-0.5">Reviewed</p>
+                          <p className="text-[#41505F]">
                             {new Date(report.reviewedAt).toLocaleDateString()}
                             {report.reviewedBy && (
-                              <span className="text-slate-500"> by {report.reviewedBy.name ?? report.reviewedBy.email}</span>
+                              <span className="text-[#5B6A78]"> by {report.reviewedBy.name ?? report.reviewedBy.email}</span>
                             )}
                           </p>
                         </div>
@@ -304,28 +304,28 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
 
                     {report.notes && (
                       <div className="mt-3">
-                        <p className="text-[11px] text-slate-500 mb-1">Supplier notes</p>
-                        <p className="text-xs text-slate-700 bg-white border border-slate-200 rounded-lg px-3 py-2">{report.notes}</p>
+                        <p className="text-[11px] text-[#5B6A78] mb-1">Supplier notes</p>
+                        <p className="text-xs text-[#41505F] bg-white border border-[#E3E8EE] rounded-lg px-3 py-2">{report.notes}</p>
                       </div>
                     )}
 
                     {report.rejectionReason && (
                       <div className="mt-3">
-                        <p className="text-[11px] text-slate-500 mb-1">Rejection reason</p>
+                        <p className="text-[11px] text-[#5B6A78] mb-1">Rejection reason</p>
                         <p className="text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2">{report.rejectionReason}</p>
                       </div>
                     )}
 
                     {report.convertedToRecordId && (
                       <div className="mt-3">
-                        <p className="text-[11px] text-slate-500 mb-1">Converted to activity record</p>
+                        <p className="text-[11px] text-[#5B6A78] mb-1">Converted to activity record</p>
                         <p className="text-xs text-emerald-600 font-mono">{report.convertedToRecordId}</p>
                       </div>
                     )}
 
                     {flags.length > 0 && (
                       <div className="mt-3 space-y-1.5">
-                        <p className="text-[11px] text-slate-500">Quality flags</p>
+                        <p className="text-[11px] text-[#5B6A78]">Quality flags</p>
                         {flags.map((flag, i) => (
                           <div key={i} className={[
                             "flex items-start gap-2 text-xs rounded-lg px-3 py-2",
@@ -350,7 +350,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
           <div className="mt-4 flex justify-center">
             <a
               href={`?status=${status}&cursor=${nextCursor}`}
-              className="text-xs text-slate-600 hover:text-slate-900 px-4 py-2 rounded-lg border border-[#E5E7EB] hover:bg-slate-50 transition-colors"
+              className="text-xs text-[#41505F] hover:text-[#131d29] px-4 py-2 rounded-lg border border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors"
             >
               Load more
             </a>
@@ -364,30 +364,30 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
 
       {/* Accept dialog */}
       <Dialog open={!!acceptDialog} onOpenChange={(open) => { if (!open) { setAcceptDialog(null); setSelectedPeriodId(""); } }}>
-        <DialogContent className="bg-white border-slate-200 max-w-md">
+        <DialogContent className="bg-white border-[#E3E8EE] max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-slate-900">Accept supplier report</DialogTitle>
-            <DialogDescription className="text-slate-500 text-sm">
+            <DialogTitle className="text-[#131d29]">Accept supplier report</DialogTitle>
+            <DialogDescription className="text-[#5B6A78] text-sm">
               This will convert the report into an activity record. Select a reporting period to assign it to.
             </DialogDescription>
           </DialogHeader>
 
           {acceptDialog && (
             <div className="space-y-4 py-2">
-              <div className="rounded-lg bg-slate-50 px-3 py-2.5 text-xs space-y-1">
-                <p className="text-slate-900 font-medium">{acceptDialog.supplierName ?? acceptDialog.supplierEmail}</p>
-                <p className="text-slate-500">{formatAmount(acceptDialog.totalAmount, acceptDialog.unit)} via {METHOD_LABELS[acceptDialog.calculationMethod] ?? acceptDialog.calculationMethod}</p>
+              <div className="rounded-lg bg-[#F9FAFC] px-3 py-2.5 text-xs space-y-1">
+                <p className="text-[#131d29] font-medium">{acceptDialog.supplierName ?? acceptDialog.supplierEmail}</p>
+                <p className="text-[#5B6A78]">{formatAmount(acceptDialog.totalAmount, acceptDialog.unit)} via {METHOD_LABELS[acceptDialog.calculationMethod] ?? acceptDialog.calculationMethod}</p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs text-slate-600">Reporting period</Label>
+                <Label className="text-xs text-[#41505F]">Reporting period</Label>
                 <Select value={selectedPeriodId} onValueChange={setSelectedPeriodId}>
-                  <SelectTrigger className="bg-white border-[#E5E7EB] text-slate-900 text-sm">
+                  <SelectTrigger className="bg-white border-[#E3E8EE] text-[#131d29] text-sm">
                     <SelectValue placeholder="Select a reporting period" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white border-slate-200">
+                  <SelectContent className="bg-white border-[#E3E8EE]">
                     {reportingPeriods.map((p) => (
-                      <SelectItem key={p.id} value={p.id} className="text-slate-900 focus:bg-slate-100 focus:text-slate-900">
+                      <SelectItem key={p.id} value={p.id} className="text-[#131d29] focus:bg-slate-100 focus:text-[#131d29]">
                         {p.label}
                       </SelectItem>
                     ))}
@@ -400,7 +400,7 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
           {actionError && <p className="text-xs text-red-600">{actionError}</p>}
 
           <DialogFooter className="gap-2">
-            <Button variant="ghost" size="sm" className="text-slate-600" onClick={() => setAcceptDialog(null)}>
+            <Button variant="ghost" size="sm" className="text-[#41505F]" onClick={() => setAcceptDialog(null)}>
               Cancel
             </Button>
             <Button
@@ -417,33 +417,33 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
 
       {/* Reject dialog */}
       <Dialog open={!!rejectDialog} onOpenChange={(open) => { if (!open) { setRejectDialog(null); setRejectionReason(""); } }}>
-        <DialogContent className="bg-white border-slate-200 max-w-md">
+        <DialogContent className="bg-white border-[#E3E8EE] max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-slate-900">Reject supplier report</DialogTitle>
-            <DialogDescription className="text-slate-500 text-sm">
+            <DialogTitle className="text-[#131d29]">Reject supplier report</DialogTitle>
+            <DialogDescription className="text-[#5B6A78] text-sm">
               Provide a reason so the supplier knows what needs to be corrected.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-600">Reason for rejection</Label>
+              <Label className="text-xs text-[#41505F]">Reason for rejection</Label>
               <Textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 maxLength={500}
                 rows={4}
                 placeholder="e.g. The reported amount appears to be in kg rather than tonnes. Please resubmit with the correct unit."
-                className="bg-white border-[#E5E7EB] text-slate-900 text-sm resize-none placeholder:text-slate-400"
+                className="bg-white border-[#E3E8EE] text-[#131d29] text-sm resize-none placeholder:text-slate-400"
               />
-              <p className="text-[11px] text-slate-500 text-right">{rejectionReason.length}/500</p>
+              <p className="text-[11px] text-[#5B6A78] text-right">{rejectionReason.length}/500</p>
             </div>
           </div>
 
           {actionError && <p className="text-xs text-red-600">{actionError}</p>}
 
           <DialogFooter className="gap-2">
-            <Button variant="ghost" size="sm" className="text-slate-600" onClick={() => setRejectDialog(null)}>
+            <Button variant="ghost" size="sm" className="text-[#41505F]" onClick={() => setRejectDialog(null)}>
               Cancel
             </Button>
             <Button

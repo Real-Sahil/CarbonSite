@@ -26,7 +26,7 @@ function formatTonnes(t: number): string {
 
 function ProgressBar({ percent, color }: { percent: number; color: "green" | "amber" | "grey" }) {
   const clamped = Math.min(100, Math.max(0, percent));
-  const trackClass = "h-2 w-full rounded-full bg-[#e5e7eb]";
+  const trackClass = "h-2 w-full rounded-full bg-[#E3E8EE]";
   const fillClass =
     color === "green"
       ? "h-full rounded-full bg-emerald-600 transition-all"
@@ -70,9 +70,9 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
       : null;
 
   return (
-    <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-5 flex flex-col gap-4">
+    <div className="rounded-[10px] border border-[#E3E8EE] bg-white p-5 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-medium text-sm text-[#111827] capitalize">{target.targetType} target</span>
+        <span className="font-medium text-sm text-[#131d29] capitalize">{target.targetType} target</span>
         {hasData && progressPercent !== null && (
           <span
             className={`text-xs font-medium px-2 py-0.5 rounded-full ${
@@ -80,7 +80,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
                 ? "bg-emerald-100 text-emerald-700"
                 : color === "amber"
                   ? "bg-amber-100 text-amber-700"
-                  : "bg-[#f3f4f6] text-[#6b7280]"
+                  : "bg-[#f3f4f6] text-[#5B6A78]"
             }`}
           >
             {Math.round(Math.max(0, progressPercent))}% achieved
@@ -91,18 +91,18 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
       {/* Period columns */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-0.5">
-          <p className="text-xs text-[#6b7280] tracking-[-0.3px]">Baseline</p>
-          <p className="text-sm font-medium text-[#111827]">{target.baselinePeriodLabel}</p>
-          <p className="text-sm text-[#374151]">
+          <p className="text-xs text-[#5B6A78] tracking-[-0.3px]">Baseline</p>
+          <p className="text-sm font-medium text-[#131d29]">{target.baselinePeriodLabel}</p>
+          <p className="text-sm text-[#41505F]">
             {target.baselineTonnes !== null
               ? `${formatTonnes(target.baselineTonnes)} tCO₂e`
               : <span className="text-[#9ca3af] text-xs">No data</span>}
           </p>
         </div>
         <div className="flex flex-col gap-0.5">
-          <p className="text-xs text-[#6b7280] tracking-[-0.3px]">Target period</p>
-          <p className="text-sm font-medium text-[#111827]">{target.targetPeriodLabel}</p>
-          <p className="text-sm text-[#374151]">
+          <p className="text-xs text-[#5B6A78] tracking-[-0.3px]">Target period</p>
+          <p className="text-sm font-medium text-[#131d29]">{target.targetPeriodLabel}</p>
+          <p className="text-sm text-[#41505F]">
             {target.currentTonnes !== null
               ? `${formatTonnes(target.currentTonnes)} tCO₂e`
               : <span className="text-[#9ca3af] text-xs">No data yet</span>}
@@ -114,7 +114,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
       {hasData && progressPercent !== null && reducedTonnes !== null ? (
         <div className="flex flex-col gap-1.5">
           <ProgressBar percent={progressPercent} color={color} />
-          <p className="text-xs text-[#6b7280] tracking-[-0.3px]">
+          <p className="text-xs text-[#5B6A78] tracking-[-0.3px]">
             {reducedTonnes > 0
               ? `${formatTonnes(reducedTonnes)} tCO₂e reduced · ${Math.round(Math.max(0, progressPercent))}% of target achieved`
               : `No reduction recorded yet · target: reduce by ${formatTonnes(reductionTargetTonnes)} tCO₂e${targetReductionPct !== null ? ` (${Math.round(targetReductionPct)}%)` : ""}`}
@@ -122,7 +122,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
         </div>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <div className="h-2 w-full rounded-full bg-[#e5e7eb]" />
+          <div className="h-2 w-full rounded-full bg-[#E3E8EE]" />
           <p className="text-xs text-[#9ca3af] tracking-[-0.3px]">
             {target.baselineTonnes === null
               ? "No calculation data yet — run a calculation for the baseline period to see progress."

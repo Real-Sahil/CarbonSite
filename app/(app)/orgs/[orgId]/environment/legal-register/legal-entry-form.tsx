@@ -92,10 +92,10 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-1.5 lg:col-span-2">
-          <label htmlFor="l-title" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-title" className="block text-sm font-medium text-[#41505F]">
             Instrument
           </label>
           <Input
@@ -107,7 +107,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="l-cite" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-cite" className="block text-sm font-medium text-[#41505F]">
             Citation
           </label>
           <Input
@@ -119,7 +119,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="l-juris" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-juris" className="block text-sm font-medium text-[#41505F]">
             Jurisdiction
           </label>
           <Input
@@ -130,14 +130,14 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="l-status" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-status" className="block text-sm font-medium text-[#41505F]">
             Compliance position
           </label>
           <select
             id="l-status"
             value={complianceStatus}
             onChange={(e) => setComplianceStatus(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
@@ -148,7 +148,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="l-review" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-review" className="block text-sm font-medium text-[#41505F]">
             Next review
           </label>
           <Input
@@ -162,7 +162,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="l-applic" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-applic" className="block text-sm font-medium text-[#41505F]">
             How it applies here
           </label>
           <Textarea
@@ -175,7 +175,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="l-oblig" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-oblig" className="block text-sm font-medium text-[#41505F]">
             What we must do
           </label>
           <Textarea
@@ -190,7 +190,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="l-evid" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-evid" className="block text-sm font-medium text-[#41505F]">
             Evidence of compliance
           </label>
           <Textarea
@@ -203,7 +203,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="l-url" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="l-url" className="block text-sm font-medium text-[#41505F]">
             Reference link
           </label>
           <Input

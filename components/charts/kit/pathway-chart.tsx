@@ -99,12 +99,12 @@ function Plot({ points, width, height, locale }: { points: PathwayPoint[]; width
       </svg>
       {cur ? (
         <div
-          className="pointer-events-none absolute top-2 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-xs shadow-sm"
+          className="pointer-events-none absolute top-2 rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-xs shadow-sm"
           style={{ left: Math.min(Math.max(M.left + x(cur.year) + 12, 8), Math.max(8, width - 230)) }}
         >
-          <div className="mb-1 font-medium text-[#111827]">{cur.year}</div>
+          <div className="mb-1 font-medium text-[#131d29]">{cur.year}</div>
           {SERIES.map((s) => (
-            <div key={s.key} className="flex items-center justify-between gap-4 text-[#374151]">
+            <div key={s.key} className="flex items-center justify-between gap-4 text-[#41505F]">
               <span className="flex items-center gap-1.5"><span aria-hidden className="inline-block h-0.5 w-3" style={{ background: s.color }} />{s.label}</span>
               <span className="tabular-nums">{fmt(cur[s.key], locale)}</span>
             </div>
@@ -129,7 +129,7 @@ export function PathwayChartKit({ points, locale = "en-GB" }: { points: PathwayP
       }}
       footnote="A scheduled initiative counts toward the planned line only with a start date and an abatement figure."
     >
-      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#374151]">
+      <div className="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#41505F]">
         {SERIES.map((s) => (
           <span key={s.key} className="flex items-center gap-1.5">
             <svg width="18" height="8" aria-hidden>

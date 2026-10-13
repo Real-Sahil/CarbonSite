@@ -114,12 +114,12 @@ export function SavedViewsMenu({
         <DropdownMenuItem onSelect={() => router.push(v.href)} className="flex min-w-0 flex-1 items-center gap-2">
           {active ? <Check className="h-3.5 w-3.5 shrink-0" aria-label="Current view" /> : <span className="w-3.5 shrink-0" />}
           <span className="truncate">{v.name}</span>
-          {v.shared && v.ownerName && <span className="shrink-0 text-xs text-zinc-500">{v.ownerName}</span>}
+          {v.shared && v.ownerName && <span className="shrink-0 text-xs text-[#5B6A78]">{v.ownerName}</span>}
         </DropdownMenuItem>
         {canDelete && (
           <DropdownMenuItem
             aria-label={`Delete view ${v.name}`}
-            className="shrink-0 text-zinc-500 hover:text-red-600"
+            className="shrink-0 text-[#5B6A78] hover:text-red-600"
             onSelect={() => {
               if (window.confirm(`Delete the view "${v.name}"?`)) remove.mutate(v.id);
             }}
@@ -152,7 +152,7 @@ export function SavedViewsMenu({
           )}
           {sharedViews.map(row)}
           {views.length === 0 && !isError && (
-            <div className="px-2 py-1.5 text-xs text-zinc-500">No saved views yet.</div>
+            <div className="px-2 py-1.5 text-xs text-[#5B6A78]">No saved views yet.</div>
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -165,7 +165,7 @@ export function SavedViewsMenu({
             Save current filters as a view…
           </DropdownMenuItem>
           {!hasFilters && (
-            <div className="px-2 pb-1.5 text-xs text-zinc-500">Choose a filter first, then save it.</div>
+            <div className="px-2 pb-1.5 text-xs text-[#5B6A78]">Choose a filter first, then save it.</div>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

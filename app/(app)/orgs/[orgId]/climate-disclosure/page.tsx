@@ -36,16 +36,16 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
     <div className="mx-auto flex max-w-[1100px] flex-col gap-8 px-4 py-8 sm:px-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Climate disclosure</h1>
-          <p className="mt-2 max-w-[65ch] text-sm text-[#374151]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Climate disclosure</h1>
+          <p className="mt-2 max-w-[65ch] text-sm text-[#41505F]">
             Governance, strategy, risk management, and metrics and targets, in the structure of the TCFD recommendations
             (which IFRS S2 builds on). You write the narrative and keep the risk register; emissions and targets come from your
             published totals. Whether a disclosure is required, and in what form, depends on where you operate.
           </p>
           {view.exists && (
             <p className="mt-2 text-sm">
-              <Link href={`/orgs/${orgId}/reports`} className="text-[#111827] underline underline-offset-2">Generate the PDF</Link>{" "}
-              <span className="text-[#6B7280]">from Reports, type &ldquo;Climate disclosure&rdquo;.</span>
+              <Link href={`/orgs/${orgId}/reports`} className="text-[#131d29] underline underline-offset-2">Generate the PDF</Link>{" "}
+              <span className="text-[#5B6A78]">from Reports, type &ldquo;Climate disclosure&rdquo;.</span>
             </p>
           )}
         </div>
@@ -54,10 +54,10 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
         </span>
       </div>
 
-      <section className="rounded-[10px] border border-[#E5E7EB] bg-white">
+      <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
         <div className="border-b border-[#F3F4F6] px-5 py-4">
-          <h2 className="text-base font-semibold text-[#111827]">The eleven recommended disclosures</h2>
-          <p className="mt-1 text-xs text-[#6B7280]">
+          <h2 className="text-base font-semibold text-[#131d29]">The eleven recommended disclosures</h2>
+          <p className="mt-1 text-xs text-[#5B6A78]">
             {cov.met} of {cov.total} done.{" "}
             {consistent
               ? "All are done and the statement is approved, so the PDF states that it is consistent with the recommendations."
@@ -66,14 +66,14 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
         </div>
         {PILLARS.map((p) => (
           <div key={p.value}>
-            <p className="bg-[#F9FAFB] px-5 py-2 text-xs font-semibold uppercase tracking-wide text-[#6B7280]">{p.label}</p>
+            <p className="bg-[#F9FAFC] px-5 py-2 text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{p.label}</p>
             <ul className="divide-y divide-[#F3F4F6]">
               {view.checklist.filter((c) => c.pillar === p.value).map((c) => (
                 <li key={c.id} className="flex flex-wrap items-start gap-3 px-5 py-3">
                   <span className={`mt-0.5 w-16 shrink-0 rounded-full border px-2 py-0.5 text-center text-xs font-medium ${TONE[c.status]}`}>{LABEL[c.status]}</span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-[#111827]">{c.label} <span className="ml-1 text-xs font-normal text-[#6B7280]">{c.code}</span></p>
-                    <p className="mt-0.5 text-sm text-[#374151]">{c.detail}</p>
+                    <p className="text-sm font-medium text-[#131d29]">{c.label} <span className="ml-1 text-xs font-normal text-[#5B6A78]">{c.code}</span></p>
+                    <p className="mt-0.5 text-sm text-[#41505F]">{c.detail}</p>
                     {c.link ? (
                       <Link href={`/orgs/${orgId}/${c.link.path}`} className="mt-1 inline-block text-xs font-medium text-[#c2410c] underline underline-offset-2">
                         {c.link.label}
@@ -87,31 +87,31 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
         ))}
       </section>
 
-      <section className="rounded-[10px] border border-[#E5E7EB] bg-white">
+      <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
         <div className="border-b border-[#F3F4F6] px-5 py-4">
-          <h2 className="text-base font-semibold text-[#111827]">Scenarios and risks</h2>
-          <p className="mt-1 max-w-[70ch] text-xs text-[#6B7280]">
+          <h2 className="text-base font-semibold text-[#131d29]">Scenarios and risks</h2>
+          <p className="mt-1 max-w-[70ch] text-xs text-[#5B6A78]">
             The statement reports your TCFD scenarios and risk assessments. Add and score them on the{" "}
-            <Link href={`/orgs/${orgId}/tcfd`} className="text-[#111827] underline underline-offset-2">TCFD scenarios page</Link>.
+            <Link href={`/orgs/${orgId}/tcfd`} className="text-[#131d29] underline underline-offset-2">TCFD scenarios page</Link>.
           </p>
         </div>
-        <p className="px-5 py-4 text-sm text-[#374151]">
+        <p className="px-5 py-4 text-sm text-[#41505F]">
           {view.scenarios.length} scenario{view.scenarios.length === 1 ? "" : "s"} and {view.risks.length} risk assessment{view.risks.length === 1 ? "" : "s"} recorded.
         </p>
       </section>
 
-      <section className="rounded-[10px] border border-[#E5E7EB] bg-white">
+      <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
         <div className="border-b border-[#F3F4F6] px-5 py-4">
-          <h2 className="text-base font-semibold text-[#111827]">The statement</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">The statement</h2>
         </div>
         <DisclosureForm orgId={orgId} canEdit={canEdit} sections={view.sections} approved={approved} />
       </section>
 
       {canApprove && view.exists && (
-        <section className="rounded-[10px] border border-[#E5E7EB] bg-white">
+        <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
           <div className="border-b border-[#F3F4F6] px-5 py-4">
-            <h2 className="text-base font-semibold text-[#111827]">Record approval</h2>
-            <p className="mt-1 max-w-[65ch] text-xs text-[#6B7280]">
+            <h2 className="text-base font-semibold text-[#131d29]">Record approval</h2>
+            <p className="mt-1 max-w-[65ch] text-xs text-[#5B6A78]">
               Once the board (or the equivalent body) has approved this version, record who approved it and when.
             </p>
           </div>

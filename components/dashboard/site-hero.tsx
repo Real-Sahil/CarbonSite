@@ -13,7 +13,7 @@ import { SCOPE_COLORS } from "@/components/charts/palette";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
-const FIELD = "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+const FIELD = "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
 
 export function SiteHero({
   orgId,
@@ -87,16 +87,16 @@ export function SiteHero({
   const labelled = new Set([...placed].sort((a, b) => b.kg - a.kg).slice(0, 3).map((s) => s.id));
 
   return (
-    <section aria-labelledby="site-hero-title" className="mb-6 overflow-hidden rounded-[14px] border border-[#E5E7EB] bg-white">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#E5E7EB] px-5 py-4">
+    <section aria-labelledby="site-hero-title" className="mb-6 overflow-hidden rounded-[14px] border border-[#E3E8EE] bg-white">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#E3E8EE] px-5 py-4">
         <div>
-          <h2 id="site-hero-title" className="text-base font-semibold text-[#111827]">Sites</h2>
-          <p className="mt-0.5 text-xs text-[#6B7280]">
+          <h2 id="site-hero-title" className="text-base font-semibold text-[#131d29]">Sites</h2>
+          <p className="mt-0.5 text-xs text-[#5B6A78]">
             {periodLabel ? `Live figures for ${periodLabel}.` : "Live figures."} Choose a site to filter the whole dashboard. Figures move as records change; the published view is on the <Link href={`/orgs/${orgId}/map`} className="underline underline-offset-2">Site map</Link>.
           </p>
         </div>
         <div className="w-full sm:w-72">
-          <label htmlFor="site-hero-project" className="text-xs text-[#6B7280]">Choose a project</label>
+          <label htmlFor="site-hero-project" className="text-xs text-[#5B6A78]">Choose a project</label>
           <select
             id="site-hero-project"
             className={FIELD}
@@ -124,14 +124,14 @@ export function SiteHero({
       {failed ? (
         <p role="status" className="px-5 py-6 text-sm text-red-700">Site figures could not be loaded just now. The rest of the dashboard is unaffected.</p>
       ) : sites.length === 0 ? (
-        <p className="px-5 py-6 text-sm text-[#374151]">
+        <p className="px-5 py-6 text-sm text-[#41505F]">
           No sites yet. Sites appear once they have a position or a UK postcode. <Link href={`/orgs/${orgId}/settings/operations`} className="underline underline-offset-2">Add one in Settings, Operations</Link>.
         </p>
       ) : (
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div>
             {project ? (
-              <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[10px] border border-[#E5E7EB] bg-[#F9FAFB]" role="group" aria-label="Sites on a schematic, sized by emissions. The list beside it gives the same figures.">
+              <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC]" role="group" aria-label="Sites on a schematic, sized by emissions. The list beside it gives the same figures.">
                 {spots.map(({ x, y, site: s }) => {
                   const r = radiusFor(s.kg, max);
                   const on = isOn(s);
@@ -147,11 +147,11 @@ export function SiteHero({
                 })}
               </svg>
             ) : (
-              <p className="rounded-[10px] border border-dashed border-[#D1D5DB] p-4 text-sm text-[#374151]">
+              <p className="rounded-[10px] border border-dashed border-[#D1D5DB] p-4 text-sm text-[#41505F]">
                 None of your sites has a position yet, so none can be pinned. Use the list or the project choice above.
               </p>
             )}
-            {project ? <p className="mt-1 text-xs text-[#6B7280]">Schematic, not to a map scale. Sites at the same place are spread out so each can be chosen.</p> : null}
+            {project ? <p className="mt-1 text-xs text-[#5B6A78]">Schematic, not to a map scale. Sites at the same place are spread out so each can be chosen.</p> : null}
           </div>
 
           <div>
@@ -165,20 +165,20 @@ export function SiteHero({
                       disabled={pending}
                       aria-pressed={on}
                       onClick={() => pick(s)}
-                      className={`flex w-full items-center justify-between gap-3 px-2 py-2 text-left text-sm disabled:cursor-default ${on ? "bg-[#FFF7ED]" : "hover:bg-[#F9FAFB]"}`}
+                      className={`flex w-full items-center justify-between gap-3 px-2 py-2 text-left text-sm disabled:cursor-default ${on ? "bg-[#FFF7ED]" : "hover:bg-[#F9FAFC]"}`}
                     >
                       <span className="min-w-0">
-                        <span className="block truncate font-medium text-[#111827]">{s.name}</span>
-                        <span className="block text-xs text-[#6B7280]">{s.kind === "site" ? "Project site" : "Office or depot"}</span>
+                        <span className="block truncate font-medium text-[#131d29]">{s.name}</span>
+                        <span className="block text-xs text-[#5B6A78]">{s.kind === "site" ? "Project site" : "Office or depot"}</span>
                       </span>
-                      <span className="shrink-0 tabular-nums text-[#111827]">{tonnes(s.kg, locale)}</span>
+                      <span className="shrink-0 tabular-nums text-[#131d29]">{tonnes(s.kg, locale)}</span>
                     </button>
                   </li>
                 );
               })}
             </ul>
             {unplaced > 0 ? (
-              <p className="mt-2 px-2 text-xs text-[#6B7280]">
+              <p className="mt-2 px-2 text-xs text-[#5B6A78]">
                 {unplaced} {unplaced === 1 ? "site is" : "sites are"} not on the map. <Link href={`/orgs/${orgId}/settings/operations`} className="underline underline-offset-2">Add a postcode or position</Link>.
               </p>
             ) : null}
@@ -186,8 +186,8 @@ export function SiteHero({
         </div>
       )}
       {!failed && sites.length > 1 ? (
-        <details className="border-t border-[#E5E7EB] px-5 py-3">
-          <summary className="cursor-pointer text-sm font-medium text-[#111827]">Compare all {sites.length} sites</summary>
+        <details className="border-t border-[#E3E8EE] px-5 py-3">
+          <summary className="cursor-pointer text-sm font-medium text-[#131d29]">Compare all {sites.length} sites</summary>
           <div className="mt-3">
             <Table>
               <TableHeader>
@@ -206,7 +206,7 @@ export function SiteHero({
                   <TableRow key={`${s.kind}-${s.id}`}>
                     <TableCell>
                       <button type="button" aria-pressed={isOn(s)} disabled={pending} className="text-left font-medium hover:underline" onClick={() => pick(s)}>{s.name}</button>
-                      <span className="block text-xs text-[#6B7280]">{s.kind === "site" ? "Project site" : "Office or depot"}</span>
+                      <span className="block text-xs text-[#5B6A78]">{s.kind === "site" ? "Project site" : "Office or depot"}</span>
                     </TableCell>
                     <TableCell className="tabular-nums">{tonnes(s.kg, locale)}</TableCell>
                     <TableCell className="tabular-nums">{share == null ? "-" : `${(share * 100).toLocaleString(locale, { maximumFractionDigits: 0 })}%`}</TableCell>
@@ -215,7 +215,7 @@ export function SiteHero({
                 ))}
               </TableBody>
             </Table>
-            <p className="mt-2 text-xs text-[#6B7280]">Shares are within offices and depots, or within project sites; the two kinds overlap, so they are never added together.</p>
+            <p className="mt-2 text-xs text-[#5B6A78]">Shares are within offices and depots, or within project sites; the two kinds overlap, so they are never added together.</p>
           </div>
         </details>
       ) : null}

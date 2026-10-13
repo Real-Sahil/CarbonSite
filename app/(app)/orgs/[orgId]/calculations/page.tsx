@@ -44,7 +44,7 @@ function statusConfig(status: string) {
     case "queued":
       return {
         label: "Queued",
-        className: "bg-zinc-100 text-[#374151] border-transparent",
+        className: "bg-zinc-100 text-[#41505F] border-transparent",
         icon: Clock,
       };
     case "running":
@@ -56,7 +56,7 @@ function statusConfig(status: string) {
     case "succeeded":
       return {
         label: "Succeeded",
-        className: "bg-[#FFF7ED] text-[#111827] border-transparent",
+        className: "bg-[#FFF7ED] text-[#131d29] border-transparent",
         icon: CheckCircle2,
       };
     case "failed":
@@ -66,7 +66,7 @@ function statusConfig(status: string) {
         icon: AlertTriangle,
       };
     default:
-      return { label: status, className: "border-zinc-200", icon: Clock };
+      return { label: status, className: "border-[#E3E8EE]", icon: Clock };
   }
 }
 
@@ -103,7 +103,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
     if (err instanceof AuthError) {
       if (err.status === 401) redirect("/sign-in");
       return (
-        <div className="p-8 text-sm text-[#6B7280]">
+        <div className="p-8 text-sm text-[#5B6A78]">
           You do not have permission to view calculation runs.
         </div>
       );
@@ -175,25 +175,25 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       <StatusPoller active={hasInFlight} intervalMs={4000} />
       <CalculationRunContinuation orgId={orgId} runIds={runsNeedingContinuation} />
 
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <Calculator className="h-4 w-4 text-[#111827]" />
+              <Calculator className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Calculations
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Calculation runs
           </h1>
-          <p className="mt-1 text-sm text-[#6B7280] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#5B6A78] max-w-[65ch]">
             Deterministic emission calculations from approved activity records. Results are immutable per run.
           </p>
 
@@ -218,7 +218,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
 
         {/* Run a calculation card — visible to admins and editors */}
         {canRunCalculations && (
-          <Card className="border-[#E5E7EB] shadow-none">
+          <Card className="border-[#E3E8EE] shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="text-base">Run a calculation</CardTitle>
               <CardDescription>
@@ -261,26 +261,26 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
 
         {/* Runs table */}
         {runs.length === 0 && Object.keys(filters).length > 0 ? (
-          <p className="py-8 text-center text-sm text-[#6B7280]">No calculation runs match these filters.</p>
+          <p className="py-8 text-center text-sm text-[#5B6A78]">No calculation runs match these filters.</p>
         ) : runs.length === 0 ? (
           !canRunCalculations ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-5">
-                <Calculator className="h-7 w-7 text-[#111827]" />
+                <Calculator className="h-7 w-7 text-[#131d29]" />
               </div>
-              <h3 className="text-base font-semibold text-[#111827] mb-2">No calculation runs yet</h3>
-              <p className="text-sm text-[#6B7280] max-w-sm">
+              <h3 className="text-base font-semibold text-[#131d29] mb-2">No calculation runs yet</h3>
+              <p className="text-sm text-[#5B6A78] max-w-sm">
                 An admin or editor must trigger a calculation from approved activity records.
               </p>
             </div>
           ) : null
         ) : (
-          <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+          <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-[#111827]">
+                <CardTitle className="text-sm font-semibold text-[#131d29]">
                   All runs
-                  <span className="ml-2 text-xs font-normal text-[#6B7280]">
+                  <span className="ml-2 text-xs font-normal text-[#5B6A78]">
                     ({runs.length})
                   </span>
                 </CardTitle>
@@ -294,7 +294,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                   </div>
                 )}
               </div>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Each run applies one factor library and methodology version to a reporting period.
               </CardDescription>
             </CardHeader>
@@ -302,16 +302,16 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#f9fafb] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Factor library</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Methodology</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Triggered by</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Started</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Duration</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Records</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Factor library</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Methodology</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Triggered by</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Started</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Duration</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Records</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -319,18 +319,18 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                       const cfg = statusConfig(run.status);
                       const StatusIcon = cfg.icon;
                       return (
-                        <TableRow key={run.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb] transition-colors">
+                        <TableRow key={run.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
                           <TableCell className="py-3.5 pl-6">
                             <Link
                               href={`/orgs/${orgId}/calculations/${run.id}`}
-                              className="font-medium text-[#111827] hover:underline underline-offset-2 text-sm"
+                              className="font-medium text-[#131d29] hover:underline underline-offset-2 text-sm"
                             >
                               {run.reportingPeriod.label}
                             </Link>
                           </TableCell>
-                          <TableCell className="text-sm text-[#374151] py-3.5">
+                          <TableCell className="text-sm text-[#41505F] py-3.5">
                             {run.factorLibrary.name}{" "}
-                            <span className="text-[#6B7280]">{run.factorLibrary.version}</span>
+                            <span className="text-[#5B6A78]">{run.factorLibrary.version}</span>
                             {(() => {
                               const replacement = supersedingLibrary(run.factorLibrary, factorLibraries);
                               return replacement ? (
@@ -343,7 +343,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                               ) : null;
                             })()}
                           </TableCell>
-                          <TableCell className="text-sm text-[#374151] py-3.5">
+                          <TableCell className="text-sm text-[#41505F] py-3.5">
                             {run.methodologyVersion.name}
                           </TableCell>
                           <TableCell className="py-3.5">
@@ -363,19 +363,19 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5">
                             {run.triggeredBy ? (run.triggeredBy.name ?? run.triggeredBy.email) : "System"}
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5 tabular-nums">
                             {formatTimestamp(L, run.startedAt)}
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5 tabular-nums">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5 tabular-nums">
                             {run.status === "running"
                               ? <span className="text-blue-600">{formatDuration(run.startedAt, null)}</span>
                               : formatDuration(run.startedAt, run.finishedAt)
                             }
                           </TableCell>
-                          <TableCell className="text-sm text-[#6B7280] py-3.5 text-right tabular-nums">
+                          <TableCell className="text-sm text-[#5B6A78] py-3.5 text-right tabular-nums">
                             {run.status === "running" && run.totalRecordCount != null
                               ? `${run.processedRecordCount.toLocaleString(L)} / ${run.totalRecordCount.toLocaleString(L)}`
                               : run._count.calculations.toLocaleString(L)}
@@ -427,11 +427,11 @@ function StatPill({
   pulse?: boolean;
 }) {
   const colors = {
-    green: "bg-[#FFF7ED] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#131d29]",
     blue: "bg-blue-50 text-blue-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
+  const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base} ${pulse ? "animate-pulse" : ""}`}>
       <span className="tabular-nums font-semibold">{value}</span>

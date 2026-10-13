@@ -87,7 +87,7 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
       )}
 
       {editing && canEdit && (
-        <form onSubmit={save} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+        <form onSubmit={save} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
           <FormSection title="The case study" cols={2}>
             <FormField label="Title" htmlFor="cs-title">
               <Input id="cs-title" required minLength={2} maxLength={200} value={editing.title} onChange={(e) => set({ title: e.target.value })} />
@@ -115,8 +115,8 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
           </FormSection>
 
           <fieldset className="space-y-2">
-  <legend className="text-sm font-semibold text-zinc-900">Headline figures</legend>
-  <p className="text-xs text-zinc-500">Up to {MAX_KPIS}. These are your own statements, so say what they are measured against.</p>
+  <legend className="text-sm font-semibold text-[#131d29]">Headline figures</legend>
+  <p className="text-xs text-[#5B6A78]">Up to {MAX_KPIS}. These are your own statements, so say what they are measured against.</p>
   <div className="flex flex-col gap-2">
     {editing.kpis.map((k, i) => (
       <div key={i} className="grid grid-cols-[1fr_120px_1fr_auto] gap-2">
@@ -142,13 +142,13 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
             <FormField label="Photo" htmlFor="cs-photo" span={4} optional hint="JPEG, PNG or WebP up to 5 MB">
               <input id="cs-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} onChange={(e) => uploadPhoto(e.target.files?.[0])} className="text-sm" />
               {editing.photoEvidenceFileId && (
-                <p className="text-xs text-[#374151]">
+                <p className="text-xs text-[#41505F]">
                   Photo attached. <button type="button" className="underline" onClick={() => set({ photoEvidenceFileId: null })}>Remove</button>
                   {" "}Do not use a photo that shows people who have not agreed to appear on the board.
                 </p>
               )}
             </FormField>
-            <label className="flex items-center gap-2 text-sm text-[#374151] @md:col-span-full">
+            <label className="flex items-center gap-2 text-sm text-[#41505F] @md:col-span-full">
               <input type="checkbox" checked={editing.published} onChange={(e) => set({ published: e.target.checked })} />
               Publish: show on the site noticeboard of its contract
             </label>
@@ -163,15 +163,15 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
       )}
 
       {studies.length === 0 && !editing ? (
-        <p className="rounded-[10px] border border-[#E5E7EB] bg-white px-5 py-8 text-sm text-[#374151]">No case studies yet.</p>
+        <p className="rounded-[10px] border border-[#E3E8EE] bg-white px-5 py-8 text-sm text-[#41505F]">No case studies yet.</p>
       ) : (
         <ul className="flex flex-col gap-3">
           {studies.map((s) => (
-            <li key={s.id} className="rounded-[10px] border border-[#E5E7EB] bg-white p-5">
+            <li key={s.id} className="rounded-[10px] border border-[#E3E8EE] bg-white p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-[#111827]">{s.title}</p>
-                  <p className="text-xs text-[#6B7280]">{contractName(s.contractId)} · {s.published ? "Published" : "Draft"}{s.kpis.length ? ` · ${s.kpis.length} figure${s.kpis.length === 1 ? "" : "s"}` : ""}</p>
+                  <p className="font-semibold text-[#131d29]">{s.title}</p>
+                  <p className="text-xs text-[#5B6A78]">{contractName(s.contractId)} · {s.published ? "Published" : "Draft"}{s.kpis.length ? ` · ${s.kpis.length} figure${s.kpis.length === 1 ? "" : "s"}` : ""}</p>
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
@@ -180,7 +180,7 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
                   </div>
                 )}
               </div>
-              {s.results && <p className="mt-2 max-w-[75ch] text-sm text-[#374151]">{s.results}</p>}
+              {s.results && <p className="mt-2 max-w-[75ch] text-sm text-[#41505F]">{s.results}</p>}
             </li>
           ))}
         </ul>

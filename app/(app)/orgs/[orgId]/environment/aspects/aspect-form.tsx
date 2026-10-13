@@ -125,10 +125,10 @@ export function CreateAspectForm({
   }
 
   return (
-    <div className="w-full space-y-4 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-4 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <label htmlFor="a-activity" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-activity" className="block text-sm font-medium text-[#41505F]">
             Activity
           </label>
           <Input
@@ -139,7 +139,7 @@ export function CreateAspectForm({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="a-aspect" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-aspect" className="block text-sm font-medium text-[#41505F]">
             Aspect
           </label>
           <Input
@@ -150,7 +150,7 @@ export function CreateAspectForm({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="a-impact" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-impact" className="block text-sm font-medium text-[#41505F]">
             Impact
           </label>
           <Input
@@ -164,14 +164,14 @@ export function CreateAspectForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="a-facility" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-facility" className="block text-sm font-medium text-[#41505F]">
             Facility
           </label>
           <select
             id="a-facility"
             value={facilityId}
             onChange={(e) => setFacilityId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">Organisation wide</option>
             {facilities.map((f) => (
@@ -182,14 +182,14 @@ export function CreateAspectForm({
           </select>
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="a-cond" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-cond" className="block text-sm font-medium text-[#41505F]">
             Operating condition
           </label>
           <select
             id="a-cond"
             value={operatingCondition}
             onChange={(e) => setOperatingCondition(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="normal">Normal</option>
             <option value="abnormal">Abnormal</option>
@@ -198,7 +198,7 @@ export function CreateAspectForm({
         </div>
       </div>
 
-      <div className="space-y-3 rounded-md border border-zinc-200 bg-white p-3">
+      <div className="space-y-3 rounded-md border border-[#E3E8EE] bg-white p-3">
         <ScoreSlider
           id="a-sev"
           label="Severity"
@@ -221,15 +221,15 @@ export function CreateAspectForm({
           hints={SCORE_HINTS.legal}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-zinc-200 pt-3">
-          <span className="text-sm text-zinc-500">
-            Score <span className="font-mono font-semibold text-zinc-900">{score}</span> of 125
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#E3E8EE] pt-3">
+          <span className="text-sm text-[#5B6A78]">
+            Score <span className="font-mono font-semibold text-[#131d29]">{score}</span> of 125
           </span>
           <span
             className={
               needsControl
                 ? "rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold capitalize text-amber-900"
-                : "rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold capitalize text-zinc-700"
+                : "rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold capitalize text-[#41505F]"
             }
           >
             {rating}
@@ -237,7 +237,7 @@ export function CreateAspectForm({
         </div>
 
         {legalScore === 5 && (
-          <p className="text-xs leading-relaxed text-zinc-500">
+          <p className="text-xs leading-relaxed text-[#5B6A78]">
             Maximum legal exposure rates the aspect significant regardless of likelihood, because
             a breach of a statutory limit is significant even when it is rare.
           </p>
@@ -246,7 +246,7 @@ export function CreateAspectForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="a-controls" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-controls" className="block text-sm font-medium text-[#41505F]">
             Existing controls
           </label>
           <Textarea
@@ -258,7 +258,7 @@ export function CreateAspectForm({
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="a-action" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="a-action" className="block text-sm font-medium text-[#41505F]">
             Further action
           </label>
           <Textarea
@@ -323,10 +323,10 @@ function ScoreSlider({
   return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="text-sm font-medium text-zinc-700">
+        <label htmlFor={id} className="text-sm font-medium text-[#41505F]">
           {label}
         </label>
-        <span className="text-xs text-zinc-500">{hints[value - 1]}</span>
+        <span className="text-xs text-[#5B6A78]">{hints[value - 1]}</span>
       </div>
       <div className="flex items-center gap-3">
         <input
@@ -339,7 +339,7 @@ function ScoreSlider({
           onChange={(e) => onChange(Number(e.target.value))}
           className="w-full accent-zinc-900"
         />
-        <span className="w-4 shrink-0 text-right font-mono text-sm font-semibold tabular-nums text-zinc-900">
+        <span className="w-4 shrink-0 text-right font-mono text-sm font-semibold tabular-nums text-[#131d29]">
           {value}
         </span>
       </div>

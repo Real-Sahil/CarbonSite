@@ -108,11 +108,11 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
             <SelectContent className="max-h-72">
               {Array.from(new Set(materials.map((m) => m.category))).sort().map((cat) => (
                 <div key={cat}>
-                  <div className="px-2 py-1 text-xs font-semibold text-zinc-500 uppercase tracking-wide sticky top-0 bg-white">{cat}</div>
+                  <div className="px-2 py-1 text-xs font-semibold text-[#5B6A78] uppercase tracking-wide sticky top-0 bg-white">{cat}</div>
                   {materials.filter((m) => m.category === cat).map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       <span>{m.name}</span>
-                      <span className="ml-1.5 text-zinc-500 text-xs">({m.gwpA1A3} kgCO2e/{m.declaredUnit})</span>
+                      <span className="ml-1.5 text-[#5B6A78] text-xs">({m.gwpA1A3} kgCO2e/{m.declaredUnit})</span>
                     </SelectItem>
                   ))}
                 </div>
@@ -120,7 +120,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
             </SelectContent>
           </Select>
           {selectedMaterial && (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#5B6A78]">
               A1-A3 factor: <span className="font-medium">{selectedMaterial.gwpA1A3} kgCO2e/{selectedMaterial.declaredUnit}</span>
             </p>
           )}
@@ -179,7 +179,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
       )}
 
       <fieldset className="space-y-2">
-        <legend className="text-sm font-semibold text-zinc-900">Lifecycle stages (BS EN 15978)</legend>
+        <legend className="text-sm font-semibold text-[#131d29]">Lifecycle stages (BS EN 15978)</legend>
         <div className="flex flex-wrap gap-2">
           {ALL_STAGES.map((stage) => {
             const active = stages.includes(stage);
@@ -192,7 +192,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
                 className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                   active
                     ? "bg-[#c2410c] text-white border-[#f97316]"
-                    : "bg-white text-zinc-600 border-[#E5E7EB] hover:border-[#f97316]"
+                    : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-[#f97316]"
                 }`}
               >
                 {stage}
@@ -200,7 +200,7 @@ export function EmbodiedCarbonForm({ orgId, materials, projects, reportingPeriod
             );
           })}
         </div>
-        <p className="text-xs text-zinc-500">A1-A3 is always available. A4/A5 require transport data in the ICE entry.</p>
+        <p className="text-xs text-[#5B6A78]">A1-A3 is always available. A4/A5 require transport data in the ICE entry.</p>
       </fieldset>
 
       <FormSection title="Reference" cols={2}>

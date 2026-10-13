@@ -179,15 +179,15 @@ export function SubmissionEditActions({
     return (
       <div className="flex flex-col gap-3">
         {distance !== null && (
-          <div className="flex items-center gap-2 rounded-[10px] border border-[#E5E7EB] bg-[#f9fafb] px-3 py-2">
-            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#374151]" />
-            <p className="text-sm text-[#374151] tracking-[-0.42px]">
+          <div className="flex items-center gap-2 rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-[#41505F]" />
+            <p className="text-sm text-[#41505F] tracking-[-0.42px]">
               Road distance:{" "}
-              <span className="font-medium text-[#111827]">
+              <span className="font-medium text-[#131d29]">
                 {distance.toFixed(2)} km
               </span>
               {distanceSource && (
-                <span className="ml-1 text-xs text-[#374151]">
+                <span className="ml-1 text-xs text-[#41505F]">
                   ({DISTANCE_SOURCE_LABELS[distanceSource] ?? distanceSource})
                 </span>
               )}
@@ -195,7 +195,7 @@ export function SubmissionEditActions({
           </div>
         )}
         {saved && (
-          <p className="text-xs text-[#111827] tracking-[-0.36px] flex items-center gap-1">
+          <p className="text-xs text-[#131d29] tracking-[-0.36px] flex items-center gap-1">
             <Check className="h-3.5 w-3.5" /> Changes saved
           </p>
         )}
@@ -225,7 +225,7 @@ export function SubmissionEditActions({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0">{amountCfg.label}</label>
+          <label className="text-xs text-[#41505F] tracking-[-0.36px] w-32 shrink-0">{amountCfg.label}</label>
           <Input
             type="number"
             value={amount}
@@ -235,7 +235,7 @@ export function SubmissionEditActions({
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0">Unit</label>
+          <label className="text-xs text-[#41505F] tracking-[-0.36px] w-32 shrink-0">Unit</label>
           <Input
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
@@ -245,16 +245,16 @@ export function SubmissionEditActions({
         </div>
       </div>
 
-      <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
-        <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+      <div className="rounded-[10px] border border-[#E3E8EE] p-3 space-y-3">
+        <p className="text-xs font-medium text-[#41505F] tracking-[-0.36px] uppercase">
           Form values
         </p>
         {fields.length === 0 && (
-          <p className="text-xs text-[#6B7280] tracking-[-0.36px] italic">No additional form fields.</p>
+          <p className="text-xs text-[#5B6A78] tracking-[-0.36px] italic">No additional form fields.</p>
         )}
         {fields.map((field, idx) => (
           <div key={field.key} className="flex items-center gap-2">
-            <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0 capitalize">
+            <label className="text-xs text-[#41505F] tracking-[-0.36px] w-32 shrink-0 capitalize">
               {field.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
             </label>
             <Input
@@ -267,13 +267,13 @@ export function SubmissionEditActions({
       </div>
 
       {ocrFields.length > 0 && (
-        <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
-          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+        <div className="rounded-[10px] border border-[#E3E8EE] p-3 space-y-3">
+          <p className="text-xs font-medium text-[#41505F] tracking-[-0.36px] uppercase">
             OCR extracted values
           </p>
           {ocrFields.map((field, idx) => (
             <div key={field.key} className="flex items-center gap-2">
-              <label className="text-xs text-[#374151] tracking-[-0.36px] w-32 shrink-0 capitalize">
+              <label className="text-xs text-[#41505F] tracking-[-0.36px] w-32 shrink-0 capitalize">
                 {field.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
               </label>
               <Input
@@ -286,9 +286,9 @@ export function SubmissionEditActions({
         </div>
       )}
 
-      <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
+      <div className="rounded-[10px] border border-[#E3E8EE] p-3 space-y-3">
         <div>
-          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+          <p className="text-xs font-medium text-[#41505F] tracking-[-0.36px] uppercase">
             Ticket postcodes
           </p>
           <p className="text-xs text-[#555] tracking-[-0.36px] mt-0.5">
@@ -297,7 +297,7 @@ export function SubmissionEditActions({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Pickup postcode</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Pickup postcode</label>
             <Input
               value={pickupPostcode}
               onChange={(e) => setPickupPostcode(e.target.value)}
@@ -306,7 +306,7 @@ export function SubmissionEditActions({
             />
           </div>
           <div>
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Delivery postcode</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Delivery postcode</label>
             <Input
               value={deliveryPostcode}
               onChange={(e) => setDeliveryPostcode(e.target.value)}
@@ -317,9 +317,9 @@ export function SubmissionEditActions({
         </div>
       </div>
 
-      <div className="rounded-[10px] border border-[#E5E7EB] p-3 space-y-3">
+      <div className="rounded-[10px] border border-[#E3E8EE] p-3 space-y-3">
         <div>
-          <p className="text-xs font-medium text-[#374151] tracking-[-0.36px] uppercase">
+          <p className="text-xs font-medium text-[#41505F] tracking-[-0.36px] uppercase">
             Route coordinates (from ticket OCR)
           </p>
           <p className="text-xs text-[#555] tracking-[-0.36px] mt-0.5">
@@ -328,7 +328,7 @@ export function SubmissionEditActions({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Pickup lat</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Pickup lat</label>
             <Input
               value={pickupLat}
               onChange={(e) => setPickupLat(e.target.value)}
@@ -337,7 +337,7 @@ export function SubmissionEditActions({
             />
           </div>
           <div>
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Pickup lng</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Pickup lng</label>
             <Input
               value={pickupLng}
               onChange={(e) => setPickupLng(e.target.value)}
@@ -346,7 +346,7 @@ export function SubmissionEditActions({
             />
           </div>
           <div>
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Delivery lat</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Delivery lat</label>
             <Input
               value={deliveryLat}
               onChange={(e) => setDeliveryLat(e.target.value)}
@@ -355,7 +355,7 @@ export function SubmissionEditActions({
             />
           </div>
           <div>
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Delivery lng</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Delivery lng</label>
             <Input
               value={deliveryLng}
               onChange={(e) => setDeliveryLng(e.target.value)}
@@ -372,7 +372,7 @@ export function SubmissionEditActions({
       <div className="flex flex-wrap gap-3">
         {emissionCategories.length > 0 && (
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Emission category</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Emission category</label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger className="w-56 h-8 text-sm">
                 <SelectValue placeholder="Select category" />
@@ -390,7 +390,7 @@ export function SubmissionEditActions({
         )}
         {facilities.length > 0 && (
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-[#374151] tracking-[-0.36px]">Facility (optional)</label>
+            <label className="text-xs text-[#41505F] tracking-[-0.36px]">Facility (optional)</label>
             <Select value={facilityId} onValueChange={setFacilityId}>
               <SelectTrigger className="w-44 h-8 text-sm">
                 <SelectValue placeholder="None" />

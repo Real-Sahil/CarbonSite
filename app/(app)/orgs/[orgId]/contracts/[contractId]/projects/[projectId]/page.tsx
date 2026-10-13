@@ -109,33 +109,33 @@ export default async function ProjectDetailPage({ params }: Props) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px]">
-        <Link href={`/orgs/${orgId}/contracts`} className="hover:text-[#111827] hover:underline">
+      <nav className="flex items-center gap-2 text-sm text-[#41505F] tracking-[-0.42px]">
+        <Link href={`/orgs/${orgId}/contracts`} className="hover:text-[#131d29] hover:underline">
           Contracts
         </Link>
         <span>/</span>
         <Link
           href={`/orgs/${orgId}/contracts/${contractId}`}
-          className="hover:text-[#111827] hover:underline"
+          className="hover:text-[#131d29] hover:underline"
         >
           {contract.name}
         </Link>
         <span>/</span>
-        <span className="text-[#111827]">{project.name}</span>
+        <span className="text-[#131d29]">{project.name}</span>
       </nav>
 
       {/* Header */}
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#131d29] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Contracts
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
+          className="text-2xl tracking-tight text-[#131d29]"
           
         >
           {project.name}
         </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#41505F] font-normal tracking-[-0.42px] mt-[7px]">
           Project details and associated sites.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -177,16 +177,16 @@ export default async function ProjectDetailPage({ params }: Props) {
         <CardContent>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Project code</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{project.projectCode ?? "—"}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Project code</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{project.projectCode ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Start date</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatDate(project.startDate)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Start date</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{formatDate(project.startDate)}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">End date</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatDate(project.endDate)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">End date</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{formatDate(project.endDate)}</p>
             </div>
           </div>
         </CardContent>
@@ -212,34 +212,34 @@ export default async function ProjectDetailPage({ params }: Props) {
           {sites.length === 0 ? (
             <EmptyState message="No sites yet. Create one above to get started." />
           ) : (
-            <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
+            <div className="rounded-[14px] border border-[#E3E8EE] overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-[#f9fafb]">
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Name</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Site code</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Postcode</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">City</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Country</TableHead>
+                  <TableRow className="bg-[#F9FAFC]">
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Name</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Site code</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Postcode</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">City</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Country</TableHead>
                     <TableHead className="w-[60px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sites.map((site) => (
-                    <TableRow key={site.id} className="hover:bg-[#f9fafb]">
-                      <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
+                    <TableRow key={site.id} className="hover:bg-[#F9FAFC]">
+                      <TableCell className="font-normal text-[#131d29] tracking-[-0.42px]">
                         {site.name}
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {site.siteCode ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {site.postcode ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {site.city ?? "—"}
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {site.country ?? "—"}
                       </TableCell>
                       <TableCell>
@@ -270,12 +270,12 @@ function AccessDenied() {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <h1
-          className="text-2xl font-bold tracking-tight text-[#111827] mb-1"
+          className="text-2xl tracking-tight text-[#131d29] mb-1"
           
         >
           Access denied
         </h1>
-        <p className="text-sm text-[#374151] tracking-[-0.42px]">
+        <p className="text-sm text-[#41505F] tracking-[-0.42px]">
           You do not have permission to view this project.
         </p>
       </div>

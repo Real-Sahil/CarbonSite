@@ -108,17 +108,17 @@ export function CompletenessMatrixClient({
     data?.cells.find((c) => c.facilityId === facilityId && c.emissionCategoryId === categoryId) ?? null;
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <ClipboardList className="h-4 w-4 text-[#111827]" />
+              <ClipboardList className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Data Quality</span>
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Data Quality</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Completeness matrix</h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Completeness matrix</h1>
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Which facilities have reported each emission category for the selected period, graded against what the
             organisation actually expects to receive.
           </p>
@@ -148,7 +148,7 @@ export function CompletenessMatrixClient({
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {loading ? (
-          <p className="text-sm text-zinc-500">Loading…</p>
+          <p className="text-sm text-[#5B6A78]">Loading…</p>
         ) : loadError ? (
           <Card>
             <CardContent className="py-12 text-center">
@@ -162,8 +162,8 @@ export function CompletenessMatrixClient({
           <Card>
             <CardContent className="py-12 text-center">
               <ClipboardList className="mx-auto h-8 w-8 text-zinc-300 mb-3" />
-              <p className="text-sm font-medium text-zinc-700">No completeness requirements configured yet</p>
-              <p className="text-xs text-zinc-500 mt-1 max-w-sm mx-auto">
+              <p className="text-sm font-medium text-[#41505F]">No completeness requirements configured yet</p>
+              <p className="text-xs text-[#5B6A78] mt-1 max-w-sm mx-auto">
                 Add a requirement for each facility x emission category combination you expect data for, with an owner
                 responsible for chasing it up.
               </p>
@@ -184,10 +184,10 @@ export function CompletenessMatrixClient({
               <SummaryStat label="Missing" value={String(data.summary.red)} tone="text-red-700" />
             </div>
 
-            <Card className="border-[#E5E7EB] shadow-none">
-              <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-                <CardTitle className="text-sm font-semibold text-zinc-900">{data.reportingPeriod.label}</CardTitle>
-                <CardDescription className="text-xs text-zinc-500">
+            <Card className="border-[#E3E8EE] shadow-none">
+              <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+                <CardTitle className="text-sm font-semibold text-[#131d29]">{data.reportingPeriod.label}</CardTitle>
+                <CardDescription className="text-xs text-[#5B6A78]">
                   Rows are facilities, columns are emission categories. Grey cells aren&apos;t required for that facility.
                 </CardDescription>
               </CardHeader>
@@ -195,9 +195,9 @@ export function CompletenessMatrixClient({
                 <table className="border-separate border-spacing-1">
                   <thead>
                     <tr>
-                      <th className="text-left text-xs font-medium text-zinc-500 pr-3 pb-2 sticky left-0 bg-white">Facility</th>
+                      <th className="text-left text-xs font-medium text-[#5B6A78] pr-3 pb-2 sticky left-0 bg-white">Facility</th>
                       {data.categories.map((cat) => (
-                        <th key={cat.id} className="text-xs font-medium text-zinc-500 pb-2 px-1" title={cat.name}>
+                        <th key={cat.id} className="text-xs font-medium text-[#5B6A78] pb-2 px-1" title={cat.name}>
                           <div className="w-10 truncate">{cat.code}</div>
                         </th>
                       ))}
@@ -206,7 +206,7 @@ export function CompletenessMatrixClient({
                   <tbody>
                     {data.facilities.map((facility) => (
                       <tr key={facility.id}>
-                        <td className="text-sm text-zinc-700 pr-3 whitespace-nowrap sticky left-0 bg-white">{facility.name}</td>
+                        <td className="text-sm text-[#41505F] pr-3 whitespace-nowrap sticky left-0 bg-white">{facility.name}</td>
                         {data.categories.map((cat) => {
                           const cell = cellFor(facility.id, cat.id);
                           if (!cell) return <td key={cat.id} className="w-10 h-8" />;
@@ -259,9 +259,9 @@ export function CompletenessMatrixClient({
 
 function SummaryStat({ label, value, tone }: { label: string; value: string; tone?: string }) {
   return (
-    <div className="rounded-xl border border-[#E5E7EB] bg-white p-5">
-      <div className="text-xs font-medium text-zinc-500 uppercase tracking-widest mb-1">{label}</div>
-      <div className={cn("text-2xl font-semibold tabular-nums text-zinc-900", tone)}>{value}</div>
+    <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+      <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">{label}</div>
+      <div className={cn("text-2xl font-semibold tabular-nums text-[#131d29]", tone)}>{value}</div>
     </div>
   );
 }
@@ -276,32 +276,32 @@ function CellDetailModal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-gray-900">{facilityName}</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">{facilityName}</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <div className="space-y-3 text-sm">
           <div>
-            <p className="text-xs font-medium text-gray-500">Category</p>
-            <p className="text-gray-900">{categoryName}</p>
+            <p className="text-xs font-medium text-[#5B6A78]">Category</p>
+            <p className="text-[#131d29]">{categoryName}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500">Status</p>
-            <p className="text-gray-900">{STATUS_LABEL[cell.status]}</p>
+            <p className="text-xs font-medium text-[#5B6A78]">Status</p>
+            <p className="text-[#131d29]">{STATUS_LABEL[cell.status]}</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500">Records this period</p>
-            <p className="text-gray-900">{cell.recordCount} total, {cell.approvedCount} approved</p>
+            <p className="text-xs font-medium text-[#5B6A78]">Records this period</p>
+            <p className="text-[#131d29]">{cell.recordCount} total, {cell.approvedCount} approved</p>
           </div>
           <div>
-            <p className="text-xs font-medium text-gray-500">Owner</p>
-            <p className="text-gray-900">{cell.owner?.name ?? cell.owner?.email ?? "Unassigned"}</p>
+            <p className="text-xs font-medium text-[#5B6A78]">Owner</p>
+            <p className="text-[#131d29]">{cell.owner?.name ?? cell.owner?.email ?? "Unassigned"}</p>
           </div>
           {cell.notes && (
             <div>
-              <p className="text-xs font-medium text-gray-500">Notes</p>
-              <p className="text-gray-900">{cell.notes}</p>
+              <p className="text-xs font-medium text-[#5B6A78]">Notes</p>
+              <p className="text-[#131d29]">{cell.notes}</p>
             </div>
           )}
         </div>
@@ -357,14 +357,14 @@ function RequirementFormModal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-gray-900">Add completeness requirement</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">Add completeness requirement</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Facility</label>
+            <label className="block text-xs font-medium text-[#41505F] mb-1">Facility</label>
             <Select value={facilityId} onValueChange={setFacilityId}>
               <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -373,7 +373,7 @@ function RequirementFormModal({
             </Select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Emission category</label>
+            <label className="block text-xs font-medium text-[#41505F] mb-1">Emission category</label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -382,7 +382,7 @@ function RequirementFormModal({
             </Select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Owner <span className="text-gray-500">(optional)</span></label>
+            <label className="block text-xs font-medium text-[#41505F] mb-1">Owner <span className="text-[#5B6A78]">(optional)</span></label>
             <Select value={ownerUserId} onValueChange={setOwnerUserId}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Unassigned" /></SelectTrigger>
               <SelectContent>
@@ -391,12 +391,12 @@ function RequirementFormModal({
             </Select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Notes <span className="text-gray-500">(optional)</span></label>
+            <label className="block text-xs font-medium text-[#41505F] mb-1">Notes <span className="text-[#5B6A78]">(optional)</span></label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 resize-none"
+              className="w-full rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 resize-none"
             />
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

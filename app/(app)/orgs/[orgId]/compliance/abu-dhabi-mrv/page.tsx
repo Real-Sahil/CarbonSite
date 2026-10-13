@@ -57,9 +57,9 @@ function FacilityCard({ orgId, facility, onSaved }: { orgId: string; facility: F
   }
 
   return (
-    <Card className="border-gray-200">
+    <Card className="border-[#E3E8EE]">
       <CardContent className="space-y-4 pt-5">
-        <h2 className="font-semibold text-gray-900">{facility.name}</h2>
+        <h2 className="font-semibold text-[#131d29]">{facility.name}</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={`lic-${facility.id}`}>Economic licence number</Label>
@@ -92,7 +92,7 @@ function FacilityCard({ orgId, facility, onSaved }: { orgId: string; facility: F
             <a href={`/api/orgs/${orgId}/exports/abu-dhabi-mrv?facilityId=${facility.id}&year=${year}`}>Download Scope 1 workbook</a>
           </Button>
         </div>
-        {changed && <p className="text-xs text-gray-500">Save the identifiers first so the workbook carries them.</p>}
+        {changed && <p className="text-xs text-[#5B6A78]">Save the identifiers first so the workbook carries them.</p>}
         {error && <p className="text-sm text-red-600">{error}</p>}
       </CardContent>
     </Card>
@@ -119,16 +119,16 @@ export default function AbuDhabiMrvPage() {
     <div className="space-y-6 p-6">
       <div>
         <Link href={`/orgs/${orgId}/compliance/deadlines`} className="text-sm text-blue-600 hover:underline">Regulatory calendar</Link>
-        <h1 className="mt-2 text-3xl font-bold text-gray-900">Abu Dhabi MRV: facility Scope 1 data</h1>
-        <p className="mt-2 max-w-3xl text-gray-600">
+        <h1 className="mt-2 text-3xl text-[#131d29]">Abu Dhabi MRV: facility Scope 1 data</h1>
+        <p className="mt-2 max-w-3xl text-[#41505F]">
           Facility-level Scope 1 emissions for a calendar year, taken from your latest published snapshot that covers the whole year, in the order of the Environment Agency&apos;s identifier and source stream sections.
           It is not the Agency&apos;s template: copy the figures across and file through the Agency&apos;s portal. Sections only you can complete, such as the facility description, measurement based sources, verification and mitigation, are not filled.
           Whether a facility must report depends on its sector and on emitting 25,000 tCO2e or more; check with the Agency.
         </p>
       </div>
-      {facilities === null && <p className="text-sm text-gray-500">Loading facilities…</p>}
+      {facilities === null && <p className="text-sm text-[#5B6A78]">Loading facilities…</p>}
       {facilities !== null && uae.length === 0 && (
-        <p className="text-sm text-gray-600">No facility is set to the United Arab Emirates. Set a facility&apos;s country under Settings, Operations.</p>
+        <p className="text-sm text-[#41505F]">No facility is set to the United Arab Emirates. Set a facility&apos;s country under Settings, Operations.</p>
       )}
       {uae.map((f) => (
         <FacilityCard key={f.id} orgId={orgId!} facility={f} onSaved={load} />

@@ -93,8 +93,8 @@ export function AddPaymentMethodDialog({
 
         {isLoading ? (
           <div className="py-8 text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-900" />
-            <p className="mt-4 text-sm text-slate-600">Loading payment form...</p>
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-[#E3E8EE] border-t-slate-900" />
+            <p className="mt-4 text-sm text-[#41505F]">Loading payment form...</p>
           </div>
         ) : error ? (
           <div className="py-8 text-center text-red-600">

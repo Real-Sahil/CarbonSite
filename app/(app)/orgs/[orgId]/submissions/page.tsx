@@ -181,22 +181,22 @@ export default async function SubmissionsPage({
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#fff7ed]">
-              <ClipboardList className="h-4 w-4 text-[#111827]" />
+              <ClipboardList className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Review
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Field submissions
           </h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Review incoming submissions from field workers before approving them as activity records.
           </p>
 
@@ -225,11 +225,11 @@ export default async function SubmissionsPage({
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     active
                       ? "bg-[#c2410c] text-white"
-                      : "border border-[#E5E7EB] text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
+                      : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                   }`}
                 >
                   {filter.label}
-                  <span className={`ml-1.5 ${active ? "text-[#FED7AA]" : "text-[#6B7280]"}`}>
+                  <span className={`ml-1.5 ${active ? "text-[#FED7AA]" : "text-[#5B6A78]"}`}>
                     {count.toLocaleString(L)}
                   </span>
                 </Link>
@@ -271,7 +271,7 @@ export default async function SubmissionsPage({
           <div className="mt-4 flex justify-center">
             <Link
               href={filterHref(statusFilter, limit + PAGE_SIZE)}
-              className="rounded-full border border-[#E5E7EB] px-4 py-2 text-sm text-[#374151] hover:border-[#FED7AA] hover:bg-[#fff7ed] transition-colors"
+              className="rounded-full border border-[#E3E8EE] px-4 py-2 text-sm text-[#41505F] hover:border-[#FED7AA] hover:bg-[#fff7ed] transition-colors"
             >
               Show more ({initialSubmissions.length.toLocaleString(L)} of{" "}
               {(statusFilter === "all"

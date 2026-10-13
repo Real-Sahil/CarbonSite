@@ -31,7 +31,7 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
 
   if (!open) return <Button onClick={() => setOpen(true)}>Add document</Button>;
   return (
-    <form onSubmit={submit} className="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-5">
+    <form onSubmit={submit} className="w-full max-w-xl rounded-xl border border-[#E3E8EE] bg-white p-5">
       <FormSection title="Add a document" cols={2}>
         <FormField label="Kind" htmlFor="wd-kind">
           <select id="wd-kind" name="kind" required defaultValue="" className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
@@ -190,21 +190,21 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
   return (
     <div className="space-y-1 text-xs">
     <div className="flex gap-3">
-      <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void read()}>{busy ? "Reading…" : found ? "Read again" : "Read file"}</button>
-      {(kind === "carrier_licence" || kind === "transfer_note") && <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void checkRegister()}>Check carrier register</button>}
-      {(kind === "site_permit" || kind === "exemption") && <button type="button" disabled={busy} className="text-gray-700 underline underline-offset-2" onClick={() => void checkPermit()}>Check permit register</button>}
+      <button type="button" disabled={busy} className="text-[#41505F] underline underline-offset-2" onClick={() => void read()}>{busy ? "Reading…" : found ? "Read again" : "Read file"}</button>
+      {(kind === "carrier_licence" || kind === "transfer_note") && <button type="button" disabled={busy} className="text-[#41505F] underline underline-offset-2" onClick={() => void checkRegister()}>Check carrier register</button>}
+      {(kind === "site_permit" || kind === "exemption") && <button type="button" disabled={busy} className="text-[#41505F] underline underline-offset-2" onClick={() => void checkPermit()}>Check permit register</button>}
       {kind === "transfer_note" && !recorded && facilities.length > 0 && periods.length > 0 && <AcceptAsRecord orgId={orgId} docId={id} prefill={{ ...prefill, carrierRegistration: extracted?.carrierRegistration, ewc: extracted?.ewc, tonnes: extracted?.tonnes, date: extracted?.date, vehicle: extracted?.vehicle }} facilities={facilities} periods={periods} />}
       {kind === "transfer_note" && recorded && <span className="text-green-700">Recorded as waste</span>}
       {status === "pending" && (
         <>
           <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => void call("PATCH", { status: "accepted" })}>Accept</button>
-          <button type="button" className="text-gray-600 underline underline-offset-2" onClick={() => void call("PATCH", { status: "rejected" })}>Reject</button>
+          <button type="button" className="text-[#41505F] underline underline-offset-2" onClick={() => void call("PATCH", { status: "rejected" })}>Reject</button>
         </>
       )}
       <button type="button" className="text-red-700 underline underline-offset-2" onClick={() => { if (confirm("Remove this entry? The file stays in your evidence.")) void call("DELETE"); }}>Remove</button>
     </div>
     {found && (
-      <div className="rounded-md bg-gray-50 p-2 text-[11px] text-gray-700">
+      <div className="rounded-md bg-[#F9FAFC] p-2 text-[11px] text-[#41505F]">
         {found.found === 0 ? "Nothing clear found in the file. Fill the details by hand." : (
           <>
             <p className="font-medium">Found in the file</p>
@@ -216,7 +216,7 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
     )}
     {check && <CarrierResult check={check} />}
     {permit && <PermitResult permit={permit} />}
-    {note && <p role="status" className="text-[11px] text-gray-600">{note}</p>}
+    {note && <p role="status" className="text-[11px] text-[#41505F]">{note}</p>}
     </div>
   );
 }

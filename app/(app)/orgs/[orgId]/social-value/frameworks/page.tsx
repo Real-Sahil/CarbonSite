@@ -56,21 +56,21 @@ export default async function FrameworksPage({ params }: Props) {
   });
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <Network className="h-4 w-4 text-[#111827]" />
+              <Network className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Social Value
             </span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Frameworks</h1>
-              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">Frameworks</h1>
+              <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
                 Define measurement frameworks (e.g. TOMS, PPN06/21, custom) with themes, outcomes, measures, and indicators.
               </p>
             </div>
@@ -84,32 +84,32 @@ export default async function FrameworksPage({ params }: Props) {
           <EmptyState />
         ) : (
           frameworks.map((fw) => (
-            <Card key={fw.id} className="border-[#E5E7EB] shadow-none">
-              <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+            <Card key={fw.id} className="border-[#E3E8EE] shadow-none">
+              <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-sm font-semibold text-[#111827]">{fw.name}</CardTitle>
+                      <CardTitle className="text-sm font-semibold text-[#131d29]">{fw.name}</CardTitle>
                       {fw.isDefault && (
                         <Badge variant="secondary" className="text-xs">Default</Badge>
                       )}
                       {fw.version && (
-                        <span className="text-xs text-[#6B7280]">v{fw.version}</span>
+                        <span className="text-xs text-[#5B6A78]">v{fw.version}</span>
                       )}
                     </div>
                     {fw.description && (
-                      <CardDescription className="text-xs text-[#6B7280] mt-0.5 max-w-[60ch]">
+                      <CardDescription className="text-xs text-[#5B6A78] mt-0.5 max-w-[60ch]">
                         {fw.description}
                       </CardDescription>
                     )}
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-[#6B7280]">
-                        <span className="font-medium text-[#374151]">{fw.themes.length}</span> themes
+                      <span className="text-xs text-[#5B6A78]">
+                        <span className="font-medium text-[#41505F]">{fw.themes.length}</span> themes
                       </span>
-                      <span className="text-xs text-[#6B7280]">
-                        <span className="font-medium text-[#374151]">{fw._count.commitments}</span> commitments
+                      <span className="text-xs text-[#5B6A78]">
+                        <span className="font-medium text-[#41505F]">{fw._count.commitments}</span> commitments
                       </span>
-                      <span className="text-xs font-mono text-[#6B7280]">{fw.slug}</span>
+                      <span className="text-xs font-mono text-[#5B6A78]">{fw.slug}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
@@ -125,20 +125,20 @@ export default async function FrameworksPage({ params }: Props) {
               </CardHeader>
               <CardContent className="p-0">
                 {fw.themes.length === 0 ? (
-                  <p className="px-6 py-4 text-xs text-[#6B7280]">No themes defined yet.</p>
+                  <p className="px-6 py-4 text-xs text-[#5B6A78]">No themes defined yet.</p>
                 ) : (
                   <div className="divide-y divide-[#F3F4F6]">
                     {fw.themes.map((theme) => (
                       <details key={theme.id} className="group">
-                        <summary className="flex items-center justify-between px-6 py-3 cursor-pointer hover:bg-[#F9FAFB] list-none">
+                        <summary className="flex items-center justify-between px-6 py-3 cursor-pointer hover:bg-[#F9FAFC] list-none">
                           <div className="flex items-center gap-3">
-                            <ChevronDown className="h-3.5 w-3.5 text-[#6B7280] group-open:rotate-180 transition-transform" />
-                            <span className="text-sm font-medium text-[#111827]">{theme.name}</span>
+                            <ChevronDown className="h-3.5 w-3.5 text-[#5B6A78] group-open:rotate-180 transition-transform" />
+                            <span className="text-sm font-medium text-[#131d29]">{theme.name}</span>
                             {theme.code && (
-                              <span className="text-xs text-[#6B7280] font-mono">{theme.code}</span>
+                              <span className="text-xs text-[#5B6A78] font-mono">{theme.code}</span>
                             )}
                           </div>
-                          <span className="text-xs text-[#6B7280]">
+                          <span className="text-xs text-[#5B6A78]">
                             {theme.outcomes.length} outcomes
                           </span>
                         </summary>
@@ -151,9 +151,9 @@ export default async function FrameworksPage({ params }: Props) {
                                     {outcome.code && (
                                       <span className="text-xs font-mono text-[#c2410c]">{outcome.code}</span>
                                     )}
-                                    <span className="text-xs text-[#374151]">{outcome.name}</span>
+                                    <span className="text-xs text-[#41505F]">{outcome.name}</span>
                                   </div>
-                                  <div className="flex items-center gap-3 text-xs text-[#6B7280] flex-shrink-0">
+                                  <div className="flex items-center gap-3 text-xs text-[#5B6A78] flex-shrink-0">
                                     {outcome.measures.length > 0 && (
                                       <span>{outcome.measures.length} measures</span>
                                     )}
@@ -181,7 +181,7 @@ export default async function FrameworksPage({ params }: Props) {
 
 function EmptyState() {
   return (
-    <Card className="border-[#E5E7EB] shadow-none">
+    <Card className="border-[#E3E8EE] shadow-none">
       <CardContent>
         <EmptyPanel
           icon={Network}

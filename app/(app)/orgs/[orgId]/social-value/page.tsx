@@ -200,22 +200,22 @@ export default async function SocialValuePage({ params }: Props) {
   }));
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <Heart className="h-4 w-4 text-[#111827]" />
+              <Heart className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Social Value
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             National TOMS Social Value
           </h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Track and report social value delivered across contracts using the National TOMs framework.
           </p>
 
@@ -223,8 +223,8 @@ export default async function SocialValuePage({ params }: Props) {
           {records.length > 0 && (
             <div className="mt-6 flex flex-col gap-4">
               <div className="inline-flex items-baseline gap-2">
-                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">Total social value delivered</span>
-                <span className="text-2xl font-bold text-[#111827] tabular-nums">{formatGbp(totalPounds)}</span>
+                <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Total social value delivered</span>
+                <span className="text-2xl font-bold text-[#131d29] tabular-nums">{formatGbp(totalPounds)}</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {themes.map((theme) => {
@@ -232,15 +232,15 @@ export default async function SocialValuePage({ params }: Props) {
                   return (
                     <div
                       key={theme.code}
-                      className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1"
+                      className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1"
                     >
                       <span className="text-xs font-semibold text-[#c2410c]">
                         {theme.code}
                       </span>
-                      <span className="text-xs text-[#6B7280] leading-[1.4]">
+                      <span className="text-xs text-[#5B6A78] leading-[1.4]">
                         {theme.name}
                       </span>
-                      <span className="text-sm font-semibold text-[#111827] tabular-nums mt-1">
+                      <span className="text-sm font-semibold text-[#131d29] tabular-nums mt-1">
                         {formatGbp(themePounds)}
                       </span>
                     </div>
@@ -254,40 +254,40 @@ export default async function SocialValuePage({ params }: Props) {
 
       {/* Phase 1 SV Commitments summary */}
       {(svActiveCommitments > 0 || svApprovedCount > 0 || (svSummary && svPendingCount > 0)) && (
-        <div className="bg-white border-b border-[#E5E7EB]">
+        <div className="bg-white border-b border-[#E3E8EE]">
           <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-5">
             <div className="flex items-center gap-2 mb-3">
-              <TrendingUp className="h-3.5 w-3.5 text-[#6B7280]" />
-              <span className="text-xs font-medium text-[#6B7280] uppercase tracking-wide">Commitments tracker</span>
+              <TrendingUp className="h-3.5 w-3.5 text-[#5B6A78]" />
+              <span className="text-xs font-medium text-[#5B6A78] uppercase tracking-wide">Commitments tracker</span>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="flex flex-col gap-0.5">
-                <span className="text-2xl font-bold text-[#111827] tabular-nums">{svActiveCommitments}</span>
-                <span className="text-xs text-[#6B7280]">active commitments</span>
+                <span className="text-2xl font-bold text-[#131d29] tabular-nums">{svActiveCommitments}</span>
+                <span className="text-xs text-[#5B6A78]">active commitments</span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-2xl font-bold text-[#111827] tabular-nums">{svApprovedCount}</span>
-                <span className="text-xs text-[#6B7280]">approved activities</span>
+                <span className="text-2xl font-bold text-[#131d29] tabular-nums">{svApprovedCount}</span>
+                <span className="text-xs text-[#5B6A78]">approved activities</span>
               </div>
               {svApprovedMonetised > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-2xl font-bold text-[#111827] tabular-nums">{formatGbp(svApprovedMonetised)}</span>
-                  <span className="text-xs text-[#6B7280]">approved value delivered</span>
+                  <span className="text-2xl font-bold text-[#131d29] tabular-nums">{formatGbp(svApprovedMonetised)}</span>
+                  <span className="text-xs text-[#5B6A78]">approved value delivered</span>
                 </div>
               )}
               {(svPendingCount as number) > 0 && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-2xl font-bold text-[#c2410c] tabular-nums">{svPendingCount as number}</span>
-                  <span className="text-xs text-[#6B7280]">activities pending review</span>
+                  <span className="text-xs text-[#5B6A78]">activities pending review</span>
                 </div>
               )}
             </div>
             <div className="mt-3 flex items-center gap-4">
-              <Link href={`/orgs/${orgId}/social-value/commitments`} className="flex items-center gap-1.5 text-xs text-[#374151] hover:text-[#111827] hover:underline">
+              <Link href={`/orgs/${orgId}/social-value/commitments`} className="flex items-center gap-1.5 text-xs text-[#41505F] hover:text-[#131d29] hover:underline">
                 <ClipboardList className="h-3.5 w-3.5" />
                 View commitments
               </Link>
-              <Link href={`/orgs/${orgId}/social-value/activities`} className="flex items-center gap-1.5 text-xs text-[#374151] hover:text-[#111827] hover:underline">
+              <Link href={`/orgs/${orgId}/social-value/activities`} className="flex items-center gap-1.5 text-xs text-[#41505F] hover:text-[#131d29] hover:underline">
                 <ListChecks className="h-3.5 w-3.5" />
                 View activities
               </Link>
@@ -300,10 +300,10 @@ export default async function SocialValuePage({ params }: Props) {
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {/* Add record card */}
         {canEdit && (
-          <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-[#111827]">Add social value record</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+          <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Add social value record</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Record the social value delivered against a TOMS measure for a contract and reporting period.
               </CardDescription>
             </CardHeader>
@@ -319,13 +319,13 @@ export default async function SocialValuePage({ params }: Props) {
         )}
 
         {/* Targets card */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               Targets
-              <span className="ml-2 text-xs font-normal text-[#6B7280]">({targetsForClient.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#5B6A78]">({targetsForClient.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Social value targets per contract and reporting period, tracked against value delivered.
             </CardDescription>
           </CardHeader>
@@ -341,13 +341,13 @@ export default async function SocialValuePage({ params }: Props) {
         </Card>
 
         {/* Records table card */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               Records
-              <span className="ml-2 text-xs font-normal text-[#6B7280]">({records.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#5B6A78]">({records.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Social value records submitted for this organisation. Up to 200 most recent shown.
             </CardDescription>
           </CardHeader>
@@ -358,43 +358,43 @@ export default async function SocialValuePage({ params }: Props) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Date added</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Contract</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Period</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Theme</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Measure</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Quantity</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Value</TableHead>
-                      {canEdit && <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />}
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Date added</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Contract</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Period</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Theme</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Measure</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Quantity</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Value</TableHead>
+                      {canEdit && <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6" />}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {records.map((record) => (
-                      <TableRow key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5 pl-6">
+                      <TableRow key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableCell className="text-sm text-[#5B6A78] tabular-nums py-3.5 pl-6">
                           {record.createdAt.toLocaleDateString("en-GB", {
                             day: "2-digit",
                             month: "short",
                             year: "numeric",
                           })}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">{record.contract.name}</TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">{record.reportingPeriod.label}</TableCell>
+                        <TableCell className="text-sm text-[#41505F] py-3.5">{record.contract.name}</TableCell>
+                        <TableCell className="text-sm text-[#41505F] py-3.5">{record.reportingPeriod.label}</TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-sm font-medium text-[#111827]">{record.measure.theme.code}</span>
+                          <span className="text-sm font-medium text-[#131d29]">{record.measure.theme.code}</span>
                           {" "}
-                          <span className="text-xs text-[#6B7280]">{record.measure.theme.name}</span>
+                          <span className="text-xs text-[#5B6A78]">{record.measure.theme.name}</span>
                         </TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-sm font-medium text-[#374151]">{record.measure.tomsCode}</span>
+                          <span className="text-sm font-medium text-[#41505F]">{record.measure.tomsCode}</span>
                           {" - "}
-                          <span className="text-sm text-[#374151]">{record.measure.name}</span>
+                          <span className="text-sm text-[#41505F]">{record.measure.name}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#41505F] tabular-nums py-3.5">
                           {Number(record.quantity).toLocaleString("en-GB")} {record.measure.unit}
                         </TableCell>
-                        <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
+                        <TableCell className="text-right text-sm font-semibold text-[#131d29] tabular-nums py-3.5">
                           {formatGbp(Number(record.valuePounds))}
                         </TableCell>
                         {canEdit && (
@@ -421,13 +421,13 @@ export default async function SocialValuePage({ params }: Props) {
 
 function DbErrorState() {
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB] flex items-center justify-center p-8">
+    <div className="min-h-[100dvh] bg-[#F9FAFC] flex items-center justify-center p-8">
       <div className="text-center max-w-sm">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 mx-auto mb-4">
           <Heart className="h-6 w-6 text-red-400" />
         </div>
-        <p className="font-medium text-[#111827] tracking-[-0.42px]">Could not load Social Value data</p>
-        <p className="text-sm text-[#374151] tracking-[-0.42px] mt-2">
+        <p className="font-medium text-[#131d29] tracking-[-0.42px]">Could not load Social Value data</p>
+        <p className="text-sm text-[#41505F] tracking-[-0.42px] mt-2">
           There was a problem reading from the database. This may mean the social value tables need to be set up.
           Run <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-xs">pnpm prisma migrate deploy</code> then{" "}
           <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-xs">pnpm prisma db seed</code> to initialise TOMS data,

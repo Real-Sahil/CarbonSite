@@ -34,9 +34,9 @@ export function DataQualityScorecard({
           {/* Overall Score */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Overall Quality Score</p>
+              <p className="text-sm font-medium text-[#41505F]">Overall Quality Score</p>
               <p className={`text-4xl font-bold ${colors.text}`}>{score.overallScore}%</p>
-              <p className="text-sm text-gray-600 mt-1 capitalize">{score.status}</p>
+              <p className="text-sm text-[#41505F] mt-1 capitalize">{score.status}</p>
             </div>
             <div className="w-24 h-24">
               <svg viewBox="0 0 100 100" className="w-full h-full">
@@ -57,8 +57,8 @@ export function DataQualityScorecard({
           {/* Dimension Breakdown */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
             {Object.entries(score.dimensions).map(([key, value]) => (
-              <div key={key} className="bg-white p-3 rounded border border-gray-200">
-                <p className="text-xs font-medium text-gray-600 capitalize mb-1">{key}</p>
+              <div key={key} className="bg-white p-3 rounded border border-[#E3E8EE]">
+                <p className="text-xs font-medium text-[#41505F] capitalize mb-1">{key}</p>
                 <p className="text-lg font-semibold">{value}%</p>
                 <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                   <div
@@ -75,7 +75,7 @@ export function DataQualityScorecard({
           {/* Warnings */}
           {score.warnings.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-yellow-600" />
                 Warnings
               </h4>
@@ -92,11 +92,11 @@ export function DataQualityScorecard({
           {/* Recommendations */}
           {score.recommendations.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600" />
                 Recommendations
               </h4>
-              <ul className="space-y-1 text-sm text-gray-700">
+              <ul className="space-y-1 text-sm text-[#41505F]">
                 {score.recommendations.map((rec, idx) => (
                   <li key={idx} className="flex items-start gap-2">
                     <span className="text-blue-600 font-bold">•</span>

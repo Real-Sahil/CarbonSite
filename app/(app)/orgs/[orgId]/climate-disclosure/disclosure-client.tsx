@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import type { DisclosureSections } from "@/lib/climate-disclosure";
 import { FormField, fieldClass } from "@/components/forms/form-kit";
 
-const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
+const labelClass = "mb-1.5 block text-xs font-medium text-[#41505F]";
 const areaClass = fieldClass;
 
 type NarrativeKey =
@@ -85,7 +85,7 @@ export function DisclosureForm({ orgId, canEdit, sections, approved }: { orgId: 
 
   return (
     <form onSubmit={save} className="flex flex-col gap-6 p-5">
-      <p className="text-xs text-[#6B7280]">{approved ? "Saving changes returns the statement to draft until it is approved again." : "Save as you go; approval comes last."}</p>
+      <p className="text-xs text-[#5B6A78]">{approved ? "Saving changes returns the statement to draft until it is approved again." : "Save as you go; approval comes last."}</p>
 
       <Group group={GROUPS[0]} canEdit={canEdit} sections={sections} />
       <Group group={GROUPS[1]} canEdit={canEdit} sections={sections} only={["strategyImpact"]} />
@@ -111,13 +111,13 @@ function Group({
 }) {
   return (
     <fieldset className="flex flex-col gap-4">
-      <legend className="text-sm font-semibold text-[#111827]">{group.title}</legend>
+      <legend className="text-sm font-semibold text-[#131d29]">{group.title}</legend>
       {extra}
       {group.fields.filter((f) => !only || only.includes(f.key)).map((field) => (
         <div key={field.key}>
           <Label htmlFor={`cd-${field.key}`} className={labelClass}>{field.label}</Label>
           <textarea id={`cd-${field.key}`} name={field.key} rows={3} maxLength={10_000} disabled={!canEdit} defaultValue={sections[field.key]} className={areaClass} />
-          <p className="mt-1 text-xs text-[#6B7280]">{field.help}</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">{field.help}</p>
         </div>
       ))}
     </fieldset>

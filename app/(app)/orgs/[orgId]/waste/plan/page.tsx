@@ -29,8 +29,8 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
 
   const header = (
     <div className="mb-6">
-      <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Site Waste Management Plan</h1>
-      <p className="mt-1 text-sm text-gray-500">One plan per project: who is responsible, the waste you expect and where it should go, your diversion target, and how you will reduce waste. The page sets the plan beside the waste you have actually recorded.</p>
+      <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">Site Waste Management Plan</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">One plan per project: who is responsible, the waste you expect and where it should go, your diversion target, and how you will reduce waste. The page sets the plan beside the waste you have actually recorded.</p>
       <Link href={`/orgs/${orgId}/waste`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800 print:hidden">Back to waste</Link>
     </div>
   );
@@ -40,11 +40,11 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
       <div className="mx-auto max-w-3xl p-8">
         {header}
         {projects.length === 0 ? (
-          <p className="rounded-xl border border-gray-200 bg-white p-8 text-center text-sm text-gray-500">Add a project first (Contracts), then write its plan here.</p>
+          <p className="rounded-xl border border-[#E3E8EE] bg-white p-8 text-center text-sm text-[#5B6A78]">Add a project first (Contracts), then write its plan here.</p>
         ) : (
-          <ul className="divide-y rounded-xl border border-gray-200 bg-white">
+          <ul className="divide-y rounded-xl border border-[#E3E8EE] bg-white">
             {projects.map((p) => (
-              <li key={p.id}><Link className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50" href={`/orgs/${orgId}/waste/plan?projectId=${p.id}`}>{p.name}</Link></li>
+              <li key={p.id}><Link className="block px-4 py-3 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC]" href={`/orgs/${orgId}/waste/plan?projectId=${p.id}`}>{p.name}</Link></li>
             ))}
           </ul>
         )}
@@ -63,7 +63,7 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${data.status === "approved" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-800"}`}>
           {data.exists ? `${data.status === "approved" ? "Approved" : "Draft"} · version ${data.version}` : "No plan yet"}
         </span>
-        {data.approvedAt && <span className="text-xs text-gray-500">Approved {data.approvedAt.toISOString().slice(0, 10)}</span>}
+        {data.approvedAt && <span className="text-xs text-[#5B6A78]">Approved {data.approvedAt.toISOString().slice(0, 10)}</span>}
         {projects.length > 1 && (
           <form className="ml-auto print:hidden" action={`/orgs/${orgId}/waste/plan`}>
             <label htmlFor="swmp-project" className="sr-only">Project</label>
@@ -73,32 +73,32 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
         )}
       </div>
 
-      <section aria-labelledby="swmp-checks" className="rounded-xl border border-gray-200 bg-white p-5 print:hidden">
-        <h2 id="swmp-checks" className="text-sm font-semibold text-gray-900">What the plan has ({done} of {data.checks.length})</h2>
+      <section aria-labelledby="swmp-checks" className="rounded-xl border border-[#E3E8EE] bg-white p-5 print:hidden">
+        <h2 id="swmp-checks" className="text-sm font-semibold text-[#131d29]">What the plan has ({done} of {data.checks.length})</h2>
         <ul className="mt-2 space-y-1 text-sm">
-          {data.checks.map((k) => <li key={k.key} className={k.ok ? "text-gray-700" : "text-amber-800"}>{k.ok ? "✓" : "○"} {k.label}</li>)}
+          {data.checks.map((k) => <li key={k.key} className={k.ok ? "text-[#41505F]" : "text-amber-800"}>{k.ok ? "✓" : "○"} {k.label}</li>)}
         </ul>
-        <p className="mt-2 text-xs text-gray-500">This is a checklist of what a reader looks for. It does not say the plan meets any client requirement or law.</p>
+        <p className="mt-2 text-xs text-[#5B6A78]">This is a checklist of what a reader looks for. It does not say the plan meets any client requirement or law.</p>
       </section>
 
       <PlanEditor orgId={orgId} projectId={project.id} plan={data.plan} status={data.status} canEdit={LINK_ISSUERS.includes(role as never)} canApprove={ROLE_GROUPS.editor.includes(role as never)} />
 
-      <section aria-labelledby="swmp-actual" className="rounded-xl border border-gray-200 bg-white p-5">
-        <h2 id="swmp-actual" className="text-sm font-semibold text-gray-900">Forecast against what was recorded</h2>
+      <section aria-labelledby="swmp-actual" className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+        <h2 id="swmp-actual" className="text-sm font-semibold text-[#131d29]">Forecast against what was recorded</h2>
         {data.recordCount === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">No waste has been recorded against this project yet. Tie waste records to the project (Waste → Add) and they appear here.</p>
+          <p className="mt-2 text-sm text-[#5B6A78]">No waste has been recorded against this project yet. Tie waste records to the project (Waste → Add) and they appear here.</p>
         ) : (
           <>
             <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-              <div><div className="text-xs text-gray-500">Forecast</div><div className="text-lg font-semibold tabular-nums">{n(c.forecastTotal)} t</div></div>
-              <div><div className="text-xs text-gray-500">Recorded</div><div className="text-lg font-semibold tabular-nums">{n(c.actualTotal)} t</div></div>
-              <div><div className="text-xs text-gray-500">Diverted so far</div><div className="text-lg font-semibold tabular-nums">{c.actualDiversionPct == null ? "-" : `${n(c.actualDiversionPct, 0)}%`}</div></div>
-              <div><div className="text-xs text-gray-500">Target</div><div className="text-lg font-semibold tabular-nums">{data.plan.targetDiversionPct == null ? "-" : `${n(data.plan.targetDiversionPct, 0)}%`}</div></div>
+              <div><div className="text-xs text-[#5B6A78]">Forecast</div><div className="text-lg font-semibold tabular-nums">{n(c.forecastTotal)} t</div></div>
+              <div><div className="text-xs text-[#5B6A78]">Recorded</div><div className="text-lg font-semibold tabular-nums">{n(c.actualTotal)} t</div></div>
+              <div><div className="text-xs text-[#5B6A78]">Diverted so far</div><div className="text-lg font-semibold tabular-nums">{c.actualDiversionPct == null ? "-" : `${n(c.actualDiversionPct, 0)}%`}</div></div>
+              <div><div className="text-xs text-[#5B6A78]">Target</div><div className="text-lg font-semibold tabular-nums">{data.plan.targetDiversionPct == null ? "-" : `${n(data.plan.targetDiversionPct, 0)}%`}</div></div>
             </div>
             <div className="mt-3 overflow-x-auto">
               <Table className="text-sm">
                 <caption className="sr-only">Forecast and recorded waste by type</caption>
-                <thead><tr className="text-left text-xs text-gray-500"><th className="py-1 pr-3">Waste type</th><th className="py-1 pr-3 text-right">Forecast (t)</th><th className="py-1 pr-3 text-right">Recorded (t)</th><th className="py-1 pr-3 text-right">Difference (t)</th><th className="py-1">Planned route</th></tr></thead>
+                <thead><tr className="text-left text-xs text-[#5B6A78]"><th className="py-1 pr-3">Waste type</th><th className="py-1 pr-3 text-right">Forecast (t)</th><th className="py-1 pr-3 text-right">Recorded (t)</th><th className="py-1 pr-3 text-right">Difference (t)</th><th className="py-1">Planned route</th></tr></thead>
                 <tbody className="divide-y divide-gray-50">
                   {c.rows.map((r, i) => (
                     <tr key={i}><td className="py-2 pr-3">{r.wasteType}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.forecastTonnes)}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.actualTonnes)}</td><td className={`py-2 pr-3 text-right tabular-nums ${r.varianceTonnes > 0 ? "text-amber-800" : ""}`}>{r.varianceTonnes > 0 ? "+" : ""}{n(r.varianceTonnes)}</td><td className="py-2">{ROUTE_LABEL[r.plannedRoute]}</td></tr>

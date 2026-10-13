@@ -24,7 +24,7 @@ export function TaskLauncher({ orgId, role }: { orgId: string; role: string }) {
   if (tasks.length === 0) return null;
   return (
     <section aria-labelledby="task-launcher-title" className="mt-8">
-      <h2 id="task-launcher-title" className="mb-3 text-base font-semibold tracking-tight text-slate-900">What do you want to do?</h2>
+      <h2 id="task-launcher-title" className="mb-3 text-base font-semibold tracking-tight text-[#131d29]">What do you want to do?</h2>
       {/* Two columns on a phone, with the one-line blurb hidden there so eight jobs fit in about four rows. */}
       <ul className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {tasks.map((t) => {
@@ -33,7 +33,7 @@ export function TaskLauncher({ orgId, role }: { orgId: string; role: string }) {
             <li key={t.label}>
               <Link
                 href={`/orgs/${orgId}/${t.path}`}
-                className="group relative flex h-full flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2410c]"
+                className="group relative flex h-full flex-col gap-3 rounded-2xl border border-[#E3E8EE] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2410c]"
               >
                 <span className="flex items-center justify-between">
                   <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-[#c2410c] ring-1 ring-orange-100 transition-colors group-hover:bg-[#c2410c] group-hover:text-white group-hover:ring-[#c2410c]">
@@ -42,15 +42,15 @@ export function TaskLauncher({ orgId, role }: { orgId: string; role: string }) {
                   <ArrowUpRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-[#c2410c]" aria-hidden="true" />
                 </span>
                 <span>
-                  <span className="block text-sm font-semibold tracking-tight text-slate-900">{t.label}</span>
-                  <span className="mt-1 hidden text-xs leading-relaxed text-slate-500 sm:block">{t.task!.blurb}</span>
+                  <span className="block text-sm font-semibold tracking-tight text-[#131d29]">{t.label}</span>
+                  <span className="mt-1 hidden text-xs leading-relaxed text-[#5B6A78] sm:block">{t.task!.blurb}</span>
                 </span>
               </Link>
             </li>
           );
         })}
       </ul>
-      <p className="mt-3 text-xs text-slate-500">Cannot find something? Use Search in the menu, or press Ctrl+K (Cmd+K on a Mac), and type what you want in your own words.</p>
+      <p className="mt-3 text-xs text-[#5B6A78]">Cannot find something? Use Search in the menu, or press Ctrl+K (Cmd+K on a Mac), and type what you want in your own words.</p>
     </section>
   );
 }

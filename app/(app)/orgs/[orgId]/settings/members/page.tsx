@@ -157,13 +157,13 @@ export default async function MembersPage({ params }: MembersPageProps) {
     enterprise: "bg-purple-50 text-purple-700 border border-purple-200",
   };
   const planClass =
-    PLAN_CLASSES[org.plan] ?? "bg-slate-100 text-slate-600 border border-slate-200";
+    PLAN_CLASSES[org.plan] ?? "bg-slate-100 text-[#41505F] border border-[#E3E8EE]";
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Plan badge */}
       <div className="flex items-center gap-3">
-        <p className="text-sm font-normal text-slate-500 tracking-[-0.42px]">
+        <p className="text-sm font-normal text-[#5B6A78] tracking-[-0.42px]">
           {org.name}
         </p>
         <span
@@ -209,12 +209,12 @@ export default async function MembersPage({ params }: MembersPageProps) {
         <CardContent>
           <InviteMemberForm orgId={orgId} />
           {pendingTeamInvites.length > 0 && (
-            <div className="mt-5 rounded-[14px] border border-[#E5E7EB]">
-              <div className="border-b border-[#E5E7EB] px-4 py-3 flex items-center justify-between">
-                <p className="text-sm font-normal text-slate-900 tracking-[-0.42px]">
+            <div className="mt-5 rounded-[14px] border border-[#E3E8EE]">
+              <div className="border-b border-[#E3E8EE] px-4 py-3 flex items-center justify-between">
+                <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">
                   Pending email invites
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#5B6A78]">
                   {pendingTeamInvites.length} pending
                 </p>
               </div>
@@ -225,10 +225,10 @@ export default async function MembersPage({ params }: MembersPageProps) {
                     className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="text-sm font-normal text-slate-900 tracking-[-0.42px]">
+                      <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">
                         {invite.email}
                       </p>
-                      <p className="text-xs text-slate-500 tracking-[-0.36px]">
+                      <p className="text-xs text-[#5B6A78] tracking-[-0.36px]">
                         {ROLE_LABELS[invite.role] ?? invite.role}
                         {" · "}Expires{" "}
                         {invite.expiresAt.toLocaleDateString("en-GB", {

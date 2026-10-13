@@ -102,24 +102,24 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
   const periodLabelById = new Map(periods.map((period) => [period.id, period.label]));
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-                  <FileText className="h-4 w-4 text-[#111827]" />
+                  <FileText className="h-4 w-4 text-[#131d29]" />
                 </div>
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
                   Data
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">
                 Activity records
               </h1>
-              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
                 Committed emissions activity data scoped to this organisation.
               </p>
             </div>
@@ -151,10 +151,10 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
         )}
 
         {canCreateRecords && (
-          <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-[#111827]">Add from a bill</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+          <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Add from a bill</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Upload a utility bill or fuel receipt. MetricOra reads the consumption, dates and supplier, you check them, and the record goes to review with the bill attached.
               </CardDescription>
             </CardHeader>
@@ -170,10 +170,10 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
         )}
 
         {canCreateRecords && (
-          <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-[#111827]">Attach bills to existing records</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+          <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Attach bills to existing records</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Imported the figures already? Upload the bills behind them. Each one is matched to its record by quantity, supplier and dates, and attached when you confirm.
               </CardDescription>
             </CardHeader>
@@ -184,10 +184,10 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
         )}
 
         {canCreateRecords && (
-          <Card className="border-[#E5E7EB] shadow-none">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-              <CardTitle className="text-sm font-semibold text-[#111827]">Add a record</CardTitle>
-              <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+          <Card className="border-[#E3E8EE] shadow-none">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+              <CardTitle className="text-sm font-semibold text-[#131d29]">Add a record</CardTitle>
+              <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                 Manually create an activity record with unit, period, and category.
               </CardDescription>
             </CardHeader>
@@ -214,15 +214,15 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
           </Card>
         )}
 
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               Records
               {totalCount > 0 && (
-                <span className="ml-2 text-xs font-normal text-[#6B7280]">({totalCount.toLocaleString("en-GB")})</span>
+                <span className="ml-2 text-xs font-normal text-[#5B6A78]">({totalCount.toLocaleString("en-GB")})</span>
               )}
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Records are created from imports, manual entry, or approved field submissions.
             </CardDescription>
           </CardHeader>
@@ -273,11 +273,11 @@ function StatPill({
   accent?: "green" | "amber" | "red";
 }) {
   const colors = {
-    green: "bg-[#FFF7ED] text-[#111827]",
+    green: "bg-[#FFF7ED] text-[#131d29]",
     amber: "bg-amber-50 text-amber-700",
     red: "bg-red-50 text-red-700",
   };
-  const base = accent ? colors[accent] : "bg-white text-[#374151] border border-[#E5E7EB]";
+  const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";
   return (
     <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${base}`}>
       <span className="tabular-nums font-semibold">{value}</span>

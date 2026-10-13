@@ -164,22 +164,22 @@ export default async function ContractsPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <Building2 className="h-4 w-4 text-[#111827]" />
+              <Building2 className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Contracts
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Contracts
           </h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Manage contracts, projects, and sites for your organisation.
           </p>
         </div>
@@ -187,21 +187,21 @@ export default async function ContractsPage({ params }: Props) {
 
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               All contracts
-              <span className="ml-2 text-xs font-normal text-[#6B7280]">
+              <span className="ml-2 text-xs font-normal text-[#5B6A78]">
                 ({contracts.length})
               </span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               {contracts.length} contract{contracts.length !== 1 ? "s" : ""} in this organisation.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-0 p-0">
             {canEdit && (
-              <div className="px-6 py-5 border-b border-[#E5E7EB] flex flex-col gap-4">
+              <div className="px-6 py-5 border-b border-[#E3E8EE] flex flex-col gap-4">
                 <FindTenderImport orgId={orgId} />
                 <CreateContractForm orgId={orgId} />
               </div>
@@ -213,22 +213,22 @@ export default async function ContractsPage({ params }: Props) {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Name</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Status</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Client</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Value</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Start</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">End</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Projects</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">CO2e</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6" />
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Name</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Status</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Client</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Value</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Start</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">End</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Projects</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">CO2e</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6" />
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {contracts.map((contract) => (
-                      <TableRow key={contract.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                        <TableCell className="text-sm font-medium text-[#111827] py-3.5 pl-6">
+                      <TableRow key={contract.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableCell className="text-sm font-medium text-[#131d29] py-3.5 pl-6">
                           <Link
                             href={`/orgs/${orgId}/contracts/${contract.id}`}
                             className="hover:underline underline-offset-2"
@@ -237,27 +237,27 @@ export default async function ContractsPage({ params }: Props) {
                           </Link>
                         </TableCell>
                         <TableCell className="py-3.5">{contractStatusBadge(contract.status)}</TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">
+                        <TableCell className="text-sm text-[#41505F] py-3.5">
                           {contract.clientName ?? "-"}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {formatCurrency(contract.contractValue, contract.currency, locale)}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {formatDate(contract.startDate)}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {formatDate(contract.endDate)}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {contract._count.projects}
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5 tabular-nums">
+                        <TableCell className="text-sm text-[#41505F] py-3.5 tabular-nums">
                           {formatTco2e(co2eByContract.get(contract.id) ?? 0)}
                         </TableCell>
                         <TableCell className="py-3.5 pr-6">
                           <div className="flex items-center gap-2">
-                            <Button asChild size="sm" variant="outline" className="border-[#E5E7EB] text-[#374151] hover:bg-[#F9FAFB]">
+                            <Button asChild size="sm" variant="outline" className="border-[#E3E8EE] text-[#41505F] hover:bg-[#F9FAFC]">
                               <Link href={`/orgs/${orgId}/contracts/${contract.id}`}>View</Link>
                             </Button>
                             {canEdit && (

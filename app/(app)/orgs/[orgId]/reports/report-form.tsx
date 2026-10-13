@@ -299,7 +299,7 @@ export function CreateReportForm({
 
   return (
     <div className="flex flex-col gap-4">
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
         <FormSection title="Request a report" description="Reports are built from a published snapshot, so figures match the dashboard.">
           <FormField label="Snapshot" htmlFor="report-snapshot" span={2}>
             <select
@@ -380,12 +380,12 @@ export function CreateReportForm({
           )}
         </FormSection>
 
-        {!canCreate && <p className="text-sm text-[#374151]">Publish a calculation snapshot before requesting a report.</p>}
+        {!canCreate && <p className="text-sm text-[#41505F]">Publish a calculation snapshot before requesting a report.</p>}
         {needsContract && contracts.length === 0 && (
-          <p className="text-sm text-[#374151]">Create contracts first to generate National TOMS or Contract Carbon reports.</p>
+          <p className="text-sm text-[#41505F]">Create contracts first to generate National TOMS or Contract Carbon reports.</p>
         )}
         {needsValidation && !validationFresh && !isValidating && (
-          <p className="text-sm text-[#374151]">
+          <p className="text-sm text-[#41505F]">
             Click <strong>Validate</strong> to check {isBidPack ? "the pack is ready for a tender" : "framework requirements"} before generating.
           </p>
         )}
@@ -433,7 +433,7 @@ export function CreateReportForm({
       )}
 
       {isBidPack && (
-        <div className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+        <div className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
           <FormSection title="The bid" description="Figures come from the snapshot above and earlier published snapshots. Buyer and reference are optional.">
             <FormField label="Bid or project name" htmlFor="bid-title" span={2}>
               <input id="bid-title" type="text" maxLength={200} value={bid.bidTitle} onChange={(e) => setBid({ ...bid, bidTitle: e.target.value })} placeholder="Highways maintenance framework" className={inputClass} />
@@ -462,17 +462,17 @@ export function CreateReportForm({
           </FormSection>
 
           <fieldset className="space-y-2">
-            <legend className="text-sm font-semibold text-zinc-900">Comparable contracts</legend>
-            <p className="text-xs text-zinc-500">Feature up to {MAX_BID_CONTRACTS} to show delivery evidence.</p>
+            <legend className="text-sm font-semibold text-[#131d29]">Comparable contracts</legend>
+            <p className="text-xs text-[#5B6A78]">Feature up to {MAX_BID_CONTRACTS} to show delivery evidence.</p>
             {contracts.length === 0 ? (
-              <p className="text-sm text-[#374151]">No contracts yet. Add contracts to show delivery evidence.</p>
+              <p className="text-sm text-[#41505F]">No contracts yet. Add contracts to show delivery evidence.</p>
             ) : (
               <div className="grid gap-1.5 sm:grid-cols-2">
                 {contracts.map((c) => {
                   const checked = bidContractIds.includes(c.id);
                   const full = !checked && bidContractIds.length >= MAX_BID_CONTRACTS;
                   return (
-                    <label key={c.id} className={`flex items-center gap-2 text-sm ${full ? "text-[#6B7280]" : "text-[#111827]"}`}>
+                    <label key={c.id} className={`flex items-center gap-2 text-sm ${full ? "text-[#5B6A78]" : "text-[#131d29]"}`}>
                       <input
                         id={`bid-contract-${c.id}`}
                         type="checkbox"
@@ -543,8 +543,8 @@ function ValidationResults({
       <div className="flex items-center gap-2 mb-3">
         {result.valid ? (
           <>
-            <CheckCircle className="h-4 w-4 text-[#111827] shrink-0" />
-            <p className="text-sm font-medium text-[#111827]">
+            <CheckCircle className="h-4 w-4 text-[#131d29] shrink-0" />
+            <p className="text-sm font-medium text-[#131d29]">
               All required checks passed — ready to generate
             </p>
           </>
@@ -565,7 +565,7 @@ function ValidationResults({
           return (
             <li key={item.check.id} className="flex items-start gap-2 text-sm">
               {item.passed ? (
-                <CheckCircle className="h-4 w-4 text-[#111827] shrink-0 mt-0.5" />
+                <CheckCircle className="h-4 w-4 text-[#131d29] shrink-0 mt-0.5" />
               ) : item.check.required ? (
                 <XCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
               ) : (
@@ -575,7 +575,7 @@ function ValidationResults({
                 <span
                   className={
                     item.passed
-                      ? "text-[#111827]"
+                      ? "text-[#131d29]"
                       : item.check.required
                         ? "text-red-700"
                         : "text-amber-700"
@@ -584,10 +584,10 @@ function ValidationResults({
                   {item.check.description}
                 </span>
                 {!item.passed && item.message && (
-                  <p className="mt-0.5 text-xs text-[#374151]">{item.message}</p>
+                  <p className="mt-0.5 text-xs text-[#41505F]">{item.message}</p>
                 )}
                 {item.passed && !item.check.required && item.message && (
-                  <p className="mt-0.5 text-xs text-[#374151]">{item.message}</p>
+                  <p className="mt-0.5 text-xs text-[#41505F]">{item.message}</p>
                 )}
                 {fix && (
                   <a
@@ -612,7 +612,7 @@ function ValidationResults({
 }
 
 const inputClass =
-  "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm placeholder:text-[#9CA3AF] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50";
+  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm placeholder:text-[#9CA3AF] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50";
 
 const selectClass =
-  "h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";

@@ -175,8 +175,8 @@ export default function InvoicePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Invoice Review</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl">Invoice Review</h1>
+        <p className="text-[#41505F] mt-2">
           Review and approve invoices before they enter Scope 3 calculations
         </p>
       </div>
@@ -185,13 +185,13 @@ export default function InvoicePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Pending Review
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{pendingCount}</div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[#5B6A78] mt-1">
               Awaiting approval or rejection
             </p>
           </CardContent>
@@ -199,13 +199,13 @@ export default function InvoicePage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Critical Issues
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-red-600">{criticalCount}</div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[#5B6A78] mt-1">
               Duplicates, over-billing detected
             </p>
           </CardContent>
@@ -213,13 +213,13 @@ export default function InvoicePage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-[#41505F]">
               Selected
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{selectedIds.size}</div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[#5B6A78] mt-1">
               Ready for bulk action
             </p>
           </CardContent>
@@ -338,9 +338,9 @@ export default function InvoicePage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <div className="text-center py-8 text-[#5B6A78]">Loading...</div>
           ) : error ? (
-            <div className="text-center py-8 text-sm text-[#374151]">
+            <div className="text-center py-8 text-sm text-[#41505F]">
               <p>{error}</p>
               {upgradeRequired ? (
                 <Link href={`/orgs/${orgId}/settings/billing`} className="mt-2 inline-block text-[#c2410c] hover:underline">
@@ -349,7 +349,7 @@ export default function InvoicePage() {
               ) : null}
             </div>
           ) : anomalies.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-[#5B6A78]">
               No anomalies found
             </div>
           ) : (
@@ -421,7 +421,7 @@ export default function InvoicePage() {
                               {anomaly.resolution}
                             </Badge>
                             {anomaly.resolvedBy && (
-                              <p className="text-gray-500 mt-1">
+                              <p className="text-[#5B6A78] mt-1">
                                 by {anomaly.resolvedBy.name}
                               </p>
                             )}

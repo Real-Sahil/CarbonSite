@@ -116,8 +116,8 @@ export default function WorkflowsPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Automation Workflows</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-3xl tracking-tight">Automation Workflows</h1>
+          <p className="text-[#41505F] mt-2">
             Manage n8n workflow automation for emissions tracking and notifications
           </p>
         </div>
@@ -151,9 +151,9 @@ export default function WorkflowsPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-8 text-gray-500">Loading workflows...</div>
+        <div className="text-center py-8 text-[#5B6A78]">Loading workflows...</div>
       ) : workflows.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
+        <div className="text-center py-8 text-[#5B6A78]">
           <p>No workflows available</p>
         </div>
       ) : (
@@ -184,28 +184,28 @@ export default function WorkflowsPage() {
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600">Trigger Type</p>
+                    <p className="text-[#41505F]">Trigger Type</p>
                     <p className="font-medium capitalize">{workflow.triggerType}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Schedule</p>
+                    <p className="text-[#41505F]">Schedule</p>
                     <p className="font-medium capitalize">{workflow.schedule}</p>
                   </div>
                   {workflow.lastRunAt && (
                     <div>
-                      <p className="text-gray-600">Last Run</p>
+                      <p className="text-[#41505F]">Last Run</p>
                       <div className="flex items-center gap-1 mt-0.5">
                         {getStatusIcon(workflow.lastRunStatus || '')}
                         <span className="font-medium capitalize">{workflow.lastRunStatus || 'Unknown'}</span>
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-[#5B6A78]">
                         {new Date(workflow.lastRunAt).toLocaleDateString()}
                       </p>
                     </div>
                   )}
                   {workflow.nextScheduledRun && workflow.triggerType === 'scheduled' && (
                     <div>
-                      <p className="text-gray-600">Next Run</p>
+                      <p className="text-[#41505F]">Next Run</p>
                       <div className="flex items-center gap-1 mt-0.5">
                         <Clock className="w-4 h-4 text-blue-600" />
                         <span className="font-medium text-xs">
@@ -216,9 +216,9 @@ export default function WorkflowsPage() {
                   )}
                 </div>
 
-                <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
-                  <p className="font-medium text-gray-900 mb-1">Configuration</p>
-                  <p className="text-gray-600">
+                <div className="bg-[#F9FAFC] border border-[#E3E8EE] rounded p-3 text-sm">
+                  <p className="font-medium text-[#131d29] mb-1">Configuration</p>
+                  <p className="text-[#41505F]">
                     {workflow.triggerType === 'scheduled'
                       ? `Runs automatically on a ${workflow.schedule} schedule`
                       : 'Triggered by system events. Manual trigger available above.'}
@@ -234,7 +234,7 @@ export default function WorkflowsPage() {
         <CardHeader>
           <CardTitle className="text-base">About Automation Workflows</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm space-y-2 text-gray-700">
+        <CardContent className="text-sm space-y-2 text-[#41505F]">
           <p>
             MetricOra uses n8n for low-code workflow automation. The following workflows are available:
           </p>

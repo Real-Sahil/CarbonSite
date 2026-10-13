@@ -94,12 +94,12 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
     <div className="grid gap-2">
       {hasInFlight && (
         <div className="flex items-center gap-3 rounded-[14px] border border-[#BAE6FD] bg-[#F0F9FF]/20 px-4 py-3">
-          <Loader2 className="h-4 w-4 text-[#111827] animate-spin shrink-0" />
+          <Loader2 className="h-4 w-4 text-[#131d29] animate-spin shrink-0" />
           <div>
-            <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
+            <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">
               Calculation in progress
             </p>
-            <p className="text-xs text-[#374151] tracking-[-0.36px]">
+            <p className="text-xs text-[#41505F] tracking-[-0.36px]">
               Updating automatically - no need to refresh.
             </p>
           </div>
@@ -108,13 +108,13 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
       {runs.map((run) => (
         <div
           key={run.id}
-          className="flex flex-col gap-2 rounded-[14px] border border-[#E5E7EB] p-3 md:flex-row md:items-center md:justify-between"
+          className="flex flex-col gap-2 rounded-[14px] border border-[#E3E8EE] p-3 md:flex-row md:items-center md:justify-between"
         >
           <div>
-            <p className="text-sm font-normal text-[#111827] tracking-[-0.42px]">
+            <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">
               {run.reportingPeriod.label}
             </p>
-            <p className="text-xs text-[#374151] tracking-[-0.36px]">
+            <p className="text-xs text-[#41505F] tracking-[-0.36px]">
               {run.factorLibrary.name} {run.factorLibrary.version}
             </p>
             {run.status === "failed" && run.errorMessage && (
@@ -125,7 +125,7 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
           </div>
           <div className="flex items-center gap-2">
             {(run.status === "queued" || run.status === "running") && (
-              <Loader2 className="h-3.5 w-3.5 text-[#111827] animate-spin" />
+              <Loader2 className="h-3.5 w-3.5 text-[#131d29] animate-spin" />
             )}
             <Badge
               variant={

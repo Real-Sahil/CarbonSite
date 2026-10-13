@@ -43,20 +43,20 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
   }
   if (authErr) {
     if (authErr.status === 401) redirect("/sign-in");
-    return <div className="p-8"><h1 className="text-lg font-semibold text-zinc-900">Access denied</h1><p className="mt-1 text-sm text-zinc-500">Admin or editor access required.</p></div>;
+    return <div className="p-8"><h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1><p className="mt-1 text-sm text-[#5B6A78]">Admin or editor access required.</p></div>;
   }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
       {/* Header */}
-      <div className="border-b border-[#E5E7EB] bg-white">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="mb-2 flex items-center gap-2">
             <Zap className="h-5 w-5 text-[#c2410c]" />
             <span className="text-sm font-semibold text-[#c2410c] uppercase tracking-widest">Integrations</span>
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Connect Your Tools</h1>
-          <p className="text-slate-500">
+          <h1 className="text-3xl text-[#131d29] mb-2">Connect Your Tools</h1>
+          <p className="text-[#5B6A78]">
             Integrate your accounting software and collaborate with suppliers to automate emissions data collection.
           </p>
         </div>
@@ -68,19 +68,19 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
           {/* Accounting Section */}
           <div>
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-2">
+              <h2 className="text-xl font-semibold text-[#131d29] flex items-center gap-2 mb-2">
                 <BarChart3 className="h-5 w-5 text-[#c2410c]" />
                 Accounting Software
               </h2>
-              <p className="text-slate-500">Connect your accounting platform to automatically sync invoices and calculate Scope 3 emissions from supplier spend.</p>
+              <p className="text-[#5B6A78]">Connect your accounting platform to automatically sync invoices and calculate Scope 3 emissions from supplier spend.</p>
             </div>
 
             <Link href={`/orgs/${orgId}/integrations/accounting`}>
-              <Card className="border-[#E5E7EB] bg-white hover:bg-slate-50 shadow-sm transition-all cursor-pointer">
+              <Card className="border-[#E3E8EE] bg-white hover:bg-[#F9FAFC] shadow-sm transition-all cursor-pointer">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-slate-900">Xero, QuickBooks &amp; Sage</CardTitle>
+                      <CardTitle className="text-[#131d29]">Xero, QuickBooks &amp; Sage</CardTitle>
                       <CardDescription>Connect an accounting platform</CardDescription>
                     </div>
                     <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">
@@ -89,7 +89,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-[#41505F]">
                     Automatically sync invoices and bill details to calculate spend-based Scope 3 emissions from your suppliers.
                   </p>
                   <div className="flex items-center text-[#c2410c] text-sm font-medium">
@@ -101,21 +101,21 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
           </div>
 
           {/* Supplier Section */}
-          <div className="border-t border-[#E5E7EB] pt-12">
+          <div className="border-t border-[#E3E8EE] pt-12">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-2">
+              <h2 className="text-xl font-semibold text-[#131d29] flex items-center gap-2 mb-2">
                 <Truck className="h-5 w-5 text-[#c2410c]" />
                 Supplier Collaboration
               </h2>
-              <p className="text-slate-500">Invite suppliers to submit emissions data or respond to surveys. Collect Scope 3 data directly from your supply chain.</p>
+              <p className="text-[#5B6A78]">Invite suppliers to submit emissions data or respond to surveys. Collect Scope 3 data directly from your supply chain.</p>
             </div>
 
             <Link href={`/orgs/${orgId}/integrations/suppliers`}>
-              <Card className="border-[#E5E7EB] bg-white hover:bg-slate-50 shadow-sm transition-all cursor-pointer">
+              <Card className="border-[#E3E8EE] bg-white hover:bg-[#F9FAFC] shadow-sm transition-all cursor-pointer">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-slate-900">Invite Suppliers</CardTitle>
+                      <CardTitle className="text-[#131d29]">Invite Suppliers</CardTitle>
                       <CardDescription>Collect supply chain emissions data</CardDescription>
                     </div>
                     <Badge variant="outline" className="border-emerald-200 text-emerald-700 bg-emerald-50">
@@ -124,7 +124,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm text-slate-600">
+                  <p className="text-sm text-[#41505F]">
                     Send secure links to suppliers to submit emissions data, facilities information, and facility photos. Track supplier responses and maintain audit trails for compliance.
                   </p>
                   <div className="flex items-center gap-4">
@@ -138,24 +138,24 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
           </div>
 
           {/* Data Lineage Section */}
-          <div className="border-t border-[#E5E7EB] pt-12">
+          <div className="border-t border-[#E3E8EE] pt-12">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2 mb-2">
+              <h2 className="text-xl font-semibold text-[#131d29] flex items-center gap-2 mb-2">
                 <FileText className="h-5 w-5 text-[#c2410c]" />
                 Data Quality & Monitoring
               </h2>
-              <p className="text-slate-500">View data lineage, audit trails, and ensure data integrity across all integration sources.</p>
+              <p className="text-[#5B6A78]">View data lineage, audit trails, and ensure data integrity across all integration sources.</p>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <Link href={`/orgs/${orgId}/audit/data-lineage`}>
-                <Card className="border-[#E5E7EB] bg-white hover:bg-slate-50 shadow-sm transition-all cursor-pointer h-full">
+                <Card className="border-[#E3E8EE] bg-white hover:bg-[#F9FAFC] shadow-sm transition-all cursor-pointer h-full">
                   <CardHeader>
-                    <CardTitle className="text-slate-900">Data Lineage</CardTitle>
+                    <CardTitle className="text-[#131d29]">Data Lineage</CardTitle>
                     <CardDescription>Track data from source to report</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-slate-600 mb-4">
+                    <p className="text-sm text-[#41505F] mb-4">
                       See the complete journey of your emissions data. Trace any record back to its source, the factors applied, and the calculation method used.
                     </p>
                     <div className="flex items-center text-[#c2410c] text-sm font-medium">
@@ -166,13 +166,13 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
               </Link>
 
               <Link href={`/orgs/${orgId}/audit`}>
-                <Card className="border-[#E5E7EB] bg-white hover:bg-slate-50 shadow-sm transition-all cursor-pointer h-full">
+                <Card className="border-[#E3E8EE] bg-white hover:bg-[#F9FAFC] shadow-sm transition-all cursor-pointer h-full">
                   <CardHeader>
-                    <CardTitle className="text-slate-900">Audit Trail</CardTitle>
+                    <CardTitle className="text-[#131d29]">Audit Trail</CardTitle>
                     <CardDescription>Immutable activity log</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-slate-600 mb-4">
+                    <p className="text-sm text-[#41505F] mb-4">
                       Review all changes made to emissions data, calculations, and reports. Maintain compliance with regulatory requirements.
                     </p>
                     <div className="flex items-center text-[#c2410c] text-sm font-medium">

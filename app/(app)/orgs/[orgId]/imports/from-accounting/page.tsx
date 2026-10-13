@@ -12,7 +12,7 @@ export default async function FromAccountingPage({ params }: { params: Promise<{
     await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to stage accounting lines.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to stage accounting lines.</div>;
   }
 
   const periods = await prisma.reportingPeriod.findMany({
@@ -22,14 +22,14 @@ export default async function FromAccountingPage({ params }: { params: Promise<{
   });
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
-      <div className="border-b border-[#E5E7EB] bg-white">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
-          <Link href={`/orgs/${orgId}/imports`} className="text-xs font-medium text-[#6B7280] underline underline-offset-4">
+          <Link href={`/orgs/${orgId}/imports`} className="text-xs font-medium text-[#5B6A78] underline underline-offset-4">
             Back to imports
           </Link>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#111827]">From your accounting system</h1>
-          <p className="mt-1 max-w-[65ch] text-sm text-[#6B7280]">
+          <h1 className="mt-3 text-2xl tracking-tight text-[#131d29]">From your accounting system</h1>
+          <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
             Invoice lines already synced from Xero, each with a suggested category. Confirm the ones that are right; they go to Imports for a final review before they
             count. Fuel, energy and waste are left for you to add from the bill, because litres, kWh and tonnes are more accurate than pounds.
           </p>

@@ -197,7 +197,7 @@ export default function OnboardingPage() {
   if (loading) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" />
+        <Loader2 className="h-5 w-5 animate-spin text-[#5B6A78]" />
       </div>
     );
   }
@@ -205,14 +205,14 @@ export default function OnboardingPage() {
   if (loadError && steps.length === 0) {
     return (
       <div className="min-h-[100dvh] flex flex-col items-center justify-center gap-3 px-6 text-center">
-        <p className="text-sm text-[#374151]">Couldn&apos;t load your setup progress. Check your connection and try again.</p>
+        <p className="text-sm text-[#41505F]">Couldn&apos;t load your setup progress. Check your connection and try again.</p>
         <button
           type="button"
           onClick={() => {
             setLoading(true);
             void fetchProgress();
           }}
-          className="rounded-md border border-[#D1D5DB] bg-white px-3 py-1.5 text-sm font-medium text-[#111827] hover:bg-[#F3F4F6]"
+          className="rounded-md border border-[#D1D5DB] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F3F4F6]"
         >
           Retry
         </button>
@@ -228,10 +228,10 @@ export default function OnboardingPage() {
           <p className="text-xs font-medium tracking-widest uppercase text-[#c2410c] mb-3">
             Setup
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mb-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#131d29] mb-2">
             Get MetricOra ready
           </h1>
-          <p className="text-sm text-[#6B7280] leading-relaxed">
+          <p className="text-sm text-[#5B6A78] leading-relaxed">
             Complete these steps to start tracking emissions for your organisation. You can come
             back to this page at any time from the dashboard, or navigate directly using the sidebar.
           </p>
@@ -240,14 +240,14 @@ export default function OnboardingPage() {
         {/* Carbon Reduction Plan shortcut */}
         <div className="mb-8 flex flex-col gap-3 rounded-lg border border-[#FED7AA] bg-[#FFF7ED] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-medium text-[#111827]">Bidding for public contracts?</p>
-            <p className="text-xs text-[#6B7280] mt-0.5">
+            <p className="text-sm font-medium text-[#131d29]">Bidding for public contracts?</p>
+            <p className="text-xs text-[#5B6A78] mt-0.5">
               The guided Carbon Reduction Plan walks you through PPN 006 section by section and tells you what is still missing.
             </p>
           </div>
           <Link
             href={`/orgs/${orgId}/carbon-reduction-plan`}
-            className="shrink-0 rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937]"
+            className="shrink-0 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937]"
           >
             Start your Carbon Reduction Plan
           </Link>
@@ -256,12 +256,12 @@ export default function OnboardingPage() {
         {/* Progress bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-[#6B7280]">
+            <span className="text-xs text-[#5B6A78]">
               {completedCount} of {total} complete
             </span>
-            <span className="text-xs font-medium text-[#111827]">{progressPct}%</span>
+            <span className="text-xs font-medium text-[#131d29]">{progressPct}%</span>
           </div>
-          <div className="h-1.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-[#E3E8EE] overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
@@ -286,7 +286,7 @@ export default function OnboardingPage() {
                     ? "border-[#D1FAE5] bg-white opacity-60"
                     : isActive
                     ? "border-[#FED7AA] bg-white shadow-sm"
-                    : "border-[#E5E7EB] bg-white"
+                    : "border-[#E3E8EE] bg-white"
                 }`}
               >
                 <div className="flex items-start gap-4 p-4">
@@ -305,7 +305,7 @@ export default function OnboardingPage() {
                     ) : (
                       <span
                         className={`text-xs font-semibold ${
-                          isActive ? "text-[#c2410c]" : "text-[#6B7280]"
+                          isActive ? "text-[#c2410c]" : "text-[#5B6A78]"
                         }`}
                       >
                         {i + 1}
@@ -318,18 +318,18 @@ export default function OnboardingPage() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <Icon
                         className={`h-3.5 w-3.5 shrink-0 ${
-                          done ? "text-emerald-600" : isActive ? "text-[#c2410c]" : "text-[#6B7280]"
+                          done ? "text-emerald-600" : isActive ? "text-[#c2410c]" : "text-[#5B6A78]"
                         }`}
                       />
                       <p
                         className={`text-sm font-medium tracking-[-0.3px] ${
-                          done ? "text-[#6B7280] line-through" : "text-[#111827]"
+                          done ? "text-[#5B6A78] line-through" : "text-[#131d29]"
                         }`}
                       >
                         {def.label}
                       </p>
                     </div>
-                    <p className="text-xs text-[#6B7280] leading-relaxed">
+                    <p className="text-xs text-[#5B6A78] leading-relaxed">
                       {isActive ? def.detail : def.description}
                     </p>
                   </div>
@@ -351,7 +351,7 @@ export default function OnboardingPage() {
                       <button
                         onClick={() => markStepDone(def.id)}
                         disabled={isMarking}
-                        className="text-xs text-[#6B7280] hover:text-[#6B7280] transition-colors disabled:opacity-40 flex items-center gap-0.5"
+                        className="text-xs text-[#5B6A78] hover:text-[#5B6A78] transition-colors disabled:opacity-40 flex items-center gap-0.5"
                         title="Mark as done"
                       >
                         {isMarking ? (
@@ -378,7 +378,7 @@ export default function OnboardingPage() {
           <button
             onClick={skipAll}
             disabled={skipping}
-            className="text-xs text-[#6B7280] hover:text-[#6B7280] transition-colors inline-flex items-center gap-1 disabled:opacity-40"
+            className="text-xs text-[#5B6A78] hover:text-[#5B6A78] transition-colors inline-flex items-center gap-1 disabled:opacity-40"
           >
             {skipping ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
             Skip setup and go to dashboard

@@ -37,7 +37,7 @@ const TYPES: { value: InstrumentType; label: string; help: string; volume: "requ
 const typeInfo = (t: InstrumentType) => TYPES.find((x) => x.value === t)!;
 
 const selectClass =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
 const kwh = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
 
 export function EnergyInstruments({
@@ -103,10 +103,10 @@ export function EnergyInstruments({
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-[#E3E8EE] bg-white">
         <div className="p-4">
-          <h2 className="text-base font-semibold text-slate-900">Electricity contracts and certificates</h2>
-          <p className="mt-1 max-w-[65ch] text-sm text-slate-500">
+          <h2 className="text-base font-semibold text-[#131d29]">Electricity contracts and certificates</h2>
+          <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
             Market-based Scope 2 uses what you buy, not the grid average. Add the certificates, PPAs and tariffs behind
             your electricity. Each calculation run applies certificates first, then tariffs, then your supplier&apos;s
             rate, then the residual mix. A certificate is never counted twice. Changes apply to the next calculation run.
@@ -123,7 +123,7 @@ export function EnergyInstruments({
         ) : (
           <div className="overflow-x-auto border-t border-slate-100">
             <Table className="w-full text-sm">
-              <thead className="text-left text-xs text-slate-500">
+              <thead className="text-left text-xs text-[#5B6A78]">
                 <tr>
                   <th className="px-4 py-2 font-medium">Type</th>
                   <th className="px-4 py-2 font-medium">Site</th>
@@ -137,12 +137,12 @@ export function EnergyInstruments({
               <tbody className="tabular-nums">
                 {instruments.map((i) => (
                   <tr key={i.id} className="border-t border-slate-100">
-                    <td className="px-4 py-2 text-slate-900">{typeInfo(i.type).label}</td>
-                    <td className="px-4 py-2 text-slate-600">{i.facilityName ?? "All sites"}</td>
-                    <td className="px-4 py-2 text-slate-600">{[i.supplierName, i.reference].filter(Boolean).join(" · ") || "-"}</td>
-                    <td className="px-4 py-2 text-right text-slate-600">{i.coveredKwh == null ? "All remaining" : kwh.format(i.coveredKwh)}</td>
-                    <td className="px-4 py-2 text-right text-slate-600">{i.emissionFactorKgPerKwh}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-slate-600">{i.validFrom} to {i.validTo}</td>
+                    <td className="px-4 py-2 text-[#131d29]">{typeInfo(i.type).label}</td>
+                    <td className="px-4 py-2 text-[#41505F]">{i.facilityName ?? "All sites"}</td>
+                    <td className="px-4 py-2 text-[#41505F]">{[i.supplierName, i.reference].filter(Boolean).join(" · ") || "-"}</td>
+                    <td className="px-4 py-2 text-right text-[#41505F]">{i.coveredKwh == null ? "All remaining" : kwh.format(i.coveredKwh)}</td>
+                    <td className="px-4 py-2 text-right text-[#41505F]">{i.emissionFactorKgPerKwh}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-[#41505F]">{i.validFrom} to {i.validTo}</td>
                     {canEdit && (
                       <td className="px-4 py-2 text-right">
                         <Button type="button" variant="ghost" size="sm" disabled={isPending} onClick={() => remove(i.id)} aria-label="Delete contract">
@@ -159,10 +159,10 @@ export function EnergyInstruments({
       </div>
 
       {canEdit && (
-        <form onSubmit={create} className="rounded-lg border border-slate-200 bg-white">
+        <form onSubmit={create} className="rounded-lg border border-[#E3E8EE] bg-white">
           <div className="p-4">
-            <h2 className="text-base font-semibold text-slate-900">Add a contract</h2>
-            <p className="mt-1 text-sm text-slate-500">{info.help}</p>
+            <h2 className="text-base font-semibold text-[#131d29]">Add a contract</h2>
+            <p className="mt-1 text-sm text-[#5B6A78]">{info.help}</p>
           </div>
           <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2">
             <FormSection title="Add an instrument" description="Certificates, PPAs and tariffs used for market-based Scope 2." cols={3}>
@@ -200,7 +200,7 @@ export function EnergyInstruments({
               </FormField>
               {info.volume !== "none" && (
                 <div>
-                  <Label htmlFor="ei-kwh" className="mb-1.5 block text-xs font-medium text-slate-600">
+                  <Label htmlFor="ei-kwh" className="mb-1.5 block text-xs font-medium text-[#41505F]">
                     kWh covered{info.volume === "optional" ? " (blank for the whole supply)" : ""}
                   </Label>
                   <Input id="ei-kwh" name="coveredKwh" type="number" min="1" step="any" required={info.volume === "required"} />

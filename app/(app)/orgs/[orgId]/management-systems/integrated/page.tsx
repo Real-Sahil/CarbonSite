@@ -10,10 +10,10 @@ import { integratedView } from "@/lib/management-systems/integrated";
 import type { RequirementState } from "@/lib/management-systems/readiness";
 
 const STYLE: Record<RequirementState, string> = {
-  not_started: "bg-[#F3F4F6] text-[#374151]",
+  not_started: "bg-[#F3F4F6] text-[#41505F]",
   in_progress: "bg-amber-50 text-amber-800",
   implemented: "bg-emerald-50 text-emerald-800",
-  not_applicable: "bg-slate-100 text-slate-500",
+  not_applicable: "bg-slate-100 text-[#5B6A78]",
 };
 const LABEL: Record<RequirementState, string> = { not_started: "Not started", in_progress: "In progress", implemented: "Implemented", not_applicable: "Not applicable" };
 
@@ -23,7 +23,7 @@ export default async function IntegratedPage({ params }: { params: Promise<{ org
     await requireOrgMember(orgId, ...MS_READERS);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view management systems.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view management systems.</div>;
   }
   const adoptions = await prisma.msFrameworkAdoption.findMany({ where: { organizationId: orgId, status: { not: "withdrawn" } }, select: { frameworkSlug: true }, orderBy: { createdAt: "asc" } });
   const frameworks = adoptions.map((a) => getFramework(a.frameworkSlug)).filter((f): f is CatalogueFramework => !!f && f.family !== "privacy");
@@ -41,20 +41,20 @@ export default async function IntegratedPage({ params }: { params: Promise<{ org
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#6B7280] hover:text-[#111827]">Management systems</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Integrated view</h1>
-        <p className="max-w-[75ch] text-sm text-[#6B7280]">
+        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Management systems</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Integrated view</h1>
+        <p className="max-w-[75ch] text-sm text-[#5B6A78]">
           Clauses your adopted standards share, side by side. Where the statuses differ the row is flagged: the same process usually answers every standard, so
           bring them into line. Certification bodies may shorten a combined audit of an integrated system by up to 20% (IAF MD 11), depending on how integrated it is.
         </p>
-        {rows.length > 0 && <p className="text-sm tabular-nums text-[#374151]">{rows.length} shared clauses covering {sharedShare}% of the requirements you assess.</p>}
+        {rows.length > 0 && <p className="text-sm tabular-nums text-[#41505F]">{rows.length} shared clauses covering {sharedShare}% of the requirements you assess.</p>}
       </div>
       {rows.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-[#E5E7EB] p-6 text-sm text-[#6B7280]">Adopt two or more ISO management system standards (for example ISO 9001, 14001 and 45001) to see their shared clauses.</p>
+        <p className="rounded-[14px] border border-dashed border-[#E3E8EE] p-6 text-sm text-[#5B6A78]">Adopt two or more ISO management system standards (for example ISO 9001, 14001 and 45001) to see their shared clauses.</p>
       ) : (
-        <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB] bg-white">
+        <div className="overflow-x-auto rounded-[14px] border border-[#E3E8EE] bg-white">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+            <thead className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Shared clause</th>
                 {frameworks.map((f) => <th key={f.slug} className="whitespace-nowrap px-4 py-2.5 font-medium">{f.shortName}</th>)}
@@ -63,7 +63,7 @@ export default async function IntegratedPage({ params }: { params: Promise<{ org
             <tbody className="divide-y divide-[#F3F4F6]">
               {rows.map((r) => (
                 <tr key={r.key} className="align-top">
-                  <td className="px-4 py-2.5 font-medium text-[#111827]">
+                  <td className="px-4 py-2.5 font-medium text-[#131d29]">
                     {r.title}
                     {!r.aligned && <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-normal text-amber-800">Statuses differ</span>}
                   </td>
@@ -73,9 +73,9 @@ export default async function IntegratedPage({ params }: { params: Promise<{ org
                       <td key={f.slug} className="px-4 py-2.5">
                         {c ? (
                           <Link href={`/orgs/${orgId}/management-systems/${f.slug}#req-${c.code.replace(/[^A-Za-z0-9]+/g, "-")}`} className="flex flex-col gap-1 hover:underline">
-                            <span className="font-mono text-xs text-[#6B7280]">{c.code}</span>
+                            <span className="font-mono text-xs text-[#5B6A78]">{c.code}</span>
                             <span className={`self-start rounded-full px-2 py-0.5 text-xs ${STYLE[c.status]}`}>{LABEL[c.status]}</span>
-                            <span className="text-xs tabular-nums text-[#6B7280]">{c.evidence} evidence</span>
+                            <span className="text-xs tabular-nums text-[#5B6A78]">{c.evidence} evidence</span>
                           </Link>
                         ) : (
                           <span className="text-[#D1D5DB]">-</span>

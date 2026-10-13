@@ -16,7 +16,7 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
     canEdit = ROLE_GROUPS.editor.includes(membership.role);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    if (err instanceof AuthError) return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view import profiles.</div>;
+    if (err instanceof AuthError) return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view import profiles.</div>;
     throw err;
   }
 
@@ -28,16 +28,16 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
   const systemLabel = (s: string) => PROFILE_TEMPLATES.find((t) => t.sourceSystem === s)?.label ?? s;
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
-      <div className="border-b border-[#E5E7EB] bg-white">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
-          <Link href={`/orgs/${orgId}/imports`} className="inline-flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#111827]">
+          <Link href={`/orgs/${orgId}/imports`} className="inline-flex items-center gap-1 text-xs text-[#5B6A78] hover:text-[#131d29]">
             <ArrowLeft aria-hidden="true" className="h-3 w-3" /> Imports
           </Link>
           <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">ERP export profiles</h1>
-              <p className="mt-1 max-w-[70ch] text-sm text-[#6B7280]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">ERP export profiles</h1>
+              <p className="mt-1 max-w-[70ch] text-sm text-[#5B6A78]">
                 Save how your finance system&apos;s ledger export is laid out, and which ledger accounts and cost codes are emissions. Import the export each month with the profile; lines no rule covers are left out and listed, and nothing is recorded until you commit the import.
               </p>
             </div>
@@ -54,13 +54,13 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
 
       <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
         {profiles.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#D1D5DB] bg-white p-8 text-sm text-[#6B7280]">
+          <div className="rounded-xl border border-dashed border-[#D1D5DB] bg-white p-8 text-sm text-[#5B6A78]">
             No profiles yet. Templates for SAP, Causeway Financials, COINS and Sage suggest the columns; you confirm them against a sample export and add rules for your chart of accounts.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
+          <div className="overflow-hidden rounded-xl border border-[#E3E8EE] bg-white">
             <table className="w-full text-sm">
-              <thead className="bg-[#F9FAFB] text-left text-xs text-[#6B7280]">
+              <thead className="bg-[#F9FAFC] text-left text-xs text-[#5B6A78]">
                 <tr>
                   <th className="px-5 py-2.5 font-medium">Profile</th>
                   <th className="px-5 py-2.5 font-medium">System</th>
@@ -74,15 +74,15 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
                   <tr key={p.id} className="border-t border-[#F3F4F6]">
                     <td className="px-5 py-3">
                       {canEdit ? (
-                        <Link href={`/orgs/${orgId}/imports/profiles/${p.id}`} className="font-medium text-[#111827] hover:text-[#c2410c]">{p.name}</Link>
+                        <Link href={`/orgs/${orgId}/imports/profiles/${p.id}`} className="font-medium text-[#131d29] hover:text-[#c2410c]">{p.name}</Link>
                       ) : (
-                        <span className="font-medium text-[#111827]">{p.name}</span>
+                        <span className="font-medium text-[#131d29]">{p.name}</span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-[#374151]">{systemLabel(p.sourceSystem)}</td>
+                    <td className="px-5 py-3 text-[#41505F]">{systemLabel(p.sourceSystem)}</td>
                     <td className="px-5 py-3 text-right tabular-nums">{p._count.rules}</td>
                     <td className="px-5 py-3 text-right tabular-nums">{p._count.importBatches}</td>
-                    <td className="px-5 py-3 text-right text-[#6B7280]">{p.updatedAt.toLocaleDateString("en-GB")}</td>
+                    <td className="px-5 py-3 text-right text-[#5B6A78]">{p.updatedAt.toLocaleDateString("en-GB")}</td>
                   </tr>
                 ))}
               </tbody>

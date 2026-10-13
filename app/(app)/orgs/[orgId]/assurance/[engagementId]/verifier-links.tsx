@@ -73,7 +73,7 @@ export function VerifierLinks({ orgId, engagementId, snapshotId }: { orgId: stri
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Verifier link</CardTitle>
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-[#5B6A78]">
           Gives an independent verifier read-only access to this snapshot&apos;s assurance pack for a limited time, with no seat in your organisation. Every visit and download is recorded in your audit log.
         </p>
       </CardHeader>
@@ -113,7 +113,7 @@ export function VerifierLinks({ orgId, engagementId, snapshotId }: { orgId: stri
               return (
                 <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
                   <span>
-                    <span className="font-medium text-zinc-900">{r.name}</span>
+                    <span className="font-medium text-[#131d29]">{r.name}</span>
                     {r.company ? `, ${r.company}` : ""} · {state}
                     {r.lastUsedAt ? ` · last opened ${day(r.lastUsedAt)}` : " · not opened yet"}
                   </span>

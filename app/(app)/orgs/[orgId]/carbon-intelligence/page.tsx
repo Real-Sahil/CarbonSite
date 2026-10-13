@@ -76,38 +76,38 @@ export default async function CarbonIntelligencePage({ params }: Props) {
   const highCount = severityMap.high ?? 0;
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF]">
-              <Zap className="h-4 w-4 text-[#111827]" />
+              <Zap className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Carbon Intelligence</span>
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Carbon Intelligence</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Overview</h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Overview</h1>
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Real-time carbon signals, threshold alerts, and external data integrations.
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className="text-2xl font-bold tabular-nums text-[#111827]">{openAlerts.length}</span>
-              <span className="text-xs text-[#6B7280]">open alerts</span>
+            <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
+              <span className="text-2xl font-bold tabular-nums text-[#131d29]">{openAlerts.length}</span>
+              <span className="text-xs text-[#5B6A78]">open alerts</span>
             </div>
-            <div className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className={`text-2xl font-bold tabular-nums ${criticalCount > 0 ? "text-red-600" : "text-[#111827]"}`}>
+            <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
+              <span className={`text-2xl font-bold tabular-nums ${criticalCount > 0 ? "text-red-600" : "text-[#131d29]"}`}>
                 {criticalCount}
               </span>
-              <span className="text-xs text-[#6B7280]">critical severity</span>
+              <span className="text-xs text-[#5B6A78]">critical severity</span>
             </div>
-            <div className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className="text-2xl font-bold tabular-nums text-[#111827]">{recentSignals.length ? "Active" : "None"}</span>
-              <span className="text-xs text-[#6B7280]">recent signals</span>
+            <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
+              <span className="text-2xl font-bold tabular-nums text-[#131d29]">{recentSignals.length ? "Active" : "None"}</span>
+              <span className="text-xs text-[#5B6A78]">recent signals</span>
             </div>
-            <div className="rounded-lg border border-[#E5E7EB] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className="text-2xl font-bold tabular-nums text-[#111827]">{activeCreds}</span>
-              <span className="text-xs text-[#6B7280]">active integrations</span>
+            <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
+              <span className="text-2xl font-bold tabular-nums text-[#131d29]">{activeCreds}</span>
+              <span className="text-xs text-[#5B6A78]">active integrations</span>
             </div>
           </div>
         </div>
@@ -115,11 +115,11 @@ export default async function CarbonIntelligencePage({ params }: Props) {
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Open alerts */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-semibold text-[#111827] flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-[#c2410c]" />
                   Open Alerts
                   {(criticalCount + highCount) > 0 && (
@@ -128,11 +128,11 @@ export default async function CarbonIntelligencePage({ params }: Props) {
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+                <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                   Unresolved threshold breaches and anomalies.
                 </CardDescription>
               </div>
-              <Link href={`/orgs/${orgId}/carbon-intelligence/alerts`} className="text-xs text-[#374151] hover:underline flex items-center gap-1">
+              <Link href={`/orgs/${orgId}/carbon-intelligence/alerts`} className="text-xs text-[#41505F] hover:underline flex items-center gap-1">
                 All alerts <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -140,12 +140,12 @@ export default async function CarbonIntelligencePage({ params }: Props) {
           <CardContent className={openAlerts.length === 0 ? "py-8" : "p-0"}>
             {openAlerts.length === 0 ? (
               <div className="text-center">
-                <p className="text-xs text-[#6B7280]">No open alerts. All clear.</p>
+                <p className="text-xs text-[#5B6A78]">No open alerts. All clear.</p>
               </div>
             ) : (
               <ul className="divide-y divide-[#F3F4F6]">
                 {openAlerts.map((a) => (
-                  <li key={a.id} className="flex items-start gap-3 px-6 py-3 hover:bg-[#F9FAFB]">
+                  <li key={a.id} className="flex items-start gap-3 px-6 py-3 hover:bg-[#F9FAFC]">
                     <Badge
                       variant={SEVERITY_VARIANTS[a.severity] ?? "outline"}
                       className="text-xs mt-0.5 flex-shrink-0 capitalize"
@@ -153,10 +153,10 @@ export default async function CarbonIntelligencePage({ params }: Props) {
                       {a.severity}
                     </Badge>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#111827] truncate">{a.title}</p>
-                      <p className="text-xs text-[#6B7280] truncate">{a.alertType}</p>
+                      <p className="text-sm font-medium text-[#131d29] truncate">{a.title}</p>
+                      <p className="text-xs text-[#5B6A78] truncate">{a.alertType}</p>
                     </div>
-                    <span className="text-xs text-[#6B7280] flex-shrink-0 tabular-nums">
+                    <span className="text-xs text-[#5B6A78] flex-shrink-0 tabular-nums">
                       {new Date(a.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
                     </span>
                   </li>
@@ -167,19 +167,19 @@ export default async function CarbonIntelligencePage({ params }: Props) {
         </Card>
 
         {/* Recent signals */}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-semibold text-[#111827] flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
                   <Radio className="h-4 w-4 text-[#6366f1]" />
                   Carbon Signals
                 </CardTitle>
-                <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+                <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                   Recent real-time or near-real-time data ingested.
                 </CardDescription>
               </div>
-              <Link href={`/orgs/${orgId}/carbon-intelligence/signals`} className="text-xs text-[#374151] hover:underline flex items-center gap-1">
+              <Link href={`/orgs/${orgId}/carbon-intelligence/signals`} className="text-xs text-[#41505F] hover:underline flex items-center gap-1">
                 All signals <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -187,21 +187,21 @@ export default async function CarbonIntelligencePage({ params }: Props) {
           <CardContent className={recentSignals.length === 0 ? "py-8" : "p-0"}>
             {recentSignals.length === 0 ? (
               <div className="text-center">
-                <p className="text-xs text-[#6B7280]">No signals ingested yet.</p>
+                <p className="text-xs text-[#5B6A78]">No signals ingested yet.</p>
               </div>
             ) : (
               <ul className="divide-y divide-[#F3F4F6]">
                 {recentSignals.map((s) => (
-                  <li key={s.id} className="flex items-center gap-3 px-6 py-3 hover:bg-[#F9FAFB]">
+                  <li key={s.id} className="flex items-center gap-3 px-6 py-3 hover:bg-[#F9FAFC]">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[#111827] truncate">{s.signalType}</p>
-                      <p className="text-xs text-[#6B7280]">{s.source}{s.region ? ` · ${s.region}` : ""}</p>
+                      <p className="text-sm font-medium text-[#131d29] truncate">{s.signalType}</p>
+                      <p className="text-xs text-[#5B6A78]">{s.source}{s.region ? ` · ${s.region}` : ""}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-sm font-semibold text-[#111827] tabular-nums">
+                      <p className="text-sm font-semibold text-[#131d29] tabular-nums">
                         {Number(s.value).toLocaleString("en-GB", { maximumFractionDigits: 3 })} {s.unit}
                       </p>
-                      <p className="text-xs text-[#6B7280] tabular-nums">
+                      <p className="text-xs text-[#5B6A78] tabular-nums">
                         {new Date(s.recordedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
                       </p>
                     </div>
@@ -214,27 +214,27 @@ export default async function CarbonIntelligencePage({ params }: Props) {
 
         {/* Integrations card */}
         {isAdmin && (
-          <Card className="border-[#E5E7EB] shadow-none lg:col-span-2">
-            <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+          <Card className="border-[#E3E8EE] shadow-none lg:col-span-2">
+            <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-sm font-semibold text-[#111827] flex items-center gap-2">
-                    <Plug className="h-4 w-4 text-[#6B7280]" />
+                  <CardTitle className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
+                    <Plug className="h-4 w-4 text-[#5B6A78]" />
                     External Integrations
                   </CardTitle>
-                  <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+                  <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                     API credentials for external data sources.
                   </CardDescription>
                 </div>
-                <Link href={`/orgs/${orgId}/carbon-intelligence/integrations`} className="text-xs text-[#374151] hover:underline flex items-center gap-1">
+                <Link href={`/orgs/${orgId}/carbon-intelligence/integrations`} className="text-xs text-[#41505F] hover:underline flex items-center gap-1">
                   Manage <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </CardHeader>
             <CardContent className="px-6 py-5">
               <div className="flex items-center gap-3">
-                <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${activeCreds > 0 ? "bg-emerald-500" : "bg-[#E5E7EB]"}`} />
-                <p className="text-sm text-[#374151]">
+                <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 ${activeCreds > 0 ? "bg-emerald-500" : "bg-[#E3E8EE]"}`} />
+                <p className="text-sm text-[#41505F]">
                   {activeCreds > 0
                     ? `${activeCreds} active integration${activeCreds !== 1 ? "s" : ""} configured.`
                     : "No integrations configured. Connect an external data source to start ingesting carbon signals automatically."}

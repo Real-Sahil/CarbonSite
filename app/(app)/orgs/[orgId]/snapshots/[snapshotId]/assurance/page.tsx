@@ -23,7 +23,7 @@ export default async function SnapshotAssurancePage({ params }: Props) {
     } else {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-8">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[#5B6A78]">
             Failed to load page. The database may be updating — try refreshing in a moment.
           </p>
         </div>
@@ -41,8 +41,8 @@ export default async function SnapshotAssurancePage({ params }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
           </svg>
         </div>
-        <h2 className="text-sm font-semibold text-gray-900 mb-1">Auditor access required</h2>
-        <p className="text-sm text-gray-500 max-w-sm">
+        <h2 className="text-sm font-semibold text-[#131d29] mb-1">Auditor access required</h2>
+        <p className="text-sm text-[#5B6A78] max-w-sm">
           Reviewing snapshot assurance requires admin or auditor access.
         </p>
       </div>
@@ -90,7 +90,7 @@ export default async function SnapshotAssurancePage({ params }: Props) {
     console.error("[Assurance] Database error:", err);
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-8">
-        <p className="text-sm text-gray-500">Unable to load assurance data. Please try again later.</p>
+        <p className="text-sm text-[#5B6A78]">Unable to load assurance data. Please try again later.</p>
       </div>
     );
   }
@@ -98,7 +98,7 @@ export default async function SnapshotAssurancePage({ params }: Props) {
   if (!snapshot) {
     return (
       <div className="p-8">
-        <p className="text-sm text-gray-500">Snapshot not found.</p>
+        <p className="text-sm text-[#5B6A78]">Snapshot not found.</p>
       </div>
     );
   }

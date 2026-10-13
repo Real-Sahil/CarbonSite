@@ -29,7 +29,7 @@ interface Props {
   sources: ApiDataSourceRow[];
 }
 
-const selectClass = "h-9 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+const selectClass = "h-9 rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
 
 export function ApiDataSourcesPanel({ orgId, sources }: Props) {
   const router = useRouter();
@@ -96,10 +96,10 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white">
       <div className="p-4">
-        <h2 className="text-base font-semibold text-slate-900">API data sources</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <h2 className="text-base font-semibold text-[#131d29]">API data sources</h2>
+        <p className="mt-1 text-sm text-[#5B6A78]">
           Connect external APIs to automatically import activity data and emissions records.
         </p>
       </div>
@@ -166,7 +166,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
       )}
 
       {sources.length === 0 && !showForm && (
-        <div className="border-t border-slate-100 px-4 py-6 text-center text-sm text-slate-500">
+        <div className="border-t border-slate-100 px-4 py-6 text-center text-sm text-[#5B6A78]">
           No API data sources configured.
         </div>
       )}
@@ -253,20 +253,20 @@ function ApiDataSourceRow({ orgId, source }: { orgId: string; source: ApiDataSou
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-slate-900">{source.name}</h3>
+            <h3 className="font-medium text-[#131d29]">{source.name}</h3>
             {source.enabled ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-700">
                 <CheckCircle2 className="h-3 w-3" />
                 Active
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-[#41505F]">
                 Disabled
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5 font-mono break-all">{source.endpoint}</p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-[#5B6A78] mt-0.5 font-mono break-all">{source.endpoint}</p>
+          <p className="text-xs text-[#5B6A78] mt-1">
             Syncs every {source.syncIntervalMins} min · Last sync: {lastSync}
           </p>
           {hasError && (
@@ -283,7 +283,7 @@ function ApiDataSourceRow({ orgId, source }: { orgId: string; source: ApiDataSou
           <button
             onClick={removeSource}
             disabled={deleting}
-            className="p-1.5 rounded text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+            className="p-1.5 rounded text-[#5B6A78] hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
             aria-label={`Delete ${source.name}`}
           >
             <Trash2 className="h-4 w-4" />

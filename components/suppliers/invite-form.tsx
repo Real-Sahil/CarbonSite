@@ -98,9 +98,9 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
   };
 
   return (
-    <Card className="border-[#E5E7EB] bg-white shadow-sm">
+    <Card className="border-[#E3E8EE] bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-slate-900 flex items-center gap-2">
+        <CardTitle className="text-[#131d29] flex items-center gap-2">
           <Mail className="h-5 w-5 text-[#c2410c]" />
           Send Supplier Invitation
         </CardTitle>
@@ -127,7 +127,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Invite Method Selection */}
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-slate-900">
+            <label className="block text-sm font-medium text-[#131d29]">
               Invitation Method
             </label>
             <div className="grid grid-cols-2 gap-3">
@@ -137,11 +137,11 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   inviteMethod === "magic-link"
                     ? "border-[#f97316] bg-[#fff7ed]"
-                    : "border-[#E5E7EB] bg-white hover:border-slate-300"
+                    : "border-[#E3E8EE] bg-white hover:border-slate-300"
                 }`}
               >
-                <div className="font-medium text-slate-900">Magic Link</div>
-                <div className="text-xs text-slate-500 mt-1">
+                <div className="font-medium text-[#131d29]">Magic Link</div>
+                <div className="text-xs text-[#5B6A78] mt-1">
                   No account needed, one-time use
                 </div>
               </button>
@@ -151,11 +151,11 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   inviteMethod === "credentials"
                     ? "border-[#f97316] bg-[#fff7ed]"
-                    : "border-[#E5E7EB] bg-white hover:border-slate-300"
+                    : "border-[#E3E8EE] bg-white hover:border-slate-300"
                 }`}
               >
-                <div className="font-medium text-slate-900">Create Account</div>
-                <div className="text-xs text-slate-500 mt-1">
+                <div className="font-medium text-[#131d29]">Create Account</div>
+                <div className="text-xs text-[#5B6A78] mt-1">
                   Persistent login credentials
                 </div>
               </button>
@@ -247,12 +247,12 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
         </form>
 
         {/* Info Section */}
-        <div className="border-t border-[#E5E7EB] pt-6">
-          <h4 className="font-semibold text-slate-900 mb-3">Comparison:</h4>
+        <div className="border-t border-[#E3E8EE] pt-6">
+          <h4 className="font-semibold text-[#131d29] mb-3">Comparison:</h4>
           <div className="grid gap-4 text-sm">
             <div>
               <div className="font-medium text-[#c2410c] mb-1">Magic Link</div>
-              <ul className="space-y-1 text-slate-600 text-xs">
+              <ul className="space-y-1 text-[#41505F] text-xs">
                 <li>✓ No account creation required</li>
                 <li>✓ Faster onboarding</li>
                 <li>✓ Expires after 7 days</li>
@@ -261,7 +261,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
             </div>
             <div>
               <div className="font-medium text-[#c2410c] mb-1">Create Account</div>
-              <ul className="space-y-1 text-slate-600 text-xs">
+              <ul className="space-y-1 text-[#41505F] text-xs">
                 <li>✓ Persistent login access</li>
                 <li>✓ Can return to view submissions</li>
                 <li>✓ Better for ongoing relationships</li>

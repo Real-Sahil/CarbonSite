@@ -36,8 +36,8 @@ export default async function SuppliersPage({ params, searchParams }: SuppliersP
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Supplier Management</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl">Supplier Management</h1>
+        <p className="text-[#41505F] mt-2">
           Monitor supplier submission performance and data quality
         </p>
       </div>

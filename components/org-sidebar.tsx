@@ -113,10 +113,10 @@ function NavLink({ item, pathname, onClick, indent, isCollapsed }: { item: NavIt
         isCollapsed ? "justify-center px-2" : indent ? "ml-1" : "",
         isActive
           ? "bg-white font-medium text-[#131d29] border border-[#131d29]/[0.08] shadow-[0_2px_8px_-2px_rgba(19,29,41,0.1)]"
-          : "text-slate-500 hover:text-slate-900 hover:bg-white/70 border border-transparent",
+          : "text-[#5B6A78] hover:text-[#131d29] hover:bg-white/70 border border-transparent",
       )}
     >
-      <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2400c]" : "text-slate-500")} aria-hidden="true" />
+      <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-[#c2400c]" : "text-[#5B6A78]")} aria-hidden="true" />
       {!isCollapsed && item.label}
     </Link>
   );
@@ -131,7 +131,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
         {isCollapsed ? (
           <Tooltip>
             <TooltipTrigger asChild>{<NavLink item={nav.dashboardItem} pathname={pathname} onClick={onNavClick} isCollapsed={isCollapsed} />}</TooltipTrigger>
-            <TooltipContent side="right" className="text-xs bg-white border-[#131d29]/[0.08] text-slate-700 shadow-md">{nav.dashboardItem.label}</TooltipContent>
+            <TooltipContent side="right" className="text-xs bg-white border-[#131d29]/[0.08] text-[#41505F] shadow-md">{nav.dashboardItem.label}</TooltipContent>
           </Tooltip>
         ) : (
           <NavLink item={nav.dashboardItem} pathname={pathname} onClick={onNavClick} isCollapsed={isCollapsed} />
@@ -151,7 +151,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
                 aria-expanded={isOpen}
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] transition-colors",
-                  isActive ? "text-[#c2400c]" : "text-slate-500 hover:text-slate-600",
+                  isActive ? "text-[#c2400c]" : "text-[#5B6A78] hover:text-[#41505F]",
                 )}
               >
                 <GroupIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -171,7 +171,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
                         type="button"
                         onClick={() => nav.onToggleSection(key)}
                         aria-expanded={sectionOpen}
-                        className="flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] font-semibold text-slate-500 hover:text-slate-700"
+                        className="flex w-full items-center gap-1 rounded-md px-2.5 py-1 text-[10px] uppercase tracking-[0.1em] font-semibold text-[#5B6A78] hover:text-[#41505F]"
                       >
                         <span className="flex-1 text-left">{section.label}</span>
                         <ChevronRight className={cn("h-3 w-3 shrink-0 transition-transform", sectionOpen && "rotate-90")} aria-hidden="true" />
@@ -185,7 +185,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
                           return (
                             <Tooltip key={item.href}>
                               <TooltipTrigger asChild>{link}</TooltipTrigger>
-                              <TooltipContent side="right" className="text-xs bg-white border-[#131d29]/[0.08] text-slate-700 shadow-md">{item.label}</TooltipContent>
+                              <TooltipContent side="right" className="text-xs bg-white border-[#131d29]/[0.08] text-[#41505F] shadow-md">{item.label}</TooltipContent>
                             </Tooltip>
                           );
                         }
@@ -205,10 +205,10 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
         <button
           type="button"
           onClick={nav.onToggleShowAll}
-          className="mt-3 w-full rounded-lg border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-[12px] text-slate-600 transition-colors hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
+          className="mt-3 w-full rounded-lg border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-[12px] text-[#41505F] transition-colors hover:border-slate-400 hover:bg-[#F9FAFC] hover:text-[#131d29]"
         >
           {showAll ? "Show the short menu" : "Show all pages"}
-          <span className="block text-[11px] text-slate-500">{showAll ? "Only the everyday jobs" : "Everything, including reports and compliance tools"}</span>
+          <span className="block text-[11px] text-[#5B6A78]">{showAll ? "Only the everyday jobs" : "Everything, including reports and compliance tools"}</span>
         </button>
       )}
     </>
@@ -237,8 +237,8 @@ function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, 
           <div className="flex items-center gap-2.5 min-w-0 w-full">
             <LogoMark size={28} className="shrink-0" />
             <div className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
-              <span className="text-[11px] text-slate-500 font-normal block truncate" title={orgName}>{orgName}</span>
+              <span className="block text-sm font-semibold tracking-tight text-[#131d29]">MetricOra</span>
+              <span className="text-[11px] text-[#5B6A78] font-normal block truncate" title={orgName}>{orgName}</span>
             </div>
           </div>
         )}
@@ -248,7 +248,7 @@ function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, 
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
-            className="flex w-full items-center gap-2 rounded-md border border-[#131d29]/[0.08] bg-white px-2.5 py-2 text-left text-xs text-slate-600 hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            className="flex w-full items-center gap-2 rounded-md border border-[#131d29]/[0.08] bg-white px-2.5 py-2 text-left text-xs text-[#41505F] hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
           >
             <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span className="flex-1">Search pages and tasks</span>
@@ -481,12 +481,12 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
           bar is another source of iOS repaint bugs. */}
       <header className="flex md:hidden sticky top-0 z-40 items-center h-14 px-4 bg-[#F9FAFC] border-b border-[#131d29]/[0.08] shrink-0">
         <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="flex items-center justify-center h-9 w-9 rounded-lg hover:bg-slate-100 transition-colors">
-          <Menu className="h-5 w-5 text-slate-500" aria-hidden="true" />
+          <Menu className="h-5 w-5 text-[#5B6A78]" aria-hidden="true" />
         </button>
         <div className="ml-3 flex items-center gap-2 min-w-0">
           <LogoMark size={24} className="shrink-0" />
-          <span className="text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
-          <span className="text-xs text-slate-500 truncate max-w-[120px]">/ {orgName}</span>
+          <span className="text-sm font-semibold tracking-tight text-[#131d29]">MetricOra</span>
+          <span className="text-xs text-[#5B6A78] truncate max-w-[120px]">/ {orgName}</span>
         </div>
         <div className="ml-auto flex items-center gap-1">
           <ThemeToggle />
@@ -503,12 +503,12 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
               <div className="flex items-center gap-2.5 min-w-0">
                 <LogoMark size={28} className="shrink-0" />
                 <div className="min-w-0">
-                  <span className="block text-sm font-semibold tracking-tight text-slate-900">MetricOra</span>
-                  <span className="text-xs text-slate-500 block truncate">{orgName}</span>
+                  <span className="block text-sm font-semibold tracking-tight text-[#131d29]">MetricOra</span>
+                  <span className="text-xs text-[#5B6A78] block truncate">{orgName}</span>
                 </div>
               </div>
               <button aria-label="Close menu" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-slate-100 transition-colors ml-2 shrink-0">
-                <X className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                <X className="h-4 w-4 text-[#5B6A78]" aria-hidden="true" />
               </button>
             </div>
             <nav className="flex-1 px-2 py-3 flex flex-col overflow-y-auto" aria-label="Organisation navigation">
@@ -523,15 +523,15 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
                       <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      {user.name && <p className="text-xs font-medium text-slate-700 truncate">{user.name}</p>}
-                      <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                      {user.name && <p className="text-xs font-medium text-[#41505F] truncate">{user.name}</p>}
+                      <p className="text-[11px] text-[#5B6A78] truncate">{user.email}</p>
                     </div>
-                    <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                    <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-[#5B6A78] shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-[#131d29]/[0.08] shadow-lg">
                   <DropdownMenuItem asChild>
-                    <Link href={`/orgs/${orgId}/settings/members`} onClick={() => setMobileOpen(false)} className="rounded-lg text-slate-600 focus:text-slate-900 focus:bg-slate-100">
+                    <Link href={`/orgs/${orgId}/settings/members`} onClick={() => setMobileOpen(false)} className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-slate-100">
                       <Users aria-hidden="true" className="h-4 w-4 mr-2" />
                       Members and settings
                     </Link>
@@ -567,9 +567,9 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
         <button
           onClick={toggleCollapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-[#131d29]/[0.08] bg-white shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-colors"
+          className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-[#131d29]/[0.08] bg-white shadow-sm hover:bg-[#F9FAFC] hover:border-slate-300 transition-colors"
         >
-          {collapsed ? <ChevronRight className="h-3 w-3 text-slate-500" /> : <ChevronLeft className="h-3 w-3 text-slate-500" />}
+          {collapsed ? <ChevronRight className="h-3 w-3 text-[#5B6A78]" /> : <ChevronLeft className="h-3 w-3 text-[#5B6A78]" />}
         </button>
       </div>
     </TooltipProvider>

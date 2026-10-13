@@ -44,14 +44,14 @@ export function CompanyFinder({ base, getName, onPick, withOwners = false, label
   return (
     <div className="sm:col-span-4">
       <Button type="button" variant="outline" size="sm" disabled={busy || name.trim().length < 3} onClick={() => void find()}>{busy ? "Looking…" : label}</Button>
-      {note && <p role="status" className="mt-1 text-xs text-gray-600">{note}</p>}
+      {note && <p role="status" className="mt-1 text-xs text-[#41505F]">{note}</p>}
       {list && list.length > 0 && (
-        <ul className="mt-2 divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white text-sm">
+        <ul className="mt-2 divide-y divide-gray-100 rounded-lg border border-[#E3E8EE] bg-white text-sm">
           {list.map((c) => (
             <li key={c.number}>
-              <button type="button" className="w-full px-3 py-2 text-left hover:bg-gray-50" onClick={() => void pick(c)}>
-                <span className="font-medium text-gray-900">{c.name}</span> <span className="text-xs text-gray-500">{c.number}{c.status && c.status !== "active" ? ` · ${c.status}` : ""}</span>
-                {c.address && <span className="block text-xs text-gray-500">{c.address}</span>}
+              <button type="button" className="w-full px-3 py-2 text-left hover:bg-[#F9FAFC]" onClick={() => void pick(c)}>
+                <span className="font-medium text-[#131d29]">{c.name}</span> <span className="text-xs text-[#5B6A78]">{c.number}{c.status && c.status !== "active" ? ` · ${c.status}` : ""}</span>
+                {c.address && <span className="block text-xs text-[#5B6A78]">{c.address}</span>}
               </button>
             </li>
           ))}

@@ -35,8 +35,8 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
     <div className="mx-auto max-w-6xl space-y-5 p-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">KPI report</h1>
-          <p className="mt-1 text-sm text-gray-500">Pick the measures you report on. The table shows the company, then each business unit and project, so you can compare them. Save the choice as a view to run it again.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">KPI report</h1>
+          <p className="mt-1 text-sm text-[#5B6A78]">Pick the measures you report on. The table shows the company, then each business unit and project, so you can compare them. Save the choice as a view to run it again.</p>
         </div>
         {viewRoles().includes(role as never) && <SavedViewsMenu orgId={orgId} surface="kpis" filters={filters} canShare={mayShare(role)} isAdmin={role === "admin"} />}
       </div>
@@ -44,16 +44,16 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
       <KpiPicker chosen={chosen} periodId={data.periodId} periods={data.periods} />
 
       {data.rows.length === 0 ? (
-        <p className="rounded-xl border border-gray-200 bg-white p-10 text-center text-sm text-gray-500">No waste records yet, so there is nothing to report. Add waste under Environment, then Waste.</p>
+        <p className="rounded-xl border border-[#E3E8EE] bg-white p-10 text-center text-sm text-[#5B6A78]">No waste records yet, so there is nothing to report. Add waste under Environment, then Waste.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-[#E3E8EE] bg-white">
           <table className="w-full min-w-[640px] text-sm">
             <caption className="sr-only">Waste KPIs for {data.periodLabel}, by company, business unit and project</caption>
             <thead className="border-b border-gray-100">
               <tr>
-                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{data.periodLabel}</th>
+                <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{data.periodLabel}</th>
                 {defs.map((d) => (
-                  <th key={d.id} scope="col" className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">{d.label}{d.unit && <span className="block font-normal normal-case text-gray-400">{d.unit}</span>}</th>
+                  <th key={d.id} scope="col" className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{d.label}{d.unit && <span className="block font-normal normal-case text-gray-400">{d.unit}</span>}</th>
                 ))}
               </tr>
             </thead>
@@ -63,14 +63,14 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
                 if (rows.length === 0) return null;
                 return [
                   level !== "company" && (
-                    <tr key={`h-${level}`} className="bg-gray-50"><th colSpan={defs.length + 1} scope="colgroup" className="px-4 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide text-gray-500">{LEVEL_LABEL[level]}</th></tr>
+                    <tr key={`h-${level}`} className="bg-[#F9FAFC]"><th colSpan={defs.length + 1} scope="colgroup" className="px-4 py-1.5 text-left text-[11px] font-semibold uppercase tracking-wide text-[#5B6A78]">{LEVEL_LABEL[level]}</th></tr>
                   ),
                   ...rows.map((r) => (
                     <tr key={r.key} className={level === "company" ? "font-semibold" : ""}>
-                      <th scope="row" className="px-4 py-3 text-left font-medium text-gray-900">{r.name}</th>
+                      <th scope="row" className="px-4 py-3 text-left font-medium text-[#131d29]">{r.name}</th>
                       {defs.map((d) => {
                         const v = d.compute(r.agg);
-                        return <td key={d.id} className="px-4 py-3 text-right tabular-nums text-gray-800">{v == null ? <span title={d.needs ? `Needs ${d.needs}` : undefined} className="text-gray-400">-</span> : n(v, d.decimals)}</td>;
+                        return <td key={d.id} className="px-4 py-3 text-right tabular-nums text-[#131d29]">{v == null ? <span title={d.needs ? `Needs ${d.needs}` : undefined} className="text-gray-400">-</span> : n(v, d.decimals)}</td>;
                       })}
                     </tr>
                   )),
@@ -81,11 +81,11 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
         </div>
       )}
       {blanks.length > 0 && (
-        <ul className="space-y-1 text-xs text-gray-500">
+        <ul className="space-y-1 text-xs text-[#5B6A78]">
           {blanks.map((d) => <li key={d.id}>{d.label} is blank where {d.needs} is missing.</li>)}
         </ul>
       )}
-      <p className="text-xs text-gray-500">Diverted means recycled, composted or sent for energy recovery. Business unit figures add up the projects under that unit&apos;s contracts.</p>
+      <p className="text-xs text-[#5B6A78]">Diverted means recycled, composted or sent for energy recovery. Business unit figures add up the projects under that unit&apos;s contracts.</p>
     </div>
   );
 }

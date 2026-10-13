@@ -79,20 +79,20 @@ export function PendingInviteActions({
     <div className="flex items-center gap-1.5">
       {error && <p className="text-xs text-red-600">{error}</p>}
       {resendState === "sent" && (
-        <p className="text-xs text-[#111827]">Resent</p>
+        <p className="text-xs text-[#131d29]">Resent</p>
       )}
       {token && (
         <Button
           type="button"
           size="icon"
           variant="ghost"
-          className="h-7 w-7 text-[#374151] hover:text-[#111827] hover:bg-[#FFF7ED]"
+          className="h-7 w-7 text-[#41505F] hover:text-[#131d29] hover:bg-[#FFF7ED]"
           title="Copy invite link"
           disabled={isPending}
           onClick={copyLink}
         >
           {copied ? (
-            <Check className="h-3.5 w-3.5 text-[#111827]" />
+            <Check className="h-3.5 w-3.5 text-[#131d29]" />
           ) : (
             <Link2 className="h-3.5 w-3.5" />
           )}
@@ -102,7 +102,7 @@ export function PendingInviteActions({
         type="button"
         size="icon"
         variant="ghost"
-        className="h-7 w-7 text-[#374151] hover:text-[#111827] hover:bg-[#FFF7ED]"
+        className="h-7 w-7 text-[#41505F] hover:text-[#131d29] hover:bg-[#FFF7ED]"
         title="Resend invite email"
         disabled={isPending}
         onClick={resend}

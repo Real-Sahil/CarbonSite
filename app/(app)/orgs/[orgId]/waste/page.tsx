@@ -86,8 +86,8 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Waste Emissions</h1>
-          <p className="text-sm text-gray-500 mt-1">Track waste disposal routes for ESRS E5 and Scope 3 Category 5 emissions.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Waste Emissions</h1>
+          <p className="text-sm text-[#5B6A78] mt-1">Track waste disposal routes for ESRS E5 and Scope 3 Category 5 emissions.</p>
           <a href={`/orgs/${orgId}/waste/register`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">
             Duty of care register
           </a>
@@ -105,7 +105,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
       </div>
 
       {project && (
-        <p className="mb-4 rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+        <p className="mb-4 rounded-lg bg-[#F9FAFC] px-4 py-2 text-sm text-[#41505F]">
           Showing <span className="font-medium">{project.name}</span> only. Choose All projects in the sidebar to see everything.
         </p>
       )}
@@ -119,19 +119,19 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
           { label: "Hazardous",            value: hazardousTonnes.toFixed(2),    unit: "tonnes" },
           { label: "Records",              value: records.length.toString(),      unit: "waste records" },
         ].map(({ label, value, unit }) => (
-          <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
-            <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">{label}</div>
-            <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
+          <div key={label} className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+            <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">{label}</div>
+            <div className="text-2xl font-semibold text-[#131d29] tabular-nums">{value}</div>
+            <div className="text-xs text-[#5B6A78] mt-0.5">{unit}</div>
           </div>
         ))}
       </div>
 
       {records.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-5 mb-6">
+        <div className="rounded-xl border border-[#E3E8EE] bg-white p-5 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="h-4 w-4 text-gray-500" />
-            <h3 className="text-sm font-semibold text-gray-900">Waste hierarchy</h3>
+            <BarChart3 className="h-4 w-4 text-[#5B6A78]" />
+            <h3 className="text-sm font-semibold text-[#131d29]">Waste hierarchy</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -143,10 +143,10 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
               const pct = totalWeight > 0 ? Math.round(((data?.weight ?? 0) / totalWeight) * 100) : 0;
               return (
                 <div key={key} className={`rounded-lg border p-4 ${cls}`}>
-                  <p className="text-xs font-medium text-gray-600 mb-1">{label}</p>
-                  <p className="text-xl font-semibold text-gray-900 tabular-nums">{pct}%</p>
-                  <p className="text-xs text-gray-500">{(data?.weight ?? 0).toFixed(2)} t</p>
-                  <p className="text-xs text-gray-500">{(data?.co2e ?? 0).toFixed(4)} tCO₂e</p>
+                  <p className="text-xs font-medium text-[#41505F] mb-1">{label}</p>
+                  <p className="text-xl font-semibold text-[#131d29] tabular-nums">{pct}%</p>
+                  <p className="text-xs text-[#5B6A78]">{(data?.weight ?? 0).toFixed(2)} t</p>
+                  <p className="text-xs text-[#5B6A78]">{(data?.co2e ?? 0).toFixed(4)} tCO₂e</p>
                 </div>
               );
             })}
@@ -154,21 +154,21 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
         </div>
       )}
 
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
         {records.length === 0 ? (
           <div className="p-12 text-center">
-            <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center">
-              <Trash2 className="h-5 w-5 text-gray-500" />
+            <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#F9FAFC] flex items-center justify-center">
+              <Trash2 className="h-5 w-5 text-[#5B6A78]" />
             </div>
-            <p className="text-sm font-medium text-gray-700">No waste records</p>
-            <p className="text-xs text-gray-500 mt-1">Add your first waste disposal record to start tracking emissions.</p>
+            <p className="text-sm font-medium text-[#41505F]">No waste records</p>
+            <p className="text-xs text-[#5B6A78] mt-1">Add your first waste disposal record to start tracking emissions.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
               <tr>
                 {["Waste type", "Facility", "Disposal route", "Weight (t)", "CO2e (tCO₂e)", "Date", "EWC", ""].map((h) => (
-                  <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
+                  <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -177,25 +177,25 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
                 const route = DISPOSAL_ROUTES.find((d) => d.value === r.disposalRoute);
                 const hierarchyColor = HIERARCHY_COLORS[route?.hierarchy ?? "landfill"] ?? "";
                 return (
-                  <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="py-3 pl-6 pr-4 font-medium text-gray-900 max-w-[180px] truncate">
+                  <tr key={r.id} className="hover:bg-[#F9FAFC] transition-colors">
+                    <td className="py-3 pl-6 pr-4 font-medium text-[#131d29] max-w-[180px] truncate">
                       {r.wasteType}
                       {r.hazardous && <span className="ml-1.5 rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700">Hazardous</span>}
                     </td>
-                    <td className="py-3 px-4 text-gray-600">{r.facility?.name ?? "-"}</td>
+                    <td className="py-3 px-4 text-[#41505F]">{r.facility?.name ?? "-"}</td>
                     <td className="py-3 px-4">
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${hierarchyColor}`}>
                         {route?.label ?? r.disposalRoute}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-900 tabular-nums">{r.weightTonnes.toFixed(3)}</td>
-                    <td className="py-3 px-4 text-gray-600 tabular-nums">
+                    <td className="py-3 px-4 text-[#131d29] tabular-nums">{r.weightTonnes.toFixed(3)}</td>
+                    <td className="py-3 px-4 text-[#41505F] tabular-nums">
                       {r.co2eTonnes != null ? r.co2eTonnes.toFixed(4) : "-"}
                     </td>
-                    <td className="py-3 px-4 text-gray-500 tabular-nums">
+                    <td className="py-3 px-4 text-[#5B6A78] tabular-nums">
                       {new Date(r.recordedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                     </td>
-                    <td className="py-3 px-4 text-gray-500 font-mono text-xs">{r.ewcCode ?? "-"}</td>
+                    <td className="py-3 px-4 text-[#5B6A78] font-mono text-xs">{r.ewcCode ?? "-"}</td>
                     <td className="py-3 pl-4 pr-6">
                       {canEdit && <DeleteWasteButton orgId={orgId} id={r.id} />}
                     </td>

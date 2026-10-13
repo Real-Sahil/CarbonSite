@@ -72,11 +72,11 @@ export function FacilitiesPanel({ orgId, facilities }: { orgId: string; faciliti
   const placed = facilities.filter((f) => f.latitude != null && f.longitude != null).length;
 
   return (
-    <div className="max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <div className="max-w-full overflow-hidden rounded-lg border border-[#E3E8EE] bg-white">
       <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">Facilities</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <h2 className="text-base font-semibold text-[#131d29]">Facilities</h2>
+          <p className="mt-1 text-sm text-[#5B6A78]">
             Sites, depots and project locations used by records and field submissions.
             {facilities.length > 0 && ` ${placed} of ${facilities.length} placed on the site map.`}
           </p>
@@ -122,8 +122,8 @@ export function FacilitiesPanel({ orgId, facilities }: { orgId: string; faciliti
               ) : (
                 <div className="flex items-start justify-between gap-3 px-4 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">{facility.name}</p>
-                    <p className="mt-0.5 truncate text-xs text-slate-500">{locationLine(facility) || "No address yet"}</p>
+                    <p className="truncate text-sm font-medium text-[#131d29]">{facility.name}</p>
+                    <p className="mt-0.5 truncate text-xs text-[#5B6A78]">{locationLine(facility) || "No address yet"}</p>
                     <p className={`mt-1 inline-flex items-center gap-1 text-xs ${facility.latitude != null ? "text-emerald-700" : "text-amber-700"}`}>
                       <MapPin className="h-3 w-3" aria-hidden="true" />
                       {facility.latitude != null ? "On the site map" : "Not on the site map: choose an address from the search"}
@@ -289,22 +289,22 @@ function FacilityForm({
               ))}
             </select>
             {suggestion?.kind === "suggested" && (
-              <p className="mt-1.5 text-xs text-slate-600">
+              <p className="mt-1.5 text-xs text-[#41505F]">
                 {suggestion.agree} of the {suggestion.of} nearest power plants (the closest {suggestion.nearestKm} km away) are in {suggestion.code}.{" "}
-                <button type="button" className="font-medium text-slate-900 underline underline-offset-2" onClick={() => setEgrid(suggestion.code)}>
+                <button type="button" className="font-medium text-[#131d29] underline underline-offset-2" onClick={() => setEgrid(suggestion.code)}>
                   Use {suggestion.code}
                 </button>
               </p>
             )}
             {suggestion?.kind === "unsure" && (
-              <p className="mt-1.5 text-xs text-slate-600">
+              <p className="mt-1.5 text-xs text-[#41505F]">
                 The nearest power plants are in different subregions ({suggestion.candidates.join(", ")}), so this site is near a boundary. Check its ZIP code in EPA&apos;s Power Profiler.
               </p>
             )}
           </FormField>
         )}
         {position && (
-          <p className="text-xs text-slate-500 @md:col-span-full">
+          <p className="text-xs text-[#5B6A78] @md:col-span-full">
             Position {position.latitude.toFixed(5)}, {position.longitude.toFixed(5)} (Plus Code {plusCode(position.latitude, position.longitude)}).
           </p>
         )}
@@ -317,7 +317,7 @@ function FacilityForm({
             value={water}
             disabled={isPending}
             onChange={(e) => setWater(e.target.value as WaterStressLevel | "")}
-            className="h-9 w-full rounded-[8px] border border-[#E5E7EB] bg-white px-3 text-sm disabled:opacity-50"
+            className="h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm disabled:opacity-50"
           >
             {WATER_STRESS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>

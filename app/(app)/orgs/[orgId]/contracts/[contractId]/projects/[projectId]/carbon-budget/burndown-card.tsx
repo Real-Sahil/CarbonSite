@@ -7,7 +7,7 @@ const STATUS = {
   over: { label: "Forecast over budget", cls: "border-red-200 bg-red-50 text-red-700" },
   at_risk: { label: "At risk", cls: "border-amber-200 bg-amber-50 text-amber-800" },
   on_track: { label: "On track", cls: "border-green-200 bg-green-50 text-green-700" },
-  no_budget: { label: "No budget", cls: "border-gray-200 bg-gray-50 text-gray-600" },
+  no_budget: { label: "No budget", cls: "border-[#E3E8EE] bg-[#F9FAFC] text-[#41505F]" },
 } as const;
 
 const METHOD = {
@@ -27,11 +27,11 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
   const data = burndown.points.map((p) => ({ ...p, label: monthLabel(p.month) }));
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Burn-down and forecast</h3>
-          <p className="text-xs text-gray-500 mt-0.5 max-w-[60ch]">{METHOD[burndown.method]}</p>
+          <h3 className="text-sm font-semibold text-[#131d29]">Burn-down and forecast</h3>
+          <p className="text-xs text-[#5B6A78] mt-0.5 max-w-[60ch]">{METHOD[burndown.method]}</p>
         </div>
         <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${s.cls}`}>{s.label}</span>
       </div>
@@ -48,7 +48,7 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
       </div>
 
       {burndown.reasons.length > 0 && (
-        <ul className="px-6 pt-4 text-sm text-gray-700 list-disc list-inside">
+        <ul className="px-6 pt-4 text-sm text-[#41505F] list-disc list-inside">
           {burndown.reasons.map((r) => <li key={r}>{r}</li>)}
         </ul>
       )}
@@ -72,9 +72,9 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="px-6 py-6 text-sm text-gray-500">The chart appears once there are two months of project dates or measured carbon.</p>
+        <p className="px-6 py-6 text-sm text-[#5B6A78]">The chart appears once there are two months of project dates or measured carbon.</p>
       )}
-      <p className="px-6 pb-4 text-xs text-gray-500">
+      <p className="px-6 pb-4 text-xs text-[#5B6A78]">
         Measured carbon is approved activity on the project&apos;s sites by activity month, plus embodied carbon records by the month recorded.
         The planned line spreads the budget evenly between the project&apos;s start and end dates.
       </p>
@@ -85,8 +85,8 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: "good" | "bad" }) {
   return (
     <div>
-      <div className="text-xs text-gray-500">{label}</div>
-      <div className={`text-base font-semibold tabular-nums ${tone === "good" ? "text-green-700" : tone === "bad" ? "text-red-600" : "text-gray-900"}`}>{value}</div>
+      <div className="text-xs text-[#5B6A78]">{label}</div>
+      <div className={`text-base font-semibold tabular-nums ${tone === "good" ? "text-green-700" : tone === "bad" ? "text-red-600" : "text-[#131d29]"}`}>{value}</div>
     </div>
   );
 }

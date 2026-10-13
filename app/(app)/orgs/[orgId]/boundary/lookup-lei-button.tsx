@@ -44,7 +44,7 @@ export function LookupLeiButton({
         onClick={lookup}
         disabled={loading}
         title={hasLei ? "Re-check GLEIF" : "Look up LEI via GLEIF"}
-        className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-md border border-[#E3E8EE] bg-white px-2.5 py-1 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] disabled:opacity-50 transition-colors"
       >
         {loading
           ? <Loader2 className="h-3 w-3 animate-spin" />
@@ -53,7 +53,7 @@ export function LookupLeiButton({
         {hasLei ? "Refresh LEI" : "Look up LEI"}
       </button>
       {result !== null && !loading && (
-        <span className={`text-xs ${result.found ? "text-green-600" : "text-zinc-500"}`}>
+        <span className={`text-xs ${result.found ? "text-green-600" : "text-[#5B6A78]"}`}>
           {result.found
             ? <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> {result.lei}</span>
             : "Not found in GLEIF"

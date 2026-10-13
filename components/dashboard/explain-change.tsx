@@ -45,7 +45,7 @@ export function ExplainChange({
   }
 
   return (
-    <div className="mt-3 rounded-[14px] border border-[#E5E7EB] bg-white p-4 text-sm">
+    <div className="mt-3 rounded-[14px] border border-[#E3E8EE] bg-white p-4 text-sm">
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" size="sm" variant="outline" onClick={() => run(false)} disabled={busy}>Explain this change</Button>
         {result && aiAvailable && !result.ai ? (
@@ -55,15 +55,15 @@ export function ExplainChange({
       </div>
       {error ? <p role="alert" className="mt-2 text-red-700">{error}</p> : null}
       {result ? (
-        <div className="mt-3 space-y-2 text-[#374151]">
+        <div className="mt-3 space-y-2 text-[#41505F]">
           <p>{result.sentences.join(" ")}</p>
           {result.ai ? (
             <div>
               <p>{result.ai.text}</p>
-              <p className="mt-1 text-xs text-[#6B7280]">AI-assisted wording. Every figure in it is one of the figures above; it cannot see causes, so treat the reasons as yours to check.</p>
+              <p className="mt-1 text-xs text-[#5B6A78]">AI-assisted wording. Every figure in it is one of the figures above; it cannot see causes, so treat the reasons as yours to check.</p>
             </div>
           ) : null}
-          {result.aiNote ? <p className="text-xs text-[#6B7280]">{result.aiNote}</p> : null}
+          {result.aiNote ? <p className="text-xs text-[#5B6A78]">{result.aiNote}</p> : null}
         </div>
       ) : null}
     </div>

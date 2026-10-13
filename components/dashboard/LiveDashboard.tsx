@@ -140,14 +140,14 @@ export function LiveDashboard({
 
   if (!live) {
     return (
-      <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-gray-600">
+      <div className="flex flex-col gap-3 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-[#41505F]">
           Live updates are off. Turn them on to stream figures as calculations complete.
         </p>
         <button
           type="button"
           onClick={() => setLive(true)}
-          className="self-start rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-100 sm:self-auto"
+          className="self-start rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-[#131d29] hover:bg-gray-100 sm:self-auto"
         >
           Turn on live updates
         </button>
@@ -164,8 +164,8 @@ export function LiveDashboard({
         </>
       ) : (
         <>
-          <WifiOff className="w-4 h-4 text-gray-500" />
-          <span className="text-xs text-gray-500">
+          <WifiOff className="w-4 h-4 text-[#5B6A78]" />
+          <span className="text-xs text-[#5B6A78]">
             {reconnectCount > 0 ? `Reconnecting... (attempt ${reconnectCount})` : 'Offline'}
           </span>
         </>
@@ -173,7 +173,7 @@ export function LiveDashboard({
       <button
         type="button"
         onClick={stopLive}
-        className="ml-2 text-xs text-gray-600 underline underline-offset-2 hover:text-gray-900"
+        className="ml-2 text-xs text-[#41505F] underline underline-offset-2 hover:text-[#131d29]"
       >
         Turn off
       </button>
@@ -182,9 +182,9 @@ export function LiveDashboard({
 
   if (!data) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600">{connected ? "Live. Figures appear here after the first calculation run." : "Connecting to live dashboard..."}</p>
+          <p className="text-sm text-[#41505F]">{connected ? "Live. Figures appear here after the first calculation run." : "Connecting to live dashboard..."}</p>
           {statusIndicator}
         </div>
       </div>
@@ -194,41 +194,41 @@ export function LiveDashboard({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">Live Emissions</h3>
+        <h3 className="font-semibold text-[#131d29]">Live Emissions</h3>
         {statusIndicator}
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-600 uppercase">Total CO2e</p>
-          <p className="mt-2 text-2xl font-bold text-gray-900">
+        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+          <p className="text-xs font-medium text-[#41505F] uppercase">Total CO2e</p>
+          <p className="mt-2 text-2xl font-bold text-[#131d29]">
             {(data.aggregates.totalCo2e / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className="mt-1 text-xs text-gray-500">tonnes</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-600 uppercase">Scope 1</p>
+        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+          <p className="text-xs font-medium text-[#41505F] uppercase">Scope 1</p>
           <p className="mt-2 text-2xl font-bold text-orange-600">
             {(data.aggregates.scope1 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className="mt-1 text-xs text-gray-500">tonnes</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-600 uppercase">Scope 2</p>
+        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+          <p className="text-xs font-medium text-[#41505F] uppercase">Scope 2</p>
           <p className="mt-2 text-2xl font-bold text-blue-600">
             {(data.aggregates.scope2 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className="mt-1 text-xs text-gray-500">tonnes</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          <p className="text-xs font-medium text-gray-600 uppercase">Scope 3</p>
+        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+          <p className="text-xs font-medium text-[#41505F] uppercase">Scope 3</p>
           <p className="mt-2 text-2xl font-bold text-green-600">
             {(data.aggregates.scope3 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
-          <p className="mt-1 text-xs text-gray-500">tonnes</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
       </div>
 
@@ -238,7 +238,7 @@ export function LiveDashboard({
         </div>
       )}
 
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-[#5B6A78] text-center">
         Last calculated: {new Date(data.timestamp).toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
       </p>
     </div>

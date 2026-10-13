@@ -104,13 +104,13 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       {showColumnVisibility && (
-        <div className="flex justify-end px-4 py-3 border-b border-[#E5E7EB]">
+        <div className="flex justify-end px-4 py-3 border-b border-[#E3E8EE]">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-7 text-xs border-[#E5E7EB] text-[#6B7280] gap-1"
+                className="h-7 text-xs border-[#E3E8EE] text-[#5B6A78] gap-1"
               >
                 Columns <ChevronDown className="h-3 w-3" />
               </Button>
@@ -140,18 +140,18 @@ export function DataTable<TData, TValue>({
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
-              <TableRow key={hg.id} className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
+              <TableRow key={hg.id} className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
                 {hg.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   return (
                     <TableHead
                       key={header.id}
-                      className="text-xs font-medium text-[#6B7280] py-3 first:pl-6 last:pr-6"
+                      className="text-xs font-medium text-[#5B6A78] py-3 first:pl-6 last:pr-6"
                       style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
                     >
                       {header.isPlaceholder ? null : canSort ? (
                         <button
-                          className="inline-flex items-center gap-1 hover:text-[#374151] transition-colors"
+                          className="inline-flex items-center gap-1 hover:text-[#41505F] transition-colors"
                           onClick={header.column.getToggleSortingHandler()}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
@@ -181,7 +181,7 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="py-16 text-center text-sm text-[#6B7280]"
+                  className="py-16 text-center text-sm text-[#5B6A78]"
                 >
                   {emptyMessage}
                 </TableCell>
@@ -190,7 +190,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors"
+                  className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
@@ -208,8 +208,8 @@ export function DataTable<TData, TValue>({
       </div>
 
       {(onPreviousPage || onNextPage) && (
-        <div className="flex items-center justify-between px-6 py-3 border-t border-[#E5E7EB]">
-          <span className="text-xs text-[#6B7280]">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-[#E3E8EE]">
+          <span className="text-xs text-[#5B6A78]">
             {totalCount != null
               ? `${pageRowCount ?? data.length} of ${totalCount.toLocaleString("en-GB")} records`
               : `${pageRowCount ?? data.length} records`}
@@ -218,7 +218,7 @@ export function DataTable<TData, TValue>({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 w-7 p-0 border-[#E5E7EB] text-[#6B7280] disabled:opacity-40"
+              className="h-7 w-7 p-0 border-[#E3E8EE] text-[#5B6A78] disabled:opacity-40"
               onClick={onPreviousPage}
               disabled={!hasPreviousPage}
             >
@@ -227,7 +227,7 @@ export function DataTable<TData, TValue>({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 w-7 p-0 border-[#E5E7EB] text-[#6B7280] disabled:opacity-40"
+              className="h-7 w-7 p-0 border-[#E3E8EE] text-[#5B6A78] disabled:opacity-40"
               onClick={onNextPage}
               disabled={!hasNextPage}
             >

@@ -23,7 +23,7 @@ function ScoreBar({ score }: { score: number }) {
       <div className="h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
       </div>
-      <span className="text-xs text-gray-500 tabular-nums">{score}%</span>
+      <span className="text-xs text-[#5B6A78] tabular-nums">{score}%</span>
     </div>
   );
 }
@@ -82,8 +82,8 @@ export default function AssuranceReadinessPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Assurance Readiness</h1>
-        <p className="mt-2 text-gray-600">
+        <h1 className="text-3xl text-[#131d29]">Assurance Readiness</h1>
+        <p className="mt-2 text-[#41505F]">
           Scores your data quality, audit trail, and methodology against third-party assurance requirements (CSRD, ISAE 3000, AA1000)
         </p>
       </div>
@@ -107,7 +107,7 @@ export default function AssuranceReadinessPage() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className={`text-3xl font-bold tabular-nums ${scoreColor}`}>{data.overallScore}</span>
-                <span className="text-xs text-gray-500">/ 100</span>
+                <span className="text-xs text-[#5B6A78]">/ 100</span>
               </div>
             </div>
           </CardContent>
@@ -133,7 +133,7 @@ export default function AssuranceReadinessPage() {
                 <div className="text-xs text-red-600">Failed</div>
               </div>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[#5B6A78]">
               {data.assuranceLevel === 'reasonable'
                 ? 'Your data meets the bar for reasonable assurance engagement under ISAE 3000 / AA1000AS. Engage an accredited third-party verifier.'
                 : data.assuranceLevel === 'limited'
@@ -159,10 +159,10 @@ export default function AssuranceReadinessPage() {
                   <StatusIcon status={check.status} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-gray-900">{check.name}</p>
+                      <p className="text-sm font-medium text-[#131d29]">{check.name}</p>
                       <ScoreBar score={check.score} />
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{check.description}</p>
+                    <p className="text-xs text-[#5B6A78] mt-0.5">{check.description}</p>
                     <p className={`text-xs mt-1 font-medium ${
                       check.status === 'pass' ? 'text-green-700' :
                       check.status === 'fail' ? 'text-red-600' : 'text-amber-600'

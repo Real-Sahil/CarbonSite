@@ -12,7 +12,7 @@ import { fieldClass } from "@/components/forms/form-kit";
 
 // Same field and label look as the form kit (components/forms/form-kit.tsx).
 export const inputCls = fieldClass;
-export const labelCls = "block text-sm font-medium text-zinc-800 mb-1.5";
+export const labelCls = "block text-sm font-medium text-[#131d29] mb-1.5";
 export const textareaCls = `${inputCls} resize-none`;
 
 export function FieldRow({ label, htmlFor, hint, children }: { label: string; htmlFor?: string; hint?: string; children: ReactNode }) {
@@ -22,7 +22,7 @@ export function FieldRow({ label, htmlFor, hint, children }: { label: string; ht
         {label}
       </label>
       {children}
-      {hint ? <p className="mt-1.5 text-xs text-zinc-500">{hint}</p> : null}
+      {hint ? <p className="mt-1.5 text-xs text-[#5B6A78]">{hint}</p> : null}
     </div>
   );
 }
@@ -49,7 +49,7 @@ export function CheckGroup({
         {options.map((opt) => (
           <label
             key={opt}
-            className={`flex items-center gap-2 text-sm cursor-pointer rounded px-2 py-1 hover:bg-gray-50 ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+            className={`flex items-center gap-2 text-sm cursor-pointer rounded px-2 py-1 hover:bg-[#F9FAFC] ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
           >
             <input
               type="checkbox"
@@ -72,7 +72,7 @@ export function CheckGroup({
 /** A single yes/no confirmation, laid out like a CheckGroup option. */
 export function CheckRow({ id, label, checked, onChange, disabled }: { id: string; label: string; checked: boolean; onChange: (v: boolean) => void; disabled: boolean }) {
   return (
-    <label htmlFor={id} className={`flex items-start gap-2 text-sm rounded px-2 py-1.5 hover:bg-gray-50 ${disabled ? "opacity-60" : "cursor-pointer"}`}>
+    <label htmlFor={id} className={`flex items-start gap-2 text-sm rounded px-2 py-1.5 hover:bg-[#F9FAFC] ${disabled ? "opacity-60" : "cursor-pointer"}`}>
       <input id={id} type="checkbox" className="mt-0.5 h-3.5 w-3.5 accent-gray-800" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span>{label}</span>
     </label>
@@ -100,7 +100,7 @@ export function SectionNav<K extends string>({
   return (
     <aside className={`${open ? "flex" : "hidden md:flex"} flex-col w-56 border-r border-gray-100 bg-white flex-shrink-0`}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Sections</span>
+        <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Sections</span>
         <button className="md:hidden" onClick={onClose} aria-label="Close sections">
           <X className="h-4 w-4 text-gray-400" />
         </button>
@@ -125,14 +125,14 @@ export function SectionNav<K extends string>({
                 <StepperTrigger
                   aria-current={active === s.key ? "step" : undefined}
                   aria-controls={undefined}
-                  className={`w-full justify-start rounded-md px-2 py-2 text-left text-sm transition-colors ${active === s.key ? "bg-gray-100 font-medium text-gray-900" : "text-gray-600 hover:bg-gray-50"}`}
+                  className={`w-full justify-start rounded-md px-2 py-2 text-left text-sm transition-colors ${active === s.key ? "bg-gray-100 font-medium text-[#131d29]" : "text-[#41505F] hover:bg-[#F9FAFC]"}`}
                 >
                   <StepperIndicator
                     className={`size-5 text-[10px] font-semibold ${
                       s.state === "done"
                         ? "bg-emerald-100 text-emerald-800 data-[state=completed]:bg-emerald-100 data-[state=completed]:text-emerald-800 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-800"
                         : s.state === "optional"
-                          ? "bg-gray-100 text-gray-500 data-[state=active]:bg-gray-200 data-[state=active]:text-gray-700 data-[state=completed]:bg-gray-100 data-[state=completed]:text-gray-500"
+                          ? "bg-gray-100 text-[#5B6A78] data-[state=active]:bg-gray-200 data-[state=active]:text-gray-700 data-[state=completed]:bg-gray-100 data-[state=completed]:text-gray-500"
                           : "bg-amber-100 text-amber-800 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 data-[state=completed]:bg-amber-100 data-[state=completed]:text-amber-800"
                     }`}
                   >
@@ -169,7 +169,7 @@ export function SectionPager<K extends string>({
       <button
         disabled={idx <= 0}
         onClick={() => onSelect(sections[idx - 1]!.key)}
-        className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex items-center gap-1 text-sm text-[#41505F] hover:text-[#131d29] disabled:opacity-30 disabled:cursor-not-allowed"
       >
         <ChevronLeft className="h-4 w-4" /> Back
       </button>
@@ -177,7 +177,7 @@ export function SectionPager<K extends string>({
       <button
         disabled={idx >= sections.length - 1}
         onClick={() => onSelect(sections[idx + 1]!.key)}
-        className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="flex items-center gap-1 text-sm text-[#41505F] hover:text-[#131d29] disabled:opacity-30 disabled:cursor-not-allowed"
       >
         Next <ChevronRight className="h-4 w-4" />
       </button>

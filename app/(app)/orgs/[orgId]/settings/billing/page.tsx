@@ -64,11 +64,11 @@ function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: num
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm text-gray-700">
-          <Icon className="h-4 w-4 text-gray-500 shrink-0" />
+        <div className="flex items-center gap-2 text-sm text-[#41505F]">
+          <Icon className="h-4 w-4 text-[#5B6A78] shrink-0" />
           {label}
         </div>
-        <span className="text-xs text-gray-500 tabular-nums shrink-0">
+        <span className="text-xs text-[#5B6A78] tabular-nums shrink-0">
           {used.toLocaleString()} / {isUnlimited ? "Unlimited" : formatLimit(limit)}
         </span>
       </div>
@@ -122,11 +122,11 @@ export default function BillingPage() {
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Plan card */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-lg font-semibold text-gray-900">
+              <span className="text-lg font-semibold text-[#131d29]">
                 {PLAN_LABELS[plan] ?? plan}
               </span>
               {plan === "trial" && trialDaysLeft !== null && (
@@ -141,15 +141,15 @@ export default function BillingPage() {
               )}
             </div>
             {PLAN_PRICES[plan].monthly > 0 && plan !== "enterprise" && (
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm text-[#5B6A78] mt-0.5">
                 £{PLAN_PRICES[plan].monthly}/mo per organisation
               </p>
             )}
             {plan === "essentials" && (
-              <p className="text-sm text-gray-500 mt-0.5">£{PLAN_ANNUAL_TOTAL.essentials}/yr per organisation</p>
+              <p className="text-sm text-[#5B6A78] mt-0.5">£{PLAN_ANNUAL_TOTAL.essentials}/yr per organisation</p>
             )}
             {plan === "trial" && (
-              <p className="text-sm text-gray-500 mt-0.5">Free during trial</p>
+              <p className="text-sm text-[#5B6A78] mt-0.5">Free during trial</p>
             )}
           </div>
           {plan === "enterprise" && (
@@ -164,7 +164,7 @@ export default function BillingPage() {
         </div>
 
         {data?.subscription && (
-          <p className="mt-3 text-xs text-gray-500">
+          <p className="mt-3 text-xs text-[#5B6A78]">
             Billing period:{" "}
             {new Date(data.subscription.currentPeriodStart).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
             {" - "}
@@ -191,8 +191,8 @@ export default function BillingPage() {
       <PaymentMethodsSection orgId={orgId} />
 
       {/* Usage meters */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-5">Usage this period</h2>
+      <div className="rounded-xl border border-[#E3E8EE] bg-white p-6">
+        <h2 className="text-sm font-semibold text-[#131d29] mb-5">Usage this period</h2>
         {loading ? (
           <div className="space-y-5">
             {METER_CONFIG.map((m) => (
@@ -215,19 +215,19 @@ export default function BillingPage() {
       </div>
 
       {/* Plan comparison */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-semibold text-gray-900">Available plans</h2>
+          <h2 className="text-sm font-semibold text-[#131d29]">Available plans</h2>
         </div>
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="py-3 px-6 text-left font-medium text-gray-500 w-48"></th>
+                <th className="py-3 px-6 text-left font-medium text-[#5B6A78] w-48"></th>
                 {PLANS.map((p) => (
                   <th
                     key={p}
-                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#c2410c]" : "text-gray-700"}`}
+                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#c2410c]" : "text-[#41505F]"}`}
                   >
                     {PLAN_LABELS[p]}
                     {p === plan && (
@@ -239,21 +239,21 @@ export default function BillingPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               <tr>
-                <td className="py-3 px-6 text-gray-500">Price</td>
+                <td className="py-3 px-6 text-[#5B6A78]">Price</td>
                 {PLANS.map((p) => (
-                  <td key={p} className="py-3 px-4 text-center text-gray-700 tabular-nums">
+                  <td key={p} className="py-3 px-4 text-center text-[#41505F] tabular-nums">
                     {p === "enterprise" ? `From £${PLAN_PRICES[p].monthly}/mo, billed annually` : p === "essentials" ? `£${PLAN_ANNUAL_TOTAL.essentials}/yr` : PLAN_PRICES[p].monthly === 0 ? "Free" : `£${PLAN_PRICES[p].monthly}/mo`}
                   </td>
                 ))}
               </tr>
               {METER_CONFIG.map((m) => (
                 <tr key={m.key}>
-                  <td className="py-3 px-6 text-gray-500">{m.label}</td>
+                  <td className="py-3 px-6 text-[#5B6A78]">{m.label}</td>
                   {PLANS.map((p) => {
                     const lims = getLimits(p);
                     const val = lims[m.limitKey as keyof typeof lims] as number;
                     return (
-                      <td key={p} className="py-3 px-4 text-center text-gray-700 tabular-nums">
+                      <td key={p} className="py-3 px-4 text-center text-[#41505F] tabular-nums">
                         {formatLimit(val)}
                       </td>
                     );
@@ -262,13 +262,13 @@ export default function BillingPage() {
               ))}
               {FEATURE_CONFIG.map((f) => (
                 <tr key={f.key}>
-                  <td className="py-3 px-6 text-gray-500">{f.label}</td>
+                  <td className="py-3 px-6 text-[#5B6A78]">{f.label}</td>
                   {PLANS.map((p) => (
                     <td key={p} className="py-3 px-4 text-center">
                       {hasFeature(p, f.key) ? (
                         <Check className="h-4 w-4 mx-auto text-emerald-600" />
                       ) : (
-                        <XIcon className="h-4 w-4 mx-auto text-gray-500" />
+                        <XIcon className="h-4 w-4 mx-auto text-[#5B6A78]" />
                       )}
                     </td>
                   ))}
@@ -279,7 +279,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-[#5B6A78]">
         Switch between Essentials, Starter and Growth any time above. For Enterprise —
         custom contracts, SSO, and dedicated support — contact{" "}
         <a href="mailto:hello@metricora.co.uk" className="text-[#c2410c] hover:underline">

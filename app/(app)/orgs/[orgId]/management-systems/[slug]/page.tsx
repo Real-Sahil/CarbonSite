@@ -14,7 +14,7 @@ export default async function FrameworkPage({ params }: { params: Promise<{ orgI
     role = membership.role;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view management systems.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view management systems.</div>;
   }
   const view = await loadFrameworkView(orgId, slug);
   if (!view) notFound();

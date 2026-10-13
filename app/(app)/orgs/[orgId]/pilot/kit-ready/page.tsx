@@ -108,14 +108,14 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
               <CheckCircle2 className="h-12 w-12 text-emerald-600" />
             </div>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-slate-900 mb-4">
+          <h1 className="text-4xl md:text-5xl tracking-tighter text-[#131d29] mb-4">
             Documentation Kit Ready
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-2">
+          <p className="text-xl text-[#41505F] max-w-2xl mx-auto mb-2">
             Your personalized pilot program documentation has been generated successfully.
           </p>
           {recentGeneration && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-[#5B6A78]">
               Generated on {new Date(recentGeneration.createdAt).toLocaleDateString()}
             </p>
           )}
@@ -129,18 +129,18 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
-                    <IconComponent className="h-6 w-6 text-slate-600" />
+                    <IconComponent className="h-6 w-6 text-[#41505F]" />
                     <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded">
                       PDF
                     </span>
                   </div>
                   <CardTitle className="text-lg">{doc.title}</CardTitle>
-                  <CardDescription className="text-xs font-semibold text-slate-500">
+                  <CardDescription className="text-xs font-semibold text-[#5B6A78]">
                     FOR: {doc.audience}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-slate-600 mb-4">{doc.description}</p>
+                  <p className="text-sm text-[#41505F] mb-4">{doc.description}</p>
                   <Button
                     variant="outline"
                     size="sm"
@@ -173,8 +173,8 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                   1
                 </span>
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Distribute Documents</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-semibold text-[#131d29] mb-1">Distribute Documents</h4>
+                  <p className="text-sm text-[#41505F]">
                     Download and distribute the appropriate documents to each team member based on their role.
                   </p>
                 </div>
@@ -184,8 +184,8 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                   2
                 </span>
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Schedule Kickoff Meeting</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-semibold text-[#131d29] mb-1">Schedule Kickoff Meeting</h4>
+                  <p className="text-sm text-[#41505F]">
                     Bring all stakeholders together to review timelines, confirm responsibilities, and set success criteria.
                   </p>
                 </div>
@@ -195,8 +195,8 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                   3
                 </span>
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Set Up SSO & User Accounts</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-semibold text-[#131d29] mb-1">Set Up SSO & User Accounts</h4>
+                  <p className="text-sm text-[#41505F]">
                     Follow the Technical Integration Guide to configure authentication and provision user accounts.
                   </p>
                 </div>
@@ -206,8 +206,8 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                   4
                 </span>
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Begin Data Collection</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-semibold text-[#131d29] mb-1">Begin Data Collection</h4>
+                  <p className="text-sm text-[#41505F]">
                     Import historical data and activate field workers on the mobile app for real-time capture.
                   </p>
                 </div>
@@ -217,8 +217,8 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                   5
                 </span>
                 <div>
-                  <h4 className="font-semibold text-slate-900 mb-1">Run First Calculation & Report</h4>
-                  <p className="text-sm text-slate-600">
+                  <h4 className="font-semibold text-[#131d29] mb-1">Run First Calculation & Report</h4>
+                  <p className="text-sm text-[#41505F]">
                     Validate your baseline emissions data and generate your first audit-ready report.
                   </p>
                 </div>
@@ -228,12 +228,12 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
         </Card>
 
         {/* Support Information */}
-        <Card className="bg-slate-50 border-slate-200">
+        <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
           <CardHeader>
             <CardTitle className="text-lg">Need Help?</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-slate-700 mb-4">
+            <p className="text-[#41505F] mb-4">
               The documentation kit includes contact information for MetricOra's onboarding team. Refer to the Executive Summary for direct support details, or visit your organization's dashboard for additional resources.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">

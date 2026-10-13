@@ -34,8 +34,8 @@ type Coverage = {
 };
 
 const selectClass =
-  "h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
-const labelClass = "mb-1.5 block text-xs font-medium text-slate-600";
+  "h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+const labelClass = "mb-1.5 block text-xs font-medium text-[#41505F]";
 const tonnes = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 1 });
 
 export function CarbonPrices({
@@ -104,10 +104,10 @@ export function CarbonPrices({
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-[#E3E8EE] bg-white">
         <div className="p-4">
-          <h2 className="text-base font-semibold text-slate-900">Internal carbon price</h2>
-          <p className="mt-1 max-w-[65ch] text-sm text-slate-500">
+          <h2 className="text-base font-semibold text-[#131d29]">Internal carbon price</h2>
+          <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
             The price per tonne your organisation puts on its emissions when it makes decisions. It values the
             carbon in your published figures, nets the cheapest-first reduction list, and answers ESRS E1-8.
             Record a new price with a new start date rather than editing an old one, so past appraisals stay explainable.
@@ -117,18 +117,18 @@ export function CarbonPrices({
         {coverage && (
           <div className="grid grid-cols-1 gap-4 border-t border-slate-100 p-4 sm:grid-cols-3">
             <div>
-              <p className="text-xs text-slate-500">Emissions covered ({coverage.periodLabel}, snapshot v{coverage.version})</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">{tonnes.format(coverage.coveredTco2e)} tCO₂e</p>
+              <p className="text-xs text-[#5B6A78]">Emissions covered ({coverage.periodLabel}, snapshot v{coverage.version})</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{tonnes.format(coverage.coveredTco2e)} tCO₂e</p>
             </div>
             <div>
-              <p className="text-xs text-slate-500">Share of gross emissions</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">
+              <p className="text-xs text-[#5B6A78]">Share of gross emissions</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">
                 {coverage.share == null ? "-" : `${(coverage.share * 100).toFixed(0)}%`}
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-500">Carbon cost at the price in force</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-900">{formatMoney(coverage.cost, coverage.currency)}</p>
+              <p className="text-xs text-[#5B6A78]">Carbon cost at the price in force</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{formatMoney(coverage.cost, coverage.currency)}</p>
             </div>
           </div>
         )}
@@ -146,7 +146,7 @@ export function CarbonPrices({
         ) : (
           <div className="overflow-x-auto border-t border-slate-100">
             <Table className="w-full text-sm">
-              <thead className="text-left text-xs text-slate-500">
+              <thead className="text-left text-xs text-[#5B6A78]">
                 <tr>
                   <th className="px-4 py-2 font-medium">Price</th>
                   <th className="px-4 py-2 text-right font-medium">Per tCO₂e</th>
@@ -160,21 +160,21 @@ export function CarbonPrices({
                 {prices.map((p) => (
                   <tr key={p.id} className="border-t border-slate-100 align-top">
                     <td className="px-4 py-2">
-                      <p className="text-slate-900">{p.name}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-[#131d29]">{p.name}</p>
+                      <p className="text-xs text-[#5B6A78]">
                         {PRICE_TYPES[p.priceType as PriceType]?.label ?? p.priceType}
                         {current?.id === p.id && <span className="ml-1.5 rounded-full bg-green-100 px-1.5 text-green-800">Used for appraisal</span>}
                       </p>
-                      {p.basis && <p className="mt-1 max-w-[40ch] text-xs text-slate-500">{p.basis}</p>}
+                      {p.basis && <p className="mt-1 max-w-[40ch] text-xs text-[#5B6A78]">{p.basis}</p>}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-900">{formatMoney(p.pricePerTonne, p.currency, 2)}</td>
-                    <td className="px-4 py-2 text-slate-600">{p.scopes.join(", ")}</td>
-                    <td className="px-4 py-2 text-slate-600">
+                    <td className="px-4 py-2 text-right text-[#131d29]">{formatMoney(p.pricePerTonne, p.currency, 2)}</td>
+                    <td className="px-4 py-2 text-[#41505F]">{p.scopes.join(", ")}</td>
+                    <td className="px-4 py-2 text-[#41505F]">
                       {p.appliesTo.length ? p.appliesTo.map((u) => PRICE_USES[u as PriceUse] ?? u).join("; ") : "-"}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-slate-600">
+                    <td className="px-4 py-2 whitespace-nowrap text-[#41505F]">
                       {p.effectiveFrom} to {p.effectiveTo ?? "open"}
-                      {!p.inForce && <span className="ml-1.5 text-xs text-slate-500">(not now)</span>}
+                      {!p.inForce && <span className="ml-1.5 text-xs text-[#5B6A78]">(not now)</span>}
                     </td>
                     {canEdit && (
                       <td className="px-4 py-2 text-right">
@@ -192,10 +192,10 @@ export function CarbonPrices({
       </div>
 
       {canEdit && (
-        <form onSubmit={create} className="rounded-lg border border-slate-200 bg-white">
+        <form onSubmit={create} className="rounded-lg border border-[#E3E8EE] bg-white">
           <div className="p-4">
-            <h2 className="text-base font-semibold text-slate-900">Add a price</h2>
-            <p className="mt-1 text-sm text-slate-500">{PRICE_TYPES[priceType].help}</p>
+            <h2 className="text-base font-semibold text-[#131d29]">Add a price</h2>
+            <p className="mt-1 text-sm text-[#5B6A78]">{PRICE_TYPES[priceType].help}</p>
           </div>
           <div className="grid grid-cols-1 gap-3 border-t border-slate-100 p-4 md:grid-cols-2">
             <FormSection title="The price" cols={3}>
@@ -221,7 +221,7 @@ export function CarbonPrices({
               </FormField>
               <fieldset>
                 <legend className={labelClass}>Scopes covered</legend>
-                <div className="flex gap-4 text-sm text-slate-700">
+                <div className="flex gap-4 text-sm text-[#41505F]">
                   {[1, 2, 3].map((s) => (
                     <label key={s} htmlFor={`cp-scope-${s}`} className="flex items-center gap-1.5">
                       <input id={`cp-scope-${s}`} type="checkbox" name="scopes" value={s} defaultChecked={s !== 3} />
@@ -232,7 +232,7 @@ export function CarbonPrices({
               </fieldset>
               <fieldset>
                 <legend className={labelClass}>Used for</legend>
-                <div className="grid gap-1 text-sm text-slate-700">
+                <div className="grid gap-1 text-sm text-[#41505F]">
                   {Object.entries(PRICE_USES).map(([k, v]) => (
                     <label key={k} htmlFor={`cp-use-${k}`} className="flex items-center gap-1.5">
                       <input id={`cp-use-${k}`} type="checkbox" name="appliesTo" value={k} defaultChecked={k === "capital_investment"} />

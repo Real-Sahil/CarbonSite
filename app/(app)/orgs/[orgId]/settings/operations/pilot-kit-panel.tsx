@@ -192,7 +192,7 @@ export function PilotKitPanel({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white">
       <PanelHeader
         title="Pilot Client Documentation Kit"
         description="Generate comprehensive onboarding documentation for pilot clients including stakeholder guides, integration instructions, and compliance frameworks."
@@ -201,7 +201,7 @@ export function PilotKitPanel({
       <div className="border-t border-slate-100 p-4 space-y-6">
         {/* Organization & Facility Info */}
         <div className="space-y-3">
-          <h3 className="font-medium text-slate-900">Organization & Facilities</h3>
+          <h3 className="font-medium text-[#131d29]">Organization & Facilities</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Number of facilities">
               <Input
@@ -226,11 +226,11 @@ export function PilotKitPanel({
 
         {/* Stakeholders */}
         <div className="space-y-3">
-          <h3 className="font-medium text-slate-900">Key Stakeholders</h3>
+          <h3 className="font-medium text-[#131d29]">Key Stakeholders</h3>
 
           {/* Sustainability Lead */}
-          <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-3">
-            <p className="font-medium text-sm text-slate-700">Sustainability Lead</p>
+          <div className="bg-[#F9FAFC] p-3 rounded border border-[#E3E8EE] space-y-3">
+            <p className="font-medium text-sm text-[#41505F]">Sustainability Lead</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Field label="Name">
                 <Input
@@ -261,8 +261,8 @@ export function PilotKitPanel({
           </div>
 
           {/* Finance Lead */}
-          <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-3">
-            <p className="font-medium text-sm text-slate-700">Finance Lead</p>
+          <div className="bg-[#F9FAFC] p-3 rounded border border-[#E3E8EE] space-y-3">
+            <p className="font-medium text-sm text-[#41505F]">Finance Lead</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Field label="Name">
                 <Input
@@ -293,8 +293,8 @@ export function PilotKitPanel({
           </div>
 
           {/* IT Admin */}
-          <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-3">
-            <p className="font-medium text-sm text-slate-700">IT Administrator</p>
+          <div className="bg-[#F9FAFC] p-3 rounded border border-[#E3E8EE] space-y-3">
+            <p className="font-medium text-sm text-[#41505F]">IT Administrator</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Field label="Name">
                 <Input
@@ -317,8 +317,8 @@ export function PilotKitPanel({
           </div>
 
           {/* External Auditor (Optional) */}
-          <div className="bg-slate-50 p-3 rounded border border-slate-200 space-y-3">
-            <p className="font-medium text-sm text-slate-700">External Auditor (Optional)</p>
+          <div className="bg-[#F9FAFC] p-3 rounded border border-[#E3E8EE] space-y-3">
+            <p className="font-medium text-sm text-[#41505F]">External Auditor (Optional)</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Field label="Name">
                 <Input
@@ -351,7 +351,7 @@ export function PilotKitPanel({
 
         {/* Project Settings */}
         <div className="space-y-3">
-          <h3 className="font-medium text-slate-900">Project Settings</h3>
+          <h3 className="font-medium text-[#131d29]">Project Settings</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Pilot timeline (days)">
               <Input
@@ -386,7 +386,7 @@ export function PilotKitPanel({
 
         {/* Compliance Frameworks */}
         <div className="space-y-3">
-          <h3 className="font-medium text-slate-900">Compliance Frameworks</h3>
+          <h3 className="font-medium text-[#131d29]">Compliance Frameworks</h3>
           <div className="flex flex-wrap gap-3">
             {FRAMEWORKS.map((framework) => (
               <label key={framework} className="flex items-center gap-2 cursor-pointer">
@@ -397,7 +397,7 @@ export function PilotKitPanel({
                   disabled={isPending}
                   className="w-4 h-4"
                 />
-                <span className="text-sm text-slate-700">{framework}</span>
+                <span className="text-sm text-[#41505F]">{framework}</span>
               </label>
             ))}
           </div>
@@ -438,7 +438,7 @@ export function PilotKitPanel({
           )}
         </Button>
         {generatedAt && (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#5B6A78]">
             Last generated: {new Date(generatedAt).toLocaleString()}
           </p>
         )}
@@ -449,9 +449,9 @@ export function PilotKitPanel({
 
 function PanelHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-4 border-b border-slate-200">
-      <h2 className="font-semibold text-slate-900 text-base">{title}</h2>
-      <p className="text-sm text-slate-600 mt-1">{description}</p>
+    <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-4 border-b border-[#E3E8EE]">
+      <h2 className="font-semibold text-[#131d29] text-base">{title}</h2>
+      <p className="text-sm text-[#41505F] mt-1">{description}</p>
     </div>
   );
 }
@@ -459,7 +459,7 @@ function PanelHeader({ title, description }: { title: string; description: strin
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1">
-      <Label className="text-xs font-medium text-slate-700">{label}</Label>
+      <Label className="text-xs font-medium text-[#41505F]">{label}</Label>
       {children}
     </div>
   );

@@ -92,16 +92,16 @@ export function LedgerReview({ orgId, periods }: { orgId: string; periods: Array
   }
 
   if (error && !lines) return <FormError>{error}</FormError>;
-  if (!lines) return <p className="text-sm text-[#6B7280]">Loading lines…</p>;
+  if (!lines) return <p className="text-sm text-[#5B6A78]">Loading lines…</p>;
   if (lines.length === 0)
     return (
-      <p className="text-sm text-[#6B7280]">
+      <p className="text-sm text-[#5B6A78]">
         No synced invoice lines are waiting. Connect Xero under <Link className="underline underline-offset-4" href={`/orgs/${orgId}/settings/integrations`}>Settings, Integrations</Link> and run a sync.
       </p>
     );
 
   const row = (l: Line, selectable: boolean) => (
-    <tr key={l.id} className="border-b border-[#E5E7EB] last:border-0 align-top">
+    <tr key={l.id} className="border-b border-[#E3E8EE] last:border-0 align-top">
       {selectable ? (
         <td className="w-10 px-3 py-3">
           <input
@@ -114,8 +114,8 @@ export function LedgerReview({ orgId, periods }: { orgId: string; periods: Array
         </td>
       ) : null}
       <td className="px-3 py-3 text-sm">
-        <div className="font-medium text-[#111827]">{l.supplier}</div>
-        <div className="text-xs text-[#6B7280]">{l.description || "No description"} · {l.invoiceNumber}{l.invoiceDate ? ` · ${l.invoiceDate}` : ""}</div>
+        <div className="font-medium text-[#131d29]">{l.supplier}</div>
+        <div className="text-xs text-[#5B6A78]">{l.description || "No description"} · {l.invoiceNumber}{l.invoiceDate ? ` · ${l.invoiceDate}` : ""}</div>
       </td>
       <td className="px-3 py-3 text-right text-sm tabular-nums">{money.format(l.amount, { currency })}</td>
       <td className="px-3 py-3 text-sm">
@@ -136,17 +136,17 @@ export function LedgerReview({ orgId, periods }: { orgId: string; periods: Array
                 <option key={code} value={code}>{label}</option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-[#6B7280]">{l.suggestion.reason}{l.suggestion.confidence > 0 && l.suggestion.confidence < LOW ? " (check this)" : ""}</p>
+            <p className="mt-1 text-xs text-[#5B6A78]">{l.suggestion.reason}{l.suggestion.confidence > 0 && l.suggestion.confidence < LOW ? " (check this)" : ""}</p>
           </>
         ) : (
-          <p className="text-xs text-[#6B7280]">{l.suggestion.reason}</p>
+          <p className="text-xs text-[#5B6A78]">{l.suggestion.reason}</p>
         )}
       </td>
     </tr>
   );
 
   const table = (items: Line[], selectable: boolean) => (
-    <div className="overflow-x-auto rounded-[12px] border border-[#E5E7EB] bg-white">
+    <div className="overflow-x-auto rounded-[12px] border border-[#E3E8EE] bg-white">
       <table className="w-full text-left">
         <tbody>{items.map((l) => row(l, selectable))}</tbody>
       </table>
@@ -162,14 +162,14 @@ export function LedgerReview({ orgId, periods }: { orgId: string; periods: Array
       ) : null}
 
       <section aria-labelledby="spend-h" className="flex flex-col gap-3">
-        <h2 id="spend-h" className="text-base font-semibold text-[#111827]">Ready to confirm ({groups.spend.length + groups.review.length})</h2>
-        <p className="text-xs text-[#6B7280]">
+        <h2 id="spend-h" className="text-base font-semibold text-[#131d29]">Ready to confirm ({groups.spend.length + groups.review.length})</h2>
+        <p className="text-xs text-[#5B6A78]">
           Priced on spend in {currency} (Xero line amounts; the invoice currency is not recorded, so check any foreign-currency invoices). Lines the rules were unsure of are not ticked.
         </p>
-        {groups.spend.length + groups.review.length > 0 ? table([...groups.spend, ...groups.review], true) : <p className="text-sm text-[#6B7280]">None.</p>}
+        {groups.spend.length + groups.review.length > 0 ? table([...groups.spend, ...groups.review], true) : <p className="text-sm text-[#5B6A78]">None.</p>}
         <div className="flex flex-wrap items-end gap-4">
           <label className="text-sm">
-            <span className="mb-1 block text-xs font-medium text-[#6B7280]">Reporting period</span>
+            <span className="mb-1 block text-xs font-medium text-[#5B6A78]">Reporting period</span>
             <select className={fieldClass} value={periodId} onChange={(e) => setPeriodId(e.target.value)}>
               {periods.map((p) => (
                 <option key={p.id} value={p.id}>{p.label}</option>
@@ -185,8 +185,8 @@ export function LedgerReview({ orgId, periods }: { orgId: string; periods: Array
 
       {groups.needs_quantity.length > 0 ? (
         <section aria-labelledby="qty-h" className="flex flex-col gap-3">
-          <h2 id="qty-h" className="text-base font-semibold text-[#111827]">Add from the bill ({groups.needs_quantity.length})</h2>
-          <p className="text-xs text-[#6B7280]">
+          <h2 id="qty-h" className="text-base font-semibold text-[#131d29]">Add from the bill ({groups.needs_quantity.length})</h2>
+          <p className="text-xs text-[#5B6A78]">
             Fuel, energy and waste: the quantity on the bill gives a better figure than the amount paid. Use <Link className="underline underline-offset-4" href={`/orgs/${orgId}/records`}>Add from a bill</Link> or forward the bill to your bill inbox.
           </p>
           {table(groups.needs_quantity, false)}
@@ -195,7 +195,7 @@ export function LedgerReview({ orgId, periods }: { orgId: string; periods: Array
 
       {groups.not_emissions.length > 0 ? (
         <details>
-          <summary className="cursor-pointer text-sm font-medium text-[#111827]">Left out: tax, pay and finance ({groups.not_emissions.length})</summary>
+          <summary className="cursor-pointer text-sm font-medium text-[#131d29]">Left out: tax, pay and finance ({groups.not_emissions.length})</summary>
           <div className="mt-3">{table(groups.not_emissions, false)}</div>
         </details>
       ) : null}

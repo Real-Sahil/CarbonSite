@@ -73,7 +73,7 @@ export async function SupplierPriorityPanel({ orgId }: { orgId: string }) {
                     <TableCell>
                       {row.spendRecordCount > 0 ? f.money(row.spendAmount, row.spendCurrency) : "-"}
                       {row.unconvertedSpendRecordCount > 0 && (
-                        <span className="text-gray-600"> ({f.number(row.unconvertedSpendRecordCount, 0)} not converted)</span>
+                        <span className="text-[#41505F]"> ({f.number(row.unconvertedSpendRecordCount, 0)} not converted)</span>
                       )}
                     </TableCell>
                     <TableCell>{row.spendRank ?? "-"}</TableCell>
@@ -91,7 +91,7 @@ export async function SupplierPriorityPanel({ orgId }: { orgId: string }) {
                 ))}
               </TableBody>
             </Table>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Suppliers are matched by name: capital letters, punctuation and company endings such as Ltd or Limited are
               ignored. Spellings that differ beyond that count as separate suppliers. Spend is nominal, converted to{" "}
               {format.currency} at each record&apos;s date. Records in a currency with no known rate are counted but left

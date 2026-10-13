@@ -12,7 +12,7 @@ export default async function OrgFactorsPage({ params }: { params: Promise<{ org
     await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to manage emission factors.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to manage emission factors.</div>;
   }
 
   const [factors, categories, org] = await Promise.all([
@@ -23,8 +23,8 @@ export default async function OrgFactorsPage({ params }: { params: Promise<{ org
 
   return (
     <div className="mx-auto max-w-[1000px] px-4 py-8 sm:px-8">
-      <h2 className="text-lg font-semibold text-[#111827]">Your emission factors</h2>
-      <p className="mt-1 max-w-[65ch] text-sm text-[#6B7280]">
+      <h2 className="text-lg font-semibold text-[#131d29]">Your emission factors</h2>
+      <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
         A factor you add here is tried before the run&apos;s library, for records in the same category whose unit it can use. Use it when a supplier gives you a
         figure (a fuel certificate, an EPD, a supplier&apos;s own rate) or when the library has none. Always name the source: it is printed in the audit trail.
       </p>

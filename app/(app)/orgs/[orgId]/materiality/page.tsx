@@ -48,7 +48,7 @@ export default async function MaterialityPage({ params }: { params: Promise<{ or
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Materiality Assessment</h1>
+          <h1 className="text-2xl tracking-tight">Materiality Assessment</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Double materiality assessments identifying financial and impact materiality topics.
           </p>

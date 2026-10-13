@@ -48,7 +48,7 @@ function CopyButton({ value }: { value: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }}
-      className="p-1 rounded text-zinc-500 hover:text-zinc-700 transition-colors"
+      className="p-1 rounded text-[#5B6A78] hover:text-[#41505F] transition-colors"
       aria-label="Copy secret"
     >
       {copied ? (
@@ -164,10 +164,10 @@ export default function WebhooksPage() {
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
       <div>
-        <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#111827]">
+        <h2 className="text-[22px] font-normal tracking-[-0.44px] text-[#131d29]">
           Outbound Webhooks
         </h2>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <p className="text-sm text-[#5B6A78] mt-0.5">
           MetricOra will POST a signed JSON payload to your endpoint when selected events occur.
           Verify deliveries using the <code className="text-xs bg-zinc-100 px-1 py-0.5 rounded">X-MetricOra-Signature</code> header (HMAC-SHA256).
         </p>
@@ -195,7 +195,7 @@ export default function WebhooksPage() {
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {/* Create form */}
-      <form onSubmit={handleCreate} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+      <form onSubmit={handleCreate} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
         <FormSection title="Add an endpoint" description="MetricOra sends a signed POST to this address when a subscribed event happens." cols={2}>
           <FormField label="Endpoint URL" htmlFor="webhook-url" span={4} hint="Must be HTTPS">
             <Input
@@ -210,7 +210,7 @@ export default function WebhooksPage() {
         </FormSection>
 
         <fieldset className="space-y-2">
-          <legend className="text-sm font-semibold text-zinc-900">Events to subscribe to</legend>
+          <legend className="text-sm font-semibold text-[#131d29]">Events to subscribe to</legend>
           <div className="flex flex-wrap gap-2">
             {ALL_EVENTS.map((ev) => {
               const active = selectedEvents.includes(ev);
@@ -223,7 +223,7 @@ export default function WebhooksPage() {
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                     active
                       ? "bg-[#c2410c] text-white border-[#c2410c]"
-                      : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400"
+                      : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-zinc-400"
                   }`}
                 >
                   {active && <Zap className="h-3 w-3" />}
@@ -249,23 +249,23 @@ export default function WebhooksPage() {
       </form>
 
       {/* Webhook list */}
-      <div className="overflow-x-auto rounded-[10px] border border-[#E5E7EB]">
+      <div className="overflow-x-auto rounded-[10px] border border-[#E3E8EE]">
         <Table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[#E5E7EB] bg-[#f9fafb]">
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">
+            <tr className="border-b border-[#E3E8EE] bg-[#F9FAFC]">
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">
                 Endpoint URL
               </th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Events</th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Secret</th>
-              <th className="px-4 py-2.5 text-left font-normal text-xs text-zinc-500">Status</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Events</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Secret</th>
+              <th className="px-4 py-2.5 text-left font-normal text-xs text-[#5B6A78]">Status</th>
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
           <tbody className="divide-y divide-[#e5e7eb]">
             {loading && webhooks.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-sm text-zinc-500">
+                <td colSpan={5} className="px-4 py-6 text-center text-sm text-[#5B6A78]">
                   Loading...
                 </td>
               </tr>
@@ -278,8 +278,8 @@ export default function WebhooksPage() {
               </tr>
             )}
             {webhooks.map((wh) => (
-              <tr key={wh.id} className="hover:bg-[#f9fafb] transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-zinc-800 max-w-[260px] truncate">
+              <tr key={wh.id} className="hover:bg-[#F9FAFC] transition-colors">
+                <td className="px-4 py-3 font-mono text-xs text-[#131d29] max-w-[260px] truncate">
                   {wh.url}
                 </td>
                 <td className="px-4 py-3">
@@ -292,7 +292,7 @@ export default function WebhooksPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-1 font-mono text-xs text-zinc-500">
+                  <div className="flex items-center gap-1 font-mono text-xs text-[#5B6A78]">
                     <span>{wh.secret}</span>
                     <CopyButton value={wh.secret} />
                   </div>
@@ -301,7 +301,7 @@ export default function WebhooksPage() {
                   <button
                     onClick={() => handleToggle(wh)}
                     disabled={togglingId === wh.id}
-                    className="flex items-center gap-1.5 text-xs text-zinc-600 hover:text-zinc-900 disabled:opacity-40 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-[#41505F] hover:text-[#131d29] disabled:opacity-40 transition-colors"
                     aria-label={wh.enabled ? "Disable webhook" : "Enable webhook"}
                   >
                     {wh.enabled ? (
@@ -311,8 +311,8 @@ export default function WebhooksPage() {
                       </>
                     ) : (
                       <>
-                        <ToggleLeft className="h-4 w-4 text-zinc-500" />
-                        <span className="text-zinc-500">Disabled</span>
+                        <ToggleLeft className="h-4 w-4 text-[#5B6A78]" />
+                        <span className="text-[#5B6A78]">Disabled</span>
                       </>
                     )}
                   </button>
@@ -321,7 +321,7 @@ export default function WebhooksPage() {
                   <button
                     onClick={() => handleDelete(wh.id)}
                     disabled={deletingId === wh.id}
-                    className="p-1.5 rounded text-zinc-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                    className="p-1.5 rounded text-[#5B6A78] hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                     aria-label="Delete webhook"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -333,9 +333,9 @@ export default function WebhooksPage() {
         </Table>
       </div>
 
-      <div className="rounded-[10px] border border-[#E5E7EB] bg-[#f9fafb] p-4 text-sm text-zinc-600">
-        <p className="font-medium text-zinc-800 mb-2">Verifying deliveries</p>
-        <p className="text-xs text-zinc-500 mb-2">
+      <div className="rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-sm text-[#41505F]">
+        <p className="font-medium text-[#131d29] mb-2">Verifying deliveries</p>
+        <p className="text-xs text-[#5B6A78] mb-2">
           Each request includes a <code className="bg-zinc-100 px-1 rounded">X-MetricOra-Signature</code> header.
           Verify with HMAC-SHA256:
         </p>

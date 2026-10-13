@@ -73,7 +73,7 @@ export function CreateFrameworkButton({ orgId }: { orgId: string }) {
       <Button
         size="sm"
         onClick={() => setOpen(true)}
-        className="bg-[#111827] hover:bg-[#1f2937] text-white text-xs h-8 px-3 gap-1.5"
+        className="bg-[#131d29] hover:bg-[#1f2937] text-white text-xs h-8 px-3 gap-1.5"
       >
         <Plus className="h-3.5 w-3.5" />
         New framework
@@ -328,9 +328,9 @@ function FrameworkForm({
           type="checkbox"
           name="isDefault"
           defaultChecked={defaultValues?.isDefault ?? false}
-          className="h-3.5 w-3.5 rounded border-[#E5E7EB]"
+          className="h-3.5 w-3.5 rounded border-[#E3E8EE]"
         />
-        <span className="text-xs text-[#374151]">Set as default framework for new commitments</span>
+        <span className="text-xs text-[#41505F]">Set as default framework for new commitments</span>
       </label>
 
       {error && <p className="text-xs text-red-600">{error}</p>}
@@ -343,7 +343,7 @@ function FrameworkForm({
           type="submit"
           size="sm"
           disabled={loading}
-          className="bg-[#111827] hover:bg-[#1f2937] text-white"
+          className="bg-[#131d29] hover:bg-[#1f2937] text-white"
         >
           {loading ? "Saving..." : submitLabel}
         </Button>

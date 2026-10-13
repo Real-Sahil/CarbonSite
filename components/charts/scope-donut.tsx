@@ -38,7 +38,7 @@ function ScopeDonutBody({ data, height }: ScopeDonutProps) {
   if (rows.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-sm text-slate-500"
+        className="flex items-center justify-center text-sm text-[#5B6A78]"
         style={{ height }}
       >
         No calculated emissions to chart.
@@ -77,7 +77,7 @@ function ScopeDonutBody({ data, height }: ScopeDonutProps) {
             iconType="circle"
             iconSize={9}
             formatter={(value) => (
-              <span className="text-xs text-slate-600">{value}</span>
+              <span className="text-xs text-[#41505F]">{value}</span>
             )}
           />
         </PieChart>

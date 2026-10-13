@@ -16,7 +16,7 @@ export default async function CertificationPage({ params }: { params: Promise<{ 
     role = membership.role;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view management systems.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view management systems.</div>;
   }
   const canEdit = (MS_EDITORS as string[]).includes(role);
   const canPack = canEdit || role === "auditor";
@@ -38,16 +38,16 @@ export default async function CertificationPage({ params }: { params: Promise<{ 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#6B7280] hover:text-[#111827]">Management systems</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Certification body access and pack</h1>
-        <p className="max-w-[75ch] text-sm text-[#6B7280]">
+        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Management systems</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Certification body access and pack</h1>
+        <p className="max-w-[75ch] text-sm text-[#5B6A78]">
           Give your certification body&apos;s auditor a read-only link for the frameworks being audited, for as long as the audit needs (up to 90 days), and
           download everything they usually ask for in one ZIP: requirement status with evidence, the Statement of Applicability where the standard has Annex A,
           every register, the training matrix and the files behind them. Remote audit by link is allowed under IAF MD 4 when the certification body has recorded the risks.
         </p>
       </div>
       {frameworks.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-[#E5E7EB] p-6 text-sm text-[#6B7280]">Adopt a framework first.</p>
+        <p className="rounded-[14px] border border-dashed border-[#E3E8EE] p-6 text-sm text-[#5B6A78]">Adopt a framework first.</p>
       ) : (
         <CertificationWorkspace
           orgId={orgId}

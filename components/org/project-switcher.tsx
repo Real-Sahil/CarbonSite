@@ -31,8 +31,8 @@ export function ProjectSwitcher({ orgId, projects, selectedId }: { orgId: string
   }
 
   return (
-    <div className="border-b border-slate-200 px-4 py-2.5">
-      <label htmlFor="project-switcher" className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+    <div className="border-b border-[#E3E8EE] px-4 py-2.5">
+      <label htmlFor="project-switcher" className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-[#5B6A78]">
         <FolderKanban className="h-3.5 w-3.5" aria-hidden /> Project
       </label>
       <select
@@ -40,7 +40,7 @@ export function ProjectSwitcher({ orgId, projects, selectedId }: { orgId: string
         value={value}
         disabled={busy}
         onChange={(e) => void change(e.target.value)}
-        className="h-8 w-full rounded-md border border-slate-200 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+        className="h-8 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50"
       >
         <option value="">All projects</option>
         {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

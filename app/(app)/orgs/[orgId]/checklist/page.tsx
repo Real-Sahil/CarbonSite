@@ -18,7 +18,7 @@ export default async function ChecklistPage({
     await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view the monthly checklist.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view the monthly checklist.</div>;
   }
 
   const current = defaultMonth();
@@ -31,10 +31,10 @@ export default async function ChecklistPage({
   const list = (rows: typeof items) => (
     <ul className="flex flex-col gap-3">
       {rows.map((i) => (
-        <li key={i.id} className="rounded-[12px] border border-[#E5E7EB] bg-white p-5">
-          <h3 className="text-sm font-semibold text-[#111827]">{i.title}</h3>
-          <p className="mt-1 text-sm text-[#4B5563]">{i.detail}</p>
-          <p className="mt-2 text-xs text-[#6B7280]">
+        <li key={i.id} className="rounded-[12px] border border-[#E3E8EE] bg-white p-5">
+          <h3 className="text-sm font-semibold text-[#131d29]">{i.title}</h3>
+          <p className="mt-1 text-sm text-[#41505F]">{i.detail}</p>
+          <p className="mt-2 text-xs text-[#5B6A78]">
             <span className="font-medium">Where to do it:</span> {i.where}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -42,7 +42,7 @@ export default async function ChecklistPage({
               <Link
                 key={f.path}
                 href={`/orgs/${orgId}/${f.path}`}
-                className="inline-flex h-8 items-center rounded-[8px] border border-[#D1D5DB] bg-white px-3 text-xs font-medium text-[#111827] hover:border-[#9CA3AF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
+                className="inline-flex h-8 items-center rounded-[8px] border border-[#D1D5DB] bg-white px-3 text-xs font-medium text-[#131d29] hover:border-[#9CA3AF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               >
                 {f.label}
               </Link>
@@ -54,11 +54,11 @@ export default async function ChecklistPage({
   );
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
-      <div className="border-b border-[#E5E7EB] bg-white">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-[900px] px-4 py-8 sm:px-8">
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Monthly checklist</h1>
-          <p className="mt-1 max-w-[65ch] text-sm text-[#6B7280]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">Monthly checklist</h1>
+          <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
             What to add, review or calculate so {monthLabel(month)} is complete. Each item says where to do it and links straight there.
           </p>
           <nav aria-label="Month" className="mt-4 flex flex-wrap gap-2">
@@ -67,7 +67,7 @@ export default async function ChecklistPage({
                 key={m}
                 href={`/orgs/${orgId}/checklist?month=${m}`}
                 aria-current={m === month ? "page" : undefined}
-                className={`rounded-full border px-3 py-1 text-xs font-medium ${m === month ? "border-[#111827] bg-[#111827] text-white" : "border-[#D1D5DB] bg-white text-[#374151] hover:border-[#9CA3AF]"}`}
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${m === month ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#D1D5DB] bg-white text-[#41505F] hover:border-[#9CA3AF]"}`}
               >
                 {monthLabel(m)}
               </Link>
@@ -83,13 +83,13 @@ export default async function ChecklistPage({
         ) : null}
         {actions.length > 0 ? (
           <section aria-labelledby="act-h" className="flex flex-col gap-3">
-            <h2 id="act-h" className="text-base font-semibold text-[#111827]">To do ({actions.length})</h2>
+            <h2 id="act-h" className="text-base font-semibold text-[#131d29]">To do ({actions.length})</h2>
             {list(actions)}
           </section>
         ) : null}
         {info.length > 0 ? (
           <section aria-labelledby="info-h" className="flex flex-col gap-3">
-            <h2 id="info-h" className="text-base font-semibold text-[#111827]">Worth doing ({info.length})</h2>
+            <h2 id="info-h" className="text-base font-semibold text-[#131d29]">Worth doing ({info.length})</h2>
             {list(info)}
           </section>
         ) : null}

@@ -48,20 +48,20 @@ export default async function WasteRegisterPage({
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto">
-      <Link href={`/orgs/${orgId}/waste`} className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
+      <Link href={`/orgs/${orgId}/waste`} className="inline-flex items-center gap-1 text-sm text-[#5B6A78] hover:text-[#41505F]">
         <ArrowLeft className="h-4 w-4" /> Waste
       </Link>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Duty of care register</h1>
-          <p className="mt-1 max-w-[65ch] text-sm text-gray-500">
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Duty of care register</h1>
+          <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
             Every waste transfer with its EWC code, carrier registration and transfer note, checked against the duty of
             care. Keep transfer notes for two years and hazardous consignment notes for three.
           </p>
         </div>
         <a
           href={`/api/orgs/${orgId}/waste-records/register${csvQuery ? `?${csvQuery}` : ""}`}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC]"
         >
           <Download className="h-4 w-4" /> Export CSV
         </a>
@@ -74,38 +74,38 @@ export default async function WasteRegisterPage({
           ["With gaps", String(summary.gaps)],
           ["Diverted from landfill", pct(summary.diversionRate)],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-gray-200 bg-white p-4">
-            <dt className="text-xs font-medium text-gray-500">{label}</dt>
-            <dd className={`mt-1 text-xl font-semibold tabular-nums ${label === "With gaps" && summary.gaps > 0 ? "text-red-700" : "text-gray-900"}`}>{value}</dd>
+          <div key={label} className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+            <dt className="text-xs font-medium text-[#5B6A78]">{label}</dt>
+            <dd className={`mt-1 text-xl font-semibold tabular-nums ${label === "With gaps" && summary.gaps > 0 ? "text-red-700" : "text-[#131d29]"}`}>{value}</dd>
           </div>
         ))}
       </dl>
 
       <form className="mt-6 flex flex-wrap items-end gap-3" method="get">
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-[#41505F]">
           <span className="mb-1 block">Reporting period</span>
-          <select name="period" defaultValue={sp.period ?? ""} className="h-9 rounded-md border border-gray-200 bg-white px-2 text-sm">
+          <select name="period" defaultValue={sp.period ?? ""} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
             <option value="">All periods</option>
             {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </label>
-        <label className="text-xs font-medium text-gray-600">
+        <label className="text-xs font-medium text-[#41505F]">
           <span className="mb-1 block">Site</span>
-          <select name="site" defaultValue={sp.site ?? ""} className="h-9 rounded-md border border-gray-200 bg-white px-2 text-sm">
+          <select name="site" defaultValue={sp.site ?? ""} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
             <option value="">All sites</option>
             {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
           </select>
         </label>
-        <label className="flex h-9 items-center gap-2 text-sm text-gray-700">
+        <label className="flex h-9 items-center gap-2 text-sm text-[#41505F]">
           <input type="checkbox" name="gaps" value="1" defaultChecked={sp.gaps === "1"} /> Only transfers with gaps
         </label>
         <button type="submit" className="h-9 rounded-md bg-gray-900 px-3 text-sm font-medium text-white hover:bg-gray-800">Apply</button>
       </form>
 
       {sites.length > 1 && (
-        <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
+        <div className="mt-6 overflow-x-auto rounded-lg border border-[#E3E8EE] bg-white">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-gray-500">
+            <thead className="text-left text-xs text-[#5B6A78]">
               <tr>
                 <th className="px-4 py-2 font-medium">Site</th>
                 <th className="px-4 py-2 text-right font-medium">Tonnes</th>
@@ -116,10 +116,10 @@ export default async function WasteRegisterPage({
             <tbody className="tabular-nums">
               {sites.map((s) => (
                 <tr key={s.name} className="border-t border-gray-100">
-                  <td className="px-4 py-2 text-gray-900">{s.name}</td>
-                  <td className="px-4 py-2 text-right text-gray-600">{tonnes.format(s.tonnes)}</td>
-                  <td className="px-4 py-2 text-right text-gray-600">{pct(s.diversionRate)}</td>
-                  <td className={`px-4 py-2 text-right ${s.gaps ? "text-red-700" : "text-gray-600"}`}>{s.gaps} of {s.transfers}</td>
+                  <td className="px-4 py-2 text-[#131d29]">{s.name}</td>
+                  <td className="px-4 py-2 text-right text-[#41505F]">{tonnes.format(s.tonnes)}</td>
+                  <td className="px-4 py-2 text-right text-[#41505F]">{pct(s.diversionRate)}</td>
+                  <td className={`px-4 py-2 text-right ${s.gaps ? "text-red-700" : "text-[#41505F]"}`}>{s.gaps} of {s.transfers}</td>
                 </tr>
               ))}
             </tbody>
@@ -127,14 +127,14 @@ export default async function WasteRegisterPage({
         </div>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-gray-200 bg-white">
+      <div className="mt-6 overflow-x-auto rounded-lg border border-[#E3E8EE] bg-white">
         {rows.length === 0 ? (
-          <p className="p-6 text-sm text-gray-500">
+          <p className="p-6 text-sm text-[#5B6A78]">
             {summary.transfers === 0 ? "No waste transfers recorded yet. Add them on the Waste page or approve field waste tickets." : "No transfers match these filters."}
           </p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="text-left text-xs text-gray-500">
+            <thead className="text-left text-xs text-[#5B6A78]">
               <tr>
                 <th className="px-4 py-2 font-medium">Date</th>
                 <th className="px-4 py-2 font-medium">Site</th>
@@ -149,26 +149,26 @@ export default async function WasteRegisterPage({
             <tbody>
               {rows.map((r) => (
                 <tr key={r.id} className="border-t border-gray-100 align-top">
-                  <td className="px-4 py-3 whitespace-nowrap tabular-nums text-gray-600">{date(r.recordedAt)}</td>
-                  <td className="px-4 py-3 text-gray-900">{r.facility}</td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 whitespace-nowrap tabular-nums text-[#41505F]">{date(r.recordedAt)}</td>
+                  <td className="px-4 py-3 text-[#131d29]">{r.facility}</td>
+                  <td className="px-4 py-3 text-[#41505F]">
                     {r.wasteType}
-                    <span className="block text-xs text-gray-500 tabular-nums">
+                    <span className="block text-xs text-[#5B6A78] tabular-nums">
                       {r.ewc ?? "No EWC code"}{r.hazardous ? " · hazardous" : ""}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums text-gray-700">{tonnes.format(r.tonnes)}</td>
-                  <td className="px-4 py-3 text-gray-700">
+                  <td className="px-4 py-3 text-right tabular-nums text-[#41505F]">{tonnes.format(r.tonnes)}</td>
+                  <td className="px-4 py-3 text-[#41505F]">
                     {r.carrierName ?? "-"}
                     {r.carrierRegistration && (
-                      <span className="block text-xs text-gray-500">
+                      <span className="block text-xs text-[#5B6A78]">
                         {r.carrierRegistration}
                         {r.check.carrier.tier ? ` · ${TIER_LABEL[r.check.carrier.tier]}` : ""}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{r.transferNoteReference ?? "-"}</td>
-                  <td className="px-4 py-3 whitespace-nowrap tabular-nums text-gray-600">{date(r.check.keepUntil)}</td>
+                  <td className="px-4 py-3 text-[#41505F]">{r.transferNoteReference ?? "-"}</td>
+                  <td className="px-4 py-3 whitespace-nowrap tabular-nums text-[#41505F]">{date(r.check.keepUntil)}</td>
                   <td className="px-4 py-3 min-w-[16rem]">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -180,7 +180,7 @@ export default async function WasteRegisterPage({
                       {r.check.complete ? (r.check.issues.length ? "Complete, check notes" : "Complete") : "Gaps"}
                     </span>
                     {r.check.issues.length > 0 && (
-                      <ul className="mt-1 space-y-0.5 text-xs text-gray-600">
+                      <ul className="mt-1 space-y-0.5 text-xs text-[#41505F]">
                         {r.check.issues.map((i) => (
                           <li key={i.code} className={i.level === "error" ? "text-red-700" : undefined}>{i.message}</li>
                         ))}
@@ -194,7 +194,7 @@ export default async function WasteRegisterPage({
         )}
       </div>
       {summary.truncated && (
-        <p className="mt-2 text-xs text-gray-500">Showing the newest 2,000 transfers. Filter by period or site, or export CSV for everything.</p>
+        <p className="mt-2 text-xs text-[#5B6A78]">Showing the newest 2,000 transfers. Filter by period or site, or export CSV for everything.</p>
       )}
     </div>
   );

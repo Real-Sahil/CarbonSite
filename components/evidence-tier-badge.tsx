@@ -3,7 +3,7 @@ import { EVIDENCE_TIER_LABEL, evidenceTier, tierReasons, type TierInput } from "
 const STYLE = {
   verified: "border-emerald-200 bg-emerald-50 text-emerald-800",
   partial: "border-amber-200 bg-amber-50 text-amber-800",
-  estimated: "border-slate-200 bg-slate-50 text-slate-700",
+  estimated: "border-[#E3E8EE] bg-[#F9FAFC] text-[#41505F]",
 } as const;
 
 /** Verified / Partially verified / Estimated, with the reasons as a tooltip. */

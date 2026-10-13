@@ -96,7 +96,7 @@ export function PaymentForm({
         </div>
       )}
 
-      <div className="p-3 border border-slate-200 rounded-lg bg-white">
+      <div className="p-3 border border-[#E3E8EE] rounded-lg bg-white">
         <CardElement
           options={{
             style: {
@@ -130,7 +130,7 @@ export function PaymentForm({
         )}
       </Button>
 
-      <p className="text-xs text-slate-500 text-center">
+      <p className="text-xs text-[#5B6A78] text-center">
         Card details are securely processed by Stripe
       </p>
     </form>

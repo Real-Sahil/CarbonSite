@@ -82,7 +82,7 @@ export function RecordStructuralChangeForm({
 
   if (outcome && !open) {
     return (
-      <div className="max-w-[60ch] rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm leading-relaxed text-zinc-700">
+      <div className="max-w-[60ch] rounded-md border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-sm leading-relaxed text-[#41505F]">
         {outcome}{" "}
         <button
           onClick={() => {
@@ -107,17 +107,17 @@ export function RecordStructuralChangeForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <label htmlFor="sc-type" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="sc-type" className="block text-sm font-medium text-[#41505F]">
             Type
           </label>
           <select
             id="sc-type"
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             {CHANGE_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -128,7 +128,7 @@ export function RecordStructuralChangeForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="sc-date" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="sc-date" className="block text-sm font-medium text-[#41505F]">
             Effective date
           </label>
           <Input
@@ -140,14 +140,14 @@ export function RecordStructuralChangeForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="sc-entity" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="sc-entity" className="block text-sm font-medium text-[#41505F]">
             Entity affected
           </label>
           <select
             id="sc-entity"
             value={legalEntityId}
             onChange={(e) => setLegalEntityId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">Group wide</option>
             {entities.map((e) => (
@@ -160,7 +160,7 @@ export function RecordStructuralChangeForm({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="sc-desc" className="block text-sm font-medium text-zinc-700">
+        <label htmlFor="sc-desc" className="block text-sm font-medium text-[#41505F]">
           Description
         </label>
         <Textarea
@@ -179,7 +179,7 @@ export function RecordStructuralChangeForm({
         </p>
       )}
 
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-[#5B6A78]">
         Recording this immediately reassesses the active base year and tells you whether the
         change crosses your significance threshold.
       </p>

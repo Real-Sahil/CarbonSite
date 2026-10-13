@@ -75,11 +75,11 @@ export default async function AssuranceEngagementsPage({ params }: PageProps) {
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-            <ClipboardCheck className="h-5 w-5 text-zinc-700" />
+            <ClipboardCheck className="h-5 w-5 text-[#41505F]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-zinc-900">Assurance engagements</h1>
-            <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+            <h1 className="text-xl font-semibold text-[#131d29]">Assurance engagements</h1>
+            <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
               A scope and materiality, a prepared-by-client evidence list, a sample drawn from the
               weakest data first, and a findings log with management responses. ISAE 3000 / ISO
               14064-3.
@@ -91,7 +91,7 @@ export default async function AssuranceEngagementsPage({ params }: PageProps) {
 
       {engagements.length === 0 ? (
         <Card>
-          <CardContent className="py-8 text-sm text-zinc-500">
+          <CardContent className="py-8 text-sm text-[#5B6A78]">
             No assurance engagements recorded. Start one when an external provider begins reviewing
             a reporting period, so the evidence trail builds as work happens rather than after.
           </CardContent>
@@ -113,12 +113,12 @@ export default async function AssuranceEngagementsPage({ params }: PageProps) {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-4 text-sm text-zinc-500">
+                  <div className="flex flex-wrap gap-4 text-sm text-[#5B6A78]">
                     <span>{e._count.evidenceRequests} evidence requests</span>
                     <span>{e._count.samples} samples</span>
                     <span>{e._count.findings} findings</span>
                   </div>
-                  <div className="mt-2 flex items-center gap-1 text-sm font-medium text-zinc-600">
+                  <div className="mt-2 flex items-center gap-1 text-sm font-medium text-[#41505F]">
                     Open workspace
                     <ChevronRight className="h-3.5 w-3.5" />
                   </div>
@@ -138,7 +138,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === "withdrawn") {
     return (
-      <Badge variant="outline" className="text-xs text-zinc-500">
+      <Badge variant="outline" className="text-xs text-[#5B6A78]">
         Withdrawn
       </Badge>
     );
@@ -153,8 +153,8 @@ function StatusBadge({ status }: { status: string }) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view assurance engagements.
       </p>
     </div>

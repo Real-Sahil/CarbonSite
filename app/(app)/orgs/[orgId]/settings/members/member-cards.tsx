@@ -179,18 +179,18 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
         {/* Text search */}
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#5B6A78] pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => changeSearch(e.target.value)}
             placeholder="Search name or email"
-            className="h-8 w-full rounded-md border border-slate-200 bg-white pl-8 pr-7 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
+            className="h-8 w-full rounded-md border border-[#E3E8EE] bg-white pl-8 pr-7 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-[#0F766E]"
           />
           {search && (
             <button
               onClick={() => changeSearch("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-[#5B6A78] hover:text-[#41505F]"
             >
               <X className="h-3 w-3" />
             </button>
@@ -203,7 +203,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
             className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
               roleFilter === "all"
                 ? "bg-[#0F766E] text-white border-[#0F766E]"
-                : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-slate-300"
             }`}
           >
             All ({members.length})
@@ -215,7 +215,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                 roleFilter === r
                   ? "bg-[#0F766E] text-white border-[#0F766E]"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"
+                  : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-slate-300"
               }`}
             >
               {ROLE_LABELS[r] ?? r} ({members.filter((m) => m.role === r).length})
@@ -227,7 +227,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
       {/* Cards grid */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-2 py-10 text-center">
-          <p className="text-sm text-slate-500">No members match this filter.</p>
+          <p className="text-sm text-[#5B6A78]">No members match this filter.</p>
           <button
             onClick={() => { changeFilter("all"); changeSearch(""); }}
             className="text-xs text-[#0F766E] hover:underline"
@@ -249,7 +249,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
               return (
                 <div
                   key={m.id}
-                  className={`rounded-xl border border-slate-200 border-l-4 ${accent} bg-white p-4 flex flex-col gap-3 min-w-0 transition-opacity ${isPending ? "opacity-50" : ""}`}
+                  className={`rounded-xl border border-[#E3E8EE] border-l-4 ${accent} bg-white p-4 flex flex-col gap-3 min-w-0 transition-opacity ${isPending ? "opacity-50" : ""}`}
                 >
                   {/* Avatar + identity */}
                   <div className="flex items-start gap-3 min-w-0">
@@ -258,14 +258,14 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
-                          {m.name ?? <em className="text-slate-500 font-normal">No name</em>}
+                        <p className="text-sm font-medium text-[#131d29] truncate">
+                          {m.name ?? <em className="text-[#5B6A78] font-normal">No name</em>}
                         </p>
                         {isCurrentUser && (
-                          <span className="text-[10px] text-slate-500 shrink-0">(you)</span>
+                          <span className="text-[10px] text-[#5B6A78] shrink-0">(you)</span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 truncate">{m.email}</p>
+                      <p className="text-xs text-[#5B6A78] truncate">{m.email}</p>
                       <div className="mt-1.5">
                         <Badge variant={ROLE_BADGE[m.role] ?? "outline"} className="text-[10px] px-1.5 py-0">
                           {ROLE_LABELS[m.role] ?? m.role}
@@ -281,7 +281,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
                       disabled={isPending}
                       aria-label={`Role for ${m.name ?? m.email}`}
                       onChange={(e) => setRoleDrafts((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                      className="flex-1 min-w-0 h-8 rounded-md border border-slate-200 bg-white px-2 text-xs shadow-sm disabled:opacity-50"
+                      className="flex-1 min-w-0 h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs shadow-sm disabled:opacity-50"
                     >
                       {ROLE_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -334,7 +334,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-1">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#5B6A78]">
                 Showing {page * PAGE_SIZE + 1}-{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
               </p>
               <div className="flex items-center gap-1">
@@ -348,7 +348,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
                 >
                   <ChevronLeft className="h-3.5 w-3.5" />
                 </Button>
-                <span className="text-xs text-slate-600 px-1">
+                <span className="text-xs text-[#41505F] px-1">
                   {page + 1} / {totalPages}
                 </span>
                 <Button

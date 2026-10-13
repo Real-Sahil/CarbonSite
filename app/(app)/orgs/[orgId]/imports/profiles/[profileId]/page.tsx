@@ -15,7 +15,7 @@ export default async function ImportProfilePage({ params }: { params: Promise<{ 
     await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    if (err instanceof AuthError) return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to edit import profiles.</div>;
+    if (err instanceof AuthError) return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to edit import profiles.</div>;
     throw err;
   }
 
@@ -26,13 +26,13 @@ export default async function ImportProfilePage({ params }: { params: Promise<{ 
   if (profileId !== "new" && !profile) notFound();
 
   return (
-    <div className="min-h-[100dvh] bg-[#f9fafb]">
-      <div className="border-b border-[#E5E7EB] bg-white">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
-          <Link href={`/orgs/${orgId}/imports/profiles`} className="inline-flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#111827]">
+          <Link href={`/orgs/${orgId}/imports/profiles`} className="inline-flex items-center gap-1 text-xs text-[#5B6A78] hover:text-[#131d29]">
             <ArrowLeft aria-hidden="true" className="h-3 w-3" /> ERP export profiles
           </Link>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight text-[#111827]">{profile ? profile.name : "New ERP export profile"}</h1>
+          <h1 className="mt-3 text-2xl tracking-tight text-[#131d29]">{profile ? profile.name : "New ERP export profile"}</h1>
         </div>
       </div>
       <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">

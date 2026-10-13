@@ -36,19 +36,19 @@ export function AskCarrier({ orgId, docId, missing, askedAt }: { orgId: string; 
     return (
       <div className="mt-1 space-y-0.5 text-xs">
         <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => { setOpen(true); setSent(false); }}>Ask the carrier</button>
-        <div className="text-gray-500">Missing: {missing.join(", ")}</div>
-        {(askedAt || sent) && <div className="text-gray-500">Asked {askedAt ? new Date(askedAt).toLocaleDateString("en-GB") : "just now"}</div>}
+        <div className="text-[#5B6A78]">Missing: {missing.join(", ")}</div>
+        {(askedAt || sent) && <div className="text-[#5B6A78]">Asked {askedAt ? new Date(askedAt).toLocaleDateString("en-GB") : "just now"}</div>}
       </div>
     );
   }
   return (
-    <form onSubmit={(e) => { e.preventDefault(); void send(); }} className="mt-2 w-[min(420px,85vw)] space-y-2 rounded-lg border border-gray-200 bg-white p-3 text-left text-xs">
-      <p className="text-gray-700">Email the carrier asking for: <span className="font-medium">{missing.join(", ")}</span>. Their reply goes to your address.</p>
-      <label className="grid gap-1 text-gray-700">
+    <form onSubmit={(e) => { e.preventDefault(); void send(); }} className="mt-2 w-[min(420px,85vw)] space-y-2 rounded-lg border border-[#E3E8EE] bg-white p-3 text-left text-xs">
+      <p className="text-[#41505F]">Email the carrier asking for: <span className="font-medium">{missing.join(", ")}</span>. Their reply goes to your address.</p>
+      <label className="grid gap-1 text-[#41505F]">
         Carrier&apos;s email
         <Input type="email" required value={to} onChange={(e) => setTo(e.target.value)} maxLength={200} />
       </label>
-      <label className="grid gap-1 text-gray-700">
+      <label className="grid gap-1 text-[#41505F]">
         Note (optional)
         <Input value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
       </label>

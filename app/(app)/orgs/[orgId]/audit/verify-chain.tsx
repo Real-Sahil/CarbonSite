@@ -43,11 +43,11 @@ export function VerifyChain({ orgId }: { orgId: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-[#E5E7EB] bg-white p-4">
+    <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="max-w-[65ch]">
-          <h2 className="text-sm font-semibold text-[#111827]">Check the audit trail</h2>
-          <p className="text-sm text-[#374151]">
+          <h2 className="text-sm font-semibold text-[#131d29]">Check the audit trail</h2>
+          <p className="text-sm text-[#41505F]">
             Each entry carries a hash of the entry before it, so a change, a removal or a reordering shows up. This recomputes every hash.
           </p>
         </div>

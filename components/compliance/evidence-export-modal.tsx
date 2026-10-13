@@ -142,7 +142,7 @@ export function EvidenceExportModal({
             <h3 className="font-medium text-sm">Reporting Period</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">
+                <label className="text-xs font-medium text-[#41505F] block mb-1">
                   Start Date
                 </label>
                 <input
@@ -152,11 +152,11 @@ export function EvidenceExportModal({
                     setDateRange({ ...dateRange, startDate: e.target.value })
                   }
                   disabled={isExporting}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:opacity-50"
+                  className="w-full rounded-lg border border-[#E3E8EE] px-3 py-2 text-sm disabled:opacity-50"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1">
+                <label className="text-xs font-medium text-[#41505F] block mb-1">
                   End Date
                 </label>
                 <input
@@ -166,7 +166,7 @@ export function EvidenceExportModal({
                     setDateRange({ ...dateRange, endDate: e.target.value })
                   }
                   disabled={isExporting}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm disabled:opacity-50"
+                  className="w-full rounded-lg border border-[#E3E8EE] px-3 py-2 text-sm disabled:opacity-50"
                 />
               </div>
             </div>
@@ -191,7 +191,7 @@ export function EvidenceExportModal({
               {FRAMEWORKS.map((framework) => (
                 <label
                   key={framework.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-[#E3E8EE] hover:bg-[#F9FAFC] cursor-pointer transition-colors"
                 >
                   <input
                     type="checkbox"
@@ -201,10 +201,10 @@ export function EvidenceExportModal({
                     className="rounded w-4 h-4"
                   />
                   <div className="flex-1">
-                    <div className="font-medium text-sm text-gray-900">
+                    <div className="font-medium text-sm text-[#131d29]">
                       {framework.label}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-[#5B6A78]">
                       {framework.description}
                     </div>
                   </div>
@@ -221,7 +221,7 @@ export function EvidenceExportModal({
                 What's Included
               </CardTitle>
             </CardHeader>
-            <CardContent className="text-xs space-y-1 text-gray-700">
+            <CardContent className="text-xs space-y-1 text-[#41505F]">
               <p>✓ Complete audit trail (actions, actors, timestamps, IP addresses)</p>
               <p>✓ Calculation formulas and methodology</p>
               <p>✓ Emission factors used and their sources</p>

@@ -34,22 +34,22 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1400px] mx-auto px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
               <BarChart3 className="h-4 w-4 text-blue-600" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Analytics
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Emissions Analytics
           </h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             Track your organization&apos;s emissions across scopes, facilities, and categories with detailed insights and trends.
           </p>
         </div>
@@ -59,7 +59,7 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
       <div className="max-w-[1400px] mx-auto px-8 py-8 space-y-8">
         {/* Summary metrics */}
         <div>
-          <h2 className="text-lg font-semibold text-[#111827] mb-4">
+          <h2 className="text-lg font-semibold text-[#131d29] mb-4">
             Key Metrics
           </h2>
           <AnalyticsSummary orgId={orgId} />
@@ -68,16 +68,16 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
         {/* Charts grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Emissions by Scope */}
-          <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-[#111827] mb-4">
+          <div className="bg-white rounded-lg border border-[#E3E8EE] p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-[#131d29] mb-4">
               Emissions by Scope
             </h3>
             <EmissionsByScopeChart orgId={orgId} />
           </div>
 
           {/* Category Breakdown */}
-          <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-[#111827] mb-4">
+          <div className="bg-white rounded-lg border border-[#E3E8EE] p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-[#131d29] mb-4">
               Category Breakdown
             </h3>
             <CategoryBreakdownChart orgId={orgId} />
@@ -85,16 +85,16 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
         </div>
 
         {/* Emissions Trend */}
-        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
-          <h3 className="text-base font-semibold text-[#111827] mb-4">
+        <div className="bg-white rounded-lg border border-[#E3E8EE] p-6 shadow-sm">
+          <h3 className="text-base font-semibold text-[#131d29] mb-4">
             Emissions Trend (Last 30 Days)
           </h3>
           <EmissionsTrendChart orgId={orgId} days={30} />
         </div>
 
         {/* Facility Comparison */}
-        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 shadow-sm">
-          <h3 className="text-base font-semibold text-[#111827] mb-4">
+        <div className="bg-white rounded-lg border border-[#E3E8EE] p-6 shadow-sm">
+          <h3 className="text-base font-semibold text-[#131d29] mb-4">
             Top Facilities by Emissions
           </h3>
           <FacilityComparisonChart orgId={orgId} limit={10} />

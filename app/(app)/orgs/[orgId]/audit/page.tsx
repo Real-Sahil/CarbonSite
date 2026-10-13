@@ -126,28 +126,28 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-                  <Clock className="h-4 w-4 text-[#111827]" />
+                  <Clock className="h-4 w-4 text-[#131d29]" />
                 </div>
-                <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+                <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
                   Compliance
                 </span>
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">
                 Audit trail
               </h1>
-              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+              <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
                 Tenant-scoped event history for operational, evidence, review, calculation, and report activity.
               </p>
             </div>
-            <Badge variant="outline" className="shrink-0 self-start text-[#374151] border-[#E5E7EB]">
+            <Badge variant="outline" className="shrink-0 self-start text-[#41505F] border-[#E3E8EE]">
               {totalCount.toLocaleString("en-GB")} matching events
             </Badge>
           </div>
@@ -157,10 +157,10 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {canVerify && <VerifyChain orgId={orgId} />}
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">Event filters</CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">Event filters</CardTitle>
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Filter directly against stored audit rows. Page size: {PAGE_SIZE} events per page.
             </CardDescription>
           </CardHeader>
@@ -194,7 +194,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
               </Field>
               <div className="flex items-end gap-2">
                 <Button type="submit" className="w-full lg:w-auto bg-[#c2410c] hover:bg-[#9a3412] text-white">Apply</Button>
-                <Button asChild variant="outline" className="w-full lg:w-auto border-[#E5E7EB] text-[#374151]">
+                <Button asChild variant="outline" className="w-full lg:w-auto border-[#E3E8EE] text-[#41505F]">
                   <a href={`/orgs/${orgId}/audit`}>Clear</a>
                 </Button>
               </div>
@@ -202,10 +202,10 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
           </CardContent>
         </Card>
 
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">Events</CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">Events</CardTitle>
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Audit entries are append-only records created by server-side workflows.
             </CardDescription>
           </CardHeader>
@@ -217,18 +217,18 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                        <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Time</TableHead>
-                        <TableHead className="text-xs font-medium text-[#6B7280] py-3">Action</TableHead>
-                        <TableHead className="text-xs font-medium text-[#6B7280] py-3">Actor</TableHead>
-                        <TableHead className="text-xs font-medium text-[#6B7280] py-3">Resource</TableHead>
-                        <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Metadata</TableHead>
+                      <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Time</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Action</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Actor</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Resource</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Metadata</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {logs.map((log) => (
-                        <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                          <TableCell className="whitespace-nowrap text-sm text-[#6B7280] tabular-nums py-3.5 pl-6">
+                        <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                          <TableCell className="whitespace-nowrap text-sm text-[#5B6A78] tabular-nums py-3.5 pl-6">
                             <time dateTime={log.createdAt.toISOString()}>
                               {log.createdAt.toLocaleString("en-GB", {
                                 day: "numeric",
@@ -242,19 +242,19 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                           <TableCell className="py-3.5">
                             <Badge variant={badgeVariant(log.action)}>{formatLabel(log.action)}</Badge>
                           </TableCell>
-                          <TableCell className="text-sm text-[#374151] py-3.5">
+                          <TableCell className="text-sm text-[#41505F] py-3.5">
                             {log.actor?.name ?? log.actor?.email ?? "System"}
                           </TableCell>
                           <TableCell className="py-3.5">
                             <div className="max-w-64">
-                              <p className="text-sm font-medium text-[#111827]">{formatLabel(log.resourceType)}</p>
-                              <p className="truncate text-xs text-[#6B7280]" title={log.resourceId}>
+                              <p className="text-sm font-medium text-[#131d29]">{formatLabel(log.resourceType)}</p>
+                              <p className="truncate text-xs text-[#5B6A78]" title={log.resourceId}>
                                 {log.resourceId}
                               </p>
                             </div>
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
-                            <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-[#F9FAFB] border border-[#E5E7EB] p-2 text-xs leading-5 text-[#374151]">
+                            <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-[#F9FAFC] border border-[#E3E8EE] p-2 text-xs leading-5 text-[#41505F]">
                               {formatMetadata(log.metadata)}
                             </pre>
                           </TableCell>
@@ -263,8 +263,8 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                     </TableBody>
                   </Table>
                 </div>
-                <div className="border-t border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
-                  <div className="text-xs text-[#374151]">
+                <div className="border-t border-[#E3E8EE] px-6 py-4 flex items-center justify-between">
+                  <div className="text-xs text-[#41505F]">
                     Page {currentPage} of {pageCount} ({totalCount.toLocaleString("en-GB")} total events)
                   </div>
                   <div className="flex gap-2">
@@ -353,7 +353,7 @@ function badgeVariant(action: string) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label className="mb-1.5 block text-xs font-medium text-[#374151]">{label}</Label>
+      <Label className="mb-1.5 block text-xs font-medium text-[#41505F]">{label}</Label>
       {children}
     </div>
   );
@@ -378,4 +378,4 @@ function AccessDenied() {
 }
 
 const selectClass =
-  "h-9 w-full rounded-md border border-[#E5E7EB] bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50";

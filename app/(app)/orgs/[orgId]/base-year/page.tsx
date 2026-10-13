@@ -128,11 +128,11 @@ export default async function BaseYearPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-          <Anchor className="h-5 w-5 text-zinc-700" />
+          <Anchor className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Base year and recalculation</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold text-[#131d29]">Base year and recalculation</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             The reference year every target and trend is measured against, and the record of every
             structural change assessed against it. GHG Protocol Corporate Standard, chapter 5.
           </p>
@@ -158,8 +158,8 @@ export default async function BaseYearPage({ params }: PageProps) {
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Base years</h2>
-            <p className="text-sm text-zinc-500">
+            <h2 className="text-lg font-semibold text-[#131d29]">Base years</h2>
+            <p className="text-sm text-[#5B6A78]">
               {active
                 ? `Active baseline: ${active.label}.`
                 : "No active base year. Targets and trends have nothing to measure against."}
@@ -200,7 +200,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                       value={`${Number(by.significanceThresholdPercent).toFixed(1)}%`}
                     />
                     {by.rationale && (
-                      <p className="pt-1 text-xs leading-relaxed text-zinc-500">{by.rationale}</p>
+                      <p className="pt-1 text-xs leading-relaxed text-[#5B6A78]">{by.rationale}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -213,8 +213,8 @@ export default async function BaseYearPage({ params }: PageProps) {
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Structural changes</h2>
-            <p className="max-w-[65ch] text-sm text-zinc-500">
+            <h2 className="text-lg font-semibold text-[#131d29]">Structural changes</h2>
+            <p className="max-w-[65ch] text-sm text-[#5B6A78]">
               Every acquisition, divestiture, outsourcing decision, methodology change and error
               correction. Each one is assessed against the active base year when it is recorded.
             </p>
@@ -242,22 +242,22 @@ export default async function BaseYearPage({ params }: PageProps) {
                     return (
                       <TableRow key={c.id}>
                         <TableCell className="pl-4">
-                          <div className="font-medium text-zinc-900">
+                          <div className="font-medium text-[#131d29]">
                             {CHANGE_TYPE_LABEL[c.type] ?? c.type}
                           </div>
-                          <div className="max-w-[44ch] text-xs leading-relaxed text-zinc-500">
+                          <div className="max-w-[44ch] text-xs leading-relaxed text-[#5B6A78]">
                             {c.description}
                           </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm text-zinc-500">
+                        <TableCell className="whitespace-nowrap text-sm text-[#5B6A78]">
                           {formatDate(c.effectiveDate)}
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {c.legalEntity?.name ?? "Group wide"}
                         </TableCell>
                         <TableCell className="pr-4">
                           {!recalc ? (
-                            <span className="text-xs text-zinc-500">No active base year</span>
+                            <span className="text-xs text-[#5B6A78]">No active base year</span>
                           ) : recalc.status === "not_significant" ? (
                             <Badge variant="outline" className="text-xs">
                               Below threshold
@@ -284,7 +284,7 @@ export default async function BaseYearPage({ params }: PageProps) {
 
       {baseYears.some((b) => b.recalculations.length > 0) && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-zinc-900">Recalculation history</h2>
+          <h2 className="text-lg font-semibold text-[#131d29]">Recalculation history</h2>
           <Card>
             <CardContent className="overflow-x-auto p-0">
               <Table>
@@ -305,10 +305,10 @@ export default async function BaseYearPage({ params }: PageProps) {
                       return (
                         <TableRow key={r.id}>
                           <TableCell className="pl-4">
-                            <div className="font-medium text-zinc-900">
+                            <div className="font-medium text-[#131d29]">
                               {CHANGE_TYPE_LABEL[r.structuralChange.type] ?? r.structuralChange.type}
                             </div>
-                            <div className="text-xs text-zinc-500">{by.label}</div>
+                            <div className="text-xs text-[#5B6A78]">{by.label}</div>
                           </TableCell>
                           <TableCell className="text-right font-mono text-sm tabular-nums">
                             {Number(r.previousTotalCo2e ?? 0).toFixed(2)}
@@ -320,7 +320,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                             className={
                               r.isSignificant
                                 ? "text-right font-mono text-sm font-semibold tabular-nums text-amber-700"
-                                : "text-right font-mono text-sm tabular-nums text-zinc-500"
+                                : "text-right font-mono text-sm tabular-nums text-[#5B6A78]"
                             }
                           >
                             {delta === null ? "n/a" : `${delta > 0 ? "+" : ""}${delta.toFixed(2)}%`}
@@ -335,7 +335,7 @@ export default async function BaseYearPage({ params }: PageProps) {
                               {r.status === "awaiting_approval" ? (
                                 <ResolveRecalculationButtons orgId={orgId} recalculationId={r.id} />
                               ) : (
-                                <span className="text-xs text-zinc-500">
+                                <span className="text-xs text-[#5B6A78]">
                                   {r.approvedBy
                                     ? (r.approvedBy.name ?? r.approvedBy.email)
                                     : "No action needed"}
@@ -356,8 +356,8 @@ export default async function BaseYearPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900">Restatement register</h2>
-          <p className="max-w-[65ch] text-sm text-zinc-500">
+          <h2 className="text-lg font-semibold text-[#131d29]">Restatement register</h2>
+          <p className="max-w-[65ch] text-sm text-[#5B6A78]">
             Published figures that have since been corrected. Frameworks require material
             restatements to be disclosed with the reason and the magnitude.
           </p>
@@ -383,18 +383,18 @@ export default async function BaseYearPage({ params }: PageProps) {
                     return (
                       <TableRow key={r.id}>
                         <TableCell className="pl-4">
-                          <div className="font-medium text-zinc-900">
+                          <div className="font-medium text-[#131d29]">
                             {r.supersededSnapshot.reportingPeriod.label}
                           </div>
-                          <div className="text-xs text-zinc-500">
+                          <div className="text-xs text-[#5B6A78]">
                             Snapshot v{r.supersededSnapshot.version}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="text-sm capitalize text-zinc-700">
+                          <div className="text-sm capitalize text-[#41505F]">
                             {r.reason.replace(/_/g, " ")}
                           </div>
-                          <div className="max-w-[40ch] text-xs leading-relaxed text-zinc-500">
+                          <div className="max-w-[40ch] text-xs leading-relaxed text-[#5B6A78]">
                             {r.description}
                           </div>
                         </TableCell>
@@ -436,12 +436,12 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-zinc-500">{label}</span>
+      <span className="text-[#5B6A78]">{label}</span>
       <span
         className={
           emphasis
             ? "font-mono font-semibold tabular-nums text-amber-700"
-            : "font-mono tabular-nums text-zinc-900"
+            : "font-mono tabular-nums text-[#131d29]"
         }
       >
         {value}
@@ -458,7 +458,7 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === "superseded") {
     return (
-      <Badge variant="outline" className="text-xs text-zinc-500">
+      <Badge variant="outline" className="text-xs text-[#5B6A78]">
         Superseded
       </Badge>
     );
@@ -473,7 +473,7 @@ function StatusBadge({ status }: { status: string }) {
 function EmptyCard({ text }: { text: string }) {
   return (
     <Card>
-      <CardContent className="flex items-start gap-2 py-6 text-sm text-zinc-500">
+      <CardContent className="flex items-start gap-2 py-6 text-sm text-[#5B6A78]">
         <History className="mt-0.5 h-4 w-4 shrink-0" />
         {text}
       </CardContent>
@@ -488,8 +488,8 @@ function formatDate(d: Date): string {
 function AccessDenied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the base year register.
       </p>
     </div>

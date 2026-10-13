@@ -103,8 +103,8 @@ function ScoreGauge({ score }: { score: number }) {
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-3xl font-bold text-gray-900">{Math.round(percentage)}</p>
-            <p className="text-xs text-gray-500">out of 100</p>
+            <p className="text-3xl font-bold text-[#131d29]">{Math.round(percentage)}</p>
+            <p className="text-xs text-[#5B6A78]">out of 100</p>
           </div>
         </div>
       </div>
@@ -173,8 +173,8 @@ export default function DataQualityPage() {
     <div className="p-8 max-w-6xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">Data Quality</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl tracking-tight text-[#131d29] mb-2">Data Quality</h1>
+        <p className="text-[#41505F]">
           Monitor emissions data completeness, accuracy, timeliness, and consistency across your organization.
         </p>
       </div>
@@ -191,7 +191,7 @@ export default function DataQualityPage() {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-gray-600">Interpretation</span>
+                  <span className="text-sm font-medium text-[#41505F]">Interpretation</span>
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       interpretationConfig.color
@@ -200,7 +200,7 @@ export default function DataQualityPage() {
                     {interpretationConfig.label}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[#41505F]">
                   {metrics.overallScore >= 80
                     ? "Your emissions data is audit-ready with high quality across all dimensions."
                     : metrics.overallScore >= 60
@@ -213,7 +213,7 @@ export default function DataQualityPage() {
 
               <div className="space-y-3 pt-4 border-t">
                 <div>
-                  <p className="text-xs font-medium text-gray-600 mb-1">Records Summary</p>
+                  <p className="text-xs font-medium text-[#41505F] mb-1">Records Summary</p>
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-blue-50 p-2 rounded">
                       <p className="text-2xl font-bold text-blue-900">
@@ -253,7 +253,7 @@ export default function DataQualityPage() {
                   style={{ width: `${metrics.scoreBreakdown.completeness}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#41505F] mt-2">
                 {metrics.scoreBreakdown.completeness >= 90
                   ? "Excellent field coverage"
                   : metrics.scoreBreakdown.completeness >= 70
@@ -280,7 +280,7 @@ export default function DataQualityPage() {
                   style={{ width: `${metrics.scoreBreakdown.accuracy}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#41505F] mt-2">
                 <span className="font-semibold">{metrics.summary.missingEvidence}</span> records
                 without evidence
               </p>
@@ -304,7 +304,7 @@ export default function DataQualityPage() {
                   style={{ width: `${metrics.scoreBreakdown.timeliness}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#41505F] mt-2">
                 <span className="font-semibold">{metrics.summary.outOfPeriod}</span> records
                 out-of-period
               </p>
@@ -328,7 +328,7 @@ export default function DataQualityPage() {
                   style={{ width: `${metrics.scoreBreakdown.consistency}%` }}
                 />
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-[#41505F] mt-2">
                 <span className="font-semibold">{metrics.summary.uncategorized}</span> records
                 uncategorized
               </p>
@@ -366,7 +366,7 @@ export default function DataQualityPage() {
               {metrics.issues.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
-                  <p className="text-gray-600">All data quality checks passed</p>
+                  <p className="text-[#41505F]">All data quality checks passed</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -411,7 +411,7 @@ export default function DataQualityPage() {
                 <div className="space-y-3">
                   {metrics.trend.map((point, idx) => (
                     <div key={idx} className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-gray-600 w-12">{point.month}</span>
+                      <span className="text-xs font-medium text-[#41505F] w-12">{point.month}</span>
                       <div className="flex-1">
                         <div className="bg-gray-200 rounded-full h-6 relative">
                           <div
@@ -430,14 +430,14 @@ export default function DataQualityPage() {
                           </div>
                         </div>
                       </div>
-                      <span className="text-sm font-medium text-gray-900 w-12 text-right">
+                      <span className="text-sm font-medium text-[#131d29] w-12 text-right">
                         {point.score}%
                       </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-600 text-center py-8">Insufficient data for trend</p>
+                <p className="text-[#41505F] text-center py-8">Insufficient data for trend</p>
               )}
             </CardContent>
           </Card>
@@ -455,17 +455,17 @@ export default function DataQualityPage() {
               {metrics.riskRecords && metrics.riskRecords.length > 0 ? (
                 <div className="space-y-3">
                   {metrics.riskRecords.map((record, idx) => (
-                    <div key={idx} className="rounded-lg border border-gray-200 p-4 hover:bg-gray-50 transition-colors">
+                    <div key={idx} className="rounded-lg border border-[#E3E8EE] p-4 hover:bg-[#F9FAFC] transition-colors">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate">
+                          <p className="font-medium text-[#131d29] truncate">
                             {record.description}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">ID: {record.id.slice(0, 8)}...</p>
+                          <p className="text-xs text-[#5B6A78] mt-1">ID: {record.id.slice(0, 8)}...</p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-lg font-bold text-gray-900">{record.riskScore}</p>
-                          <p className="text-xs text-gray-500">risk score</p>
+                          <p className="text-lg font-bold text-[#131d29]">{record.riskScore}</p>
+                          <p className="text-xs text-[#5B6A78]">risk score</p>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1">
@@ -484,7 +484,7 @@ export default function DataQualityPage() {
               ) : (
                 <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-3" />
-                  <p className="text-gray-600">No high-risk records detected</p>
+                  <p className="text-[#41505F]">No high-risk records detected</p>
                 </div>
               )}
             </CardContent>

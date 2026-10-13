@@ -69,19 +69,19 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">SBTi Net-Zero Roadmap</h1>
-          <p className="text-sm text-gray-500 mt-1">Science-Based Targets aligned with the 1.5°C pathway.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">SBTi Net-Zero Roadmap</h1>
+          <p className="text-sm text-[#5B6A78] mt-1">Science-Based Targets aligned with the 1.5°C pathway.</p>
         </div>
         {canEdit && <SbtiSetTargetButton orgId={orgId} existing={target} />}
       </div>
 
       {!target ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+        <div className="rounded-xl border border-[#E3E8EE] bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
             <TrendingDown className="h-5 w-5 text-[#c2410c]" />
           </div>
-          <p className="text-sm font-medium text-gray-700">No SBTi target set</p>
-          <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+          <p className="text-sm font-medium text-[#41505F]">No SBTi target set</p>
+          <p className="text-xs text-[#5B6A78] mt-1 max-w-xs mx-auto">
             Set a Science-Based Target to align your organisation with the 1.5°C Paris Agreement pathway.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
             <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#FFF7ED] text-[#c2410c]">
               {target.pathway} pathway
             </span>
-            <span className="text-xs text-gray-500">Base year: {target.baseYear}</span>
+            <span className="text-xs text-[#5B6A78]">Base year: {target.baseYear}</span>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -106,16 +106,16 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
               { label: `Net-zero target (${target.netZeroYear})`, value: netZeroTarget.toFixed(1), unit: `tCO₂e (-${target.netZeroReductionPct.toFixed(0)}%)` },
               { label: "Annual reduction needed", value: ((baseTotal - nearTermTarget) / Math.max(target.nearTermYear - target.baseYear, 1)).toFixed(1), unit: "tCO₂e/year" },
             ].map(({ label, value, unit }) => (
-              <div key={label} className="rounded-xl border border-gray-200 bg-white p-5">
-                <div className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1 leading-tight">{label}</div>
-                <div className="text-2xl font-semibold text-gray-900 tabular-nums">{value}</div>
-                <div className="text-xs text-gray-500 mt-0.5">{unit}</div>
+              <div key={label} className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+                <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1 leading-tight">{label}</div>
+                <div className="text-2xl font-semibold text-[#131d29] tabular-nums">{value}</div>
+                <div className="text-xs text-[#5B6A78] mt-0.5">{unit}</div>
               </div>
             ))}
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">Baseline emissions by scope</h3>
+          <div className="rounded-xl border border-[#E3E8EE] bg-white p-6">
+            <h3 className="text-sm font-semibold text-[#131d29] mb-4">Baseline emissions by scope</h3>
             <div className="space-y-3">
               {[
                 { label: "Scope 1 (Direct)", value: target.baselineScope1Tco2e, color: "bg-[#c2410c]" },
@@ -128,9 +128,9 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                 return (
                   <div key={label}>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm text-gray-700">{label}</span>
-                      <span className="text-sm font-medium tabular-nums text-gray-900">
-                        {value.toFixed(1)} tCO₂e <span className="text-gray-500 font-normal">({pct.toFixed(0)}%)</span>
+                      <span className="text-sm text-[#41505F]">{label}</span>
+                      <span className="text-sm font-medium tabular-nums text-[#131d29]">
+                        {value.toFixed(1)} tCO₂e <span className="text-[#5B6A78] font-normal">({pct.toFixed(0)}%)</span>
                       </span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -162,10 +162,10 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
           )}
 
           {trajectory.length > 0 && (
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="rounded-xl border border-[#E3E8EE] bg-white p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-gray-900">Reduction pathway: expected vs. actual</h3>
-                <div className="flex items-center gap-3 text-xs text-gray-500">
+                <h3 className="text-sm font-semibold text-[#131d29]">Reduction pathway: expected vs. actual</h3>
+                <div className="flex items-center gap-3 text-xs text-[#5B6A78]">
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#c2410c]" />Expected</span>
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" />On track</span>
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-400" />Behind</span>
@@ -200,11 +200,11 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
               <div className="flex items-center gap-6 mt-3 pt-3 border-t border-gray-100">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-                  <span className="text-xs text-gray-500">Near-term: {nearTermTarget.toFixed(0)} tCO₂e by {target.nearTermYear}</span>
+                  <span className="text-xs text-[#5B6A78]">Near-term: {nearTermTarget.toFixed(0)} tCO₂e by {target.nearTermYear}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="h-3.5 w-3.5 text-[#c2410c]" />
-                  <span className="text-xs text-gray-500">Net-zero: {netZeroTarget.toFixed(0)} tCO₂e by {target.netZeroYear}</span>
+                  <span className="text-xs text-[#5B6A78]">Net-zero: {netZeroTarget.toFixed(0)} tCO₂e by {target.netZeroYear}</span>
                 </div>
               </div>
             </div>
@@ -231,9 +231,9 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
           </div>
 
           {target.notes && (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
-              <p className="text-xs font-medium text-gray-500 mb-1">Notes</p>
-              <p className="text-sm text-gray-700">{target.notes}</p>
+            <div className="rounded-xl border border-[#E3E8EE] bg-[#F9FAFC] px-5 py-4">
+              <p className="text-xs font-medium text-[#5B6A78] mb-1">Notes</p>
+              <p className="text-sm text-[#41505F]">{target.notes}</p>
             </div>
           )}
         </div>

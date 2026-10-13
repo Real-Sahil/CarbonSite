@@ -134,7 +134,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
         <button
           type="button"
           aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
-          className="relative grid h-8 w-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-colors"
+          className="relative grid h-8 w-8 place-items-center rounded-lg text-[#5B6A78] hover:bg-slate-100 hover:text-[#131d29] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-colors"
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (
@@ -165,13 +165,13 @@ export function NotificationBell({ orgId }: { orgId: string }) {
 
         <div className="max-h-96 overflow-y-auto">
           {loading && items.length === 0 ? (
-            <div className="flex items-center justify-center py-10 text-slate-500">
+            <div className="flex items-center justify-center py-10 text-[#5B6A78]">
               <Loader2 className="h-4 w-4 animate-spin" />
             </div>
           ) : items.length === 0 ? (
             <div className="px-4 py-10 text-center">
-              <Bell className="mx-auto h-6 w-6 text-slate-500" />
-              <p className="mt-2 text-xs text-slate-500">You&apos;re all caught up.</p>
+              <Bell className="mx-auto h-6 w-6 text-[#5B6A78]" />
+              <p className="mt-2 text-xs text-[#5B6A78]">You&apos;re all caught up.</p>
             </div>
           ) : (
             <ul className="divide-y divide-slate-100">
@@ -181,7 +181,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
                     type="button"
                     onClick={() => onItemClick(n)}
                     className={cn(
-                      "w-full text-left px-3 py-2.5 hover:bg-slate-50 focus:outline-none focus-visible:bg-slate-50 transition-colors",
+                      "w-full text-left px-3 py-2.5 hover:bg-[#F9FAFC] focus:outline-none focus-visible:bg-[#F9FAFC] transition-colors",
                       !n.read && "bg-amber-50/50"
                     )}
                   >
@@ -190,9 +190,9 @@ export function NotificationBell({ orgId }: { orgId: string }) {
                         <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
                       )}
                       <div className={cn("min-w-0 flex-1", n.read && "pl-3.5")}>
-                        <p className="text-xs font-medium text-slate-800 truncate">{n.title}</p>
-                        <p className="text-[11px] text-slate-500 line-clamp-2">{n.body}</p>
-                        <p className="mt-0.5 text-[10px] text-slate-500">{relativeTime(n.createdAt)}</p>
+                        <p className="text-xs font-medium text-[#131d29] truncate">{n.title}</p>
+                        <p className="text-[11px] text-[#5B6A78] line-clamp-2">{n.body}</p>
+                        <p className="mt-0.5 text-[10px] text-[#5B6A78]">{relativeTime(n.createdAt)}</p>
                       </div>
                     </div>
                   </button>

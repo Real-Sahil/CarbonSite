@@ -88,7 +88,7 @@ export function CreateBaseYearForm({
 
   if (periods.length === 0) {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-[#5B6A78]">
         Create a reporting period before declaring a base year.
       </p>
     );
@@ -104,17 +104,17 @@ export function CreateBaseYearForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <label htmlFor="by-period" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="by-period" className="block text-sm font-medium text-[#41505F]">
             Reporting period
           </label>
           <select
             id="by-period"
             value={reportingPeriodId}
             onChange={(e) => setReportingPeriodId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             {periods.map((p) => (
               <option key={p.id} value={p.id}>
@@ -125,7 +125,7 @@ export function CreateBaseYearForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="by-label" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="by-label" className="block text-sm font-medium text-[#41505F]">
             Label
           </label>
           <Input
@@ -137,7 +137,7 @@ export function CreateBaseYearForm({
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="by-threshold" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="by-threshold" className="block text-sm font-medium text-[#41505F]">
             Significance threshold
           </label>
           <Input
@@ -149,7 +149,7 @@ export function CreateBaseYearForm({
             value={threshold}
             onChange={(e) => setThreshold(e.target.value)}
           />
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-[#5B6A78]">
             Percentage change in the base year total that obliges a restatement. Five percent is
             the common policy.
           </p>
@@ -157,7 +157,7 @@ export function CreateBaseYearForm({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="by-rationale" className="block text-sm font-medium text-zinc-700">
+        <label htmlFor="by-rationale" className="block text-sm font-medium text-[#41505F]">
           Rationale
         </label>
         <Textarea
@@ -169,7 +169,7 @@ export function CreateBaseYearForm({
         />
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-zinc-700">
+      <label className="flex items-center gap-2 text-sm text-[#41505F]">
         <input
           type="checkbox"
           checked={activateNow}
@@ -186,7 +186,7 @@ export function CreateBaseYearForm({
         </p>
       )}
 
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-[#5B6A78]">
         The period totals are frozen on creation. Those original figures are never rewritten, so
         the platform can always show what was first published alongside what it has since become.
       </p>

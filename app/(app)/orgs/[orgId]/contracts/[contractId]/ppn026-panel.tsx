@@ -64,7 +64,7 @@ export function Ppn026Panel(p: Props) {
   if (!p.installed) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-[#374151] max-w-[65ch]">
+        <p className="text-sm text-[#41505F] max-w-[65ch]">
           From 1 January 2027, central government buyers score social value on jobs and skills for contracts of £1m or more (PPN 026). Add the model to
           track the KPIs you commit to on this contract and the evidence of delivery.
         </p>
@@ -74,7 +74,7 @@ export function Ppn026Panel(p: Props) {
               type="button"
               disabled={!!busy}
               onClick={() => run("install", () => send(`/api/orgs/${p.orgId}/sv/frameworks/ppn-026`, {}))}
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937] disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937] disabled:opacity-50"
             >
               {busy === "install" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Add the PPN 026 Social Value Model
@@ -90,7 +90,7 @@ export function Ppn026Panel(p: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#6B7280]">
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-[#5B6A78]">
         <span>Model version: {p.version}</span>
         <span>
           Minimum social value weighting for this contract value:{" "}
@@ -103,8 +103,8 @@ export function Ppn026Panel(p: Props) {
           <li key={c.id} className="flex items-start gap-2 text-sm">
             {c.passed ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> : <Circle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />}
             <span>
-              <span className="text-[#111827]">{c.label}</span>
-              {!c.passed ? <span className="block text-xs text-[#6B7280]">{c.fix}</span> : null}
+              <span className="text-[#131d29]">{c.label}</span>
+              {!c.passed ? <span className="block text-xs text-[#5B6A78]">{c.fix}</span> : null}
             </span>
           </li>
         ))}
@@ -114,11 +114,11 @@ export function Ppn026Panel(p: Props) {
         const rows = p.criteria.filter((c) => c.outcomeCode === outcome);
         return (
           <section key={outcome} className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold text-[#111827]">{rows[0]?.outcomeName}</h3>
-            <div className="rounded-[14px] border border-[#E5E7EB] overflow-x-auto">
+            <h3 className="text-sm font-semibold text-[#131d29]">{rows[0]?.outcomeName}</h3>
+            <div className="rounded-[14px] border border-[#E3E8EE] overflow-x-auto">
               <Table className="w-full table-fixed text-sm">
                 <thead>
-                  <tr className="bg-[#f9fafb] text-left text-xs text-[#374151]">
+                  <tr className="bg-[#F9FAFC] text-left text-xs text-[#41505F]">
                     <th className="py-2.5 pl-4 font-normal">Award criterion and KPI</th>
                     <th className="py-2.5 font-normal text-right w-[110px]">Target</th>
                     <th className="py-2.5 font-normal text-right w-[110px]">Delivered</th>
@@ -130,14 +130,14 @@ export function Ppn026Panel(p: Props) {
                   {rows.map((c) => (
                     <Fragment key={c.code}>
                       <tr className="border-t border-[#F3F4F6]">
-                        <td colSpan={5} className="py-2 pl-4 text-xs font-medium text-[#374151]">
+                        <td colSpan={5} className="py-2 pl-4 text-xs font-medium text-[#41505F]">
                           {c.name}
                           {c.kpis.length === 0 ? <span className="ml-2 font-normal text-[#9CA3AF]">No KPI</span> : null}
                         </td>
                       </tr>
                       {c.kpis.map((k) => (
                         <tr key={k.id} className="border-t border-[#F3F4F6]">
-                          <td className="py-2 pl-8 text-[#111827]">
+                          <td className="py-2 pl-8 text-[#131d29]">
                             {k.title}
                             {k.pendingEntries > 0 ? (
                               <Link href={`/orgs/${p.orgId}/social-value/activities`} className="ml-2 text-xs text-[#c2410c] underline">
@@ -148,14 +148,14 @@ export function Ppn026Panel(p: Props) {
                           <td className="py-2 text-right tabular-nums">{k.target != null ? `${fmt(k.target)} ${k.unit ?? ""}` : "-"}</td>
                           <td className="py-2 text-right tabular-nums">
                             {fmt(k.delivered)}
-                            {k.progressPct != null ? <span className="ml-1 text-xs text-[#6B7280]">{k.progressPct}%</span> : null}
+                            {k.progressPct != null ? <span className="ml-1 text-xs text-[#5B6A78]">{k.progressPct}%</span> : null}
                           </td>
-                          <td className="py-2 text-right tabular-nums text-xs text-[#374151]">
+                          <td className="py-2 text-right tabular-nums text-xs text-[#41505F]">
                             {k.entriesWithEvidence}/{k.approvedEntries}
                           </td>
                           <td className="py-2 pr-4 text-right">
                             {p.canEdit ? (
-                              <button type="button" onClick={() => setLogFor(logFor === k.id ? null : k.id)} className="text-xs text-[#111827] underline underline-offset-2">
+                              <button type="button" onClick={() => setLogFor(logFor === k.id ? null : k.id)} className="text-xs text-[#131d29] underline underline-offset-2">
                                 Log delivery
                               </button>
                             ) : null}
@@ -172,14 +172,14 @@ export function Ppn026Panel(p: Props) {
       })}
 
       {p.unassigned > 0 ? (
-        <p className="text-xs text-[#6B7280]">
+        <p className="text-xs text-[#5B6A78]">
           {p.unassigned} KPI{p.unassigned === 1 ? " is" : "s are"} not linked to a criterion. Link them from Social value, Commitments.
         </p>
       ) : null}
 
       {logFor ? (
         <form
-          className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5"
+          className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5"
           onSubmit={(e) => {
             e.preventDefault();
             const k = p.criteria.flatMap((c) => c.kpis).find((x) => x.id === logFor);
@@ -225,7 +225,7 @@ export function Ppn026Panel(p: Props) {
               <input id="ppn026-qty" type="number" min="0" step="any" required className={inputCls} value={entry.quantity} onChange={(e) => setEntry({ ...entry, quantity: e.target.value })} />
             </FormField>
             <FormField label="Evidence" htmlFor="ppn026-file" span={3} optional hint="Upload a file or paste a link to the payroll extract, training record or timesheet">
-              <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#374151] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#41505F] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               <input id="ppn026-evidence" type="url" aria-label="Or a link to the evidence" placeholder="https://" className={inputCls} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
             </FormField>
             <FormField label="Note" htmlFor="ppn026-note" span={3} optional>
@@ -242,7 +242,7 @@ export function Ppn026Panel(p: Props) {
       {p.canEdit ? (
         adding ? (
           <form
-            className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5"
+            className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5"
             onSubmit={(e) => {
               e.preventDefault();
               void run(
@@ -291,7 +291,7 @@ export function Ppn026Panel(p: Props) {
           </form>
         ) : (
           <div>
-            <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-1 rounded-md border border-[#D1D5DB] px-3 py-1.5 text-sm text-[#111827] hover:bg-[#F9FAFB]">
+            <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-1 rounded-md border border-[#D1D5DB] px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC]">
               <Plus className="h-3.5 w-3.5" /> Add KPI
             </button>
           </div>

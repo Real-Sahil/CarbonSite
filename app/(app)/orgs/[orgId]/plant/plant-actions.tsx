@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FormActions, FormError, FormField, FormSection, fieldClass } from "@/components/forms/form-kit";
 
 const input = fieldClass;
-const labelCls = "mb-1.5 block text-xs text-[#374151]";
+const labelCls = "mb-1.5 block text-xs text-[#41505F]";
 
 const COLUMNS = ["serialNumber", "periodStart", "periodEnd", "operatingHours", "idleHours", "fuelLitres", "idleFuelLitres", "name"] as const;
 const TEMPLATE = `${COLUMNS.join(",")}\nCAT0320DKBZ01234,2026-05-01,2026-05-02,7.5,1.8,96.4,,CAT 320 excavator\n`;
@@ -155,11 +155,11 @@ export function ReadingsUpload({ orgId }: { orgId: string }) {
       <a
         href={`data:text/csv;charset=utf-8,${encodeURIComponent(TEMPLATE)}`}
         download="plant-telematics-template.csv"
-        className="text-xs text-[#111827] underline underline-offset-2"
+        className="text-xs text-[#131d29] underline underline-offset-2"
       >
         Download the template
       </a>
-      {busy && <p className="text-sm text-[#374151]">Uploading…</p>}
+      {busy && <p className="text-sm text-[#41505F]">Uploading…</p>}
       {msg && <p className={`text-sm ${msg.ok ? "text-green-700" : "text-red-600"}`}>{msg.text}</p>}
     </div>
   );

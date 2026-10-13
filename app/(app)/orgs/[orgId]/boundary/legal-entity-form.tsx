@@ -88,7 +88,7 @@ export function CreateLegalEntityForm({
   }
 
   return (
-    <div className="w-full space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="w-full space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Name" htmlFor="le-name">
           <Input
@@ -113,7 +113,7 @@ export function CreateLegalEntityForm({
           }}
         />
         {picked && (
-          <div className="space-y-1 text-xs text-zinc-600 sm:col-span-2">
+          <div className="space-y-1 text-xs text-[#41505F] sm:col-span-2">
             <CompanyFlags flags={picked.flags} />
             <p>Registered office: {picked.company.address ?? "not shown"}. Incorporated {picked.company.incorporated ?? "date not shown"}.</p>
             {picked.owners && picked.owners.length > 0 ? (
@@ -147,7 +147,7 @@ export function CreateLegalEntityForm({
             id="le-parent"
             value={parentId}
             onChange={(e) => setParentId(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">Top of group</option>
             {entities.map((e) => (
@@ -183,7 +183,7 @@ export function CreateLegalEntityForm({
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <label className="flex items-center gap-2 text-sm text-zinc-700">
+        <label className="flex items-center gap-2 text-sm text-[#41505F]">
           <input
             type="checkbox"
             checked={operationalControl}
@@ -192,7 +192,7 @@ export function CreateLegalEntityForm({
           />
           Group holds operational control
         </label>
-        <label className="flex items-center gap-2 text-sm text-zinc-700">
+        <label className="flex items-center gap-2 text-sm text-[#41505F]">
           <input
             type="checkbox"
             checked={financialControl}

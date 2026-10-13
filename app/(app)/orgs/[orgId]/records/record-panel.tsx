@@ -66,60 +66,60 @@ export function RecordPanel({ orgId, recordId, label }: { orgId: string; recordI
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/30" />
-        <Dialog.Content className="fixed right-0 top-0 z-50 flex h-full w-[min(440px,100vw)] flex-col gap-4 overflow-auto border-l border-[#E5E7EB] bg-white p-6 shadow-xl">
-          <Dialog.Title className="text-base font-medium text-[#111827]">{label}</Dialog.Title>
-          <Dialog.Description className="text-xs text-[#6B7280]">The figures behind this record. Open it in full to edit or review.</Dialog.Description>
+        <Dialog.Content className="fixed right-0 top-0 z-50 flex h-full w-[min(440px,100vw)] flex-col gap-4 overflow-auto border-l border-[#E3E8EE] bg-white p-6 shadow-xl">
+          <Dialog.Title className="text-base font-medium text-[#131d29]">{label}</Dialog.Title>
+          <Dialog.Description className="text-xs text-[#5B6A78]">The figures behind this record. Open it in full to edit or review.</Dialog.Description>
           {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
-          {!detail && !error ? <p className="text-sm text-[#6B7280]">Loading…</p> : null}
+          {!detail && !error ? <p className="text-sm text-[#5B6A78]">Loading…</p> : null}
           {detail ? (
             <dl className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-2 text-sm">
-              <dt className="text-[#6B7280]">Category</dt><dd>Scope {detail.emissionCategory.scope}: {detail.emissionCategory.name}</dd>
-              <dt className="text-[#6B7280]">Amount</dt><dd className="tabular-nums">{Number(detail.amount).toLocaleString("en-GB")} {detail.unit}</dd>
-              <dt className="text-[#6B7280]">Period</dt><dd>{detail.reportingPeriod.label}</dd>
-              <dt className="text-[#6B7280]">Site</dt><dd>{detail.facility?.name ?? "Not assigned"}</dd>
-              <dt className="text-[#6B7280]">Supplier</dt><dd>{detail.supplierName ?? "Not recorded"}</dd>
-              <dt className="text-[#6B7280]">Review</dt><dd>{detail.reviewStatus.replace("_", " ")}</dd>
-              <dt className="text-[#6B7280]">Evidence</dt>
+              <dt className="text-[#5B6A78]">Category</dt><dd>Scope {detail.emissionCategory.scope}: {detail.emissionCategory.name}</dd>
+              <dt className="text-[#5B6A78]">Amount</dt><dd className="tabular-nums">{Number(detail.amount).toLocaleString("en-GB")} {detail.unit}</dd>
+              <dt className="text-[#5B6A78]">Period</dt><dd>{detail.reportingPeriod.label}</dd>
+              <dt className="text-[#5B6A78]">Site</dt><dd>{detail.facility?.name ?? "Not assigned"}</dd>
+              <dt className="text-[#5B6A78]">Supplier</dt><dd>{detail.supplierName ?? "Not recorded"}</dd>
+              <dt className="text-[#5B6A78]">Review</dt><dd>{detail.reviewStatus.replace("_", " ")}</dd>
+              <dt className="text-[#5B6A78]">Evidence</dt>
               <dd>
                 {detail.evidence.length === 0 ? "None attached" : detail.evidence.map((e) => e.evidenceFile.filename).join(", ")}
               </dd>
             </dl>
           ) : null}
           {detail ? (
-            <section className="rounded-[10px] border border-[#E5E7EB] p-3 text-sm">
-              <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-[#6B7280]">Latest calculation</h3>
+            <section className="rounded-[10px] border border-[#E3E8EE] p-3 text-sm">
+              <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-[#5B6A78]">Latest calculation</h3>
               {calc ? (
                 <>
-                  <p className="tabular-nums text-[#111827]">{(Number(calc.totalCo2e) / 1000).toLocaleString("en-GB", { maximumFractionDigits: 3 })} tCO₂e</p>
-                  <p className="mt-1 text-xs text-[#374151]">{calc.formula}</p>
-                  <p className="mt-1 text-xs text-[#6B7280]">
+                  <p className="tabular-nums text-[#131d29]">{(Number(calc.totalCo2e) / 1000).toLocaleString("en-GB", { maximumFractionDigits: 3 })} tCO₂e</p>
+                  <p className="mt-1 text-xs text-[#41505F]">{calc.formula}</p>
+                  <p className="mt-1 text-xs text-[#5B6A78]">
                     Factor library {calc.calculationRun?.factorLibrary ? `${calc.calculationRun.factorLibrary.name} ${calc.calculationRun.factorLibrary.version}` : calc.factorLibraryVersion}
                   </p>
-                  {calc.selectionReason ? <p className="mt-1 text-xs text-[#6B7280]">{calc.selectionReason}</p> : null}
+                  {calc.selectionReason ? <p className="mt-1 text-xs text-[#5B6A78]">{calc.selectionReason}</p> : null}
                   {warnings.map((w) => (
                     <p key={w} className="mt-1 text-xs text-amber-800">{w}</p>
                   ))}
                 </>
               ) : (
-                <p className="text-xs text-[#6B7280]">Not calculated yet.</p>
+                <p className="text-xs text-[#5B6A78]">Not calculated yet.</p>
               )}
             </section>
           ) : null}
           {detail && seal ? (
-            <section className="rounded-[10px] border border-[#E5E7EB] p-3 text-sm">
-              <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-[#6B7280]">Evidence record</h3>
+            <section className="rounded-[10px] border border-[#E3E8EE] p-3 text-sm">
+              <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-[#5B6A78]">Evidence record</h3>
               {!seal.sealed ? (
-                <p className="text-xs text-[#6B7280]">Not sealed. Records approved from the field app are sealed on approval.</p>
+                <p className="text-xs text-[#5B6A78]">Not sealed. Records approved from the field app are sealed on approval.</p>
               ) : seal.changes.length === 0 ? (
                 <>
                   <p className="text-xs text-green-700">Sealed and unchanged since {new Date(seal.latest!.sealedAt).toLocaleDateString("en-GB")}: the figures and {seal.latest!.evidenceCount} evidence file{seal.latest!.evidenceCount === 1 ? "" : "s"} still match.</p>
-                  <p className="mt-1 break-all text-xs text-[#6B7280]">Seal {seal.latest!.sealHash.slice(0, 16)}… (version {seal.latest!.version})</p>
+                  <p className="mt-1 break-all text-xs text-[#5B6A78]">Seal {seal.latest!.sealHash.slice(0, 16)}… (version {seal.latest!.version})</p>
                 </>
               ) : (
                 <>
                   <p className="text-xs font-medium text-amber-800">Changed since it was sealed on {new Date(seal.latest!.sealedAt).toLocaleDateString("en-GB")}:</p>
                   <ul className="mt-1 list-disc pl-4 text-xs text-amber-800">{seal.changes.map((c) => <li key={c}>{c}</li>)}</ul>
-                  <p className="mt-1 text-xs text-[#6B7280]">If the change was a correction, a reviewer can seal the record again. The earlier seal stays on file.</p>
+                  <p className="mt-1 text-xs text-[#5B6A78]">If the change was a correction, a reviewer can seal the record again. The earlier seal stays on file.</p>
                   <button
                     type="button"
                     className="mt-1 text-xs underline underline-offset-2"

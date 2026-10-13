@@ -55,7 +55,7 @@ function CategoryBarBody({ data, height, ariaLabel }: Required<Pick<CategoryBarP
   if (rows.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-sm text-slate-500"
+        className="flex items-center justify-center text-sm text-[#5B6A78]"
         style={{ height }}
       >
         No calculated emissions to chart.

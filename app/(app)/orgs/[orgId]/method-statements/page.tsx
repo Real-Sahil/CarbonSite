@@ -7,12 +7,12 @@ import Link from "next/link";
 import { NewMethodStatementButton } from "./method-statements-actions";
 
 const STATUS_COLORS: Record<string, string> = {
-  draft:      "bg-gray-100 text-gray-700",
+  draft:      "bg-gray-100 text-[#41505F]",
   review:     "bg-amber-100 text-amber-800",
   approved:   "bg-blue-100 text-blue-800",
   issued:     "bg-green-100 text-green-800",
   signed_off: "bg-green-100 text-green-800",
-  superseded: "bg-gray-100 text-gray-500",
+  superseded: "bg-gray-100 text-[#5B6A78]",
 };
 
 interface PageProps {
@@ -50,7 +50,7 @@ export default async function MethodStatementsPage({ params }: PageProps) {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Method Statements / RAMS</h1>
+          <h1 className="text-2xl tracking-tight">Method Statements / RAMS</h1>
           <p className="text-sm text-muted-foreground mt-1">Risk assessments and method statements for site activities.</p>
         </div>
         {canEdit && <NewMethodStatementButton orgId={orgId} />}
@@ -79,7 +79,7 @@ export default async function MethodStatementsPage({ params }: PageProps) {
                   </td>
                   <td className="px-4 py-3 font-mono text-xs">{ms.version}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[ms.status] ?? "bg-gray-100 text-gray-700"}`}>
+                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[ms.status] ?? "bg-gray-100 text-[#41505F]"}`}>
                       {ms.status.replaceAll("_", " ")}
                     </span>
                   </td>

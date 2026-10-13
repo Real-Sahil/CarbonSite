@@ -69,8 +69,8 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Waste documents</h1>
-          <p className="mt-1 text-sm text-gray-500">Transfer notes, carrier licences, site permits and exemptions in one place, with expiry dates and who sent them.</p>
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Waste documents</h1>
+          <p className="mt-1 text-sm text-[#5B6A78]">Transfer notes, carrier licences, site permits and exemptions in one place, with expiry dates and who sent them.</p>
           <div className="mt-2 flex gap-4">
             <Link href={`/orgs/${orgId}/waste`} className="inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Back to waste</Link>
             <Link href={`/orgs/${orgId}/waste/carriers`} className="inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Carrier scorecard</Link>
@@ -80,19 +80,19 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
       </div>
 
       {project && (
-        <p className="mb-4 rounded-lg bg-[#F9FAFB] px-4 py-2 text-sm text-[#374151]">
+        <p className="mb-4 rounded-lg bg-[#F9FAFC] px-4 py-2 text-sm text-[#41505F]">
           Showing documents for <span className="font-medium">{project.name}</span>. Change the project in the sidebar to see all.
         </p>
       )}
 
       <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
-        <Link href={tab({ kind: null })} className={`rounded-full border px-3 py-1 ${!kind ? "border-[#111827] bg-[#111827] text-white" : "border-[#E5E7EB] text-[#374151]"}`}>All kinds</Link>
+        <Link href={tab({ kind: null })} className={`rounded-full border px-3 py-1 ${!kind ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>All kinds</Link>
         {DOC_KINDS.map((k) => (
-          <Link key={k.value} href={tab({ kind: k.value })} className={`rounded-full border px-3 py-1 ${kind === k.value ? "border-[#111827] bg-[#111827] text-white" : "border-[#E5E7EB] text-[#374151]"}`}>{k.label}</Link>
+          <Link key={k.value} href={tab({ kind: k.value })} className={`rounded-full border px-3 py-1 ${kind === k.value ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>{k.label}</Link>
         ))}
         <span className="mx-2 text-gray-300">|</span>
-        <Link href={tab({ status: null })} className={`rounded-full border px-3 py-1 ${!status ? "border-[#111827] bg-[#111827] text-white" : "border-[#E5E7EB] text-[#374151]"}`}>Any status</Link>
-        <Link href={tab({ status: "pending" })} className={`rounded-full border px-3 py-1 ${status === "pending" ? "border-[#111827] bg-[#111827] text-white" : "border-[#E5E7EB] text-[#374151]"}`}>Waiting for you{pending > 0 && !status ? ` (${pending})` : ""}</Link>
+        <Link href={tab({ status: null })} className={`rounded-full border px-3 py-1 ${!status ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>Any status</Link>
+        <Link href={tab({ status: "pending" })} className={`rounded-full border px-3 py-1 ${status === "pending" ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>Waiting for you{pending > 0 && !status ? ` (${pending})` : ""}</Link>
       </div>
       {lapsed > 0 && <p role="status" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">{lapsed} {lapsed === 1 ? "document has" : "documents have"} expired or expire within 30 days.</p>}
 
@@ -100,13 +100,13 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
 
       {canEdit && <div className="mb-6"><SubmissionLinks orgId={orgId} purpose="waste_documents" /></div>}
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-[#E3E8EE] bg-white">
         {docs.length === 0 ? (
-          <p className="p-10 text-center text-sm text-gray-500">No documents yet. Add one, or send a contractor an upload link.</p>
+          <p className="p-10 text-center text-sm text-[#5B6A78]">No documents yet. Add one, or send a contractor an upload link.</p>
         ) : (
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100">
-              <tr>{["Document", "Kind", "Covers", "Valid until", "From", "Status", "Ask carrier", ""].map((h) => <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">{h}</th>)}</tr>
+              <tr>{["Document", "Kind", "Covers", "Valid until", "From", "Status", "Ask carrier", ""].map((h) => <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{h}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {docs.map((d) => {
@@ -114,18 +114,18 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                 return (
                   <tr key={d.id}>
                     <td className="px-4 py-3">
-                      <a href={`/api/orgs/${orgId}/evidence/${d.evidenceFileId}/download`} className="font-medium text-gray-900 underline underline-offset-2">{d.title}</a>
-                      {d.reference && <div className="text-xs text-gray-500">Ref {d.reference}</div>}
-                      {d.projectId && <div className="text-xs text-gray-500">{projectName.get(d.projectId) ?? "Project"}</div>}
+                      <a href={`/api/orgs/${orgId}/evidence/${d.evidenceFileId}/download`} className="font-medium text-[#131d29] underline underline-offset-2">{d.title}</a>
+                      {d.reference && <div className="text-xs text-[#5B6A78]">Ref {d.reference}</div>}
+                      {d.projectId && <div className="text-xs text-[#5B6A78]">{projectName.get(d.projectId) ?? "Project"}</div>}
                       {triage.get(d.id)?.state === "review" && <ul className="mt-1 list-disc pl-4 text-xs text-amber-800">{triage.get(d.id)!.reasons.map((r) => <li key={r}>{r}</li>)}</ul>}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{kindLabel(d.kind)}</td>
-                    <td className="px-4 py-3 text-gray-600">{d.issuer ?? "-"}</td>
+                    <td className="px-4 py-3 text-[#41505F]">{kindLabel(d.kind)}</td>
+                    <td className="px-4 py-3 text-[#41505F]">{d.issuer ?? "-"}</td>
                     <td className="px-4 py-3">
                       {d.validUntil ? <>{day(d.validUntil)} {STATE_CLS[st] && <span className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${STATE_CLS[st]}`}>{STATE_LABEL[st]}</span>}</> : "-"}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{d.uploaderName ? `${d.uploaderName}${d.uploaderCompany ? `, ${d.uploaderCompany}` : ""}` : "Our team"}</td>
-                    <td className="px-4 py-3 capitalize text-gray-600">{d.status}</td>
+                    <td className="px-4 py-3 text-[#41505F]">{d.uploaderName ? `${d.uploaderName}${d.uploaderCompany ? `, ${d.uploaderCompany}` : ""}` : "Our team"}</td>
+                    <td className="px-4 py-3 capitalize text-[#41505F]">{d.status}</td>
                     <td className="px-4 py-3">
                       {canEdit && d.kind === "transfer_note" && !d.wasteRecordId && (
                         <AskCarrier orgId={orgId} docId={d.id} missing={missingFields(d.extracted as never)} askedAt={((d.extracted as { carrierAsked?: { at?: string } } | null)?.carrierAsked?.at) ?? null} />

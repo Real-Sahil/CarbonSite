@@ -10,7 +10,7 @@ export async function WasteKpisWidget({ orgId }: { orgId: string }) {
   const set = await loadWasteKpis(orgId, orgFormat(basics ?? {}).currency);
   return (
     <section aria-label="Waste KPIs" className="mt-8">
-      <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#6B7280]">Waste KPIs</p>
+      <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">Waste KPIs</p>
       <WasteKpiPanel set={set} onlyProjectId={project?.id ?? null} orgId={orgId} />
     </section>
   );

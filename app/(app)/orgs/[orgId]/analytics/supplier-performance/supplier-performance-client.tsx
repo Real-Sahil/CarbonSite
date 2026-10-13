@@ -150,7 +150,7 @@ export function SupplierPerformanceClient() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Supplier Performance Analytics</h1>
+        <h1 className="text-3xl tracking-tight">Supplier Performance Analytics</h1>
         <p className="text-muted-foreground mt-2">
           Track emission data quality, completeness scores, and supplier trends to optimize Scope 3 accuracy
         </p>

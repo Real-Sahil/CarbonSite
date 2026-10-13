@@ -130,22 +130,22 @@ export default async function TasksPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E5E7EB]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF7ED]">
-              <CheckSquare className="h-4 w-4 text-[#111827]" />
+              <CheckSquare className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Operations
             </span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#111827]">
+          <h1 className="text-2xl tracking-tight text-[#131d29]">
             Review queue
           </h1>
-          <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+          <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
             All review tasks across imports, records, and reports for this organisation.
           </p>
         </div>
@@ -154,13 +154,13 @@ export default async function TasksPage({ params }: Props) {
       {/* Content */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8 flex flex-col gap-6">
         {tasks.length === 0 ? (
-          <Card className="border-[#E5E7EB] shadow-none">
+          <Card className="border-[#E3E8EE] shadow-none">
             <CardContent className="flex flex-col items-center justify-center py-20 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FFF7ED] mb-5">
-                <CheckSquare className="h-7 w-7 text-[#111827]" />
+                <CheckSquare className="h-7 w-7 text-[#131d29]" />
               </div>
-              <p className="text-base font-semibold text-[#111827] mb-2">No review tasks yet</p>
-              <p className="text-sm text-[#374151] max-w-sm">
+              <p className="text-base font-semibold text-[#131d29] mb-2">No review tasks yet</p>
+              <p className="text-sm text-[#41505F] max-w-sm">
                 Tasks are created automatically when imports, records, or reports require review.
               </p>
             </CardContent>
@@ -171,17 +171,17 @@ export default async function TasksPage({ params }: Props) {
               const bucket = grouped.get(status) ?? [];
               if (bucket.length === 0) return null;
               return (
-                <Card key={status} className="border-[#E5E7EB] shadow-none">
-                  <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
+                <Card key={status} className="border-[#E3E8EE] shadow-none">
+                  <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-sm font-semibold text-[#111827] capitalize">
+                      <CardTitle className="text-sm font-semibold text-[#131d29] capitalize">
                         {status.replace("_", " ")}
                       </CardTitle>
-                      <Badge variant="outline" className="text-xs font-normal text-[#6B7280] border-[#E5E7EB]">
+                      <Badge variant="outline" className="text-xs font-normal text-[#5B6A78] border-[#E3E8EE]">
                         {bucket.length}
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+                    <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
                       {status === "open" && "Tasks awaiting action."}
                       {status === "completed" && "Tasks that have been resolved."}
                       {status === "blocked" && "Tasks blocked pending external input."}
@@ -191,22 +191,22 @@ export default async function TasksPage({ params }: Props) {
                     <div className="overflow-x-auto">
                       <Table>
                         <TableHeader>
-                          <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                            <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Type</TableHead>
-                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Target</TableHead>
-                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Assigned to</TableHead>
-                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Created by</TableHead>
-                            <TableHead className="text-xs font-medium text-[#6B7280] py-3">Age</TableHead>
-                            <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Status</TableHead>
+                          <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                            <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Type</TableHead>
+                            <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Target</TableHead>
+                            <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Assigned to</TableHead>
+                            <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Created by</TableHead>
+                            <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Age</TableHead>
+                            <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Status</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {bucket.map((task) => (
-                            <TableRow key={task.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
-                              <TableCell className="text-sm text-[#374151] py-3.5 pl-6">
+                            <TableRow key={task.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                              <TableCell className="text-sm text-[#41505F] py-3.5 pl-6">
                                 {typeLabel(task.type)}
                               </TableCell>
-                              <TableCell className="text-sm font-medium text-[#111827] py-3.5">
+                              <TableCell className="text-sm font-medium text-[#131d29] py-3.5">
                                 <Link
                                   href={targetLink(orgId, task.type, task.targetId)}
                                   className="hover:underline underline-offset-2"
@@ -214,13 +214,13 @@ export default async function TasksPage({ params }: Props) {
                                   {task.targetId.slice(0, 8)}...
                                 </Link>
                               </TableCell>
-                              <TableCell className="text-sm text-[#374151] py-3.5">
+                              <TableCell className="text-sm text-[#41505F] py-3.5">
                                 {task.assignee.name ?? task.assignee.email}
                               </TableCell>
-                              <TableCell className="text-sm text-[#6B7280] py-3.5">
+                              <TableCell className="text-sm text-[#5B6A78] py-3.5">
                                 {task.createdBy.name ?? "-"}
                               </TableCell>
-                              <TableCell className="text-sm text-[#6B7280] py-3.5">
+                              <TableCell className="text-sm text-[#5B6A78] py-3.5">
                                 {formatAge(task.createdAt)}
                               </TableCell>
                               <TableCell className="py-3.5 pr-6">

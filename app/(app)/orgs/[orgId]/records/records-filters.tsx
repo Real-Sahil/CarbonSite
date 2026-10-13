@@ -9,7 +9,7 @@ import { REVIEW_STATUS_LABELS } from "@/lib/saved-views/labels";
 type Option = { id: string; label: string };
 
 const FIELD =
-  "h-9 w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
 
 /**
  * Filters for the records table. The URL is the state: choosing a value rewrites
@@ -45,7 +45,7 @@ export function RecordsFilters({
 
   const select = (key: string, label: string, options: Option[]) => (
     <div className="space-y-1">
-      <Label htmlFor={`records-filter-${key}`} className="text-xs text-[#6B7280]">{label}</Label>
+      <Label htmlFor={`records-filter-${key}`} className="text-xs text-[#5B6A78]">{label}</Label>
       <select
         id={`records-filter-${key}`}
         className={FIELD}
@@ -63,7 +63,7 @@ export function RecordsFilters({
   const active = Object.keys(filters).length;
 
   return (
-    <div className="px-6 py-4 border-b border-[#E5E7EB]" aria-busy={pending}>
+    <div className="px-6 py-4 border-b border-[#E3E8EE]" aria-busy={pending}>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {select("periodId", "Period", periods)}
         {select("categoryId", "Category", categories)}
@@ -72,7 +72,7 @@ export function RecordsFilters({
         {select("contractId", "Contract", contracts)}
         {select("siteId", "Project site", sites)}
         <div className="space-y-1">
-          <Label htmlFor="records-filter-supplier" className="text-xs text-[#6B7280]">Supplier</Label>
+          <Label htmlFor="records-filter-supplier" className="text-xs text-[#5B6A78]">Supplier</Label>
           <input
             key={filters.supplier ?? ""}
             id="records-filter-supplier"

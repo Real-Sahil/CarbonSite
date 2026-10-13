@@ -71,14 +71,14 @@ export function ActiveCrossFilters({ chips, recordsHref }: { chips: { key: strin
           type="button"
           onClick={() => clear(c.key)}
           aria-label={`Clear filter: ${c.label}`}
-          className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs text-[#111827] hover:bg-amber-100"
+          className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs text-[#131d29] hover:bg-amber-100"
         >
           {c.label}
           <span aria-hidden>×</span>
         </button>
       ))}
       {recordsHref ? (
-        <Link href={recordsHref} className="text-xs text-[#374151] underline underline-offset-2 hover:text-[#111827]">
+        <Link href={recordsHref} className="text-xs text-[#41505F] underline underline-offset-2 hover:text-[#131d29]">
           Open the records behind this
         </Link>
       ) : null}

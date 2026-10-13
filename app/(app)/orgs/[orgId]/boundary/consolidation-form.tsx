@@ -67,7 +67,7 @@ export function ConsolidationApproachForm({
 
   if (result && !open) {
     return (
-      <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
+      <div className="rounded-md border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-sm text-[#41505F]">
         {result}{" "}
         <button
           onClick={() => {
@@ -91,16 +91,16 @@ export function ConsolidationApproachForm({
   }
 
   return (
-    <div className="space-y-3 rounded-md border border-zinc-200 bg-zinc-50 p-4">
+    <div className="space-y-3 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-4">
       <div className="space-y-1.5">
-        <label htmlFor="approach" className="text-sm font-medium text-zinc-700">
+        <label htmlFor="approach" className="text-sm font-medium text-[#41505F]">
           Consolidation approach
         </label>
         <select
           id="approach"
           value={approach}
           onChange={(e) => setApproach(e.target.value)}
-          className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          className="w-full rounded-md border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
         >
           {APPROACHES.map((a) => (
             <option key={a.value} value={a.value}>
@@ -111,7 +111,7 @@ export function ConsolidationApproachForm({
       </div>
 
       <div className="space-y-1.5">
-        <label htmlFor="rationale" className="text-sm font-medium text-zinc-700">
+        <label htmlFor="rationale" className="text-sm font-medium text-[#41505F]">
           Rationale
         </label>
         <Textarea
@@ -130,7 +130,7 @@ export function ConsolidationApproachForm({
         </p>
       )}
 
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-[#5B6A78]">
         This is a boundary change. It will be logged as a structural change and assessed against
         the active base year straight away.
       </p>

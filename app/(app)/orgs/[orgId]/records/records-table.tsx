@@ -71,7 +71,7 @@ function SelectAllCheckbox({
       checked={allSelected}
       onChange={(e) => onToggle(e.target.checked)}
       aria-label="Select all"
-      className="h-4 w-4 rounded border border-[#E5E7EB] accent-[#c2410c] cursor-pointer"
+      className="h-4 w-4 rounded border border-[#E3E8EE] accent-[#c2410c] cursor-pointer"
     />
   );
 }
@@ -115,11 +115,11 @@ function BulkActionBar({
 
   return (
     <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2">
-      <div className="flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-2.5 shadow-lg ring-1 ring-black/5">
-        <span className="text-sm font-medium text-[#111827] tabular-nums">
+      <div className="flex items-center gap-3 rounded-xl border border-[#E3E8EE] bg-white px-4 py-2.5 shadow-lg ring-1 ring-black/5">
+        <span className="text-sm font-medium text-[#131d29] tabular-nums">
           {selectedIds.length} selected
         </span>
-        <div className="h-4 w-px bg-[#E5E7EB]" />
+        <div className="h-4 w-px bg-[#E3E8EE]" />
         <Button
           size="sm"
           className="h-7 gap-1.5 text-xs"
@@ -142,7 +142,7 @@ function BulkActionBar({
         <button
           type="button"
           onClick={onClear}
-          className="ml-1 rounded p-0.5 text-[#6B7280] hover:text-[#374151] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+          className="ml-1 rounded p-0.5 text-[#5B6A78] hover:text-[#41505F] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
           aria-label="Clear selection"
         >
           <X className="h-4 w-4" />
@@ -259,7 +259,7 @@ export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableP
       cell: ({ row }) => (
         <Link
           href={`/orgs/${orgId}/records/${row.original.id}`}
-          className="font-medium text-sm text-[#111827] hover:underline underline-offset-2"
+          className="font-medium text-sm text-[#131d29] hover:underline underline-offset-2"
         >
           {row.original.sourceDescription ?? row.original.supplierName ?? "Activity record"}
         </Link>
@@ -281,10 +281,10 @@ export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableP
       header: "Category",
       cell: ({ row }) => (
         <div>
-          <div className="text-sm font-medium text-[#111827]">
+          <div className="text-sm font-medium text-[#131d29]">
             Scope {row.original.emissionCategory.scope}
           </div>
-          <div className="text-xs text-[#6B7280]">{row.original.emissionCategory.name}</div>
+          <div className="text-xs text-[#5B6A78]">{row.original.emissionCategory.name}</div>
         </div>
       ),
     },
@@ -292,7 +292,7 @@ export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableP
       id: "amount",
       header: "Amount",
       cell: ({ row }) => (
-        <span className="text-sm text-[#374151] tabular-nums">
+        <span className="text-sm text-[#41505F] tabular-nums">
           {Number(row.original.amount).toLocaleString("en-GB")} {row.original.unit}
         </span>
       ),
@@ -301,14 +301,14 @@ export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableP
       id: "period",
       header: "Period",
       cell: ({ row }) => (
-        <span className="text-sm text-[#374151]">{row.original.reportingPeriod.label}</span>
+        <span className="text-sm text-[#41505F]">{row.original.reportingPeriod.label}</span>
       ),
     },
     {
       id: "location",
       header: "Location",
       cell: ({ row }) => (
-        <span className="text-sm text-[#374151]">
+        <span className="text-sm text-[#41505F]">
           {row.original.facility?.name ??
             row.original.businessUnit?.name ??
             row.original.country ??
@@ -321,14 +321,14 @@ export function RecordsTable({ orgId, canManageRecords, filters }: RecordsTableP
       header: "Distance",
       cell: ({ row }) =>
         row.original.distanceAmount ? (
-          <span className="text-sm text-[#374151] tabular-nums">
+          <span className="text-sm text-[#41505F] tabular-nums">
             {Number(row.original.distanceAmount).toLocaleString("en-GB", {
               maximumFractionDigits: 2,
             })}{" "}
             {row.original.distanceUnit ?? "km"}
           </span>
         ) : (
-          <span className="text-sm text-[#6B7280]">Not set</span>
+          <span className="text-sm text-[#5B6A78]">Not set</span>
         ),
     },
     {

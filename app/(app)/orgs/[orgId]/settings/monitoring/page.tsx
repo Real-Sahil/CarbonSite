@@ -41,7 +41,7 @@ export default function MonitoringSettingsPage({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Real-time</div>
-            <p className="text-xs text-gray-500 mt-1">5 metrics tracked</p>
+            <p className="text-xs text-[#5B6A78] mt-1">5 metrics tracked</p>
             <Badge className="mt-3 bg-green-100 text-green-800">Active</Badge>
           </CardContent>
         </Card>
@@ -52,7 +52,7 @@ export default function MonitoringSettingsPage({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Real-time</div>
-            <p className="text-xs text-gray-500 mt-1">6 quality checks</p>
+            <p className="text-xs text-[#5B6A78] mt-1">6 quality checks</p>
             <Badge className="mt-3 bg-green-100 text-green-800">Active</Badge>
           </CardContent>
         </Card>
@@ -63,7 +63,7 @@ export default function MonitoringSettingsPage({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Real-time</div>
-            <p className="text-xs text-gray-500 mt-1">5 metrics tracked</p>
+            <p className="text-xs text-[#5B6A78] mt-1">5 metrics tracked</p>
             <Badge className="mt-3 bg-green-100 text-green-800">Active</Badge>
           </CardContent>
         </Card>
@@ -98,13 +98,13 @@ export default function MonitoringSettingsPage({
             ].map((dashboard) => (
               <div
                 key={dashboard.title}
-                className="flex items-start justify-between p-3 border rounded-lg bg-gray-50"
+                className="flex items-start justify-between p-3 border rounded-lg bg-[#F9FAFC]"
               >
                 <div className="flex items-start gap-3">
                   <div className="text-xl mt-1">{dashboard.icon}</div>
                   <div>
                     <h4 className="font-semibold text-sm">{dashboard.title}</h4>
-                    <p className="text-xs text-gray-600">{dashboard.description}</p>
+                    <p className="text-xs text-[#41505F]">{dashboard.description}</p>
                   </div>
                 </div>
                 <Button variant="outline" size="sm">
@@ -127,7 +127,7 @@ export default function MonitoringSettingsPage({
             {showSetupGuide && (
               <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-sm mb-3">Setup Instructions:</h4>
-                <ol className="text-xs space-y-2 text-gray-700 list-decimal list-inside">
+                <ol className="text-xs space-y-2 text-[#41505F] list-decimal list-inside">
                   <li>Create a free Grafana Cloud account at grafana.com</li>
                   <li>Add PostgreSQL data source pointing to your database</li>
                   <li>Import the 3 dashboards using the SQL queries in our guide</li>
@@ -195,13 +195,13 @@ export default function MonitoringSettingsPage({
               >
                 <div>
                   <h4 className="font-semibold text-sm">{alert.name}</h4>
-                  <p className="text-xs text-gray-600">{alert.description}</p>
+                  <p className="text-xs text-[#41505F]">{alert.description}</p>
                 </div>
                 <Badge
                   className={
                     alert.status === 'enabled'
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                      : 'bg-gray-100 text-[#131d29]'
                   }
                 >
                   {alert.status === 'enabled' ? 'Enabled' : 'Disabled'}

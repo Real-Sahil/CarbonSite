@@ -37,7 +37,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  queued: "bg-slate-100 text-slate-700 border-transparent",
+  queued: "bg-slate-100 text-[#41505F] border-transparent",
   running: "bg-blue-100 text-blue-700 border-transparent",
   succeeded: "bg-green-100 text-green-700 border-transparent",
   failed: "bg-red-100 text-red-700 border-transparent",
@@ -225,17 +225,17 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
       <div className="mb-8">
         <Link
           href={`/orgs/${orgId}/calculations`}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#111827] mb-3"
+          className="inline-flex items-center gap-1.5 text-sm text-[#5B6A78] hover:text-[#131d29] mb-3"
         >
           <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           All calculation runs
         </Link>
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl text-[#131d29]">
               {run.reportingPeriod.label} calculation
             </h1>
-            <p className="text-slate-500 mt-1">
+            <p className="text-[#5B6A78] mt-1">
               {run.factorLibrary.name} {run.factorLibrary.version} - {run.methodologyVersion.name}{" "}
               ({run.methodologyVersion.gwpVersion})
             </p>
@@ -284,8 +284,8 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
             <ul className="divide-y divide-amber-100">
               {warningGroups.map((w) => (
                 <li key={w.warning} className="flex flex-col gap-1 py-2 text-sm sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-                  <span className="text-slate-800">{w.warning}</span>
-                  <span className="shrink-0 tabular-nums text-slate-500">
+                  <span className="text-[#131d29]">{w.warning}</span>
+                  <span className="shrink-0 tabular-nums text-[#5B6A78]">
                     {Number(w.records).toLocaleString(L)} record{Number(w.records) === 1 ? "" : "s"} · {formatTonnes(L, w.kg ?? 0)}
                   </span>
                 </li>
@@ -307,27 +307,27 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
           </CardHeader>
           <CardContent className="grid gap-6 sm:grid-cols-3">
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-normal uppercase tracking-wide text-[#5B6A78]">
                 Monte Carlo 95% interval
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-900">
+              <p className="mt-1 text-sm font-medium text-[#131d29]">
                 {formatTonnes(L, Number(uncertainty.monteCarloP2_5))} to{" "}
                 {formatTonnes(L, Number(uncertainty.monteCarloP97_5))}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-[#5B6A78]">
                 {uncertainty.iterations.toLocaleString(L)} simulated draws, seed{" "}
                 {uncertainty.seed}
               </p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-normal uppercase tracking-wide text-[#5B6A78]">
                 Naive linear summation would claim
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-900">
+              <p className="mt-1 text-sm font-medium text-[#131d29]">
                 {formatTonnes(L, Number(uncertainty.naiveIntervalLower))} to{" "}
                 {formatTonnes(L, Number(uncertainty.naiveIntervalUpper))}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-[#5B6A78]">
                 {(() => {
                   const naiveWidth =
                     Number(uncertainty.naiveIntervalUpper) - Number(uncertainty.naiveIntervalLower);
@@ -341,13 +341,13 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
               </p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-slate-500">
+              <p className="text-xs font-normal uppercase tracking-wide text-[#5B6A78]">
                 Biogenic CO2 (memo item)
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-900">
+              <p className="mt-1 text-sm font-medium text-[#131d29]">
                 {formatTonnes(L, Number(biogenicAgg._sum.biogenicCo2e ?? 0))}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-[#5B6A78]">
                 {biogenicAgg._count.biogenicCo2e} record
                 {biogenicAgg._count.biogenicCo2e === 1 ? "" : "s"}. Reported separately, not
                 included in the total above.
@@ -356,7 +356,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
           </CardContent>
           {weakestPedigree.length > 0 && (
             <CardContent className="pt-0">
-              <p className="mb-2 text-xs font-normal uppercase tracking-wide text-slate-500">
+              <p className="mb-2 text-xs font-normal uppercase tracking-wide text-[#5B6A78]">
                 Weakest pedigree records
               </p>
               <Table>
@@ -372,21 +372,21 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
                 <TableBody>
                   {weakestPedigree.map((calc) => (
                     <TableRow key={calc.id}>
-                      <TableCell className="max-w-56 truncate font-medium text-slate-900">
+                      <TableCell className="max-w-56 truncate font-medium text-[#131d29]">
                         {calc.activityRecord.sourceDescription ??
                           calc.activityRecord.supplierName ??
                           "Activity record"}
                       </TableCell>
-                      <TableCell className="text-slate-600">
+                      <TableCell className="text-[#41505F]">
                         {calc.activityRecord.emissionCategory.name}
                       </TableCell>
-                      <TableCell className="text-right text-slate-600">
+                      <TableCell className="text-right text-[#41505F]">
                         {calc.dataQualityScore}/100
                       </TableCell>
-                      <TableCell className="text-right text-slate-600">
+                      <TableCell className="text-right text-[#41505F]">
                         {calc.geometricStdDev != null ? Number(calc.geometricStdDev).toFixed(3) : "-"}
                       </TableCell>
-                      <TableCell className="text-right text-slate-600">
+                      <TableCell className="text-right text-[#41505F]">
                         {calc.temporalRepresentativenessYears != null
                           ? `${Number(calc.temporalRepresentativenessYears).toFixed(1)} yrs`
                           : "-"}
@@ -442,7 +442,7 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
         <CardHeader>
           <CardTitle className="text-base">
             Largest calculations{" "}
-            <span className="text-sm font-normal text-slate-500">
+            <span className="text-sm font-normal text-[#5B6A78]">
               (top {largestCalculations.length} of {run._count.calculations.toLocaleString(L)})
             </span>
           </CardTitle>
@@ -453,8 +453,8 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
         <CardContent className={largestCalculations.length === 0 ? "pb-8" : "p-0 pb-2"}>
           {largestCalculations.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
-              <p className="font-medium text-slate-700">No calculations recorded</p>
-              <p className="text-sm text-slate-500 max-w-sm">
+              <p className="font-medium text-[#41505F]">No calculations recorded</p>
+              <p className="text-sm text-[#5B6A78] max-w-sm">
                 This run produced no record-level calculations. Check that approved activity
                 records exist for the reporting period.
               </p>
@@ -474,27 +474,27 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
               <TableBody>
                 {largestCalculations.map((calc) => (
                   <TableRow key={calc.id}>
-                    <TableCell className="font-medium text-slate-900 max-w-56 truncate">
+                    <TableCell className="font-medium text-[#131d29] max-w-56 truncate">
                       {calc.activityRecord.sourceDescription ??
                         calc.activityRecord.supplierName ??
                         "Activity record"}
                     </TableCell>
-                    <TableCell className="text-slate-600 whitespace-nowrap">
+                    <TableCell className="text-[#41505F] whitespace-nowrap">
                       {formatAmount(L, calc.originalAmount, calc.originalUnit)}
                     </TableCell>
-                    <TableCell className="text-slate-600 whitespace-nowrap">
+                    <TableCell className="text-[#41505F] whitespace-nowrap">
                       {formatAmount(L, calc.normalizedAmount, calc.normalizedUnit)}
                     </TableCell>
-                    <TableCell className="text-slate-600 whitespace-nowrap">
+                    <TableCell className="text-[#41505F] whitespace-nowrap">
                       {calc.factorLibraryVersion}
                     </TableCell>
                     <TableCell
-                      className="text-xs font-mono text-slate-500 max-w-md truncate"
+                      className="text-xs font-mono text-[#5B6A78] max-w-md truncate"
                       title={calc.formula}
                     >
                       {calc.formula}
                     </TableCell>
-                    <TableCell className="text-right text-slate-900 font-medium whitespace-nowrap">
+                    <TableCell className="text-right text-[#131d29] font-medium whitespace-nowrap">
                       {formatTonnes(L, Number(calc.totalCo2e))}
                     </TableCell>
                   </TableRow>
@@ -511,8 +511,8 @@ export default async function CalculationRunPage({ params }: CalculationRunPageP
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-normal uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-sm font-medium text-slate-900">{value}</p>
+      <p className="text-xs font-normal uppercase tracking-wide text-[#5B6A78]">{label}</p>
+      <p className="mt-1 text-sm font-medium text-[#131d29]">{value}</p>
     </div>
   );
 }

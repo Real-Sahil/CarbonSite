@@ -90,9 +90,9 @@ function SettingsModal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Assessment settings</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">Assessment settings</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
@@ -162,14 +162,14 @@ export default function WholeLifeCarbonPage() {
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Whole-life carbon</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Whole-life carbon</h1>
+          <p className="text-sm text-[#5B6A78] mt-1">
             EN 15978 modules A to D, per the RICS whole life carbon assessment methodology.
           </p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-[#E3E8EE] bg-white px-4 py-2.5 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC] transition-colors"
         >
           <Settings2 className="h-4 w-4" />
           Assessment settings
@@ -177,41 +177,41 @@ export default function WholeLifeCarbonPage() {
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-sm text-gray-500">Loading...</div>
+        <div className="p-12 text-center text-sm text-[#5B6A78]">Loading...</div>
       ) : loadError ? (
         <div className="rounded-xl border border-red-200 bg-red-50 p-12 text-center">
           <p className="text-sm font-medium text-red-600">{loadError}</p>
           <button
             onClick={load}
-            className="mt-4 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="mt-4 rounded-lg border border-[#E3E8EE] bg-white px-4 py-2 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC]"
           >
             Try again
           </button>
         </div>
       ) : !result ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+        <div className="rounded-xl border border-[#E3E8EE] bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
             <Layers className="h-5 w-5 text-[#c2410c]" />
           </div>
-          <p className="text-sm font-medium text-gray-700">No whole-life carbon data yet</p>
-          <p className="text-xs text-gray-500 mt-1">Add embodied carbon records for this project to see a breakdown.</p>
+          <p className="text-sm font-medium text-[#41505F]">No whole-life carbon data yet</p>
+          <p className="text-xs text-[#5B6A78] mt-1">Add embodied carbon records for this project to see a breakdown.</p>
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <div className="rounded-xl border border-[#E3E8EE] bg-white p-6">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-semibold text-gray-900">Whole-life total</span>
-              <span className="text-2xl font-semibold text-gray-900 tabular-nums">{fmt(result.wholeLifeTotalKgCo2e)}</span>
+              <span className="text-sm font-semibold text-[#131d29]">Whole-life total</span>
+              <span className="text-2xl font-semibold text-[#131d29] tabular-nums">{fmt(result.wholeLifeTotalKgCo2e)}</span>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[#5B6A78]">
               A + B4 + B6 + B7 + C, over a {assessment?.assessmentPeriodYears ?? 60}-year study period.
               Module D is reported separately below, not included in this total.
             </p>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900">Breakdown by module</h3>
+              <h3 className="text-sm font-semibold text-[#131d29]">Breakdown by module</h3>
             </div>
             <div className="divide-y divide-gray-50">
               {MODULES.map((m) => {
@@ -221,10 +221,10 @@ export default function WholeLifeCarbonPage() {
                   <div key={m.key} className="px-6 py-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-sm font-semibold text-gray-900">{m.label}</span>
-                        <span className="text-xs text-gray-500">{m.sub}</span>
+                        <span className="text-sm font-semibold text-[#131d29]">{m.label}</span>
+                        <span className="text-xs text-[#5B6A78]">{m.sub}</span>
                       </div>
-                      <span className="text-sm text-gray-600 tabular-nums">{fmt(value)}</span>
+                      <span className="text-sm text-[#41505F] tabular-nums">{fmt(value)}</span>
                     </div>
                     <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                       <div className={`h-full rounded-full ${m.color}`} style={{ width: `${widthPct}%` }} />
@@ -235,12 +235,12 @@ export default function WholeLifeCarbonPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 flex items-center justify-between">
+          <div className="rounded-xl border border-[#E3E8EE] bg-[#F9FAFC] p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">Module D (memo)</p>
-              <p className="text-xs text-gray-500">Benefits and loads beyond the system boundary. Reported separately per EN 15978, never netted into the total.</p>
+              <p className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">Module D (memo)</p>
+              <p className="text-xs text-[#5B6A78]">Benefits and loads beyond the system boundary. Reported separately per EN 15978, never netted into the total.</p>
             </div>
-            <span className="text-lg font-semibold text-gray-900 tabular-nums">{fmt(result.moduleDMemoKgCo2e)}</span>
+            <span className="text-lg font-semibold text-[#131d29] tabular-nums">{fmt(result.moduleDMemoKgCo2e)}</span>
           </div>
 
           {result.warnings.length > 0 && (
@@ -257,7 +257,7 @@ export default function WholeLifeCarbonPage() {
             </div>
           )}
 
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-xs text-[#5B6A78] text-center">
             Based on {materialRecordCount} embodied carbon record{materialRecordCount === 1 ? "" : "s"} for this project.
           </p>
         </div>

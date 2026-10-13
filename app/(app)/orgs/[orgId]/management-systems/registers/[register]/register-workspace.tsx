@@ -64,18 +64,18 @@ export function RegisterWorkspace({
         <Button size="sm" onClick={() => setAdding(true)} className="self-start bg-[#c2410c] text-white hover:bg-[#9a3412]">Add {config.singular}</Button>
       )}
       {adding && (
-        <section className="rounded-[14px] border border-[#E5E7EB] bg-white p-5">
-          <h2 className="mb-4 text-sm font-semibold text-[#111827]">New {config.singular}</h2>
+        <section className="rounded-[14px] border border-[#E3E8EE] bg-white p-5">
+          <h2 className="mb-4 text-sm font-semibold text-[#131d29]">New {config.singular}</h2>
           <RowForm orgId={orgId} registerKey={registerKey} initial={{}} lookups={lookups} onDone={() => setAdding(false)} />
         </section>
       )}
 
       {rows.length === 0 ? (
-        <p className="rounded-[14px] border border-dashed border-[#E5E7EB] p-6 text-sm text-[#6B7280]">No {config.label.toLowerCase()} recorded yet.</p>
+        <p className="rounded-[14px] border border-dashed border-[#E3E8EE] p-6 text-sm text-[#5B6A78]">No {config.label.toLowerCase()} recorded yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-[14px] border border-[#E5E7EB] bg-white">
+        <div className="overflow-x-auto rounded-[14px] border border-[#E3E8EE] bg-white">
           <Table className="w-full text-left text-sm">
-            <thead className="border-b border-[#E5E7EB] text-xs text-[#6B7280]">
+            <thead className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
               <tr>
                 <th className="px-4 py-2.5 font-medium">{fieldBy.get(config.titleField)?.label}</th>
                 {config.columns.map((c) => <th key={c} className="whitespace-nowrap px-4 py-2.5 font-medium">{columnLabel(c)}</th>)}
@@ -149,21 +149,21 @@ function RowView({ orgId, registerKey, row, open, onToggle, canEdit, lookups }: 
 
   return (
     <>
-      <tr id={`row-${row.id}`} className="cursor-pointer hover:bg-[#F9FAFB]" onClick={onToggle} aria-expanded={open}>
-        <td className="max-w-[360px] px-4 py-3 font-medium text-[#111827]">
+      <tr id={`row-${row.id}`} className="cursor-pointer hover:bg-[#F9FAFC]" onClick={onToggle} aria-expanded={open}>
+        <td className="max-w-[360px] px-4 py-3 font-medium text-[#131d29]">
           <span className="line-clamp-2">{title}</span>
-          {registerKey === "policies" && <span className="text-xs font-normal text-[#6B7280]">Version {String(row.version)}</span>}
+          {registerKey === "policies" && <span className="text-xs font-normal text-[#5B6A78]">Version {String(row.version)}</span>}
           {config.acknowledgeable && lookups.acks[row.id] && (
-            <span className="block text-xs font-normal text-[#6B7280]">
+            <span className="block text-xs font-normal text-[#5B6A78]">
               Read by {lookups.acks[row.id].count} of {lookups.webMemberCount}
             </span>
           )}
         </td>
-        {config.columns.map((c) => <td key={c} className="whitespace-nowrap px-4 py-3 text-[#374151]">{cell(c)}</td>)}
+        {config.columns.map((c) => <td key={c} className="whitespace-nowrap px-4 py-3 text-[#41505F]">{cell(c)}</td>)}
       </tr>
       {open && (
         <tr>
-          <td colSpan={config.columns.length + 1} className="bg-[#F9FAFB] px-4 py-4">
+          <td colSpan={config.columns.length + 1} className="bg-[#F9FAFC] px-4 py-4">
             {config.acknowledgeable && row.status === "approved" && <Acknowledge orgId={orgId} registerKey={registerKey} row={row} ack={lookups.acks[row.id]} webMemberCount={lookups.webMemberCount} />}
             {canEdit ? (
               <RowForm orgId={orgId} registerKey={registerKey} initial={row} lookups={lookups} onDone={onToggle} />
@@ -171,8 +171,8 @@ function RowView({ orgId, registerKey, row, open, onToggle, canEdit, lookups }: 
               <dl className="grid gap-3 sm:grid-cols-2">
                 {config.fields.map((f) => (
                   <div key={f.name}>
-                    <dt className="text-xs text-[#6B7280]">{f.label}</dt>
-                    <dd className="whitespace-pre-wrap text-sm text-[#111827]">{display(f, row[f.name], lookups)}</dd>
+                    <dt className="text-xs text-[#5B6A78]">{f.label}</dt>
+                    <dd className="whitespace-pre-wrap text-sm text-[#131d29]">{display(f, row[f.name], lookups)}</dd>
                   </div>
                 ))}
               </dl>
@@ -269,7 +269,7 @@ function RowForm({ orgId, registerKey, initial, lookups, onDone }: { orgId: stri
                 {lookups.frameworks.map((fw) => {
                   const list = (values[f.name] as string[]) ?? [];
                   return (
-                    <label key={fw.id} className="flex items-center gap-1.5 text-sm text-[#374151]">
+                    <label key={fw.id} className="flex items-center gap-1.5 text-sm text-[#41505F]">
                       <input type="checkbox" checked={list.includes(fw.id)} onChange={() => set(f.name, list.includes(fw.id) ? list.filter((x) => x !== fw.id) : [...list, fw.id])} className="h-4 w-4" />
                       {fw.name}
                     </label>
@@ -312,11 +312,11 @@ function FileField({ id, value, onChange, lookups }: { id: string; value: string
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap items-center gap-2">
-        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="h-9 max-w-[320px] rounded-md border border-[#E5E7EB] bg-white px-2 text-sm">
+        <select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="h-9 max-w-[320px] rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
           <option value="">No file</option>
           {lookups.files.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
         </select>
-        <label className="cursor-pointer rounded-md border border-[#E5E7EB] bg-white px-3 py-1.5 text-sm text-[#374151] hover:bg-[#F9FAFB]">
+        <label className="cursor-pointer rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm text-[#41505F] hover:bg-[#F9FAFC]">
           {busy ? "Uploading…" : "Upload"}
           <input type="file" className="sr-only" disabled={busy} onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         </label>
@@ -330,7 +330,7 @@ function FileField({ id, value, onChange, lookups }: { id: string; value: string
 }
 
 function ChecklistField({ id, items, value, onChange }: { id: string; items: string[]; value: ChecklistResult[]; onChange: (v: ChecklistResult[]) => void }) {
-  if (!items.length && !value.length) return <p id={id} className="text-sm text-[#6B7280]">Choose a checklist first.</p>;
+  if (!items.length && !value.length) return <p id={id} className="text-sm text-[#5B6A78]">Choose a checklist first.</p>;
   const list = items.length ? items : value.map((v) => v.item);
   const byItem = new Map(value.map((v) => [v.item, v]));
   // Only answered items are stored: an unanswered item never counts as a pass.
@@ -340,12 +340,12 @@ function ChecklistField({ id, items, value, onChange }: { id: string; items: str
     onChange(list.flatMap((i) => (next.has(i) ? [next.get(i)!] : [])));
   };
   return (
-    <ol id={id} className="flex flex-col divide-y divide-[#F3F4F6] rounded-md border border-[#E5E7EB] bg-white">
+    <ol id={id} className="flex flex-col divide-y divide-[#F3F4F6] rounded-md border border-[#E3E8EE] bg-white">
       {list.map((item, i) => {
         const r = byItem.get(item);
         return (
           <li key={item} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
-            <span className="flex-1 text-sm text-[#111827]">{i + 1}. {item}</span>
+            <span className="flex-1 text-sm text-[#131d29]">{i + 1}. {item}</span>
             <span className="flex gap-3 text-sm">
               {(["pass", "fail", "na"] as const).map((res) => (
                 <label key={res} className="flex items-center gap-1">
@@ -375,8 +375,8 @@ function Acknowledge({ orgId, registerKey, row, ack, webMemberCount }: { orgId: 
       router.refresh();
     });
   return (
-    <div className="mb-4 flex flex-col gap-2 rounded-lg border border-[#E5E7EB] bg-white p-3 text-sm" onClick={(e) => e.stopPropagation()}>
-      <p className="text-[#374151]">
+    <div className="mb-4 flex flex-col gap-2 rounded-lg border border-[#E3E8EE] bg-white p-3 text-sm" onClick={(e) => e.stopPropagation()}>
+      <p className="text-[#41505F]">
         Version {String(row.version)}: read by {ack?.count ?? 0} of {webMemberCount} web users
         {ack?.names.length ? ` (${ack.names.slice(0, 12).join(", ")}${ack.names.length > 12 ? ", ..." : ""})` : ""}.
       </p>

@@ -25,7 +25,7 @@ export function RootCauseAnalysisClient() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Root Cause Analysis</h1>
+        <h1 className="text-3xl tracking-tight">Root Cause Analysis</h1>
         <p className="text-muted-foreground mt-2">
           Use causal inference to understand what&apos;s driving your emissions changes
         </p>

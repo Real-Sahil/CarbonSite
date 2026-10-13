@@ -168,11 +168,11 @@ export default async function BoundaryPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex items-start gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
-          <GitBranch className="h-5 w-5 text-zinc-700" />
+          <GitBranch className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">Organisational boundary</h1>
-          <p className="mt-0.5 max-w-[65ch] text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold text-[#131d29]">Organisational boundary</h1>
+          <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             Which legal entities and facilities are consolidated into the inventory, and at what
             share. GHG Protocol Corporate Standard, chapter 3.
           </p>
@@ -192,7 +192,7 @@ export default async function BoundaryPage({ params }: PageProps) {
             <Badge className="bg-zinc-900 text-white hover:bg-zinc-900">
               {APPROACH_LABEL[approach]}
             </Badge>
-            <p className="max-w-[65ch] text-sm leading-relaxed text-zinc-600">
+            <p className="max-w-[65ch] text-sm leading-relaxed text-[#41505F]">
               {APPROACH_EXPLAINER[approach]}
             </p>
           </div>
@@ -203,8 +203,8 @@ export default async function BoundaryPage({ params }: PageProps) {
       <section className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-zinc-900">Legal entities</h2>
-            <p className="text-sm text-zinc-500">
+            <h2 className="text-lg font-semibold text-[#131d29]">Legal entities</h2>
+            <p className="text-sm text-[#5B6A78]">
               {entities.length === 0
                 ? "No group structure modelled. Every facility is treated as wholly owned and directly operated."
                 : `${entities.length} ${entities.length === 1 ? "entity" : "entities"} in the group.`}
@@ -235,15 +235,15 @@ export default async function BoundaryPage({ params }: PageProps) {
                     return (
                       <TableRow key={e.id}>
                         <TableCell className="pl-4">
-                          <div className="font-medium text-zinc-900">{e.name}</div>
+                          <div className="font-medium text-[#131d29]">{e.name}</div>
                           {e.registrationNumber && (
-                            <div className="text-xs text-zinc-500">{e.registrationNumber}</div>
+                            <div className="text-xs text-[#5B6A78]">{e.registrationNumber}</div>
                           )}
                         </TableCell>
                         <TableCell className="text-sm">
                           {e.gleifLei ? (
                             <div>
-                              <span className="font-mono text-xs text-zinc-700">{e.gleifLei}</span>
+                              <span className="font-mono text-xs text-[#41505F]">{e.gleifLei}</span>
                               {e.gleifStatus && e.gleifStatus !== "ISSUED" && (
                                 <span className="ml-1 text-xs text-amber-600">({e.gleifStatus})</span>
                               )}
@@ -257,7 +257,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                             <LookupLeiButton orgId={orgId} entityId={e.id} hasLei={true} />
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {parent?.name ?? "Top of group"}
                         </TableCell>
                         <TableCell className="text-right font-mono text-sm tabular-nums">
@@ -278,7 +278,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="pr-4 text-sm text-zinc-500">
+                        <TableCell className="pr-4 text-sm text-[#5B6A78]">
                           {formatWindow(e.acquiredOn, e.divestedOn)}
                         </TableCell>
                       </TableRow>
@@ -293,15 +293,15 @@ export default async function BoundaryPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900">Facilities in the boundary</h2>
-          <p className="text-sm text-zinc-500">
+          <h2 className="text-lg font-semibold text-[#131d29]">Facilities in the boundary</h2>
+          <p className="text-sm text-[#5B6A78]">
             {includedCount} included, {excludedCount} excluded, assessed as at today.
           </p>
         </div>
 
         {facilityRows.length === 0 ? (
           <Card>
-            <CardContent className="flex items-start gap-2 py-6 text-sm text-zinc-500">
+            <CardContent className="flex items-start gap-2 py-6 text-sm text-[#5B6A78]">
               <Building2 className="mt-0.5 h-4 w-4 shrink-0" />
               No facilities recorded yet. Add facilities in settings to see how each one
               consolidates.
@@ -324,15 +324,15 @@ export default async function BoundaryPage({ params }: PageProps) {
                   {facilityRows.map((f) => (
                     <TableRow key={f.id} className={f.factorPercent === 0 ? "opacity-60" : undefined}>
                       <TableCell className="pl-4">
-                        <div className="font-medium text-zinc-900">{f.name}</div>
-                        <div className="text-xs text-zinc-500">
+                        <div className="font-medium text-[#131d29]">{f.name}</div>
+                        <div className="text-xs text-[#5B6A78]">
                           {[f.siteType, f.country].filter(Boolean).join(" · ") || "No profile set"}
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-zinc-500">
+                      <TableCell className="text-sm text-[#5B6A78]">
                         {f.entityName ?? "Unassigned"}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-sm tabular-nums text-zinc-600">
+                      <TableCell className="text-right font-mono text-sm tabular-nums text-[#41505F]">
                         {f.floorAreaM2 === null
                           ? "not set"
                           : `${f.floorAreaM2.toLocaleString("en-GB")} m2`}
@@ -341,14 +341,14 @@ export default async function BoundaryPage({ params }: PageProps) {
                         <span
                           className={
                             f.factorPercent === 0
-                              ? "font-mono text-sm font-semibold tabular-nums text-zinc-500"
-                              : "font-mono text-sm font-semibold tabular-nums text-zinc-900"
+                              ? "font-mono text-sm font-semibold tabular-nums text-[#5B6A78]"
+                              : "font-mono text-sm font-semibold tabular-nums text-[#131d29]"
                           }
                         >
                           {f.factorPercent.toFixed(1)}%
                         </span>
                       </TableCell>
-                      <TableCell className="max-w-[36ch] pr-4 text-xs leading-relaxed text-zinc-500">
+                      <TableCell className="max-w-[36ch] pr-4 text-xs leading-relaxed text-[#5B6A78]">
                         {f.rationale}
                       </TableCell>
                     </TableRow>
@@ -359,7 +359,7 @@ export default async function BoundaryPage({ params }: PageProps) {
           </Card>
         )}
 
-        <p className="flex items-start gap-2 text-xs leading-relaxed text-zinc-500">
+        <p className="flex items-start gap-2 text-xs leading-relaxed text-[#5B6A78]">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           Consolidation factors are evaluated per activity date, so a facility acquired or divested
           part way through a period contributes only for the months it sat inside the boundary.
@@ -382,8 +382,8 @@ function formatWindow(from: Date | null, to: Date | null): string {
 function AccessDenied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-zinc-900">Access denied</h1>
-      <p className="mt-1 text-sm text-zinc-500">
+      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the organisational boundary.
       </p>
     </div>

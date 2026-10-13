@@ -95,11 +95,11 @@ function FlagCell({ value, label }: { value: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2">
       {value ? (
-        <CheckCircle2 className="h-4 w-4 text-[#111827]" aria-hidden="true" />
+        <CheckCircle2 className="h-4 w-4 text-[#131d29]" aria-hidden="true" />
       ) : (
         <MinusCircle className="h-4 w-4 text-[#999]" aria-hidden="true" />
       )}
-      <span className="text-sm text-[#374151] tracking-[-0.42px]">{label}</span>
+      <span className="text-sm text-[#41505F] tracking-[-0.42px]">{label}</span>
     </div>
   );
 }
@@ -206,26 +206,26 @@ export default async function ContractDetailPage({ params }: Props) {
   return (
     <div className="p-[42px] max-w-[1200px] mx-auto flex flex-col gap-[42px]">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-[#374151] tracking-[-0.42px]">
-        <Link href={`/orgs/${orgId}/contracts`} className="hover:text-[#111827] hover:underline">
+      <nav className="flex items-center gap-2 text-sm text-[#41505F] tracking-[-0.42px]">
+        <Link href={`/orgs/${orgId}/contracts`} className="hover:text-[#131d29] hover:underline">
           Contracts
         </Link>
         <span>/</span>
-        <span className="text-[#111827]">{contract.name}</span>
+        <span className="text-[#131d29]">{contract.name}</span>
       </nav>
 
       {/* Header */}
       <div>
-        <p className="text-xs font-normal tracking-[-0.36px] text-[#111827] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
+        <p className="text-xs font-normal tracking-[-0.36px] text-[#131d29] bg-[#FFF7ED] rounded-full px-[14px] py-[7px] inline-flex mb-[14px]">
           Contracts
         </p>
         <h1
-          className="text-2xl font-bold tracking-tight text-[#111827]"
+          className="text-2xl tracking-tight text-[#131d29]"
           
         >
           {contract.name}
         </h1>
-        <p className="text-sm text-[#374151] font-normal tracking-[-0.42px] mt-[7px]">
+        <p className="text-sm text-[#41505F] font-normal tracking-[-0.42px] mt-[7px]">
           Contract details, projects, and sites.
         </p>
       </div>
@@ -244,32 +244,32 @@ export default async function ContractDetailPage({ params }: Props) {
         <CardContent>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Client name</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{contract.clientName ?? "—"}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Client name</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{contract.clientName ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Contract reference</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{contract.contractReference ?? "—"}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Contract reference</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{contract.contractReference ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Contract value</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatCurrency(contract.contractValue, contract.currency, locale)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Contract value</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{formatCurrency(contract.contractValue, contract.currency, locale)}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Start date</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatDate(contract.startDate)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Start date</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{formatDate(contract.startDate)}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">End date</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatDate(contract.endDate)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">End date</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{formatDate(contract.endDate)}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Projects</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{contract._count.projects}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Projects</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{contract._count.projects}</p>
             </div>
             <div>
-              <p className="text-xs font-normal uppercase tracking-wide text-[#374151]">Total CO₂e</p>
-              <p className="mt-1 text-sm text-[#111827] tracking-[-0.42px]">{formatTco2e(totalKgCo2e)}</p>
+              <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Total CO₂e</p>
+              <p className="mt-1 text-sm text-[#131d29] tracking-[-0.42px]">{formatTco2e(totalKgCo2e)}</p>
             </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-5">
@@ -294,24 +294,24 @@ export default async function ContractDetailPage({ params }: Props) {
           {projects.length === 0 ? (
             <EmptyState message="No projects yet. Create one above to get started." />
           ) : (
-            <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden">
+            <div className="rounded-[14px] border border-[#E3E8EE] overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-[#f9fafb]">
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Name</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Project code</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Status</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Start</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">End</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Sites</TableHead>
-                    <TableHead className="text-xs font-normal text-[#374151] tracking-[-0.36px]">Carbon budget</TableHead>
+                  <TableRow className="bg-[#F9FAFC]">
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Name</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Project code</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Status</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Start</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">End</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Sites</TableHead>
+                    <TableHead className="text-xs font-normal text-[#41505F] tracking-[-0.36px]">Carbon budget</TableHead>
                     <TableHead className="w-[80px]" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {projects.map((project) => (
-                    <TableRow key={project.id} className="hover:bg-[#f9fafb]">
-                      <TableCell className="font-normal text-[#111827] tracking-[-0.42px]">
+                    <TableRow key={project.id} className="hover:bg-[#F9FAFC]">
+                      <TableCell className="font-normal text-[#131d29] tracking-[-0.42px]">
                         <Link
                           href={`/orgs/${orgId}/contracts/${contractId}/projects/${project.id}`}
                           className="hover:underline"
@@ -319,17 +319,17 @@ export default async function ContractDetailPage({ params }: Props) {
                           {project.name}
                         </Link>
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {project.projectCode ?? "—"}
                       </TableCell>
                       <TableCell>{projectStatusBadge(project.status)}</TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {formatDate(project.startDate)}
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {formatDate(project.endDate)}
                       </TableCell>
-                      <TableCell className="text-sm text-[#374151] tracking-[-0.42px]">
+                      <TableCell className="text-sm text-[#41505F] tracking-[-0.42px]">
                         {project._count.sites}
                       </TableCell>
                       <TableCell>
@@ -380,15 +380,15 @@ export default async function ContractDetailPage({ params }: Props) {
           ) : (
             <div className="flex flex-col gap-4">
               <SubcontractorSummaryStrip summary={subcontractorSummary(submissions, now)} />
-              <div className="rounded-[14px] border border-[#E5E7EB] overflow-hidden overflow-x-auto">
+              <div className="rounded-[14px] border border-[#E3E8EE] overflow-hidden overflow-x-auto">
                 <Table className="w-full">
                   <thead>
-                    <tr className="bg-[#f9fafb]">
-                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3 pl-6">Subcontractor</th>
-                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Period</th>
-                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Due</th>
-                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Status</th>
-                      <th className="text-left text-xs font-normal text-[#374151] tracking-[-0.36px] py-3">Emissions</th>
+                    <tr className="bg-[#F9FAFC]">
+                      <th className="text-left text-xs font-normal text-[#41505F] tracking-[-0.36px] py-3 pl-6">Subcontractor</th>
+                      <th className="text-left text-xs font-normal text-[#41505F] tracking-[-0.36px] py-3">Period</th>
+                      <th className="text-left text-xs font-normal text-[#41505F] tracking-[-0.36px] py-3">Due</th>
+                      <th className="text-left text-xs font-normal text-[#41505F] tracking-[-0.36px] py-3">Status</th>
+                      <th className="text-left text-xs font-normal text-[#41505F] tracking-[-0.36px] py-3">Emissions</th>
                       <th className="w-[160px] pr-6" />
                     </tr>
                   </thead>
@@ -467,12 +467,12 @@ function AccessDenied() {
     <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center">
         <h1
-          className="text-2xl font-bold tracking-tight text-[#111827] mb-1"
+          className="text-2xl tracking-tight text-[#131d29] mb-1"
           
         >
           Access denied
         </h1>
-        <p className="text-sm text-[#374151] tracking-[-0.42px]">
+        <p className="text-sm text-[#41505F] tracking-[-0.42px]">
           You do not have permission to view this contract.
         </p>
       </div>

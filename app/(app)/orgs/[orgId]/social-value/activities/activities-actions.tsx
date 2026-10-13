@@ -85,7 +85,7 @@ export function CreateActivityButton({ orgId, commitments }: { orgId: string; co
       <Button
         size="sm"
         onClick={() => setOpen(true)}
-        className="bg-[#111827] hover:bg-[#1f2937] text-white text-xs h-8 px-3 gap-1.5"
+        className="bg-[#131d29] hover:bg-[#1f2937] text-white text-xs h-8 px-3 gap-1.5"
       >
         <Plus className="h-3.5 w-3.5" />
         Log activity
@@ -146,7 +146,7 @@ export function CreateActivityButton({ orgId, commitments }: { orgId: string; co
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit" size="sm" disabled={loading} className="bg-[#111827] hover:bg-[#1f2937] text-white">
+              <Button type="submit" size="sm" disabled={loading} className="bg-[#131d29] hover:bg-[#1f2937] text-white">
                 {loading ? "Saving..." : "Log activity"}
               </Button>
             </DialogFooter>

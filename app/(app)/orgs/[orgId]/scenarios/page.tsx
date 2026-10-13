@@ -128,16 +128,16 @@ function ScopeCard({
   return (
     <Card className="flex flex-col gap-1">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-semibold text-zinc-500">{label}</CardTitle>
+        <CardTitle className="text-sm font-semibold text-[#5B6A78]">{label}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="flex items-center justify-between text-xs text-[#5B6A78]">
           <span>Baseline</span>
-          <span className="font-mono font-medium text-zinc-900">{fmt(baseline)}</span>
+          <span className="font-mono font-medium text-[#131d29]">{fmt(baseline)}</span>
         </div>
-        <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="flex items-center justify-between text-xs text-[#5B6A78]">
           <span>Scenario</span>
-          <span className="font-mono font-medium text-zinc-900">{fmt(scenario)}</span>
+          <span className="font-mono font-medium text-[#131d29]">{fmt(scenario)}</span>
         </div>
         <div className="flex items-center justify-between rounded-md bg-green-50 px-2 py-1.5 text-xs">
           <span className="text-green-700 font-medium flex items-center gap-1">
@@ -165,14 +165,14 @@ function AdjustmentRow({
   onRemove: (index: number) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2 items-center rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2">
+    <div className="flex flex-wrap gap-2 items-center rounded-md border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2">
       {/* Scope selector */}
       <div className="flex flex-col gap-0.5 min-w-[100px]">
-        <label className="text-xs text-zinc-500">Scope</label>
+        <label className="text-xs text-[#5B6A78]">Scope</label>
         <select
           value={adj.scope}
           onChange={(e) => onChange(index, "scope", e.target.value)}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          className="rounded-md border border-[#E3E8EE] bg-white px-2 py-1 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
         >
           <option value="">All scopes</option>
           <option value="1">Scope 1</option>
@@ -183,7 +183,7 @@ function AdjustmentRow({
 
       {/* Optional category ID */}
       <div className="flex flex-col gap-0.5 min-w-[140px]">
-        <label className="text-xs text-zinc-500">Category ID (optional)</label>
+        <label className="text-xs text-[#5B6A78]">Category ID (optional)</label>
         <Input
           placeholder="e.g. s3-business-travel"
           value={adj.categoryId}
@@ -194,8 +194,8 @@ function AdjustmentRow({
 
       {/* Reduction % */}
       <div className="flex flex-col gap-0.5 min-w-[200px] flex-1">
-        <label className="text-xs text-zinc-500">
-          Reduction: <span className="font-semibold text-zinc-900">{adj.reductionPercent}%</span>
+        <label className="text-xs text-[#5B6A78]">
+          Reduction: <span className="font-semibold text-[#131d29]">{adj.reductionPercent}%</span>
         </label>
         <input
           type="range"
@@ -212,7 +212,7 @@ function AdjustmentRow({
         variant="ghost"
         size="icon"
         onClick={() => onRemove(index)}
-        className="text-zinc-500 hover:text-red-500 mt-4"
+        className="text-[#5B6A78] hover:text-red-500 mt-4"
         aria-label="Remove adjustment"
       >
         <Trash2 className="h-4 w-4" />
@@ -278,7 +278,7 @@ function MaccCard({ orgId }: { orgId: string }) {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-zinc-500">
+      <div className="flex items-center gap-2 text-sm text-[#5B6A78]">
         <Loader2 className="h-4 w-4 animate-spin" /> Loading…
       </div>
     );
@@ -302,10 +302,10 @@ function MaccCard({ orgId }: { orgId: string }) {
       <Card>
         <CardContent className="py-10 text-center">
           <PoundSterling className="mx-auto h-6 w-6 text-zinc-300 mb-2" />
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-[#5B6A78]">
             No reduction initiatives have a cost and expected CO2e impact recorded yet.
           </p>
-          <p className="text-xs text-zinc-500 mt-1">Add cost, annual savings and impact to initiatives in Targets.</p>
+          <p className="text-xs text-[#5B6A78] mt-1">Add cost, annual savings and impact to initiatives in Targets.</p>
         </CardContent>
       </Card>
     );
@@ -318,7 +318,7 @@ function MaccCard({ orgId }: { orgId: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
-          <PoundSterling className="h-4 w-4 text-zinc-500" />
+          <PoundSterling className="h-4 w-4 text-[#5B6A78]" />
           Marginal abatement cost curve
         </CardTitle>
         <CardDescription>
@@ -327,8 +327,8 @@ function MaccCard({ orgId }: { orgId: string }) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-4 mb-5 text-sm">
-          <span className="text-zinc-600">
-            <span className="font-semibold text-zinc-900">{totalAbatementTco2e.toFixed(1)}</span> tCO₂e total abatement potential
+          <span className="text-[#41505F]">
+            <span className="font-semibold text-[#131d29]">{totalAbatementTco2e.toFixed(1)}</span> tCO₂e total abatement potential
           </span>
           {winWinCount > 0 && (
             <span className="text-green-700">
@@ -343,7 +343,7 @@ function MaccCard({ orgId }: { orgId: string }) {
             const barWidthPct = (Math.abs(point.marginalCostPerTco2e) / maxAbsCost) * 100;
             return (
               <div key={point.id} className="flex items-center gap-3">
-                <div className="w-40 shrink-0 truncate text-sm text-zinc-700" title={point.name}>
+                <div className="w-40 shrink-0 truncate text-sm text-[#41505F]" title={point.name}>
                   {point.name}
                 </div>
                 <div className="flex-1 flex items-center h-6 relative">
@@ -360,7 +360,7 @@ function MaccCard({ orgId }: { orgId: string }) {
                 <div className={`w-24 shrink-0 text-right text-sm tabular-nums font-medium ${isNegative ? "text-green-700" : "text-amber-700"}`}>
                   {fmtCost(point.marginalCostPerTco2e, currency, locale)}/t
                 </div>
-                <div className="w-20 shrink-0 text-right text-xs text-zinc-500 tabular-nums">
+                <div className="w-20 shrink-0 text-right text-xs text-[#5B6A78] tabular-nums">
                   {point.paybackYears != null ? `${point.paybackYears.toFixed(1)}y payback` : "-"}
                 </div>
               </div>
@@ -369,7 +369,7 @@ function MaccCard({ orgId }: { orgId: string }) {
         </div>
 
         {excludedCount > 0 && (
-          <p className="mt-4 text-xs text-zinc-500">
+          <p className="mt-4 text-xs text-[#5B6A78]">
             {excludedCount} initiative{excludedCount !== 1 ? "s" : ""} excluded — no expected CO2e impact recorded.
           </p>
         )}
@@ -531,11 +531,11 @@ export default function ScenariosPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100">
-          <FlaskConical className="h-5 w-5 text-zinc-700" />
+          <FlaskConical className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900">What-If Scenarios</h1>
-          <p className="text-sm text-zinc-500">
+          <h1 className="text-xl font-semibold text-[#131d29]">What-If Scenarios</h1>
+          <p className="text-sm text-[#5B6A78]">
             Model hypothetical emission reductions against a completed calculation run.
           </p>
         </div>
@@ -552,22 +552,22 @@ export default function ScenariosPage() {
         <CardContent className="space-y-5">
           {/* Calculation run selector */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-700">
+            <label className="text-sm font-medium text-[#41505F]">
               Baseline calculation run
             </label>
             {loadingRuns ? (
-              <div className="flex items-center gap-2 text-sm text-zinc-500">
+              <div className="flex items-center gap-2 text-sm text-[#5B6A78]">
                 <Loader2 className="h-4 w-4 animate-spin" /> Loading runs…
               </div>
             ) : calcRuns.length === 0 ? (
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-[#5B6A78]">
                 No succeeded calculation runs found. Complete a calculation first.
               </p>
             ) : (
               <select
                 value={selectedRunId}
                 onChange={(e) => setSelectedRunId(e.target.value)}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                className="w-full rounded-md border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
               >
                 {calcRuns.map((r) => (
                   <option key={r.id} value={r.id}>
@@ -580,8 +580,8 @@ export default function ScenariosPage() {
 
           {/* Label */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-zinc-700">
-              Label <span className="font-normal text-zinc-500">(optional)</span>
+            <label className="text-sm font-medium text-[#41505F]">
+              Label <span className="font-normal text-[#5B6A78]">(optional)</span>
             </label>
             <Input
               placeholder="e.g. 20% Scope 3 reduction"
@@ -593,13 +593,13 @@ export default function ScenariosPage() {
           {/* Adjustments */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-zinc-700">Adjustments</label>
+              <label className="text-sm font-medium text-[#41505F]">Adjustments</label>
               <Button variant="outline" size="sm" onClick={addAdjustment}>
                 <Plus className="mr-1.5 h-3.5 w-3.5" /> Add row
               </Button>
             </div>
             {adjustments.length === 0 && (
-              <p className="text-sm text-zinc-500">No adjustments added yet.</p>
+              <p className="text-sm text-[#5B6A78]">No adjustments added yet.</p>
             )}
             <div className="space-y-2">
               {adjustments.map((adj, i) => (
@@ -637,8 +637,8 @@ export default function ScenariosPage() {
       {result && (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900">Scenario Results</h2>
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
+            <h2 className="text-lg font-semibold text-[#131d29]">Scenario Results</h2>
+            <div className="flex items-center gap-2 text-xs text-[#5B6A78]">
               <span>Expires {fmtDate(result.expiresAt)}</span>
               <Badge variant="outline" className="text-xs">
                 {result.draftsCount} records
@@ -685,7 +685,7 @@ export default function ScenariosPage() {
           {result.topReductions.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-zinc-700">
+                <CardTitle className="text-sm font-semibold text-[#41505F]">
                   Top 10 Biggest Reductions
                 </CardTitle>
               </CardHeader>
@@ -704,8 +704,8 @@ export default function ScenariosPage() {
                     {result.topReductions.map((row) => (
                       <TableRow key={row.id}>
                         <TableCell className="pl-4">
-                          <div className="font-medium text-zinc-900">{row.categoryName}</div>
-                          <div className="text-xs text-zinc-500">{row.categoryCode}</div>
+                          <div className="font-medium text-[#131d29]">{row.categoryName}</div>
+                          <div className="text-xs text-[#5B6A78]">{row.categoryCode}</div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
@@ -736,13 +736,13 @@ export default function ScenariosPage() {
 
       {/* Past scenario runs */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900">Recent Scenarios</h2>
+        <h2 className="text-lg font-semibold text-[#131d29]">Recent Scenarios</h2>
         {loadingPastRuns ? (
-          <div className="flex items-center gap-2 text-sm text-zinc-500">
+          <div className="flex items-center gap-2 text-sm text-[#5B6A78]">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </div>
         ) : pastRuns.length === 0 ? (
-          <p className="text-sm text-zinc-500">No scenarios created yet.</p>
+          <p className="text-sm text-[#5B6A78]">No scenarios created yet.</p>
         ) : (
           <Card>
             <CardContent className="overflow-x-auto p-0">
@@ -762,29 +762,29 @@ export default function ScenariosPage() {
                     return (
                       <TableRow
                         key={run.id}
-                        className={expired ? "opacity-50" : "cursor-pointer hover:bg-zinc-50"}
+                        className={expired ? "opacity-50" : "cursor-pointer hover:bg-[#F9FAFC]"}
                         onClick={expired ? undefined : () => loadScenario(run.id)}
                       >
-                        <TableCell className="pl-4 font-medium text-zinc-900">
+                        <TableCell className="pl-4 font-medium text-[#131d29]">
                           <div>{run.label ?? run.calculationRun?.reportingPeriod?.label ?? "Unnamed scenario"}</div>
                           {run.label && run.calculationRun?.reportingPeriod?.label && (
-                            <div className="text-xs text-zinc-500">{run.calculationRun.reportingPeriod.label}</div>
+                            <div className="text-xs text-[#5B6A78]">{run.calculationRun.reportingPeriod.label}</div>
                           )}
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {fmtDate(run.createdAt)}
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {run.createdBy?.name ?? run.createdBy?.email ?? "—"}
                         </TableCell>
-                        <TableCell className="text-sm text-zinc-500">
+                        <TableCell className="text-sm text-[#5B6A78]">
                           {run._count.drafts}
                         </TableCell>
                         <TableCell className="pr-4">
                           {expired ? (
                             <Badge
                               variant="outline"
-                              className="text-xs text-zinc-500 border-zinc-200"
+                              className="text-xs text-[#5B6A78] border-[#E3E8EE]"
                             >
                               Expired
                             </Badge>
@@ -809,7 +809,7 @@ export default function ScenariosPage() {
 
       {/* Marginal abatement cost curve */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-zinc-900">Marginal Abatement Cost Curve</h2>
+        <h2 className="text-lg font-semibold text-[#131d29]">Marginal Abatement Cost Curve</h2>
         <MaccCard orgId={orgId} />
       </div>
     </div>

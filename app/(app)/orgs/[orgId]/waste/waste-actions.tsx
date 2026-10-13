@@ -78,9 +78,9 @@ function AddRecordModal({
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Add waste record</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">Add waste record</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6 p-6">
@@ -119,7 +119,7 @@ function AddRecordModal({
               {DISPOSAL_ROUTES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
           </FormField>
-          <label className="@md:col-span-full flex items-center gap-2 text-sm text-gray-700">
+          <label className="@md:col-span-full flex items-center gap-2 text-sm text-[#41505F]">
             <input type="checkbox" checked={form.hazardous}
               onChange={(e) => setForm((f) => ({ ...f, hazardous: e.target.checked }))}
               className="h-4 w-4 rounded border-gray-300 text-[#c2410c] focus:ring-[#c2410c]/30" />
@@ -135,7 +135,7 @@ function AddRecordModal({
                 onChange={(e) => setForm((f) => ({ ...f, recordedAt: e.target.value }))} className={inputCls} />
             </FormField>
           </FormSection>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[#5B6A78]">
             CO2e is calculated automatically from your organisation&apos;s emission factor library once saved.
           </p>
           <FormSection title="Duty of care" description="Record the carrier's registration and the transfer note (or consignment note for hazardous waste). Transfers without them show as gaps on the duty of care register." cols={2}>
@@ -225,16 +225,16 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Bulk upload waste records</h2>
+          <h2 className="text-base font-semibold text-[#131d29]">Bulk upload waste records</h2>
           <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <div className="p-6 flex flex-col gap-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-medium text-gray-700 mb-1">Required columns</p>
-              <p className="text-xs text-gray-500 font-mono leading-relaxed">
+              <p className="text-xs font-medium text-[#41505F] mb-1">Required columns</p>
+              <p className="text-xs text-[#5B6A78] font-mono leading-relaxed">
                 facilityId, reportingPeriodId, wasteType,<br />
                 disposalRoute, hazardous, weightTonnes,<br />
                 ewcCode, carrierName, carrierRegistration,<br />
@@ -243,16 +243,16 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
               </p>
             </div>
             <button type="button" onClick={downloadTemplate}
-              className="shrink-0 flex items-center gap-1.5 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100 transition-colors">
+              className="shrink-0 flex items-center gap-1.5 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-xs font-medium text-[#41505F] hover:bg-gray-100 transition-colors">
               <Upload className="h-3.5 w-3.5 rotate-180" />
               Template
             </button>
           </div>
           <input type="file" accept=".csv,.xlsx,.xls"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-xs file:font-medium" />
+            className="text-sm text-[#41505F] file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-xs file:font-medium" />
           {result && (
-            <div className="rounded-lg bg-gray-50 p-3 text-xs text-gray-700">
+            <div className="rounded-lg bg-[#F9FAFC] p-3 text-xs text-[#41505F]">
               <p>{(result as { created: number; failed: number }).created} created, {(result as { created: number; failed: number }).failed} failed.</p>
               {(result as { errors: { row: number; message: string }[] }).errors.slice(0, 8).map((e, i) => (
                 <p key={i} className="text-red-600 mt-1">Row {e.row}: {e.message}</p>
@@ -280,7 +280,7 @@ export function WasteAddButtons({ orgId, facilities, periods, projects = [], def
     <>
       <div className="flex gap-2">
         <button onClick={() => setShowBulk(true)}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+          className="inline-flex items-center gap-2 rounded-lg border border-[#E3E8EE] bg-white px-4 py-2.5 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC] transition-colors">
           <Upload className="h-4 w-4" />
           Bulk upload
         </button>

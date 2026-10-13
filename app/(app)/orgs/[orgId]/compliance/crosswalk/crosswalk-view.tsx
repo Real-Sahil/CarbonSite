@@ -52,8 +52,8 @@ export function CrosswalkView({
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <header>
-        <h1 className="text-xl font-semibold text-zinc-900">Framework datapoint crosswalk</h1>
-        <p className="mt-0.5 max-w-[70ch] text-sm text-zinc-500">
+        <h1 className="text-xl font-semibold text-[#131d29]">Framework datapoint crosswalk</h1>
+        <p className="mt-0.5 max-w-[70ch] text-sm text-[#5B6A78]">
           For each disclosure requirement: whether this organisation&apos;s own data actually answers it
           today, checked live, or whether it still needs manual evidence. &ldquo;Ready for CSRD&rdquo;
           is a checkable claim here, not a slogan.
@@ -69,12 +69,12 @@ export function CrosswalkView({
               "rounded-lg border p-4 text-left transition-colors",
               activeFramework === f.framework
                 ? "border-zinc-900 bg-zinc-900 text-white"
-                : "border-zinc-200 bg-white hover:border-zinc-300",
+                : "border-[#E3E8EE] bg-white hover:border-zinc-300",
             )}
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{f.label}</span>
-              <span className={cn("font-mono text-lg font-semibold tabular-nums", activeFramework === f.framework ? "text-white" : "text-zinc-900")}>
+              <span className={cn("font-mono text-lg font-semibold tabular-nums", activeFramework === f.framework ? "text-white" : "text-[#131d29]")}>
                 {f.readinessPercent.toFixed(0)}%
               </span>
             </div>
@@ -89,7 +89,7 @@ export function CrosswalkView({
                 style={{ width: `${f.readinessPercent}%` }}
               />
             </div>
-            <p className={cn("mt-2 text-xs", activeFramework === f.framework ? "text-white/70" : "text-zinc-500")}>
+            <p className={cn("mt-2 text-xs", activeFramework === f.framework ? "text-white/70" : "text-[#5B6A78]")}>
               {f.satisfied} satisfied · {f.partial} partial · {f.gap} gap
             </p>
           </button>
@@ -152,31 +152,31 @@ function DatapointRow({
             <StatusIcon status={datapoint.status} />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-zinc-500">{datapoint.code}</span>
-                <span className="font-medium text-zinc-900">{datapoint.title}</span>
+                <span className="font-mono text-xs text-[#5B6A78]">{datapoint.code}</span>
+                <span className="font-medium text-[#131d29]">{datapoint.title}</span>
                 {datapoint.source === "automatic" && (
-                  <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500">
+                  <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-[#5B6A78]">
                     <Zap className="h-3 w-3" />
                     Live
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 max-w-[60ch] text-xs text-zinc-500">{datapoint.description}</p>
+              <p className="mt-0.5 max-w-[60ch] text-xs text-[#5B6A78]">{datapoint.description}</p>
             </div>
           </div>
           <StatusBadge status={datapoint.status} />
         </div>
 
-        <p className="ml-7 max-w-[65ch] text-sm text-zinc-600">{datapoint.evidenceSummary}</p>
+        <p className="ml-7 max-w-[65ch] text-sm text-[#41505F]">{datapoint.evidenceSummary}</p>
 
         {canEdit && (
           <div className="ml-7">
             {editing ? (
-              <div className="space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+              <div className="space-y-2 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-3">
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="h-8 rounded-md border border-zinc-200 bg-white px-2 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                  className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
                 >
                   <option value="satisfied">Satisfied</option>
                   <option value="partial">Partial</option>

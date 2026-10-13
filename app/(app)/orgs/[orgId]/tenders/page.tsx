@@ -16,7 +16,7 @@ export default async function TendersPage({ params }: { params: Promise<{ orgId:
     role = membership.role;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view tenders.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view tenders.</div>;
   }
 
   const [watch, rows, org] = await Promise.all([

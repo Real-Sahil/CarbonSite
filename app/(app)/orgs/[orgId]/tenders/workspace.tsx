@@ -137,8 +137,8 @@ export function TendersWorkspace({
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Tenders</h1>
-        <p className="mt-1 max-w-[70ch] text-sm text-[#6B7280]">
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Tenders</h1>
+        <p className="mt-1 max-w-[70ch] text-sm text-[#5B6A78]">
           Open public contracts from Find a Tender that match your work, checked every morning. Each one says whether the buyer is
           likely to ask for a Carbon Reduction Plan or social value, so you can start the bid carbon pack early.
         </p>
@@ -148,17 +148,17 @@ export function TendersWorkspace({
         <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-800">Tender watch is part of the Growth plan and above.</p>
       )}
 
-      <section className="rounded-[14px] border border-[#E5E7EB] p-5">
+      <section className="rounded-[14px] border border-[#E3E8EE] p-5">
         {!editing && watch ? (
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex flex-col gap-1 text-sm text-[#374151]">
-              <p className="font-medium text-[#111827]">{watch.enabled ? "Watching" : "Paused"}</p>
+            <div className="flex flex-col gap-1 text-sm text-[#41505F]">
+              <p className="font-medium text-[#131d29]">{watch.enabled ? "Watching" : "Paused"}</p>
               <p>CPV: {watch.cpvPrefixes.join(", ") || "none"}{watch.keywords.length ? ` · Keywords: ${watch.keywords.join(", ")}` : ""}</p>
               <p>
                 Regions: {watch.regions.length ? watch.regions.map((r) => REGIONS.find(([c]) => c === r)?.[1] ?? r).join(", ") : "anywhere"}
                 {watch.minValue != null ? ` · From ${money(watch.minValue, "GBP")}` : ""}
               </p>
-              <p className="text-xs text-[#6B7280]">Last checked: {watch.lastCheckedAt ? new Date(watch.lastCheckedAt).toLocaleString("en-GB") : "not yet"}</p>
+              <p className="text-xs text-[#5B6A78]">Last checked: {watch.lastCheckedAt ? new Date(watch.lastCheckedAt).toLocaleString("en-GB") : "not yet"}</p>
             </div>
             {canEdit && planIncludes && (
               <div className="flex gap-2">
@@ -170,12 +170,12 @@ export function TendersWorkspace({
         ) : canEdit && planIncludes ? (
           <form onSubmit={saveWatch} className="space-y-6">
             <fieldset className="flex flex-col gap-2">
-              <legend className="text-sm font-semibold text-zinc-900">Work you bid for (CPV codes)</legend>
+              <legend className="text-sm font-semibold text-[#131d29]">Work you bid for (CPV codes)</legend>
               <div className="grid gap-2 sm:grid-cols-2">
                 {CPV_PRESETS.map(([code, name]) => (
-                  <label key={code} className="flex items-center gap-2 text-sm text-[#374151]">
+                  <label key={code} className="flex items-center gap-2 text-sm text-[#41505F]">
                     <input type="checkbox" checked={cpv.includes(code)} onChange={() => setCpv(toggle(cpv, code))} className="h-4 w-4" />
-                    <span className="font-mono text-xs text-[#6B7280]">{code}</span> {name}
+                    <span className="font-mono text-xs text-[#5B6A78]">{code}</span> {name}
                   </label>
                 ))}
               </div>
@@ -187,10 +187,10 @@ export function TendersWorkspace({
               <Input id="tw-keywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. resurfacing, drainage, bridge" />
             </FormField>
             <fieldset>
-              <legend className="mb-2 text-sm font-semibold text-zinc-900">Regions <span className="font-normal text-zinc-500">(none ticked: anywhere)</span></legend>
+              <legend className="mb-2 text-sm font-semibold text-[#131d29]">Regions <span className="font-normal text-[#5B6A78]">(none ticked: anywhere)</span></legend>
               <div className="grid gap-2 sm:grid-cols-3">
                 {REGIONS.map(([code, name]) => (
-                  <label key={code} className="flex items-center gap-2 text-sm text-[#374151]">
+                  <label key={code} className="flex items-center gap-2 text-sm text-[#41505F]">
                     <input type="checkbox" checked={regions.includes(code)} onChange={() => setRegions(toggle(regions, code))} className="h-4 w-4" />
                     {name}
                   </label>
@@ -201,7 +201,7 @@ export function TendersWorkspace({
               <FormField label="Minimum value (£)" htmlFor="tw-min" optional>
                 <Input id="tw-min" type="number" min={0} value={minValue} onChange={(e) => setMinValue(e.target.value)} placeholder="Any" />
               </FormField>
-              <label className="flex items-center gap-2 text-sm text-[#374151]">
+              <label className="flex items-center gap-2 text-sm text-[#41505F]">
                 <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="h-4 w-4" />
                 Check every morning
               </label>
@@ -212,16 +212,16 @@ export function TendersWorkspace({
             </FormActions>
           </form>
         ) : (
-          <p className="text-sm text-[#6B7280]">No tender watch set up yet. An admin or contract manager can set one up.</p>
+          <p className="text-sm text-[#5B6A78]">No tender watch set up yet. An admin or contract manager can set one up.</p>
         )}
         {message && <p className={`mt-3 text-sm ${message.kind === "ok" ? "text-green-700" : "text-red-600"}`}>{message.text}</p>}
       </section>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[#111827]">Open tenders ({visible.length})</h2>
+          <h2 className="text-lg font-semibold text-[#131d29]">Open tenders ({visible.length})</h2>
           {dismissed > 0 && (
-            <label className="flex items-center gap-2 text-sm text-[#6B7280]">
+            <label className="flex items-center gap-2 text-sm text-[#5B6A78]">
               <input type="checkbox" checked={showDismissed} onChange={(e) => setShowDismissed(e.target.checked)} className="h-4 w-4" />
               Show {dismissed} marked not for us
             </label>
@@ -238,21 +238,21 @@ export function TendersWorkspace({
               const left = daysLeft(o.deadline);
               const bidHref = `/orgs/${orgId}/reports?${new URLSearchParams({ bid: "1", bidTitle: o.title.slice(0, 200), buyerName: o.buyerName ?? "", tenderReference: o.noticeId })}`;
               return (
-                <li key={o.id} className={`rounded-[14px] border border-[#E5E7EB] p-4 ${o.status === "dismissed" ? "opacity-60" : ""}`}>
+                <li key={o.id} className={`rounded-[14px] border border-[#E3E8EE] p-4 ${o.status === "dismissed" ? "opacity-60" : ""}`}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <a href={`https://www.find-tender.service.gov.uk/Notice/${o.noticeId}`} target="_blank" rel="noopener noreferrer" className="font-medium text-[#111827] hover:underline">
+                      <a href={`https://www.find-tender.service.gov.uk/Notice/${o.noticeId}`} target="_blank" rel="noopener noreferrer" className="font-medium text-[#131d29] hover:underline">
                         {o.title}
                       </a>
-                      <p className="mt-0.5 text-sm text-[#6B7280]">
+                      <p className="mt-0.5 text-sm text-[#5B6A78]">
                         {o.buyerName ?? "Buyer not given"} · {money(o.value, o.currency)} · Matched on {o.matchedOn}
                       </p>
                     </div>
                     <div className="text-right text-sm">
-                      <p className={left != null && left <= 7 ? "font-medium text-red-700" : "text-[#374151]"}>
+                      <p className={left != null && left <= 7 ? "font-medium text-red-700" : "text-[#41505F]"}>
                         {o.deadline ? `Closes ${dateText(o.deadline)}` : dateText(null)}
                       </p>
-                      {left != null && <p className="text-xs text-[#6B7280]">{left} day{left === 1 ? "" : "s"} left</p>}
+                      {left != null && <p className="text-xs text-[#5B6A78]">{left} day{left === 1 ? "" : "s"} left</p>}
                     </div>
                   </div>
                   {o.flags.length > 0 && (
@@ -261,7 +261,7 @@ export function TendersWorkspace({
                         <li
                           key={f.code}
                           title={f.reason}
-                          className={`rounded-full px-2.5 py-0.5 text-xs ${f.level === "likely" ? "bg-emerald-50 text-emerald-800" : "bg-slate-100 text-slate-700"}`}
+                          className={`rounded-full px-2.5 py-0.5 text-xs ${f.level === "likely" ? "bg-emerald-50 text-emerald-800" : "bg-slate-100 text-[#41505F]"}`}
                         >
                           {f.label}: {f.level}
                         </li>
@@ -275,7 +275,7 @@ export function TendersWorkspace({
                         value={o.status}
                         onChange={(e) => setStatus(o.id, e.target.value)}
                         disabled={isPending}
-                        className="h-8 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm"
+                        className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm"
                       >
                         {STATUSES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                       </select>
@@ -289,7 +289,7 @@ export function TendersWorkspace({
             })}
           </ul>
         )}
-        <p className="text-xs text-[#6B7280]">
+        <p className="text-xs text-[#5B6A78]">
           Notices from Find a Tender (find-tender.service.gov.uk), Open Government Licence v3.0. Carbon Reduction Plan and social value flags are read from the buyer type and value on the notice; the tender documents decide.
         </p>
       </section>

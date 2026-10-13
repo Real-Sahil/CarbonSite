@@ -29,15 +29,15 @@ export default async function AppEntryPage() {
       <div className="min-h-screen flex items-center justify-center bg-white p-8">
         <div className="max-w-md text-center">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#F0F9FF]">
-            <Smartphone aria-hidden="true" className="h-7 w-7 text-[#111827]" />
+            <Smartphone aria-hidden="true" className="h-7 w-7 text-[#131d29]" />
           </div>
           <h1
-            className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#111827]"
+            className="text-[28px] leading-[1.35] tracking-[-0.4px] text-[#131d29]"
             
           >
             Use the MetricOra mobile app
           </h1>
-          <p className="mt-3 text-sm text-[#374151] tracking-[-0.42px]">
+          <p className="mt-3 text-sm text-[#41505F] tracking-[-0.42px]">
             Your account is a field worker account — submissions, photos, and
             statuses live in the mobile app. Open the invite link from your
             administrator on your phone to get set up.

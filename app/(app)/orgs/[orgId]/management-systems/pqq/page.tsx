@@ -18,7 +18,7 @@ export default async function PqqPage({ params }: { params: Promise<{ orgId: str
     role = membership.role;
   } catch (err) {
     if (err instanceof AuthError && err.status === 401) redirect("/sign-in");
-    return <div className="p-8 text-sm text-[#6B7280]">You do not have permission to view pre-qualification answers.</div>;
+    return <div className="p-8 text-sm text-[#5B6A78]">You do not have permission to view pre-qualification answers.</div>;
   }
   const [custom, answers] = await Promise.all([
     prisma.pqqQuestionSet.findMany({ where: { organizationId: orgId }, select: { id: true, name: true, issuer: true, dueOn: true, questions: true }, orderBy: { createdAt: "desc" } }),
@@ -37,22 +37,22 @@ export default async function PqqPage({ params }: { params: Promise<{ orgId: str
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 p-6">
       <div className="flex flex-col gap-1">
-        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#6B7280] hover:text-[#111827]">Management systems</Link>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Pre-qualification answers</h1>
-        <p className="max-w-[75ch] text-sm text-[#6B7280]">
+        <Link href={`/orgs/${orgId}/management-systems`} className="text-xs text-[#5B6A78] hover:text-[#131d29]">Management systems</Link>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Pre-qualification answers</h1>
+        <p className="max-w-[75ch] text-sm text-[#5B6A78]">
           Answer each pre-qualification topic once and reuse it for every questionnaire: the Common Assessment Standard (used by Constructionline, Veriforce CHAS,
           Smas Worksafe, Achilles, CQMS, SCCS and Compliance Chain, and preferred for public works under PPN 03/24) and your clients&apos; own PQQs. Answers can be
           drafted from your policies, certificates, training matrix, incident, supplier and carbon records. You have answered {answered.size} of {TOPICS.length} topics.
         </p>
       </div>
-      <ul className="flex flex-col divide-y divide-[#E5E7EB] rounded-[14px] border border-[#E5E7EB] bg-white">
+      <ul className="flex flex-col divide-y divide-[#E5E7EB] rounded-[14px] border border-[#E3E8EE] bg-white">
         {sets.map((s) => (
           <li key={s.id} className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-medium text-[#111827]">{s.name} <span className="text-xs font-normal text-[#6B7280]">{s.issuer}{s.detail ? ` · ${s.detail}` : ""}</span></p>
-              <p className="mt-1 text-xs tabular-nums text-[#6B7280]">{s.done} of {s.total} answer topics answered</p>
+              <p className="font-medium text-[#131d29]">{s.name} <span className="text-xs font-normal text-[#5B6A78]">{s.issuer}{s.detail ? ` · ${s.detail}` : ""}</span></p>
+              <p className="mt-1 text-xs tabular-nums text-[#5B6A78]">{s.done} of {s.total} answer topics answered</p>
             </div>
-            <Link href={`/orgs/${orgId}/management-systems/pqq/${s.id}`} className="rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-sm text-[#111827] hover:bg-[#F9FAFB]">Open</Link>
+            <Link href={`/orgs/${orgId}/management-systems/pqq/${s.id}`} className="rounded-lg border border-[#E3E8EE] px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC]">Open</Link>
           </li>
         ))}
       </ul>

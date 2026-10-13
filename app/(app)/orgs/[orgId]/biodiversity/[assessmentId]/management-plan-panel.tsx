@@ -54,14 +54,14 @@ export function ManagementPlanPanel({
       </CardHeader>
       <CardContent>
         {!meetsRequirement ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-[#5B6A78]">
             A management plan secures a net gain. This assessment does not deliver one yet, so
             there is nothing to secure.
           </p>
         ) : canManage ? (
           <CreatePlanForm orgId={orgId} assessmentId={assessmentId} />
         ) : (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-[#5B6A78]">
             No management plan yet. Someone with edit rights needs to create one.
           </p>
         )}
@@ -129,7 +129,7 @@ function ExistingPlan({
             <MonitoringEventChip key={e.id} orgId={orgId} canManage={canManage} event={e} />
           ))}
         </div>
-        <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-zinc-500">
+        <p className="mt-3 flex items-start gap-2 text-xs leading-relaxed text-[#5B6A78]">
           <CalendarClock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           Monitoring is front-loaded because created habitat fails early if it is going to fail,
           then drops to five-yearly once establishment is proven.
@@ -212,7 +212,7 @@ function MonitoringEventChip({
         ? "rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5"
         : event.status === "completed"
           ? "rounded-md border border-green-200 bg-green-50 px-2.5 py-1.5"
-          : "rounded-md border border-zinc-200 px-2.5 py-1.5";
+          : "rounded-md border border-[#E3E8EE] px-2.5 py-1.5";
 
   if (!recording) {
     return (
@@ -222,18 +222,18 @@ function MonitoringEventChip({
         onClick={() => canRecord && setRecording(true)}
         className={`${chipClass} text-left ${canRecord ? "cursor-pointer hover:border-zinc-400" : "cursor-default"}`}
       >
-        <div className="text-xs font-medium text-zinc-700">Year {event.monitoringYear}</div>
-        <div className="font-mono text-xs tabular-nums text-zinc-500">{fmtDate(event.dueOn)}</div>
+        <div className="text-xs font-medium text-[#41505F]">Year {event.monitoringYear}</div>
+        <div className="font-mono text-xs tabular-nums text-[#5B6A78]">{fmtDate(event.dueOn)}</div>
       </button>
     );
   }
 
   return (
-    <div className="w-full space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 sm:max-w-md">
-      <p className="text-sm font-medium text-zinc-900">Record visit, year {event.monitoringYear}</p>
+    <div className="w-full space-y-2 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-3 sm:max-w-md">
+      <p className="text-sm font-medium text-[#131d29]">Record visit, year {event.monitoringYear}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-1">
-          <label htmlFor={`me-date-${event.id}`} className="block text-xs font-medium text-zinc-700">
+          <label htmlFor={`me-date-${event.id}`} className="block text-xs font-medium text-[#41505F]">
             Visit date
           </label>
           <Input
@@ -244,7 +244,7 @@ function MonitoringEventChip({
           />
         </div>
         <div className="space-y-1">
-          <label htmlFor={`me-surveyor-${event.id}`} className="block text-xs font-medium text-zinc-700">
+          <label htmlFor={`me-surveyor-${event.id}`} className="block text-xs font-medium text-[#41505F]">
             Surveyor
           </label>
           <Input
@@ -254,14 +254,14 @@ function MonitoringEventChip({
           />
         </div>
         <div className="space-y-1">
-          <label htmlFor={`me-condition-${event.id}`} className="block text-xs font-medium text-zinc-700">
+          <label htmlFor={`me-condition-${event.id}`} className="block text-xs font-medium text-[#41505F]">
             Condition found
           </label>
           <select
             id={`me-condition-${event.id}`}
             value={conditionFound}
             onChange={(e) => setConditionFound(e.target.value)}
-            className="h-9 w-full rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
           >
             <option value="">Not recorded</option>
             {CONDITION_OPTIONS.map((c) => (
@@ -272,7 +272,7 @@ function MonitoringEventChip({
           </select>
         </div>
         <div className="space-y-1">
-          <span className="block text-xs font-medium text-zinc-700">Habitat on track</span>
+          <span className="block text-xs font-medium text-[#41505F]">Habitat on track</span>
           <div className="flex h-9 items-center gap-4 text-sm">
             <label className="flex items-center gap-1.5">
               <input type="radio" checked={onTrack} onChange={() => setOnTrack(true)} />
@@ -286,7 +286,7 @@ function MonitoringEventChip({
         </div>
       </div>
       <div className="space-y-1">
-        <label htmlFor={`me-findings-${event.id}`} className="block text-xs font-medium text-zinc-700">
+        <label htmlFor={`me-findings-${event.id}`} className="block text-xs font-medium text-[#41505F]">
           Findings
         </label>
         <Textarea
@@ -298,7 +298,7 @@ function MonitoringEventChip({
       </div>
       {!onTrack && (
         <div className="space-y-1">
-          <label htmlFor={`me-remedial-${event.id}`} className="block text-xs font-medium text-zinc-700">
+          <label htmlFor={`me-remedial-${event.id}`} className="block text-xs font-medium text-[#41505F]">
             Remedial action
           </label>
           <Textarea
@@ -375,7 +375,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
     <div className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <label htmlFor="mp-title" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="mp-title" className="block text-sm font-medium text-[#41505F]">
             Title
           </label>
           <Input
@@ -386,7 +386,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="mp-party" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="mp-party" className="block text-sm font-medium text-[#41505F]">
             Responsible party
           </label>
           <Input
@@ -397,7 +397,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="mp-start" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="mp-start" className="block text-sm font-medium text-[#41505F]">
             Commences on
           </label>
           <Input
@@ -411,7 +411,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <label htmlFor="mp-obj" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="mp-obj" className="block text-sm font-medium text-[#41505F]">
             Objectives
           </label>
           <Textarea
@@ -423,7 +423,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="mp-pres" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="mp-pres" className="block text-sm font-medium text-[#41505F]">
             Prescriptions
           </label>
           <Textarea
@@ -435,7 +435,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
           />
         </div>
         <div className="space-y-1.5">
-          <label htmlFor="mp-rem" className="block text-sm font-medium text-zinc-700">
+          <label htmlFor="mp-rem" className="block text-sm font-medium text-[#41505F]">
             Remediation strategy
           </label>
           <Textarea
@@ -455,7 +455,7 @@ function CreatePlanForm({ orgId, assessmentId }: { orgId: string; assessmentId: 
         </p>
       )}
 
-      <p className="text-xs leading-relaxed text-zinc-500">
+      <p className="text-xs leading-relaxed text-[#5B6A78]">
         Creating the plan schedules monitoring in years 1 to 5, then 10, 15, 20, 25 and 30, running
         to the end of the obligation.
       </p>

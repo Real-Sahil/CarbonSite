@@ -20,7 +20,7 @@ export default function EnvironmentLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-[100dvh] bg-white">
-      <div className="border-b border-zinc-200">
+      <div className="border-b border-[#E3E8EE]">
         <nav
           className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 pt-4"
           aria-label="Environmental management sections"
@@ -37,8 +37,8 @@ export default function EnvironmentLayout({ children }: { children: React.ReactN
                 className={cn(
                   "-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-normal tracking-tight transition-colors sm:px-4",
                   isActive
-                    ? "border-zinc-900 text-zinc-900"
-                    : "border-transparent text-zinc-500 hover:text-zinc-700",
+                    ? "border-zinc-900 text-[#131d29]"
+                    : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
                 )}
               >
                 {tab.label}

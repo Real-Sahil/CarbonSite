@@ -30,7 +30,7 @@ function Item({ w, editing, onWidth, onHide }: { w: GridWidget; editing: boolean
       className={`${SPAN[w.width]} min-w-0 ${isDragging ? "z-10 opacity-80" : ""} ${editing ? "rounded-[14px] outline outline-2 outline-dashed outline-amber-300/70" : ""}`}
     >
       {editing ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-t-[12px] bg-amber-50 px-3 py-2 text-xs text-[#374151]">
+        <div className="flex flex-wrap items-center gap-2 rounded-t-[12px] bg-amber-50 px-3 py-2 text-xs text-[#41505F]">
           <button
             type="button"
             className="cursor-grab rounded-md border border-amber-200 bg-white px-2 py-1 font-medium active:cursor-grabbing"
@@ -40,7 +40,7 @@ function Item({ w, editing, onWidth, onHide }: { w: GridWidget; editing: boolean
           >
             ⠿ Move
           </button>
-          <span className="mr-auto font-medium text-[#111827]">{w.title}</span>
+          <span className="mr-auto font-medium text-[#131d29]">{w.title}</span>
           <Button type="button" size="sm" variant="outline" aria-label={`${w.title}: make it ${w.width === "full" ? "half" : "full"} width`} onClick={onWidth}>
             {w.width === "full" ? "Make half width" : "Make full width"}
           </Button>
@@ -131,10 +131,10 @@ export function DashboardGrid({
               Cancel
             </Button>
             {hidden.length > 0 ? (
-              <label className="ml-auto flex items-center gap-2 text-xs text-[#374151]">
+              <label className="ml-auto flex items-center gap-2 text-xs text-[#41505F]">
                 Add widget
                 <select
-                  className="h-8 rounded-[10px] border border-[#E5E7EB] bg-white px-2 text-xs"
+                  className="h-8 rounded-[10px] border border-[#E3E8EE] bg-white px-2 text-xs"
                   value=""
                   onChange={(e) => e.target.value && patch(e.target.value, { hidden: false })}
                 >
@@ -151,12 +151,12 @@ export function DashboardGrid({
             <Button type="button" size="sm" variant="outline" onClick={() => { setItems(widgets); setEditing(true); setMessage(null); }}>
               Customise dashboard
             </Button>
-            <span className="text-xs text-[#6B7280]">
+            <span className="text-xs text-[#5B6A78]">
               {source === "personal" ? "Your layout" : source === "organisation" ? "Your organisation's default layout" : "Default layout for your role"}
             </span>
           </>
         )}
-        {message ? <span aria-live="polite" className="text-xs text-[#374151]">{message}</span> : null}
+        {message ? <span aria-live="polite" className="text-xs text-[#41505F]">{message}</span> : null}
       </div>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={shown.map((w) => w.id)} strategy={rectSortingStrategy}>

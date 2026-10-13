@@ -97,66 +97,66 @@ export default function SupplierAnalyticsPage() {
   ) : trend === 'declining' ? (
     <TrendingDown className="w-5 h-5 text-red-600" />
   ) : (
-    <Minus className="w-5 h-5 text-gray-600" />
+    <Minus className="w-5 h-5 text-[#41505F]" />
   );
 
   const trendLabel = trend === 'improving' ? 'Improving' : trend === 'declining' ? 'Declining' : 'Stable';
-  const trendColor = trend === 'improving' ? 'text-green-700' : trend === 'declining' ? 'text-red-700' : 'text-gray-700';
+  const trendColor = trend === 'improving' ? 'text-green-700' : trend === 'declining' ? 'text-red-700' : 'text-[#41505F]';
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Supplier Analytics</h1>
-        <p className="mt-2 text-sm text-gray-600">Performance metrics and data quality trends</p>
+        <h1 className="text-3xl text-[#131d29]">Supplier Analytics</h1>
+        <p className="mt-2 text-sm text-[#41505F]">Performance metrics and data quality trends</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 uppercase">Total Submissions</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#41505F] uppercase">Total Submissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-gray-900">{metrics.totalSubmissions}</p>
-            <p className="mt-1 text-xs text-gray-500">All submitted records</p>
+            <p className="text-3xl font-bold text-[#131d29]">{metrics.totalSubmissions}</p>
+            <p className="mt-1 text-xs text-[#5B6A78]">All submitted records</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 uppercase">Approval Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#41505F] uppercase">Approval Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <p className="text-3xl font-bold text-green-600">{metrics.approvalRate.toFixed(1)}%</p>
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{metrics.approvedSubmissions} approved</p>
+            <p className="mt-1 text-xs text-[#5B6A78]">{metrics.approvedSubmissions} approved</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 uppercase">Rejection Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#41505F] uppercase">Rejection Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <p className="text-3xl font-bold text-red-600">{rejectionRate.toFixed(1)}%</p>
               <XCircle className="w-5 h-5 text-red-600" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{metrics.rejectedSubmissions} rejected</p>
+            <p className="mt-1 text-xs text-[#5B6A78]">{metrics.rejectedSubmissions} rejected</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 uppercase">On-Time Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#41505F] uppercase">On-Time Rate</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <p className="text-3xl font-bold text-blue-600">{metrics.onTimeRate.toFixed(1)}%</p>
               <Clock className="w-5 h-5 text-blue-600" />
             </div>
-            <p className="mt-1 text-xs text-gray-500">{metrics.onTimeSubmissions} on time</p>
+            <p className="mt-1 text-xs text-[#5B6A78]">{metrics.onTimeSubmissions} on time</p>
           </CardContent>
         </Card>
       </div>
@@ -172,7 +172,7 @@ export default function SupplierAnalyticsPage() {
               <div className="flex items-end gap-4">
                 <div>
                   <p className="text-4xl font-bold text-blue-600">{Number(perf.dataQualityScore).toFixed(1)}</p>
-                  <p className="mt-2 text-sm text-gray-600">out of 100</p>
+                  <p className="mt-2 text-sm text-[#41505F]">out of 100</p>
                 </div>
                 <div className="flex-1">
                   <div className="h-2 rounded-full bg-gray-200">
@@ -184,7 +184,7 @@ export default function SupplierAnalyticsPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No data quality scores yet</p>
+              <p className="text-sm text-[#5B6A78]">No data quality scores yet</p>
             )}
           </CardContent>
         </Card>
@@ -199,7 +199,7 @@ export default function SupplierAnalyticsPage() {
               <div className="flex items-end gap-4">
                 <div>
                   <p className="text-4xl font-bold text-emerald-600">{Number(perf.completenessScore).toFixed(1)}</p>
-                  <p className="mt-2 text-sm text-gray-600">out of 100</p>
+                  <p className="mt-2 text-sm text-[#41505F]">out of 100</p>
                 </div>
                 <div className="flex-1">
                   <div className="h-2 rounded-full bg-gray-200">
@@ -211,7 +211,7 @@ export default function SupplierAnalyticsPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No completeness scores yet</p>
+              <p className="text-sm text-[#5B6A78]">No completeness scores yet</p>
             )}
           </CardContent>
         </Card>
@@ -227,7 +227,7 @@ export default function SupplierAnalyticsPage() {
             {trendIcon}
             <div>
               <p className={`text-lg font-semibold ${trendColor}`}>{trendLabel}</p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-[#41505F]">
                 {trend === 'improving'
                   ? 'Data quality is improving over recent submissions'
                   : trend === 'declining'
@@ -248,15 +248,15 @@ export default function SupplierAnalyticsPage() {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-2xl font-bold text-green-600">{metrics.approvedSubmissions}</p>
-              <p className="text-xs text-gray-600 uppercase">Approved</p>
+              <p className="text-xs text-[#41505F] uppercase">Approved</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-red-600">{metrics.rejectedSubmissions}</p>
-              <p className="text-xs text-gray-600 uppercase">Rejected</p>
+              <p className="text-xs text-[#41505F] uppercase">Rejected</p>
             </div>
             <div>
               <p className="text-2xl font-bold text-yellow-600">{Math.max(0, metrics.totalSubmissions - metrics.approvedSubmissions - metrics.rejectedSubmissions)}</p>
-              <p className="text-xs text-gray-600 uppercase">Pending</p>
+              <p className="text-xs text-[#41505F] uppercase">Pending</p>
             </div>
           </div>
         </CardContent>

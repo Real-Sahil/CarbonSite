@@ -98,8 +98,8 @@ export default function DataLineagePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Data Lineage</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl tracking-tight">Data Lineage</h1>
+        <p className="text-[#41505F] mt-2">
           Complete traceability from data import through calculation to published reports.
         </p>
       </div>
@@ -109,7 +109,7 @@ export default function DataLineagePage() {
           <CardTitle>Emission Calculation Pipeline</CardTitle>
           <CardDescription>Visual flow of data transformations</CardDescription>
         </CardHeader>
-        <CardContent className="flex justify-center bg-gray-50 rounded-lg p-6">
+        <CardContent className="flex justify-center bg-[#F9FAFC] rounded-lg p-6">
           <Mermaid diagram={dataLineageDiagram} />
         </CardContent>
       </Card>
@@ -132,7 +132,7 @@ export default function DataLineagePage() {
             <CardContent>
               <ul className="space-y-2">
                 {step.details.map((detail, i) => (
-                  <li key={i} className="text-sm text-gray-600 flex gap-2">
+                  <li key={i} className="text-sm text-[#41505F] flex gap-2">
                     <span className="text-blue-600 font-semibold">•</span>
                     {detail}
                   </li>
@@ -151,19 +151,19 @@ export default function DataLineagePage() {
         <CardContent className="space-y-4">
           <div>
             <h4 className="font-semibold text-sm mb-2">EmissionCalculation (Immutable)</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Once created, calculation rows are never updated or deleted. Recalculations create new rows with a new CalculationRun. This ensures audit trail integrity and prevents data tampering.
             </p>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-2">AuditLog (Append-Only)</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Every action (import, calculation, snapshot, report) is logged immutably with actor, timestamp, IP address, and cryptographic hash chains. Logs cannot be updated or deleted.
             </p>
           </div>
           <div>
             <h4 className="font-semibold text-sm mb-2">PublishedSnapshot (Locked)</h4>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Snapshots are timestamped and checksummed. Once published, they are the source of truth for that reporting period. Replacement requires explicit diff review and audit trail entry.
             </p>
           </div>

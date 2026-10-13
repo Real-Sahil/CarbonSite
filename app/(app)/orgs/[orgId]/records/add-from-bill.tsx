@@ -18,7 +18,7 @@ function Confidence({ value }: { value: number | undefined }) {
   if (value == null) return null;
   const [cls, label] = value >= 0.8 ? ["bg-emerald-500", "High"] : value >= 0.5 ? ["bg-amber-400", "Check"] : ["bg-red-500", "Low"];
   return (
-    <span className="ml-1 inline-flex items-center gap-1 text-[11px] font-normal text-[#6B7280]" title={`${Math.round(value * 100)}% confidence`}>
+    <span className="ml-1 inline-flex items-center gap-1 text-[11px] font-normal text-[#5B6A78]" title={`${Math.round(value * 100)}% confidence`}>
       <span className={`h-1.5 w-1.5 rounded-full ${cls}`} aria-hidden /> {label}
     </span>
   );
@@ -116,9 +116,9 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFB]">
-        {busy === "read" ? <Loader2 className="h-5 w-5 animate-spin text-[#6B7280]" /> : <FileUp className="h-5 w-5 text-[#6B7280]" />}
-        <span className="text-sm text-[#374151]">
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFC]">
+        {busy === "read" ? <Loader2 className="h-5 w-5 animate-spin text-[#5B6A78]" /> : <FileUp className="h-5 w-5 text-[#5B6A78]" />}
+        <span className="text-sm text-[#41505F]">
           {busy === "read" ? "Reading the document. Photos can take up to a minute." : "Choose a utility bill or fuel receipt (PDF or photo, up to 10 MB)"}
         </span>
         <input
@@ -154,9 +154,9 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
             <div>
               <label htmlFor="bill-amount" className={labelCls}>Amount<Confidence value={read.amount?.confidence} /></label>
               <input id="bill-amount" type="number" step="any" min="0" required className={inputCls} value={form.amount} onChange={set("amount")} />
-              {read.amount?.source ? <p className="mt-1 truncate text-[11px] text-[#6B7280]" title={read.amount.source}>Read from: {read.amount.source}</p> : null}
+              {read.amount?.source ? <p className="mt-1 truncate text-[11px] text-[#5B6A78]" title={read.amount.source}>Read from: {read.amount.source}</p> : null}
               {read.alternatives.length ? (
-                <p className="mt-1 text-[11px] text-[#6B7280]">
+                <p className="mt-1 text-[11px] text-[#5B6A78]">
                   Also on the page:{" "}
                   {read.alternatives.slice(0, 5).map((v) => (
                     <button key={v} type="button" onClick={() => setForm({ ...form, amount: String(v) })} className="mr-1 underline underline-offset-2">
@@ -200,11 +200,11 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button type="submit" disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-md bg-[#111827] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
+            <button type="submit" disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
               {busy === "save" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Save for review
             </button>
-            <button type="button" onClick={() => setRead(null)} className="text-sm text-[#6B7280]">Discard</button>
-            <span className="text-xs text-[#6B7280]">Read by {read.method === "ocr" ? "text recognition" : "the PDF's text"}. The bill is kept as evidence on the record.</span>
+            <button type="button" onClick={() => setRead(null)} className="text-sm text-[#5B6A78]">Discard</button>
+            <span className="text-xs text-[#5B6A78]">Read by {read.method === "ocr" ? "text recognition" : "the PDF's text"}. The bill is kept as evidence on the record.</span>
           </div>
         </form>
       ) : null}

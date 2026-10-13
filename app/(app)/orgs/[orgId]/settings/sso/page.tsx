@@ -257,13 +257,13 @@ export default function SsoSettingsPage() {
                     <SelectItem key={p.value} value={p.value}>
                       <div className="flex flex-col">
                         <span>{p.label}</span>
-                        <span className="text-xs text-gray-500">{p.description}</span>
+                        <span className="text-xs text-[#5B6A78]">{p.description}</span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#41505F]">
                 Select your identity provider. Generic OIDC works with any OpenID Connect provider.
               </p>
             </div>
@@ -279,7 +279,7 @@ export default function SsoSettingsPage() {
                 }
                 className="mt-2"
               />
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#41505F]">
                 Provided by your identity provider in the application settings.
               </p>
             </div>
@@ -296,7 +296,7 @@ export default function SsoSettingsPage() {
                 }
                 className="mt-2"
               />
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#41505F]">
                 {config
                   ? 'Leave blank to keep the current secret.'
                   : 'Keep this secret secure. Only enter here; it is encrypted in storage.'}
@@ -314,12 +314,12 @@ export default function SsoSettingsPage() {
                 }
                 className="mt-2"
               />
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#41505F]">
                 The OpenID Connect metadata URL (e.g., /.well-known/openid-configuration) or SAML metadata endpoint.
               </p>
             </div>
 
-            <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="space-y-4 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
               <div className="flex items-center gap-3">
                 <Checkbox
                   id="autoCreateUsers"
@@ -332,13 +332,13 @@ export default function SsoSettingsPage() {
                   <Label htmlFor="autoCreateUsers" className="font-medium cursor-pointer">
                     Auto-Create Users
                   </Label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#41505F]">
                     Automatically create users on their first SSO login.
                   </p>
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-[#E3E8EE] pt-4">
                 <Label htmlFor="autoAssignRole" className="font-medium">
                   Default Role for New Users
                 </Label>
@@ -363,7 +363,7 @@ export default function SsoSettingsPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="mt-2 text-sm text-gray-600">
+                <p className="mt-2 text-sm text-[#41505F]">
                   Role assigned to users on their first login. Can be changed later.
                 </p>
               </div>
@@ -373,10 +373,10 @@ export default function SsoSettingsPage() {
               <Label htmlFor="callbackUrl" className="font-medium">
                 Callback URL
               </Label>
-              <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <code className="text-sm font-mono text-gray-900">{callbackUrl}</code>
+              <div className="mt-2 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
+                <code className="text-sm font-mono text-[#131d29]">{callbackUrl}</code>
               </div>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#41505F]">
                 Configure this as the Redirect URI in your identity provider. Must be HTTPS in production.
               </p>
             </div>
@@ -385,17 +385,17 @@ export default function SsoSettingsPage() {
               <Label htmlFor="signInUrl" className="font-medium">
                 Sign-in link
               </Label>
-              <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-                <code className="text-sm font-mono text-gray-900 break-all">{signInUrl}</code>
+              <div className="mt-2 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
+                <code className="text-sm font-mono text-[#131d29] break-all">{signInUrl}</code>
               </div>
-              <p className="mt-2 text-sm text-gray-600">
+              <p className="mt-2 text-sm text-[#41505F]">
                 Share this link with your team, or set it as the app tile URL in your
                 identity provider for IdP-initiated sign-in. There is no email-domain-based
                 organization lookup yet, so this link is how members reach SSO sign-in.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4">
+            <div className="flex items-center gap-3 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
               <Checkbox
                 id="enabled"
                 checked={formData.enabled}
@@ -407,14 +407,14 @@ export default function SsoSettingsPage() {
                 <Label htmlFor="enabled" className="font-medium cursor-pointer">
                   Enable SSO
                 </Label>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[#41505F]">
                   When enabled, users can sign in with SSO.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex gap-2 border-t border-gray-200 pt-6">
+          <div className="flex gap-2 border-t border-[#E3E8EE] pt-6">
             <Button
               onClick={handleTest}
               variant="outline"
@@ -440,8 +440,8 @@ export default function SsoSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-semibold text-gray-900">For Okta:</h3>
-            <ol className="mt-2 space-y-2 list-decimal list-inside text-sm text-gray-600">
+            <h3 className="font-semibold text-[#131d29]">For Okta:</h3>
+            <ol className="mt-2 space-y-2 list-decimal list-inside text-sm text-[#41505F]">
               <li>Log in to Okta Admin Console</li>
               <li>
                 {'Create a new OIDC application: Applications > Applications > Create App Integration > OIDC'}
@@ -452,9 +452,9 @@ export default function SsoSettingsPage() {
             </ol>
           </div>
 
-          <div className="border-t border-gray-200 pt-4">
-            <h3 className="font-semibold text-gray-900">For Azure AD:</h3>
-            <ol className="mt-2 space-y-2 list-decimal list-inside text-sm text-gray-600">
+          <div className="border-t border-[#E3E8EE] pt-4">
+            <h3 className="font-semibold text-[#131d29]">For Azure AD:</h3>
+            <ol className="mt-2 space-y-2 list-decimal list-inside text-sm text-[#41505F]">
               <li>Log in to Azure Portal</li>
               <li>
                 {'Go to Azure Active Directory > App registrations > New registration'}

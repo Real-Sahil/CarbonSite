@@ -98,7 +98,7 @@ export function CreateTargetForm({ orgId, periods }: CreateTargetFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="The target" description="What you want to cut, measured from a baseline period to a target period." cols={2}>
         <FormField label="Type" htmlFor="f-type">
           <Select value={targetType} onValueChange={setTargetType}>
@@ -236,7 +236,7 @@ export function CreateInitiativeForm({ orgId, members, facilities, categories, t
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E5E7EB] bg-white p-4 sm:p-5">
+    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg border border-[#E3E8EE] bg-white p-4 sm:p-5">
       <FormSection title="The initiative" cols={3}>
         <FormField label="Name" span={4} htmlFor="f-name" optional>
           <Input id="f-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Switch to EVs" className="w-full" />

@@ -83,7 +83,7 @@ export default function WorkflowDetailPage() {
           Back
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Workflow Executions</h1>
+          <h1 className="text-3xl tracking-tight">Workflow Executions</h1>
           <p className="text-muted-foreground mt-1">
             View execution history for this workflow
           </p>

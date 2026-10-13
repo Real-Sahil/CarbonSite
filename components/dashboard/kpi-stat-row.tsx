@@ -56,7 +56,7 @@ function DeltaChip({ delta, goodUp }: { delta: { value: number; label: string };
   const up = delta.value > 0;
   const good = flat ? null : up === goodUp;
   const arrow = flat ? "→" : up ? "↑" : "↓";
-  const tone = good === null ? "bg-[#F3F4F6] text-[#374151]" : good ? "bg-[#ECFDF5] text-[#047857]" : "bg-[#FEF2F2] text-[#B91C1C]";
+  const tone = good === null ? "bg-[#F3F4F6] text-[#41505F]" : good ? "bg-[#ECFDF5] text-[#047857]" : "bg-[#FEF2F2] text-[#B91C1C]";
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", tone)}>
       <span aria-hidden="true">{arrow}</span>
@@ -85,12 +85,12 @@ function KpiCard({ stat }: { stat: KpiStat }) {
   const text = shown === null ? "No data" : formatKpi(stat.format, shown);
   const body = (
     <>
-      <p className="text-[13px] font-medium text-[#374151]">{stat.label}</p>
-      {stat.basis && <p className="mt-0.5 text-[11px] leading-4 text-[#6B7280]">{stat.basis}</p>}
-      <p className="mt-3 text-[28px] font-semibold leading-8 tracking-tight tabular-nums text-[#111827]" aria-live="off">
+      <p className="text-[13px] font-medium text-[#41505F]">{stat.label}</p>
+      {stat.basis && <p className="mt-0.5 text-[11px] leading-4 text-[#5B6A78]">{stat.basis}</p>}
+      <p className="mt-3 text-[28px] font-semibold leading-8 tracking-tight tabular-nums text-[#131d29]" aria-live="off">
         {text}
       </p>
-      {shown === null && stat.note && <p className="mt-1 text-xs leading-5 text-[#6B7280]">{stat.note}</p>}
+      {shown === null && stat.note && <p className="mt-1 text-xs leading-5 text-[#5B6A78]">{stat.note}</p>}
       {stat.delta && (
         <div className="mt-3">
           <DeltaChip delta={stat.delta} goodUp={stat.goodUp ?? false} />
@@ -98,7 +98,7 @@ function KpiCard({ stat }: { stat: KpiStat }) {
       )}
     </>
   );
-  const className = "block rounded-xl border border-[#E5E7EB] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]";
+  const className = "block rounded-xl border border-[#E3E8EE] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]";
   if (stat.href) {
     return (
       <Link

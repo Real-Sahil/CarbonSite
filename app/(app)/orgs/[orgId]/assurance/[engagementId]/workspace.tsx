@@ -135,9 +135,9 @@ export function EngagementWorkspace({
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex flex-wrap gap-6 text-sm">
-            <span className="text-zinc-500">
+            <span className="text-[#5B6A78]">
               Materiality:{" "}
-              <span className="font-medium text-zinc-900">
+              <span className="font-medium text-[#131d29]">
                 {engagement.materialityThresholdPercent !== null
                   ? `${engagement.materialityThresholdPercent}%`
                   : engagement.materialityThresholdCo2e !== null
@@ -198,18 +198,18 @@ export function EngagementWorkspace({
         </CardContent>
       </Card>
 
-      <div className="flex gap-1 border-b border-zinc-200">
+      <div className="flex gap-1 border-b border-[#E3E8EE]">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={cn(
               "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
-              tab === t ? "border-zinc-900 text-zinc-900" : "border-transparent text-zinc-500 hover:text-zinc-700",
+              tab === t ? "border-zinc-900 text-[#131d29]" : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
             )}
           >
             {t}{" "}
-            <span className="text-zinc-500">
+            <span className="text-[#5B6A78]">
               ({t === "Evidence" ? evidenceRequests.length : t === "Samples" ? samples.length : findings.length})
             </span>
           </button>
@@ -315,7 +315,7 @@ function EvidenceTab({
       {canManage && (
         <div className="flex justify-end">
           {adding ? (
-            <div className="w-full space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+            <div className="w-full space-y-2 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-3">
               <div className="grid gap-2 sm:grid-cols-3">
                 <Input placeholder="Reference, e.g. PBC-01" value={reference} onChange={(e) => setReference(e.target.value)} className="sm:col-span-1" />
                 <Input placeholder="What is being requested" value={description} onChange={(e) => setDescription(e.target.value)} className="sm:col-span-2" />
@@ -344,7 +344,7 @@ function EvidenceTab({
 
       {items.length === 0 ? (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">No evidence requests yet.</CardContent>
+          <CardContent className="py-6 text-sm text-[#5B6A78]">No evidence requests yet.</CardContent>
         </Card>
       ) : (
         <Card>
@@ -361,15 +361,15 @@ function EvidenceTab({
               <TableBody>
                 {items.map((item) => (
                   <TableRow key={item.id}>
-                    <TableCell className="pl-4 font-medium text-zinc-900">{item.reference}</TableCell>
-                    <TableCell className="max-w-[36ch] text-sm text-zinc-600">{item.description}</TableCell>
-                    <TableCell className="text-sm text-zinc-500">{item.owner ?? "Unassigned"}</TableCell>
+                    <TableCell className="pl-4 font-medium text-[#131d29]">{item.reference}</TableCell>
+                    <TableCell className="max-w-[36ch] text-sm text-[#41505F]">{item.description}</TableCell>
+                    <TableCell className="text-sm text-[#5B6A78]">{item.owner ?? "Unassigned"}</TableCell>
                     <TableCell className="pr-4">
                       {canManage ? (
                         <select
                           value={item.status}
                           onChange={(e) => updateStatus(item.id, e.target.value)}
-                          className="h-8 rounded-md border border-zinc-200 bg-white px-2 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
                         >
                           <option value="requested">Requested</option>
                           <option value="provided">Provided</option>
@@ -472,7 +472,7 @@ function SamplesTab({
     <div className="space-y-3">
       {canManage && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-[#5B6A78]">
             Generates a stratified sample: everything above materiality in full, then the weakest
             data provenance tiers, then a random top-up.
           </p>
@@ -486,7 +486,7 @@ function SamplesTab({
 
       {items.length === 0 ? (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">No samples selected yet.</CardContent>
+          <CardContent className="py-6 text-sm text-[#5B6A78]">No samples selected yet.</CardContent>
         </Card>
       ) : (
         <Card>
@@ -504,17 +504,17 @@ function SamplesTab({
                 {items.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell className="pl-4">
-                      <div className="font-medium text-zinc-900">
+                      <div className="font-medium text-[#131d29]">
                         {s.sourceDescription ?? "Activity record"}
                       </div>
                       {s.totalCo2e !== null && (
-                        <div className="text-xs text-zinc-500">
+                        <div className="text-xs text-[#5B6A78]">
                           {s.totalCo2e.toFixed(2)} tCO₂e{s.dataOrigin ? ` · ${s.dataOrigin}` : ""}
                         </div>
                       )}
                       {canManage && (
                         <div className="mt-1">
-                          <button type="button" onClick={() => recompute(s.id)} className="text-xs font-medium text-zinc-700 underline underline-offset-2">
+                          <button type="button" onClick={() => recompute(s.id)} className="text-xs font-medium text-[#41505F] underline underline-offset-2">
                             Recompute
                           </button>
                           {checks[s.id] && (
@@ -531,7 +531,7 @@ function SamplesTab({
                         {s.samplingMethod.replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="max-w-[32ch] text-xs leading-relaxed text-zinc-500">
+                    <TableCell className="max-w-[32ch] text-xs leading-relaxed text-[#5B6A78]">
                       {s.selectionRationale}
                     </TableCell>
                     <TableCell className="pr-4">
@@ -539,7 +539,7 @@ function SamplesTab({
                         <select
                           value={s.result}
                           onChange={(e) => recordResult(s.id, e.target.value)}
-                          className="h-8 rounded-md border border-zinc-200 bg-white px-2 text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
                         >
                           <option value="pending">Pending</option>
                           <option value="pass">Pass</option>
@@ -667,12 +667,12 @@ function FindingsTab({
       {canManage && (
         <div className="flex justify-end">
           {raising ? (
-            <div className="w-full space-y-2 rounded-md border border-zinc-200 bg-zinc-50 p-3">
+            <div className="w-full space-y-2 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] p-3">
               <div className="grid gap-2 sm:grid-cols-3">
                 <select
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value)}
-                  className="h-9 rounded-md border border-zinc-200 bg-white px-3 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                  className="h-9 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
                 >
                   <option value="observation">Observation</option>
                   <option value="minor">Minor</option>
@@ -706,7 +706,7 @@ function FindingsTab({
 
       {items.length === 0 && (
         <Card>
-          <CardContent className="py-6 text-sm text-zinc-500">No findings raised yet.</CardContent>
+          <CardContent className="py-6 text-sm text-[#5B6A78]">No findings raised yet.</CardContent>
         </Card>
       )}
 
@@ -717,9 +717,9 @@ function FindingsTab({
               <div>
                 <div className="flex items-center gap-2">
                   <SeverityBadge severity={f.severity} />
-                  <span className="font-medium text-zinc-900">{f.title}</span>
+                  <span className="font-medium text-[#131d29]">{f.title}</span>
                 </div>
-                <p className="mt-1 max-w-[60ch] text-sm text-zinc-600">{f.description}</p>
+                <p className="mt-1 max-w-[60ch] text-sm text-[#41505F]">{f.description}</p>
               </div>
               <Badge variant="outline" className="text-xs capitalize">
                 {f.status.replace(/_/g, " ")}
@@ -727,7 +727,7 @@ function FindingsTab({
             </div>
 
             {f.managementResponse && (
-              <div className="rounded-md bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
+              <div className="rounded-md bg-[#F9FAFC] px-3 py-2 text-sm text-[#41505F]">
                 <span className="font-medium">Management response: </span>
                 {f.managementResponse}
               </div>

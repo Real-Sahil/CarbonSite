@@ -12,8 +12,8 @@ import { PROFILE_TEMPLATES, templateFor } from "@/lib/imports/profile-templates"
 type Category = { code: string; name: string; scope: number };
 type RuleDraft = Omit<ProfileRule, "basis"> & { basis: "spend" | "quantity"; key: number };
 
-const field = "h-8 rounded-md border border-[#E5E7EB] bg-white px-2 text-sm text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/30";
-const label = "text-xs text-[#374151] tracking-[-0.36px]";
+const field = "h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/30";
+const label = "text-xs text-[#41505F] tracking-[-0.36px]";
 
 let nextKey = 1;
 const draft = (r: Partial<ProfileRule> = {}): RuleDraft => ({ action: "include", ...r, basis: r.basis ?? "spend", key: nextKey++ });
@@ -137,8 +137,8 @@ export function ProfileEditor({
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-xl border border-[#E5E7EB] bg-white p-5">
-        <h2 className="text-sm font-semibold text-[#111827]">Export</h2>
+      <section className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+        <h2 className="text-sm font-semibold text-[#131d29]">Export</h2>
         <div className="mt-4 flex flex-wrap items-end gap-4">
           <div className="flex flex-col gap-1">
             <label htmlFor="profile-name" className={label}>Profile name</label>
@@ -175,16 +175,16 @@ export function ProfileEditor({
               }}
             />
           </div>
-          {busy === "read" ? <Loader2 aria-label="Reading" className="mb-2 h-4 w-4 animate-spin text-[#6B7280]" /> : null}
+          {busy === "read" ? <Loader2 aria-label="Reading" className="mb-2 h-4 w-4 animate-spin text-[#5B6A78]" /> : null}
         </div>
-        <p className="mt-3 max-w-[75ch] text-xs text-[#6B7280]">
+        <p className="mt-3 max-w-[75ch] text-xs text-[#5B6A78]">
           {template.exportHint} Column names differ between versions and saved layouts, so check each column below against your file. The sample is read to check the mapping and is not stored.
         </p>
       </section>
 
-      <section className="rounded-xl border border-[#E5E7EB] bg-white p-5">
-        <h2 className="text-sm font-semibold text-[#111827]">Columns</h2>
-        <p className="mt-1 text-xs text-[#6B7280]">Posting date is required, plus a ledger account or cost code, and a net amount or quantity.</p>
+      <section className="rounded-xl border border-[#E3E8EE] bg-white p-5">
+        <h2 className="text-sm font-semibold text-[#131d29]">Columns</h2>
+        <p className="mt-1 text-xs text-[#5B6A78]">Posting date is required, plus a ledger account or cost code, and a net amount or quantity.</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PROFILE_COLUMNS.map((c) => (
             <div key={c.key} className="flex flex-col gap-1">
@@ -226,11 +226,11 @@ export function ProfileEditor({
         </div>
       </section>
 
-      <section className="rounded-xl border border-[#E5E7EB] bg-white p-5">
+      <section className="rounded-xl border border-[#E3E8EE] bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-[#111827]">Rules</h2>
-            <p className="mt-1 max-w-[75ch] text-xs text-[#6B7280]">
+            <h2 className="text-sm font-semibold text-[#131d29]">Rules</h2>
+            <p className="mt-1 max-w-[75ch] text-xs text-[#5B6A78]">
               Match a ledger account, a cost code or both: <code>5100</code> exactly, <code>51*</code> by prefix, <code>5000-5099</code> as a range. The most specific rule wins. Lines no rule covers are left out of the import and listed, never guessed.
             </p>
           </div>
@@ -239,12 +239,12 @@ export function ProfileEditor({
           </Button>
         </div>
         {rules.length === 0 ? (
-          <p className="mt-4 text-sm text-[#6B7280]">No rules yet. Check a sample export to see which accounts it holds.</p>
+          <p className="mt-4 text-sm text-[#5B6A78]">No rules yet. Check a sample export to see which accounts it holds.</p>
         ) : (
           <div className="mt-4 overflow-x-auto">
             <table className="w-full min-w-[1100px] text-sm">
               <thead>
-                <tr className="text-left text-xs text-[#6B7280]">
+                <tr className="text-left text-xs text-[#5B6A78]">
                   {["Account", "Cost code", "Action", "Category", "Basis", "Unit", "Industry code", "Fuel", "Site", "Note", ""].map((h) => (
                     <th key={h} className="px-1.5 pb-2 font-medium">{h}</th>
                   ))}
@@ -283,7 +283,7 @@ export function ProfileEditor({
                       <td className="px-1.5 py-1.5"><Input aria-label="Site" disabled={off} value={r.facilityName ?? ""} onChange={(e) => update(r.key, { facilityName: e.target.value })} className="h-8 w-28" /></td>
                       <td className="px-1.5 py-1.5"><Input aria-label="Note" value={r.note ?? ""} onChange={(e) => update(r.key, { note: e.target.value })} className="h-8 w-32" /></td>
                       <td className="px-1.5 py-1.5">
-                        <button type="button" aria-label="Remove rule" onClick={() => setRules((rs) => rs.filter((x) => x.key !== r.key))} className="rounded p-1.5 text-[#6B7280] hover:bg-[#F3F4F6] hover:text-red-600">
+                        <button type="button" aria-label="Remove rule" onClick={() => setRules((rs) => rs.filter((x) => x.key !== r.key))} className="rounded p-1.5 text-[#5B6A78] hover:bg-[#F3F4F6] hover:text-red-600">
                           <Trash2 aria-hidden="true" className="h-4 w-4" />
                         </button>
                       </td>
@@ -292,32 +292,32 @@ export function ProfileEditor({
                 })}
               </tbody>
             </table>
-            <p className="mt-2 text-xs text-[#6B7280]">
+            <p className="mt-2 text-xs text-[#5B6A78]">
               Spend lines are priced by spend-based factors, which need the supplier&apos;s industry code (UK SIC, NAICS or NAF). Site names must match a facility exactly.
             </p>
           </div>
         )}
       </section>
 
-      <section className="rounded-xl border border-[#E5E7EB] bg-white p-5">
+      <section className="rounded-xl border border-[#E3E8EE] bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-[#111827]">Check against the sample</h2>
+          <h2 className="text-sm font-semibold text-[#131d29]">Check against the sample</h2>
           <Button type="button" variant="outline" size="sm" disabled={!file || busy !== null} onClick={check} className="gap-1.5">
             {busy === "check" ? <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" /> : null}
             Check rules
           </Button>
         </div>
-        {!file ? <p className="mt-2 text-sm text-[#6B7280]">Choose a sample export above to see what these rules include.</p> : null}
+        {!file ? <p className="mt-2 text-sm text-[#5B6A78]">Choose a sample export above to see what these rules include.</p> : null}
         {summary ? (
           <div className="mt-4 flex flex-col gap-5">
-            <p className="text-sm text-[#374151]">
+            <p className="text-sm text-[#41505F]">
               {summary.lines.toLocaleString("en-GB")} lines: <strong>{summary.included.toLocaleString("en-GB")}</strong> included, {summary.ignored.toLocaleString("en-GB")} ignored by rule,{" "}
               <span className={summary.needsAttention ? "text-amber-700" : undefined}>{summary.needsAttention.toLocaleString("en-GB")} left out and listed</span>.
             </p>
             {summary.byCategory.length ? (
               <table className="w-full max-w-xl text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-[#6B7280]"><th className="pb-1 font-medium">Category</th><th className="pb-1 text-right font-medium">Lines</th><th className="pb-1 text-right font-medium">Net amount</th></tr>
+                  <tr className="text-left text-xs text-[#5B6A78]"><th className="pb-1 font-medium">Category</th><th className="pb-1 text-right font-medium">Lines</th><th className="pb-1 text-right font-medium">Net amount</th></tr>
                 </thead>
                 <tbody>
                   {summary.byCategory.map((c) => (
@@ -332,13 +332,13 @@ export function ProfileEditor({
             ) : null}
             {summary.unmatched.length ? (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">No rule yet, largest first</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">No rule yet, largest first</h3>
                 <table className="mt-2 w-full max-w-3xl text-sm">
                   <tbody>
                     {summary.unmatched.map((u) => (
                       <tr key={`${u.account ?? ""}|${u.costCode ?? ""}`} className="border-t border-[#F3F4F6]">
                         <td className="py-1.5 font-mono text-xs">{[u.account, u.costCode].filter(Boolean).join(" / ")}</td>
-                        <td className="py-1.5 text-[#6B7280]">{u.example}</td>
+                        <td className="py-1.5 text-[#5B6A78]">{u.example}</td>
                         <td className="py-1.5 text-right tabular-nums">{u.lines} lines</td>
                         <td className="py-1.5 text-right tabular-nums">{u.netAmount.toLocaleString("en-GB", { minimumFractionDigits: 2 })}</td>
                         <td className="py-1.5 pl-3 text-right">
@@ -372,7 +372,7 @@ export function ProfileEditor({
           {busy === "save" ? <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" /> : null}
           Save profile
         </Button>
-        <Link href={`/orgs/${orgId}/imports/profiles`} className="text-sm text-[#374151] hover:text-[#111827]">Cancel</Link>
+        <Link href={`/orgs/${orgId}/imports/profiles`} className="text-sm text-[#41505F] hover:text-[#131d29]">Cancel</Link>
         {initial ? (
           <button type="button" onClick={remove} disabled={busy !== null} className="ml-auto text-sm text-red-600 hover:text-red-700">
             Delete profile

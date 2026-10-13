@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import type { PlanFields } from "@/lib/transition-plan";
 import { FormField, fieldClass } from "@/components/forms/form-kit";
 
-const labelClass = "mb-1.5 block text-xs font-medium text-[#374151]";
+const labelClass = "mb-1.5 block text-xs font-medium text-[#41505F]";
 const areaClass = fieldClass;
 
 const FIELDS: { key: keyof PlanFields; label: string; help: string }[] = [
@@ -73,7 +73,7 @@ export function PlanForm({ orgId, canEdit, plan, currency }: { orgId: string; ca
             defaultValue={(plan?.[field.key] as string | null) ?? ""}
             className={areaClass}
           />
-          <p className="mt-1 text-xs text-[#6B7280]">{field.help}</p>
+          <p className="mt-1 text-xs text-[#5B6A78]">{field.help}</p>
         </div>
       ))}
       <FormField label="Net zero year" htmlFor="tp-netZeroYear">

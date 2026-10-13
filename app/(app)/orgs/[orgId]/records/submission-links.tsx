@@ -58,9 +58,9 @@ export function SubmissionLinks({ orgId, purpose = "bills" }: { orgId: string; p
   const live = links.filter((l) => !l.revokedAt && new Date(l.expiresAt) > new Date());
 
   return (
-    <div className="rounded-lg bg-[#F9FAFB] px-4 py-3 text-sm text-[#374151]">
+    <div className="rounded-lg bg-[#F9FAFC] px-4 py-3 text-sm text-[#41505F]">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <Link2 className="h-4 w-4 text-[#6B7280]" aria-hidden />
+        <Link2 className="h-4 w-4 text-[#5B6A78]" aria-hidden />
         <span>{purpose === "waste_documents" ? "Contractors can send transfer notes, licences and permits through a link, no account needed. They wait below for you to accept." : "Subcontractors can send invoices and delivery notes through a link, no account needed. Their files appear in this list to match."}</span>
         <button type="button" onClick={() => { setOpen(!open); setIssued(null); }} className="text-xs font-medium underline underline-offset-2">
           {open ? "Close" : `Upload links (${live.length})`}
@@ -97,7 +97,7 @@ export function SubmissionLinks({ orgId, purpose = "bills" }: { orgId: string; p
                 const dead = !!l.revokedAt || new Date(l.expiresAt) <= new Date();
                 return (
                   <li key={l.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
-                    <span className="font-medium text-[#111827]">{l.label}</span>
+                    <span className="font-medium text-[#131d29]">{l.label}</span>
                     {l.projectName && <span>{l.projectName}</span>}
                     <span>{l.uploadCount} {l.uploadCount === 1 ? "file" : "files"}{l.lastUsedAt ? `, last on ${new Date(l.lastUsedAt).toLocaleDateString("en-GB")}` : ""}</span>
                     {!dead && Date.now() - new Date(l.lastUsedAt ?? l.createdAt).getTime() > 30 * 86_400_000 && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-800">Nothing received in 30 days</span>}

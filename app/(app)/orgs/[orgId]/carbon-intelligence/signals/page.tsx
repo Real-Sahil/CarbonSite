@@ -62,19 +62,19 @@ export default async function SignalsPage({ params, searchParams }: Props) {
   ]);
 
   return (
-    <div className="min-h-[100dvh] bg-[#F9FAFB]">
-      <div className="bg-white border-b border-[#E5E7EB]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
+      <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF]">
-              <Radio className="h-4 w-4 text-[#111827]" />
+              <Radio className="h-4 w-4 text-[#131d29]" />
             </div>
-            <span className="text-xs font-medium tracking-wide text-[#111827] uppercase">Carbon Intelligence</span>
+            <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Carbon Intelligence</span>
           </div>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-[#111827]">Carbon Signals</h1>
-              <p className="mt-1 text-sm text-[#374151] max-w-[65ch]">
+              <h1 className="text-2xl tracking-tight text-[#131d29]">Carbon Signals</h1>
+              <p className="mt-1 text-sm text-[#41505F] max-w-[65ch]">
                 Real-time and near-real-time carbon data ingested from external sources.
               </p>
             </div>
@@ -84,12 +84,12 @@ export default async function SignalsPage({ params, searchParams }: Props) {
           {signals.length > 0 && (
             <div className="mt-6 flex gap-6">
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold text-[#111827] tabular-nums">{signals.length}</span>
-                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">signals</span>
+                <span className="text-xl font-bold text-[#131d29] tabular-nums">{signals.length}</span>
+                <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">signals</span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-xl font-bold text-[#111827] tabular-nums">{signalTypes.length}</span>
-                <span className="text-xs text-[#6B7280] uppercase tracking-wide font-medium">types</span>
+                <span className="text-xl font-bold text-[#131d29] tabular-nums">{signalTypes.length}</span>
+                <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">types</span>
               </div>
             </div>
           )}
@@ -97,46 +97,46 @@ export default async function SignalsPage({ params, searchParams }: Props) {
       </div>
 
       <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
-        <Card className="border-[#E5E7EB] shadow-none">
-          <CardHeader className="px-6 py-4 border-b border-[#E5E7EB]">
-            <CardTitle className="text-sm font-semibold text-[#111827]">
+        <Card className="border-[#E3E8EE] shadow-none">
+          <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
+            <CardTitle className="text-sm font-semibold text-[#131d29]">
               Signals
-              <span className="ml-2 text-xs font-normal text-[#6B7280]">({signals.length})</span>
+              <span className="ml-2 text-xs font-normal text-[#5B6A78]">({signals.length})</span>
             </CardTitle>
-            <CardDescription className="text-xs text-[#6B7280] mt-0.5">
+            <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
               Up to 200 most recent shown, ordered by recorded date.
             </CardDescription>
           </CardHeader>
           <CardContent className={signals.length === 0 ? "py-10" : "p-0"}>
             {signals.length === 0 ? (
               <div className="text-center">
-                <p className="text-sm text-[#6B7280]">No signals ingested yet. Connect an integration or manually ingest a signal.</p>
+                <p className="text-sm text-[#5B6A78]">No signals ingested yet. Connect an integration or manually ingest a signal.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-[#F9FAFB] border-b border-[#E5E7EB]">
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pl-6">Signal type</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Source</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3">Region</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 text-right">Value</TableHead>
-                      <TableHead className="text-xs font-medium text-[#6B7280] py-3 pr-6">Recorded</TableHead>
+                    <TableRow className="bg-[#F9FAFC] border-b border-[#E3E8EE]">
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pl-6">Signal type</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Source</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Region</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 text-right">Value</TableHead>
+                      <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Recorded</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {signals.map((s) => (
-                      <TableRow key={s.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB] transition-colors">
+                      <TableRow key={s.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6">
-                          <span className="text-sm font-mono font-medium text-[#111827]">{s.signalType}</span>
+                          <span className="text-sm font-mono font-medium text-[#131d29]">{s.signalType}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-[#374151] py-3.5">{s.source}</TableCell>
-                        <TableCell className="text-sm text-[#6B7280] py-3.5">{s.region ?? "-"}</TableCell>
-                        <TableCell className="text-right text-sm font-semibold text-[#111827] tabular-nums py-3.5">
+                        <TableCell className="text-sm text-[#41505F] py-3.5">{s.source}</TableCell>
+                        <TableCell className="text-sm text-[#5B6A78] py-3.5">{s.region ?? "-"}</TableCell>
+                        <TableCell className="text-right text-sm font-semibold text-[#131d29] tabular-nums py-3.5">
                           {Number(s.value).toLocaleString("en-GB", { maximumFractionDigits: 6 })}{" "}
-                          <span className="text-xs font-normal text-[#6B7280]">{s.unit}</span>
+                          <span className="text-xs font-normal text-[#5B6A78]">{s.unit}</span>
                         </TableCell>
-                        <TableCell className="text-sm text-[#6B7280] tabular-nums py-3.5 pr-6">
+                        <TableCell className="text-sm text-[#5B6A78] tabular-nums py-3.5 pr-6">
                           {new Date(s.recordedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </TableCell>
                       </TableRow>

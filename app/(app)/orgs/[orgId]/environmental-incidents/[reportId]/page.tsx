@@ -73,7 +73,7 @@ export default async function EnvironmentalIncidentDetailPage({ params }: PagePr
   return (
     <>
       <div className="border-b bg-white px-4 py-2">
-        <Link href={`/orgs/${orgId}/environment/incidents`} className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-900">
+        <Link href={`/orgs/${orgId}/environment/incidents`} className="inline-flex items-center gap-1 text-sm text-[#5B6A78] hover:text-[#131d29]">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
           Incident register
         </Link>

@@ -46,13 +46,13 @@ export default async function Pas2080Page({ params }: Props) {
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-4 py-8 sm:px-[42px]">
       <div>
-        <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm text-[#374151]">
+        <nav className="mb-3 flex flex-wrap items-center gap-2 text-sm text-[#41505F]">
           <Link href={`/orgs/${orgId}/contracts/${contractId}`} className="hover:underline">{project.contract.name}</Link>
           <span aria-hidden="true">/</span>
           <Link href={base} className="hover:underline">{project.name}</Link>
         </nav>
-        <h1 className="text-2xl font-bold tracking-tight text-[#111827]">PAS 2080 carbon management</h1>
-        <p className="mt-2 max-w-[65ch] text-sm text-[#374151]">
+        <h1 className="text-2xl tracking-tight text-[#131d29]">PAS 2080 carbon management</h1>
+        <p className="mt-2 max-w-[65ch] text-sm text-[#41505F]">
           Baseline, target and reduction opportunities for {project.name}, worked down the PAS 2080:2023 carbon
           reduction hierarchy. Measured carbon comes from approved delivery notes, embodied carbon records and site activity.
         </p>
@@ -80,17 +80,17 @@ export default async function Pas2080Page({ params }: Props) {
             {position.byLevel.map((l, i) => (
               <div key={l.level}>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-medium text-[#111827]">{l.label}</p>
-                  <p className="text-xs tabular-nums text-[#374151]">
+                  <p className="text-sm font-medium text-[#131d29]">{l.label}</p>
+                  <p className="text-xs tabular-nums text-[#41505F]">
                     {t(l.committed)} committed{l.pipeline > 0 ? `, ${t(l.pipeline)} in review` : ""}
                   </p>
                 </div>
-                <p className="text-xs text-[#6B7280]">{HIERARCHY[i].prompt}</p>
+                <p className="text-xs text-[#5B6A78]">{HIERARCHY[i].prompt}</p>
                 <div className="mt-1.5 flex h-2 overflow-hidden rounded-full bg-[#F3F4F6]" aria-hidden="true">
                   <div className="bg-[#c2410c]" style={{ width: `${(l.committed / maxLevel) * 100}%` }} />
                   <div className="bg-[#FED7AA]" style={{ width: `${(l.pipeline / maxLevel) * 100}%` }} />
                 </div>
-                <p className="mt-1 text-xs text-[#6B7280]">
+                <p className="mt-1 text-xs text-[#5B6A78]">
                   {l.count} {l.count === 1 ? "opportunity" : "opportunities"}{l.rejected ? `, ${l.rejected} rejected` : ""}
                 </p>
               </div>
@@ -117,9 +117,9 @@ export default async function Pas2080Page({ params }: Props) {
                     <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-label="Warning" />
                   )}
                   <div className="min-w-0">
-                    <p className="text-[#111827]">{c.description}</p>
-                    <p className="text-xs text-[#6B7280]">{c.area}</p>
-                    {c.message && <p className="mt-0.5 text-xs text-[#374151]">{c.message}</p>}
+                    <p className="text-[#131d29]">{c.description}</p>
+                    <p className="text-xs text-[#5B6A78]">{c.area}</p>
+                    {c.message && <p className="mt-0.5 text-xs text-[#41505F]">{c.message}</p>}
                   </div>
                 </li>
               ))}
@@ -192,11 +192,11 @@ export default async function Pas2080Page({ params }: Props) {
 
 function Kpi({ label, value, note, tone }: { label: string; value: string; note?: string; tone?: "good" | "warn" }) {
   return (
-    <div className="rounded-[10px] border border-[#E5E7EB] bg-white p-4">
-      <p className="text-xs text-[#374151]">{label}</p>
-      <p className="mt-1 text-lg font-semibold tabular-nums text-[#111827]">{value}</p>
+    <div className="rounded-[10px] border border-[#E3E8EE] bg-white p-4">
+      <p className="text-xs text-[#41505F]">{label}</p>
+      <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{value}</p>
       {note && (
-        <p className={`mt-1 line-clamp-2 text-xs ${tone === "good" ? "text-green-700" : tone === "warn" ? "text-amber-700" : "text-[#6B7280]"}`}>
+        <p className={`mt-1 line-clamp-2 text-xs ${tone === "good" ? "text-green-700" : tone === "warn" ? "text-amber-700" : "text-[#5B6A78]"}`}>
           {note}
         </p>
       )}
