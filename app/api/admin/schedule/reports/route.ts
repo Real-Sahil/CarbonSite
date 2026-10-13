@@ -14,6 +14,7 @@ import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { prisma } from "@/lib/db";
 import { dispatchReport } from "@/lib/jobs/dispatch";
 import { REPORT_STALE_MS, decideStalledReport, MAX_REPORT_ATTEMPTS } from "@/lib/reports/retry";
+import { handleRouteError } from "@/lib/validation/api";
 
 // Each retry renders a whole report inside this invocation, so take one per sweep.
 const MAX_REPORTS_PER_SWEEP = 1;
@@ -81,13 +82,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error("[reports-sweep] Sweep failed:", err);
-    return NextResponse.json(
-      {
-        error: "Failed to sweep stalled reports",
-        details: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }
 

@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -141,6 +142,7 @@ export async function POST(
         organizationId: orgId,
         email: body.email,
         companyName: body.companyName ?? null,
+        token: randomBytes(32).toString("base64url"),
         expiresAt,
         createdByUserId: session.user.id,
         inviteMethod,
@@ -166,6 +168,7 @@ export async function POST(
     const loginUrl = `${appUrl}/sign-in`;
     const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
 
+    let emailDelivery = "email";
     try {
       const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
       if (inviteMethod === "credentials" && temporaryPassword) {
@@ -191,6 +194,7 @@ export async function POST(
         });
       }
     } catch (emailError) {
+      emailDelivery = "email_failed";
       console.error("[SupplierInvite] Email dispatch failed:", emailError);
     }
 
@@ -202,21 +206,24 @@ export async function POST(
       metadata: { targetLabel: `Supplier invite for ${body.email} (${inviteMethod})` },
     }).catch(() => {});
 
+    // No link in the response: whoever holds it can accept the invite as the supplier.
     return NextResponse.json(
       {
         id: invite.id,
         email: invite.email,
         companyName: invite.companyName,
         inviteMethod,
-        inviteUrl: inviteMethod === "magic-link" ? inviteUrl : undefined,
         loginUrl: inviteMethod === "credentials" ? loginUrl : undefined,
         expiresAt: invite.expiresAt.toISOString(),
+        emailDelivery,
         message:
-          inviteMethod === "credentials"
-            ? "Supplier account created. Temporary password sent via email."
-            : inviteMethod !== body.inviteMethod
-              ? "This email already has a MetricOra account, so we sent an invite link instead. They accept it with their existing sign-in."
-              : "Magic link invitation sent via email.",
+          emailDelivery === "email_failed"
+            ? "Invite saved, but the email did not send. The supplier has not been told."
+            : inviteMethod === "credentials"
+              ? "Supplier account created. Temporary password sent via email."
+              : inviteMethod !== body.inviteMethod
+                ? "This email already has a MetricOra account, so we sent an invite link instead. They accept it with their existing sign-in."
+                : "Magic link invitation sent via email.",
       },
       { status: 201 },
     );

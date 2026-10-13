@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireOrgMember } from "@/lib/auth/session";
+import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 
-export const ONBOARDING_STEPS = [
+const ONBOARDING_STEPS = [
   "org_profile",
   "first_team_member",
   "reporting_period",
@@ -13,7 +13,7 @@ export const ONBOARDING_STEPS = [
   "first_calculation",
 ] as const;
 
-export type OnboardingStepId = (typeof ONBOARDING_STEPS)[number];
+type OnboardingStepId = (typeof ONBOARDING_STEPS)[number];
 
 const completeStepSchema = z.union([
   z.object({ step: z.enum(ONBOARDING_STEPS) }),
@@ -27,7 +27,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId);
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.anyMember);
 
     // Derive which steps are actually satisfied from live DB state
     const [

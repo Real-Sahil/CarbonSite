@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { prisma } from "@/lib/db";
 import { dispatchCalculation } from "@/lib/jobs/dispatch";
+import { handleRouteError } from "@/lib/validation/api";
 
 // Matches run-worker.ts's LOCK_STALE_MS: only reclaim a run whose last
 // chunk-holder hasn't heartbeated in at least this long, so this sweep
@@ -80,13 +81,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error("[advance-calculation-runs] Sweep failed:", err);
-    return NextResponse.json(
-      {
-        error: "Failed to advance stalled calculation runs",
-        details: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }
 

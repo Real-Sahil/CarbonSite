@@ -62,12 +62,15 @@ export async function POST(
       );
     }
 
-    // Update the password with hashed value
-    await prisma.account.update({
-      where: { id: account.id },
-      data: {
-        password: hashedPassword,
-      },
+    // One transaction, so no session from the old password survives the reset.
+    await prisma.$transaction(async (tx) => {
+      await tx.account.update({
+        where: { id: account.id },
+        data: {
+          password: hashedPassword,
+        },
+      });
+      await tx.session.deleteMany({ where: { userId } });
     });
 
     // Audit log

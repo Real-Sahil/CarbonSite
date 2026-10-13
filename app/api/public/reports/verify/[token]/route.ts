@@ -126,9 +126,10 @@ export async function GET(
         periodEnd: report.snapshot?.reportingPeriod?.endDate?.toISOString() || "",
         snapshotPublishedAt: report.snapshot?.publishedAt?.toISOString() || "",
       },
+      // Public and unauthenticated: a user id from the audit log is never shown.
       auditTrail: auditLogs.map((log) => ({
         timestamp: log.createdAt.toISOString(),
-        actor: log.actorUserId || "System",
+        actor: log.actorUserId ? "Organisation member" : "System",
         action: log.action,
       })),
       integrity: {

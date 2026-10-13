@@ -57,6 +57,8 @@ export async function getDefraAccessToken(force = false): Promise<string> {
 // Adds the bearer token. A 401 means the token was refused: it is replaced once and the call is made again.
 // shortcut: body must be a string or absent (the retry resends it), upgrade before sending a stream.
 export async function defraFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  // Joined to API_BASE, a path such as "@host/..." would move the request to another host.
+  if (!/^\/(?![/\\])/.test(path)) throw new Error("Defra request path must start with a single /");
   const send = async (force: boolean) => {
     const headers = new Headers(init.headers);
     headers.set("Authorization", `Bearer ${await getDefraAccessToken(force)}`);

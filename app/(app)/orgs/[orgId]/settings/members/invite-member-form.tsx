@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { FormField, FormSection } from "@/components/forms/form-kit";
 import {
   Select,
@@ -36,15 +34,11 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [inviteUrl, setInviteUrl] = useState("");
-  const [copied, setCopied] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setSuccess("");
-    setInviteUrl("");
-    setCopied(false);
 
     if (!email.trim()) {
       setError("Email is required.");
@@ -66,7 +60,6 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
       }
 
       const data = await res.json().catch(() => null);
-      setInviteUrl(data?.inviteUrl ?? "");
       setSuccess(
         data?.action === "member_added"
           ? data.emailDelivery === "email_failed"
@@ -74,10 +67,10 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
             : `${email.trim()} already has an account and was added to this organisation.`
           : role === "field_worker"
             ? data?.emailDelivery === "email_failed"
-              ? `Mobile field worker invite created for ${email.trim()}. Copy the link below because email delivery failed.`
+              ? `Mobile field worker invite created for ${email.trim()}, but the email did not send. Send the invite again to retry.`
               : `Mobile field worker invite sent to ${email.trim()}. Assign their project after they accept.`
             : data?.emailDelivery === "email_failed"
-              ? `Invite created for ${email.trim()}. Copy the link below because email delivery failed.`
+              ? `Invite created for ${email.trim()}, but the email did not send. Send the invite again to retry.`
               : `Invite sent to ${email.trim()}.`,
       );
       setEmail("");
@@ -89,13 +82,6 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
     } finally {
       setLoading(false);
     }
-  }
-
-  async function copyInviteUrl() {
-    if (!inviteUrl) return;
-    await navigator.clipboard.writeText(inviteUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
   }
 
   return (
@@ -140,26 +126,6 @@ export function InviteMemberForm({ orgId, onSuccess }: InviteMemberFormProps) {
         <p className="text-sm text-[#131d29]" role="status">
           {success}
         </p>
-      )}
-      {inviteUrl && (
-        <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-3">
-          <Label htmlFor="latest-invite-url">Invite link</Label>
-          <div className="mt-2 flex gap-2">
-            <Input
-              id="latest-invite-url"
-              readOnly
-              value={inviteUrl}
-              className="font-mono text-xs"
-              onFocus={(event) => event.target.select()}
-            />
-            <Button type="button" variant="outline" size="icon" onClick={copyInviteUrl}>
-              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            </Button>
-          </div>
-          <p className="mt-2 text-xs text-[#5B6A78]">
-            Share this link with the mobile user if the email invite is delayed.
-          </p>
-        </div>
       )}
     </form>
   );

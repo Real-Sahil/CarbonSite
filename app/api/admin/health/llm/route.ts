@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { configuredProviders, llmClient } from "@/lib/llm/client";
 import { requirePlatformMember } from "@/lib/auth/session";
+import * as Sentry from "@sentry/nextjs";
 import { handleRouteError } from "@/lib/validation/api";
 
 /**
@@ -27,9 +28,11 @@ export async function GET() {
         latencyMs: Date.now() - started,
         preview: result.text.slice(0, 20),
       });
-    } catch (err) {
+    } catch {
+      // Provider errors can echo the API key, so their text is neither returned nor sent to Sentry.
+      Sentry.captureException(new Error("LLM health check: no provider answered"));
       return NextResponse.json(
-        { status: "error", providers, message: err instanceof Error ? err.message.replace(/Bearer\s+\S+/g, "Bearer ***") : String(err) },
+        { status: "error", providers, message: "No AI provider answered. Check the provider keys and quota, then try again." },
         { status: 502 },
       );
     }

@@ -25,6 +25,7 @@ const db = vi.hoisted(() => {
     organizationMembership: model(),
     platformMembership: model(),
     account: model(),
+    session: model(),
     user: model(),
     organization: model(),
     tenantBranding: model(),
@@ -198,8 +199,7 @@ describe("supplier registration from an invite", () => {
     });
     db.user.findUnique.mockResolvedValue(null);
     db.user.create.mockResolvedValue({ id: "u-new" });
-    db.account.findFirst.mockResolvedValue(null);
-    db.organizationMembership.findFirst.mockResolvedValue(null);
+    db.supplierInvite.updateMany.mockResolvedValue({ count: 1 });
 
     await POST(
       post("/x", { email: "new@supplier.test", password: "a-long-password", inviteToken: "tok", organizationId: ORG_B }),

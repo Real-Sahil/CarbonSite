@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { scheduleAccountingSyncForAllOrgs } from "@/lib/jobs/schedulers/accounting-sync-scheduler";
+import { handleRouteError } from "@/lib/validation/api";
 
 export async function POST(req: NextRequest) {
   if (!isAuthorizedCronRequest(req)) {
@@ -23,13 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error("[accounting-sync] Failed to schedule sync:", err);
-    return NextResponse.json(
-      {
-        error: "Failed to schedule accounting sync",
-        details: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 }
-    );
+    return handleRouteError(err);
   }
 }
 

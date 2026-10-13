@@ -3,7 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { handleRouteError } from "@/lib/validation/api";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
+import { apiError, handleRouteError } from "@/lib/validation/api";
 import { hashToken } from "@/lib/management-systems/auditor-access";
 
 type Params = { params: Promise<{ token: string }> };
@@ -17,9 +18,14 @@ const SubmissionSchema = z.object({
   reportingYear: z.number().int().min(2000).max(2100),
 });
 
+// Closed requests take no second report; rejected is closed here as in the validate route. flagged stays open.
+const CLOSED_STATUSES = ["submitted", "approved", "converted", "rejected"];
+
 // POST /api/public/supplier-data/[token]/submit — submit supplier emissions data
 export async function POST(req: NextRequest, { params }: Params) {
   try {
+    const limited = await rateLimitRequest(req, { key: "public-supplier-data-submit", limit: 20, windowMs: 15 * 60_000 });
+    if (limited) return limited;
     const { token } = await params;
     const body = await req.json();
 
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       );
     }
 
-    if (dataRequest.status === "converted" || dataRequest.status === "rejected") {
+    if (CLOSED_STATUSES.includes(dataRequest.status)) {
       return NextResponse.json(
         {
           code: "ALREADY_PROCESSED",
@@ -104,7 +110,15 @@ export async function POST(req: NextRequest, { params }: Params) {
     const qualityScore = calculateQualityScore(parsed.data);
     const qualityFlags = identifyQualityFlags(parsed.data);
 
+    // Serializable: a POST racing this one fails its request update (P2034), so only one report is written.
     const report = await prisma.$transaction(async (tx) => {
+      // Re-read in the transaction: a POST that committed after the check above must not write a second report.
+      const current = await tx.supplierDataRequest.findUnique({
+        where: { tokenHash: hashToken(token) },
+        select: { status: true },
+      });
+      if (!current || CLOSED_STATUSES.includes(current.status)) return null;
+
       const report = await tx.supplierReport.create({
         data: {
           organizationId: dataRequest.organizationId,
@@ -133,7 +147,11 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
 
       return report;
-    });
+    }, { isolationLevel: "Serializable" });
+
+    if (!report) {
+      return apiError("ALREADY_PROCESSED", "This data request has already been processed", 409);
+    }
 
     return NextResponse.json(
       {
@@ -144,6 +162,10 @@ export async function POST(req: NextRequest, { params }: Params) {
       { status: 201 }
     );
   } catch (err) {
+    // A racing POST that commits first fails this one's Serializable transaction with P2034: a duplicate, not a fault.
+    if (typeof err === "object" && err !== null && "code" in err && err.code === "P2034") {
+      return apiError("ALREADY_PROCESSED", "This data request has already been processed", 409);
+    }
     return handleRouteError(err);
   }
 }

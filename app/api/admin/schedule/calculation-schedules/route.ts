@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { processDueSchedules } from "@/lib/scheduling/calculation-scheduler";
+import { handleRouteError } from "@/lib/validation/api";
 
 export async function POST(req: NextRequest) {
   if (!isAuthorizedCronRequest(req)) {
@@ -28,10 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("[cron/calculation-schedules] Fatal error:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Unknown error" },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }
 

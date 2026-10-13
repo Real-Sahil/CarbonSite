@@ -217,13 +217,13 @@ export async function POST(
       },
     });
 
+    // The link goes by email only: an admin holding it could accept the invite as the invitee.
     return json(
       {
         id: invite.id,
         email,
         role: invite.role,
         expiresAt: invite.expiresAt,
-        inviteUrl,
         emailDelivery: delivery,
       },
       { version, status: existingInvite ? 200 : 201 },

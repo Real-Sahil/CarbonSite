@@ -2,12 +2,15 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { rateLimitRequest } from "@/lib/security/rate-limit-async";
 
 type Params = { params: Promise<{ token: string }> };
 
 // GET /api/public/supplier-invites/[token]/validate — validate invite token
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, { params }: Params) {
   try {
+    const limited = await rateLimitRequest(req, { key: "public-supplier-invite-validate", limit: 20, windowMs: 15 * 60_000 });
+    if (limited) return limited;
     const { token } = await params;
 
     const invite = await prisma.supplierInvite.findUnique({

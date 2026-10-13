@@ -14,6 +14,7 @@ import { isAuthorizedCronRequest } from "@/lib/security/cron-auth";
 import { prisma } from "@/lib/db";
 import { dispatchImport, dispatchNotification } from "@/lib/jobs/dispatch";
 import { IMPORT_STALE_MS, decideStalledImport } from "@/lib/imports/retry";
+import { handleRouteError } from "@/lib/validation/api";
 
 // Each retry parses a whole file inside this invocation, so take one per sweep.
 // A backlog drains one batch per tick.
@@ -88,13 +89,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     console.error("[import-batches] Sweep failed:", err);
-    return NextResponse.json(
-      {
-        error: "Failed to sweep stalled imports",
-        details: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 },
-    );
+    return handleRouteError(err);
   }
 }
 
