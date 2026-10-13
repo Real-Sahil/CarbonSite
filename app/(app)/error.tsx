@@ -2,6 +2,7 @@
 
 import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function AppError({
   error,
@@ -42,24 +43,21 @@ export default function AppError({
         <h1 className="text-[32px] leading-tight text-[#131d29] mb-3">
           Something went wrong
         </h1>
-        <p className="text-sm text-[#555] mb-2 leading-relaxed">
+        <p className="text-sm text-[#41505F] mb-2 leading-relaxed">
           {resetCount > 1
             ? "This error persists. Redirecting to sign in to refresh your session..."
             : "There was an unexpected error. Please try again."}
         </p>
         {error.digest && (
-          <p className="text-xs text-[#888] mb-6">
-            Reference: <code className="bg-[#f0f0f0] px-1.5 py-0.5 rounded text-[11px]">{error.digest}</code>
+          <p className="text-xs text-[#5B6A78] mb-6">
+            Reference: <code className="bg-[#F9FAFC] px-1.5 py-0.5 rounded text-[11px]">{error.digest}</code>
           </p>
         )}
         {resetCount <= 1 && (
           <div className="flex gap-3 justify-center">
-            <button
-              onClick={handleReset}
-              className="px-5 py-2.5 bg-[#c2410c] text-white rounded-lg text-sm font-medium hover:bg-[#9a3412] transition-colors"
-            >
+            <Button onClick={handleReset}>
               Try again
-            </button>
+            </Button>
             <button
               onClick={() => { window.location.href = "/sign-in"; }}
               className="px-5 py-2.5 bg-[#fff7ed] text-[#131d29] rounded-lg text-sm font-medium hover:bg-[#E0F2FE] transition-colors"

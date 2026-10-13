@@ -127,11 +127,11 @@ export default async function BaseYearPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F9FAFC]">
           <Anchor className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-[#131d29]">Base year and recalculation</h1>
+          <h1 className="text-xl text-[#131d29]">Base year and recalculation</h1>
           <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             The reference year every target and trend is measured against, and the record of every
             structural change assessed against it. GHG Protocol Corporate Standard, chapter 5.
@@ -488,7 +488,7 @@ function formatDate(d: Date): string {
 function AccessDenied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the base year register.
       </p>

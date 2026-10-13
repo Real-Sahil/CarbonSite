@@ -46,7 +46,7 @@ export function CompanyFinder({ base, getName, onPick, withOwners = false, label
       <Button type="button" variant="outline" size="sm" disabled={busy || name.trim().length < 3} onClick={() => void find()}>{busy ? "Looking…" : label}</Button>
       {note && <p role="status" className="mt-1 text-xs text-[#41505F]">{note}</p>}
       {list && list.length > 0 && (
-        <ul className="mt-2 divide-y divide-gray-100 rounded-lg border border-[#E3E8EE] bg-white text-sm">
+        <ul className="mt-2 divide-y divide-[#E3E8EE] rounded-lg border border-[#E3E8EE] bg-white text-sm">
           {list.map((c) => (
             <li key={c.number}>
               <button type="button" className="w-full px-3 py-2 text-left hover:bg-[#F9FAFC]" onClick={() => void pick(c)}>

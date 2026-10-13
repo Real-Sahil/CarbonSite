@@ -291,7 +291,7 @@ export function SubmissionEditActions({
           <p className="text-xs font-medium text-[#41505F] tracking-[-0.36px] uppercase">
             Ticket postcodes
           </p>
-          <p className="text-xs text-[#555] tracking-[-0.36px] mt-0.5">
+          <p className="text-xs text-[#41505F] tracking-[-0.36px] mt-0.5">
             Used for route distance only when GPS coordinates are not available from the ticket.
           </p>
         </div>
@@ -322,7 +322,7 @@ export function SubmissionEditActions({
           <p className="text-xs font-medium text-[#41505F] tracking-[-0.36px] uppercase">
             Route coordinates (from ticket OCR)
           </p>
-          <p className="text-xs text-[#555] tracking-[-0.36px] mt-0.5">
+          <p className="text-xs text-[#41505F] tracking-[-0.36px] mt-0.5">
             Origin and destination coordinates read from the ticket. These are used for carbon calculations. The field worker&apos;s device location is recorded separately for audit trail only.
           </p>
         </div>
@@ -364,7 +364,7 @@ export function SubmissionEditActions({
             />
           </div>
         </div>
-        <p className="text-xs text-[#555] tracking-[-0.36px]">
+        <p className="text-xs text-[#41505F] tracking-[-0.36px]">
           Save to recalculate road distance.
         </p>
       </div>

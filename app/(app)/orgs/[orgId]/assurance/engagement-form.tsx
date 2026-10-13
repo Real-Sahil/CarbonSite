@@ -87,7 +87,7 @@ export function CreateEngagementForm({
             id="e-period"
             value={reportingPeriodId}
             onChange={(e) => setReportingPeriodId(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             {periods.map((p) => (
               <option key={p.id} value={p.id}>
@@ -105,7 +105,7 @@ export function CreateEngagementForm({
             id="e-standard"
             value={standard}
             onChange={(e) => setStandard(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="isae_3000">ISAE 3000</option>
             <option value="iso_14064_3">ISO 14064-3</option>
@@ -122,7 +122,7 @@ export function CreateEngagementForm({
             id="e-level"
             value={level}
             onChange={(e) => setLevel(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="limited">Limited (negative)</option>
             <option value="reasonable">Reasonable (positive)</option>

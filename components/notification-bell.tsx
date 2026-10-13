@@ -134,11 +134,11 @@ export function NotificationBell({ orgId }: { orgId: string }) {
         <button
           type="button"
           aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
-          className="relative grid h-8 w-8 place-items-center rounded-lg text-[#5B6A78] hover:bg-slate-100 hover:text-[#131d29] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60 transition-colors"
+          className="relative grid h-8 w-8 place-items-center rounded-lg text-[#5B6A78] hover:bg-[#F9FAFC] hover:text-[#131d29] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40 transition-colors"
         >
           <Bell className="h-4 w-4" />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 h-4 place-items-center rounded-full bg-[#c2410c] px-1 text-[9px] font-semibold leading-none text-white shadow-[0_0_8px_rgba(245,158,11,0.6)]">
+            <span className="absolute -right-0.5 -top-0.5 grid min-w-4 h-4 place-items-center rounded-full bg-[#c2400c] px-1 text-[9px] font-semibold leading-none text-white shadow-[0_0_8px_rgba(245,158,11,0.6)]">
               {badge}
             </span>
           )}
@@ -174,7 +174,7 @@ export function NotificationBell({ orgId }: { orgId: string }) {
               <p className="mt-2 text-xs text-[#5B6A78]">You&apos;re all caught up.</p>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-[#E3E8EE]">
               {items.map((n) => (
                 <li key={n.id}>
                   <button

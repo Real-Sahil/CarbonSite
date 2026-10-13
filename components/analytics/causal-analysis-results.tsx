@@ -125,7 +125,7 @@ export function CausalAnalysisResults({
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-semibold tabular-nums">
                 {isPositiveEffect ? "+" : ""}{effectSize.toFixed(2)}
               </div>
               {isPositiveEffect ? (
@@ -147,7 +147,7 @@ export function CausalAnalysisResults({
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-2">
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-semibold tabular-nums">
                 {(result.pValue ?? 1).toFixed(4)}
               </div>
               {isSignificant ? (
@@ -168,7 +168,7 @@ export function CausalAnalysisResults({
             <CardTitle className="text-sm font-medium">95% CI</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold tabular-nums">
               [{(result.confidenceIntervalLower ?? 0).toFixed(2)},{" "}
               {(result.confidenceIntervalUpper ?? 0).toFixed(2)}]
             </div>
@@ -184,7 +184,7 @@ export function CausalAnalysisResults({
             <CardTitle className="text-sm font-medium">Robustness</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-semibold tabular-nums">
               {((result.robustnessToUnmeasuredConf ?? 0) * 100).toFixed(1)}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">

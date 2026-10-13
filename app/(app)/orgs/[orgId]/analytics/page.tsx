@@ -39,8 +39,8 @@ export default async function AnalyticsPage({ params }: AnalyticsPageProps) {
       <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1400px] mx-auto px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
-              <BarChart3 className="h-4 w-4 text-blue-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9FAFC]">
+              <BarChart3 className="h-4 w-4 text-[#c2400c]" />
             </div>
             <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">
               Analytics

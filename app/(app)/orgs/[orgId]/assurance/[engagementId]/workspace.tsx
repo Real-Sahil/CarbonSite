@@ -205,7 +205,7 @@ export function EngagementWorkspace({
             onClick={() => setTab(t)}
             className={cn(
               "-mb-px border-b-2 px-4 py-2 text-sm font-medium transition-colors",
-              tab === t ? "border-zinc-900 text-[#131d29]" : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
+              tab === t ? "border-[#c2400c] text-[#131d29]" : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
             )}
           >
             {t}{" "}
@@ -369,7 +369,7 @@ function EvidenceTab({
                         <select
                           value={item.status}
                           onChange={(e) => updateStatus(item.id, e.target.value)}
-                          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
                         >
                           <option value="requested">Requested</option>
                           <option value="provided">Provided</option>
@@ -539,7 +539,7 @@ function SamplesTab({
                         <select
                           value={s.result}
                           onChange={(e) => recordResult(s.id, e.target.value)}
-                          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
                         >
                           <option value="pending">Pending</option>
                           <option value="pass">Pass</option>
@@ -672,7 +672,7 @@ function FindingsTab({
                 <select
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value)}
-                  className="h-9 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                  className="h-9 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
                 >
                   <option value="observation">Observation</option>
                   <option value="minor">Minor</option>

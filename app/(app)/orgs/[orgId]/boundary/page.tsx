@@ -167,11 +167,11 @@ export default async function BoundaryPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F9FAFC]">
           <GitBranch className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-[#131d29]">Organisational boundary</h1>
+          <h1 className="text-xl text-[#131d29]">Organisational boundary</h1>
           <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             Which legal entities and facilities are consolidated into the inventory, and at what
             share. GHG Protocol Corporate Standard, chapter 3.
@@ -189,7 +189,7 @@ export default async function BoundaryPage({ params }: PageProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap items-center gap-3">
-            <Badge className="bg-zinc-900 text-white hover:bg-zinc-900">
+            <Badge className="bg-[#131d29] text-white hover:bg-[#131d29]">
               {APPROACH_LABEL[approach]}
             </Badge>
             <p className="max-w-[65ch] text-sm leading-relaxed text-[#41505F]">
@@ -251,7 +251,7 @@ export default async function BoundaryPage({ params }: PageProps) {
                           ) : (
                             canEdit
                               ? <LookupLeiButton orgId={orgId} entityId={e.id} hasLei={false} />
-                              : <span className="text-zinc-400">-</span>
+                              : <span className="text-[#5B6A78]">-</span>
                           )}
                           {e.gleifLei && canEdit && (
                             <LookupLeiButton orgId={orgId} entityId={e.id} hasLei={true} />
@@ -382,7 +382,7 @@ function formatWindow(from: Date | null, to: Date | null): string {
 function AccessDenied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the organisational boundary.
       </p>

@@ -69,11 +69,11 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Waste documents</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Waste documents</h1>
           <p className="mt-1 text-sm text-[#5B6A78]">Transfer notes, carrier licences, site permits and exemptions in one place, with expiry dates and who sent them.</p>
           <div className="mt-2 flex gap-4">
-            <Link href={`/orgs/${orgId}/waste`} className="inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Back to waste</Link>
-            <Link href={`/orgs/${orgId}/waste/carriers`} className="inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Carrier scorecard</Link>
+            <Link href={`/orgs/${orgId}/waste`} className="inline-block text-sm font-medium text-[#c2400c] hover:text-[#a33409]">Back to waste</Link>
+            <Link href={`/orgs/${orgId}/waste/carriers`} className="inline-block text-sm font-medium text-[#c2400c] hover:text-[#a33409]">Carrier scorecard</Link>
           </div>
         </div>
         {canEdit && <AddDocument orgId={orgId} projects={projects} defaultProjectId={project?.id ?? null} />}
@@ -90,7 +90,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
         {DOC_KINDS.map((k) => (
           <Link key={k.value} href={tab({ kind: k.value })} className={`rounded-full border px-3 py-1 ${kind === k.value ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>{k.label}</Link>
         ))}
-        <span className="mx-2 text-gray-300">|</span>
+        <span className="mx-2 text-[#5B6A78]">|</span>
         <Link href={tab({ status: null })} className={`rounded-full border px-3 py-1 ${!status ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>Any status</Link>
         <Link href={tab({ status: "pending" })} className={`rounded-full border px-3 py-1 ${status === "pending" ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>Waiting for you{pending > 0 && !status ? ` (${pending})` : ""}</Link>
       </div>
@@ -105,10 +105,10 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
           <p className="p-10 text-center text-sm text-[#5B6A78]">No documents yet. Add one, or send a contractor an upload link.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-[#E3E8EE]">
               <tr>{["Document", "Kind", "Covers", "Valid until", "From", "Status", "Ask carrier", ""].map((h) => <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{h}</th>)}</tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {docs.map((d) => {
                 const st = documentState(d.kind, d.validUntil);
                 return (

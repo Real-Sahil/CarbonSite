@@ -181,7 +181,7 @@ export default async function EngagementDetailPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">You do not have permission to view this engagement.</p>
     </div>
   );

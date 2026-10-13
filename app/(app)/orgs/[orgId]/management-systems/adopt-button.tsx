@@ -27,7 +27,7 @@ export function AdoptButton({ orgId, slug, label }: { orgId: string; slug: strin
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <Button size="sm" onClick={adopt} disabled={isPending} className="whitespace-nowrap bg-[#c2410c] text-white hover:bg-[#9a3412]">
+      <Button size="sm" onClick={adopt} disabled={isPending} className="whitespace-nowrap">
         {isPending ? "Adopting…" : label}
       </Button>
       {error && <p role="alert" className="text-xs text-red-600">{error}</p>}

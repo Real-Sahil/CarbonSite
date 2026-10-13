@@ -183,7 +183,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                     {entry.columns.map((col, ci) => (
                       <div key={col.heading ?? ci} className="w-[260px] xl:w-[300px]">
                         {col.heading ? (
-                          <p className="px-3 pb-1 pt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-mk-text-3">{col.heading}</p>
+                          <p className="px-3 pb-1 pt-2 font-sans text-[11px] uppercase tracking-[0.12em] text-mk-text-3">{col.heading}</p>
                         ) : null}
                         {col.items.map((item) => (
                           <Link key={item.href} href={item.href} className="block rounded-[8px] px-3 py-2.5 hover:bg-mk-text/5 focus-visible:bg-mk-text/5">
@@ -248,7 +248,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
             {NAV.map((entry) =>
               isGroup(entry) ? (
                 <div key={entry.label}>
-                  <p className="mb-2 font-mono text-[12px] uppercase tracking-[0.12em] text-mk-text-3">{entry.label}</p>
+                  <p className="mb-2 font-sans text-[12px] uppercase tracking-[0.12em] text-mk-text-3">{entry.label}</p>
                   {entry.columns.map((col, ci) => (
                     <div key={col.heading ?? ci} className={ci > 0 ? "mt-3" : undefined}>
                       {col.heading ? <p className="mb-1 text-[13px] text-mk-text-3">{col.heading}</p> : null}

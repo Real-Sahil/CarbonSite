@@ -224,7 +224,7 @@ export default async function SubmissionsPage({
                   href={filterHref(filter.value)}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     active
-                      ? "bg-[#c2410c] text-white"
+                      ? "bg-[#c2400c] text-white"
                       : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                   }`}
                 >

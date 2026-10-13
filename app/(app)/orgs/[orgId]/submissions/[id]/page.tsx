@@ -530,7 +530,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                   </span>
                 )}
                 {submission.postcodeValidationStatus === "corrected" && (
-                  <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-200 px-2 py-0.5 text-xs font-normal text-blue-800">
+                  <span className="inline-flex items-center rounded-full bg-[#F9FAFC] border border-[#E3E8EE] px-2 py-0.5 text-xs font-normal text-[#131d29]">
                     OCR corrected
                   </span>
                 )}
@@ -635,10 +635,10 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                           {row.key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").trim()}
                         </td>
                         <td className="px-3 py-2 text-[#41505F] tracking-[-0.42px]">
-                          {row.ocrText ?? <span className="text-[#999] italic">not read</span>}
+                          {row.ocrText ?? <span className="text-[#5B6A78] italic">not read</span>}
                         </td>
                         <td className={`px-3 py-2 tracking-[-0.42px] ${row.mismatch ? "font-medium text-amber-900" : "text-[#41505F]"}`}>
-                          {row.formText ?? <span className="text-[#999] italic">not provided</span>}
+                          {row.formText ?? <span className="text-[#5B6A78] italic">not provided</span>}
                         </td>
                         <td className={`px-3 py-2 text-right text-xs tabular-nums ${row.low ? "font-medium text-red-800" : "text-[#5B6A78]"}`}>
                           {row.confidence != null ? `${Math.round(row.confidence * 100)}%` : "-"}
@@ -723,7 +723,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                               {score}% confidence
                             </span>
                           </div>
-                          <p className="text-[11px] text-[#555] tracking-[-0.33px] shrink-0">
+                          <p className="text-[11px] text-[#41505F] tracking-[-0.33px] shrink-0">
                             {cls.documentType.replace(/_/g, " ")} · {cls.modelVersion}
                           </p>
                         </div>

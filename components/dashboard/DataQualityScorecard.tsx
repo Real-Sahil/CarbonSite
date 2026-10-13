@@ -16,7 +16,7 @@ export function DataQualityScorecard({
 }: DataQualityScorecardProps) {
   const statusColors = {
     excellent: { bg: 'bg-green-50', text: 'text-green-900', border: 'border-green-200' },
-    good: { bg: 'bg-blue-50', text: 'text-blue-900', border: 'border-blue-200' },
+    good: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
     fair: { bg: 'bg-yellow-50', text: 'text-yellow-900', border: 'border-yellow-200' },
     poor: { bg: 'bg-red-50', text: 'text-red-900', border: 'border-red-200' },
   };
@@ -35,7 +35,7 @@ export function DataQualityScorecard({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-[#41505F]">Overall Quality Score</p>
-              <p className={`text-4xl font-bold ${colors.text}`}>{score.overallScore}%</p>
+              <p className={`text-4xl font-semibold tabular-nums ${colors.text}`}>{score.overallScore}%</p>
               <p className="text-sm text-[#41505F] mt-1 capitalize">{score.status}</p>
             </div>
             <div className="w-24 h-24">
@@ -93,13 +93,13 @@ export function DataQualityScorecard({
           {score.recommendations.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-blue-600" />
+                <CheckCircle className="w-4 h-4 text-[#c2400c]" />
                 Recommendations
               </h4>
               <ul className="space-y-1 text-sm text-[#41505F]">
                 {score.recommendations.map((rec, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-blue-600 font-bold">•</span>
+                    <span className="text-[#c2400c] font-bold">•</span>
                     <span>{rec}</span>
                   </li>
                 ))}

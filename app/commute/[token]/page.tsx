@@ -20,12 +20,12 @@ export default async function CommuteSurveyPage({ params }: PageProps) {
   if (!survey) notFound();
 
   return (
-    <main className="min-h-[100dvh] bg-slate-50 px-4 py-10">
+    <main className="min-h-[100dvh] bg-[#F9FAFC] px-4 py-10">
       <div className="mx-auto flex max-w-lg flex-col gap-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{survey.organization.name}</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-950">How do you get to {survey.site.name}?</h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#5B6A78]">{survey.organization.name}</p>
+          <h1 className="mt-2 text-2xl text-[#131d29]">How do you get to {survey.site.name}?</h1>
+          <p className="mt-2 text-sm text-[#41505F]">
             A few quick questions about your usual journey to this site. We do not ask your name or where you live,
             and nothing you answer identifies you. The answers work out the site&apos;s travel emissions.
           </p>
@@ -33,7 +33,7 @@ export default async function CommuteSurveyPage({ params }: PageProps) {
         {survey.isOpen ? (
           <CommuteSurveyForm token={token} orgName={survey.organization.name} />
         ) : (
-          <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700">This survey has closed. Thank you.</p>
+          <p className="rounded-lg border border-[#E3E8EE] bg-white p-4 text-sm text-[#41505F]">This survey has closed. Thank you.</p>
         )}
       </div>
     </main>

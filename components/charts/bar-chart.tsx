@@ -233,7 +233,7 @@ function CrosshairFrame({
   return (
     <div
       aria-label={label}
-      className="relative rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+      className="relative rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40"
       onKeyDown={onKeyDown}
       role="group"
       tabIndex={0}

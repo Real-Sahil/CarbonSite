@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   orgId: string;
@@ -81,7 +82,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
             value="forever"
             checked={mode === "forever"}
             onChange={() => handleModeChange("forever")}
-            className="mt-0.5 accent-[#c2410c]"
+            className="mt-0.5 accent-[#c2400c]"
           />
           <div>
             <span className="text-sm font-medium text-[#131d29]">Keep forever</span>
@@ -98,7 +99,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
             value="custom"
             checked={mode === "custom"}
             onChange={() => handleModeChange("custom")}
-            className="mt-0.5 accent-[#c2410c]"
+            className="mt-0.5 accent-[#c2400c]"
           />
           <div className="flex-1">
             <span className="text-sm font-medium text-[#131d29]">
@@ -123,7 +124,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 onClick={() => handlePreset(opt.value)}
                 className={`rounded-full px-3 py-1 text-xs transition-colors border ${
                   days === String(opt.value)
-                    ? "bg-[#c2410c] text-white border-[#f97316]"
+                    ? "bg-[#c2400c] text-white border-[#c2400c]"
                     : "border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-[#fff7ed]"
                 }`}
               >
@@ -144,7 +145,7 @@ export function DataRetentionForm({ orgId, current }: Props) {
                 setSaved(false);
                 setError(null);
               }}
-              className="w-24 rounded-lg border border-[#E3E8EE] px-3 py-1.5 text-sm text-[#131d29] focus:border-[#c2410c] focus:outline-none focus:ring-1 focus:ring-[#c2410c]"
+              className="w-24 rounded-lg border border-[#E3E8EE] px-3 py-1.5 text-sm text-[#131d29] focus:border-[#c2400c] focus:outline-none focus:ring-1 focus:ring-[#c2400c]"
             />
             <span className="text-sm text-[#5B6A78]">days</span>
             {days && !isNaN(numDays) && numDays >= 90 && (
@@ -164,13 +165,12 @@ export function DataRetentionForm({ orgId, current }: Props) {
 
       {/* Actions */}
       <div className="flex items-center gap-3 pt-1">
-        <button
+        <Button
           type="submit"
           disabled={isPending || !daysValid}
-          className="rounded-full bg-[#131d29] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f2937] transition-colors disabled:opacity-40"
         >
           {isPending ? "Saving..." : "Save policy"}
-        </button>
+        </Button>
 
         {saved && (
           <p className="text-sm text-green-700 font-medium">

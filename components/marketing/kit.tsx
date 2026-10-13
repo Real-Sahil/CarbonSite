@@ -97,7 +97,7 @@ export function Eyebrow({ children, tone = "light" }: { children: ReactNode; ton
   return (
     <p
       className={cn(
-        "font-mono text-[12px] font-medium uppercase tracking-[0.12em]",
+        "font-sans text-[12px] font-medium uppercase tracking-[0.12em]",
         tone === "dark" ? "text-mk-accent-lit" : "text-mk-accent",
       )}
     >
@@ -222,9 +222,9 @@ export function ProductFrame({ children, tone = "light", className }: { children
         )}
       >
         <div className={cn("flex items-center gap-1.5 border-b px-3.5 py-2.5", tone === "dark" ? "border-mk-on-dark/10" : "border-mk-line")}>
-          <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-[#E5E7EB]/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-mk-line/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-mk-line/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-mk-line/70" />
         </div>
         {children}
       </div>

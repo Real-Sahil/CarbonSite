@@ -219,7 +219,7 @@ export function TopicEditor({ orgId, assessmentId, canEdit, topics }: { orgId: s
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#F3F4F6] text-left text-xs text-[#5B6A78]">
+              <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#5B6A78]">
                 <th className="px-5 py-2 font-medium">Topic</th>
                 <th className="px-2 py-2 font-medium">Impact (1 to 5)</th>
                 <th className="px-2 py-2 font-medium">Financial (1 to 5)</th>
@@ -235,7 +235,7 @@ export function TopicEditor({ orgId, assessmentId, canEdit, topics }: { orgId: s
         </div>
       )}
       {canEdit && (
-        <div className="flex flex-wrap items-end gap-3 border-t border-[#F3F4F6] px-5 py-4">
+        <div className="flex flex-wrap items-end gap-3 border-t border-[#E3E8EE] px-5 py-4">
           <div className="min-w-[260px] flex-1">
             <label className="mb-1.5 block text-xs font-medium text-[#41505F]" htmlFor="mt-name">Add your own topic (for example one specific to your sector)</label>
             <Input id="mt-name" value={name} maxLength={300} onChange={(e) => setName(e.target.value)} />

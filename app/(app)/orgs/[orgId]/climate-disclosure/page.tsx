@@ -55,7 +55,7 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
       </div>
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="border-b border-[#F3F4F6] px-5 py-4">
+        <div className="border-b border-[#E3E8EE] px-5 py-4">
           <h2 className="text-base font-semibold text-[#131d29]">The eleven recommended disclosures</h2>
           <p className="mt-1 text-xs text-[#5B6A78]">
             {cov.met} of {cov.total} done.{" "}
@@ -75,7 +75,7 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
                     <p className="text-sm font-medium text-[#131d29]">{c.label} <span className="ml-1 text-xs font-normal text-[#5B6A78]">{c.code}</span></p>
                     <p className="mt-0.5 text-sm text-[#41505F]">{c.detail}</p>
                     {c.link ? (
-                      <Link href={`/orgs/${orgId}/${c.link.path}`} className="mt-1 inline-block text-xs font-medium text-[#c2410c] underline underline-offset-2">
+                      <Link href={`/orgs/${orgId}/${c.link.path}`} className="mt-1 inline-block text-xs font-medium text-[#c2400c] underline underline-offset-2">
                         {c.link.label}
                       </Link>
                     ) : null}
@@ -88,7 +88,7 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
       </section>
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="border-b border-[#F3F4F6] px-5 py-4">
+        <div className="border-b border-[#E3E8EE] px-5 py-4">
           <h2 className="text-base font-semibold text-[#131d29]">Scenarios and risks</h2>
           <p className="mt-1 max-w-[70ch] text-xs text-[#5B6A78]">
             The statement reports your TCFD scenarios and risk assessments. Add and score them on the{" "}
@@ -101,7 +101,7 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
       </section>
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="border-b border-[#F3F4F6] px-5 py-4">
+        <div className="border-b border-[#E3E8EE] px-5 py-4">
           <h2 className="text-base font-semibold text-[#131d29]">The statement</h2>
         </div>
         <DisclosureForm orgId={orgId} canEdit={canEdit} sections={view.sections} approved={approved} />
@@ -109,7 +109,7 @@ export default async function ClimateDisclosurePage({ params }: { params: Promis
 
       {canApprove && view.exists && (
         <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-          <div className="border-b border-[#F3F4F6] px-5 py-4">
+          <div className="border-b border-[#E3E8EE] px-5 py-4">
             <h2 className="text-base font-semibold text-[#131d29]">Record approval</h2>
             <p className="mt-1 max-w-[65ch] text-xs text-[#5B6A78]">
               Once the board (or the equivalent body) has approved this version, record who approved it and when.

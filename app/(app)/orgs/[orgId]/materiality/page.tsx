@@ -62,7 +62,7 @@ export default async function MaterialityPage({ params }: { params: Promise<{ or
             <CardTitle className="text-sm font-medium text-muted-foreground">Published</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{publishedCount}</div>
+            <div className="text-2xl font-semibold tabular-nums text-green-600">{publishedCount}</div>
           </CardContent>
         </Card>
         <Card>
@@ -70,7 +70,7 @@ export default async function MaterialityPage({ params }: { params: Promise<{ or
             <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressCount}</div>
+            <div className="text-2xl font-semibold tabular-nums">{inProgressCount}</div>
           </CardContent>
         </Card>
       </div>

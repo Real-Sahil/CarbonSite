@@ -152,12 +152,12 @@ export default async function MembersPage({ params }: MembersPageProps) {
 
   const PLAN_CLASSES: Record<string, string> = {
     trial: "bg-amber-50 text-amber-700 border border-amber-200",
-    starter: "bg-blue-50 text-blue-700 border border-blue-200",
+    starter: "bg-[#F9FAFC] text-[#41505F] border border-[#E3E8EE]",
     growth: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    enterprise: "bg-purple-50 text-purple-700 border border-purple-200",
+    enterprise: "bg-[#F9FAFC] text-[#41505F] border border-[#E3E8EE]",
   };
   const planClass =
-    PLAN_CLASSES[org.plan] ?? "bg-slate-100 text-[#41505F] border border-[#E3E8EE]";
+    PLAN_CLASSES[org.plan] ?? "bg-[#F9FAFC] text-[#41505F] border border-[#E3E8EE]";
 
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">

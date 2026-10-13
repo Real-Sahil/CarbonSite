@@ -181,7 +181,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
       <PanelHeader title="Organisation profile" description="Who you are and how you report." />
       <form
         onSubmit={(e) => { e.preventDefault(); save(); }}
-        className="space-y-6 border-t border-slate-100 p-4"
+        className="space-y-6 border-t border-[#E3E8EE] p-4"
       >
         <FormSection title="Identity">
           <FormField label="Organisation name" htmlFor="org-name" span={2}>
@@ -291,7 +291,7 @@ function FactorImportPanel({
         title="Emission factor import"
         description="Add your own factors, such as supplier-specific or EPD figures. Calculations use a matching organisation factor before the shared library, and record which one they used."
       />
-      <form onSubmit={importFactors} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
+      <form onSubmit={importFactors} className="grid gap-3 border-t border-[#E3E8EE] p-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_auto]">
         <Field label="Import into">
           <select name="factorLibraryId" defaultValue="" disabled={isPending} className={selectClass}>
             <option value="">Your organisation&apos;s factors</option>
@@ -380,7 +380,7 @@ function MaterialImportPanel({
         title="Embodied carbon material library"
         description="Add or correct materials in the shared library used for whole-life carbon assessments. Re-importing an existing material name updates it in place, rather than creating a duplicate."
       />
-      <div className="border-t border-slate-100 p-4 text-sm text-[#41505F]">
+      <div className="border-t border-[#E3E8EE] p-4 text-sm text-[#41505F]">
         {materialLibrary.total} material{materialLibrary.total === 1 ? "" : "s"} in the library.{" "}
         {materialLibrary.missingEndOfLife > 0 && (
           <>
@@ -396,7 +396,7 @@ function MaterialImportPanel({
         )}
       </div>
       {canEdit ? (
-        <form onSubmit={importMaterials} className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
+        <form onSubmit={importMaterials} className="grid gap-3 border-t border-[#E3E8EE] p-4 grid-cols-1 md:grid-cols-[1fr_auto]">
           <Field label="Material file">
             <input
               name="file"
@@ -489,7 +489,7 @@ function ReportingPeriodsPanel({
         title="Reporting periods"
         description="Define the periods used by imports, field submissions, calculations, snapshots, and reports."
       />
-      <div className="border-t border-slate-100 p-4">
+      <div className="border-t border-[#E3E8EE] p-4">
         <form onSubmit={createPeriod} className="space-y-4">
           <FormSection title="Add a period" description="Use the suggestion for the next financial year, or set the dates yourself.">
             <FormField label="Label" htmlFor="period-label" span={2}>
@@ -523,7 +523,7 @@ function ReportingPeriodsPanel({
         </form>
         <div className="mt-3"><FormError>{error}</FormError></div>
       </div>
-      <div className="border-t border-slate-100">
+      <div className="border-t border-[#E3E8EE]">
         {periods.length === 0 ? (
           <EmptyRow text="No reporting periods yet." />
         ) : (
@@ -594,7 +594,7 @@ function ReportingPeriodRow({
   }
 
   return (
-    <tr className="border-t border-slate-100 align-top">
+    <tr className="border-t border-[#E3E8EE] align-top">
       <td className="px-4 py-3">
         <Input value={label} disabled={isPending || locked} onChange={(event) => setLabel(event.target.value)} />
       </td>
@@ -665,7 +665,7 @@ function BusinessUnitsPanel({
 
   return (
     <EntityPanel title="Business units" description="Internal divisions used for responsibility, reporting, and rollups.">
-      <form onSubmit={createBusinessUnit} className="space-y-4 border-b border-slate-100 p-4">
+      <form onSubmit={createBusinessUnit} className="space-y-4 border-b border-[#E3E8EE] p-4">
         <FormSection title="Add a business unit">
           <FormField label="Name" htmlFor="bu-name" span={2}>
             <Input id="bu-name" name="name" required maxLength={100} disabled={isPending} />
@@ -682,7 +682,7 @@ function BusinessUnitsPanel({
       {businessUnits.length === 0 ? (
         <EmptyRow text="No business units yet." />
       ) : (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#E3E8EE]">
           {businessUnits.map((businessUnit) => (
             <BusinessUnitRow key={businessUnit.id} orgId={orgId} businessUnit={businessUnit} />
           ))}
@@ -757,7 +757,7 @@ function EntityPanel({
 
 function SharedLibraryNotice() {
   return (
-    <p className="border-t border-slate-100 p-4 text-sm text-[#41505F]">
+    <p className="border-t border-[#E3E8EE] p-4 text-sm text-[#41505F]">
       This library is shared by every organisation on MetricOra, so only the MetricOra team can change it. To report
       a wrong or missing figure, contact support with the source document.
     </p>
@@ -807,7 +807,7 @@ function RowActions({
 
 function EmptyRow({ text }: { text: string }) {
   return (
-    <div className="border-t border-slate-100">
+    <div className="border-t border-[#E3E8EE]">
       <EmptyState title={text} />
     </div>
   );
@@ -836,4 +836,4 @@ function toDateInput(value: string) {
 }
 
 const selectClass =
-  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] hover:border-[#131d29]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40 disabled:cursor-not-allowed disabled:opacity-50";

@@ -10,6 +10,7 @@ import { getLimits, hasFeature, PLAN_ANNUAL_TOTAL, PLAN_LABELS, PLAN_PRICES, usa
 import { PaymentMethodsSection } from "./payment-methods-section";
 import { SubscriptionActions } from "./subscription-actions";
 import { PilotToggle } from "./pilot-toggle";
+import { buttonVariants } from "@/components/ui/button";
 
 // Captured once at module load — pure constant, safe for React Compiler.
 const PAGE_LOAD_TIME = Date.now();
@@ -59,7 +60,7 @@ function formatLimit(n: number): string {
 function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: number; label: string; icon: React.ElementType }) {
   const pct = usagePercent(used, limit);
   const isUnlimited = !isFinite(limit);
-  const color = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-amber-500" : "bg-teal-600";
+  const color = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-amber-500" : "bg-[#c2400c]";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -72,7 +73,7 @@ function MeterBar({ used, limit, label, icon: Icon }: { used: number; limit: num
           {used.toLocaleString()} / {isUnlimited ? "Unlimited" : formatLimit(limit)}
         </span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+      <div className="h-1.5 w-full rounded-full bg-[#F9FAFC] overflow-hidden">
         {!isUnlimited && (
           <div
             className={`h-full rounded-full transition-all ${color}`}
@@ -155,7 +156,7 @@ export default function BillingPage() {
           {plan === "enterprise" && (
             <a
               href="mailto:hello@metricora.co.uk?subject=Enterprise%20enquiry"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#c2410c] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors shrink-0"
+              className={buttonVariants({ className: "shrink-0" })}
             >
               Contact sales
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -173,7 +174,7 @@ export default function BillingPage() {
         )}
 
         {plan !== "enterprise" && (
-          <div className="mt-4 border-t border-gray-100 pt-4">
+          <div className="mt-4 border-t border-[#E3E8EE] pt-4">
             <SubscriptionActions
               orgId={orgId}
               currentPlan={plan}
@@ -196,7 +197,7 @@ export default function BillingPage() {
         {loading ? (
           <div className="space-y-5">
             {METER_CONFIG.map((m) => (
-              <div key={m.key} className="h-8 rounded-lg bg-gray-100 animate-pulse" />
+              <div key={m.key} className="h-8 rounded-lg bg-[#F9FAFC] animate-pulse" />
             ))}
           </div>
         ) : (
@@ -216,28 +217,28 @@ export default function BillingPage() {
 
       {/* Plan comparison */}
       <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
+        <div className="px-6 py-4 border-b border-[#E3E8EE]">
           <h2 className="text-sm font-semibold text-[#131d29]">Available plans</h2>
         </div>
         <div className="overflow-x-auto">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100">
+              <tr className="border-b border-[#E3E8EE]">
                 <th className="py-3 px-6 text-left font-medium text-[#5B6A78] w-48"></th>
                 {PLANS.map((p) => (
                   <th
                     key={p}
-                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#c2410c]" : "text-[#41505F]"}`}
+                    className={`py-3 px-4 text-center font-semibold ${p === plan ? "text-[#c2400c]" : "text-[#41505F]"}`}
                   >
                     {PLAN_LABELS[p]}
                     {p === plan && (
-                      <span className="ml-1.5 text-[10px] font-medium text-[#c2410c] uppercase tracking-wide">current</span>
+                      <span className="ml-1.5 text-[10px] font-medium text-[#c2400c] uppercase tracking-wide">current</span>
                     )}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               <tr>
                 <td className="py-3 px-6 text-[#5B6A78]">Price</td>
                 {PLANS.map((p) => (
@@ -282,7 +283,7 @@ export default function BillingPage() {
       <p className="text-xs text-[#5B6A78]">
         Switch between Essentials, Starter and Growth any time above. For Enterprise —
         custom contracts, SSO, and dedicated support — contact{" "}
-        <a href="mailto:hello@metricora.co.uk" className="text-[#c2410c] hover:underline">
+        <a href="mailto:hello@metricora.co.uk" className="text-[#c2400c] hover:underline">
           hello@metricora.co.uk
         </a>
         .

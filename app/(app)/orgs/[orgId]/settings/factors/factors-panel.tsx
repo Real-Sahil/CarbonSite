@@ -149,7 +149,7 @@ export function FactorsPanel({
               </thead>
               <tbody>
                 {factors.map((f) => (
-                  <tr key={f.id} className="border-b border-[#F3F4F6] last:border-0">
+                  <tr key={f.id} className="border-b border-[#E3E8EE] last:border-0">
                     <td className="px-4 py-3">{f.category}</td>
                     <td className="px-4 py-3">{f.activityType ?? "Any"}</td>
                     <td className="px-4 py-3 text-right tabular-nums">

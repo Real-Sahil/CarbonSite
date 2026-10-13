@@ -18,10 +18,10 @@ const STATE_LABELS: Record<RequirementState, string> = {
   not_applicable: "Not applicable",
 };
 const STATE_STYLES: Record<RequirementState, string> = {
-  not_started: "bg-[#F3F4F6] text-[#41505F]",
+  not_started: "bg-[#F9FAFC] text-[#41505F]",
   in_progress: "bg-amber-50 text-amber-800",
   implemented: "bg-emerald-50 text-emerald-800",
-  not_applicable: "bg-slate-100 text-[#5B6A78]",
+  not_applicable: "bg-[#F9FAFC] text-[#5B6A78]",
 };
 const TONE_STYLES = { ok: "border-emerald-200 bg-emerald-50/50", attention: "border-amber-200 bg-amber-50/60", empty: "border-[#E3E8EE] bg-[#F9FAFC]" };
 const ADOPTION_STATUSES: [string, string][] = [["implementing", "Implementing"], ["certified", "Certified"], ["lapsed", "Certificate lapsed"], ["withdrawn", "Withdrawn"]];
@@ -123,7 +123,7 @@ export function FrameworkWorkspace({ orgId, view, canEdit }: { orgId: string; vi
             {adoption ? "This framework was withdrawn. Adopt it again to carry on where you left off." : "Adopt this framework to assess each requirement and link your evidence."}
           </p>
           {canEdit && (
-            <Button size="sm" onClick={adopt} disabled={isPending} className="bg-[#c2410c] text-white hover:bg-[#9a3412]">
+            <Button size="sm" onClick={adopt} disabled={isPending}>
               {isPending ? "Adopting…" : adoption ? "Adopt again" : "Adopt"}
             </Button>
           )}
@@ -250,8 +250,8 @@ function AdoptionPanel({
             <span className="text-[#41505F]">Implemented</span>
             <span className="text-lg font-semibold tabular-nums text-[#131d29]">{r.percent == null ? "-" : `${r.percent}%`}</span>
           </div>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F3F4F6]" aria-hidden="true">
-            <div className="h-full rounded-full bg-[#c2410c]" style={{ width: `${r.percent ?? 0}%` }} />
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F9FAFC]" aria-hidden="true">
+            <div className="h-full rounded-full bg-[#c2400c]" style={{ width: `${r.percent ?? 0}%` }} />
           </div>
           <p className="mt-2 text-xs tabular-nums text-[#5B6A78]">
             {r.implemented} of {r.total - r.notApplicable} applicable requirements implemented · {r.inProgress} in progress · {r.notStarted} not started
@@ -372,7 +372,7 @@ function RequirementCard({
           <span className="block text-sm font-medium text-[#131d29]">
             {q.title}
             {q.editionChange && (
-              <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-normal ${q.editionChange.kind === "new" ? "bg-sky-50 text-sky-800" : q.editionChange.kind === "changed" ? "bg-violet-50 text-violet-800" : "bg-slate-100 text-[#41505F]"}`}>
+              <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-normal ${q.editionChange.kind === "new" ? "bg-[#F9FAFC] text-[#131d29]" : q.editionChange.kind === "changed" ? "bg-[#F9FAFC] text-[#131d29]" : "bg-[#F9FAFC] text-[#41505F]"}`}>
                 {q.editionChange.kind === "new" ? "New in this edition" : q.editionChange.kind === "changed" ? "Changed" : "Renumbered"}
               </span>
             )}
@@ -389,7 +389,7 @@ function RequirementCard({
       {open && (
         <div className="flex flex-col gap-5 border-t border-[#E3E8EE] p-4">
           {q.editionChange && (
-            <p className="max-w-[80ch] rounded-lg border border-violet-200 bg-violet-50/50 px-3 py-2 text-sm text-[#41505F]">
+            <p className="max-w-[80ch] rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-sm text-[#41505F]">
               <span className="font-medium">Edition change{q.editionChange.from?.length ? ` (from ${q.editionChange.from.join(", ")})` : ""}: </span>
               {q.editionChange.note}
             </p>
@@ -697,7 +697,7 @@ function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: Framewor
 
   if (successor) {
     return (
-      <section className="flex flex-col gap-2 rounded-[14px] border border-sky-200 bg-sky-50/60 p-4 text-sm text-[#41505F]">
+      <section className="flex flex-col gap-2 rounded-[14px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-sm text-[#41505F]">
         <p>
           <span className="font-medium text-[#131d29]">{successor.shortName} replaces this edition.</span>{" "}
           {successor.transitionDeadline ? `Certificates to this edition must move by ${successor.transitionDeadline}. ` : ""}
@@ -710,7 +710,7 @@ function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: Framewor
             <Link href={`/orgs/${orgId}/management-systems/${successor.slug}`} className="text-sm font-medium underline underline-offset-2">Open {successor.shortName}</Link>
           ) : (
             held && canEdit && (
-              <Button size="sm" onClick={transition} disabled={isPending} className="bg-[#131d29] text-white hover:bg-black">
+              <Button size="sm" onClick={transition} disabled={isPending}>
                 {isPending ? "Starting…" : `Start transition to ${successor.shortName}`}
               </Button>
             )
@@ -723,7 +723,7 @@ function EditionBanner({ orgId, view, canEdit }: { orgId: string; view: Framewor
   if (predecessor) {
     const changed = view.requirements.filter((q) => q.editionChange && q.editionChange.kind !== "renumbered" && !q.heading).length;
     return (
-      <section className="flex flex-col gap-2 rounded-[14px] border border-violet-200 bg-violet-50/50 p-4 text-sm text-[#41505F]">
+      <section className="flex flex-col gap-2 rounded-[14px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-sm text-[#41505F]">
         <p>
           This edition replaces {predecessor.shortName}. {changed} requirements are new or changed and are marked below.{" "}
           {predecessor.adopted && !held && canEdit ? "Use Start transition on the old edition's page to carry your work across." : ""}

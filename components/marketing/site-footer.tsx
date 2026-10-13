@@ -68,7 +68,7 @@ export function SiteFooter() {
           </div>
           {COLS.map((col) => (
             <div key={col.heading}>
-              <p className="mb-4 font-mono text-[12px] uppercase tracking-[0.12em] text-mk-on-dark-3">{col.heading}</p>
+              <p className="mb-4 font-sans text-[12px] uppercase tracking-[0.12em] text-mk-on-dark-3">{col.heading}</p>
               <ul className="grid gap-2.5">
                 {col.links.map((link) => (
                   <li key={link.href}>

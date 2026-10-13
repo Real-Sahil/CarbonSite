@@ -13,6 +13,7 @@ import React from "react";
 import { getOrgBasics } from "@/lib/i18n/org-basics";
 import { localeForCountry, orgFormat } from "@/lib/i18n/org-format";
 import { OrgLocaleProvider } from "@/components/org/org-locale";
+import { buttonVariants } from "@/components/ui/button";
 import { getSelectedProject } from "@/lib/project/selected";
 import { brandingCss, brandingVars } from "@/lib/branding/css-vars";
 
@@ -56,7 +57,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-white">
         <div className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight text-[#131d29] mb-2">
+          <h1 className="text-3xl tracking-tight text-[#131d29] mb-2">
             Access denied
           </h1>
           <p className="text-sm text-[#5B6A78]">
@@ -80,7 +81,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-white">
         <div className="text-center max-w-sm px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#131d29] mb-2">
+          <h1 className="text-2xl tracking-tight text-[#131d29] mb-2">
             Temporary error
           </h1>
           <p className="text-sm text-[#5B6A78] mb-4">
@@ -88,7 +89,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </p>
           <a
             href=""
-            className="inline-block rounded-xl bg-[#c2410c] px-4 py-2 text-sm text-white hover:bg-[#9a3412] transition-all"
+            className={buttonVariants()}
           >
             Refresh
           </a>
@@ -128,7 +129,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-white">
         <div className="text-center max-w-sm px-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-[#131d29] mb-2">
+          <h1 className="text-2xl tracking-tight text-[#131d29] mb-2">
             Temporary error
           </h1>
           <p className="text-sm text-[#5B6A78] mb-4">
@@ -136,7 +137,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </p>
           <a
             href=""
-            className="inline-block rounded-xl bg-[#c2410c] px-4 py-2 text-sm text-white hover:bg-[#9a3412] transition-all"
+            className={buttonVariants()}
           >
             Refresh
           </a>
@@ -175,7 +176,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
   ]);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F8F9FA]">
+    <div className="flex flex-col md:flex-row min-h-[100dvh] bg-[#F9FAFC]">
       {cssVars && <style>{cssVars}</style>}
       <AppearanceSync saved={themePreference} />
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} themePreference={themePreference} />

@@ -23,22 +23,22 @@ interface AuditLogEntry {
 const PAGE_SIZE = 50;
 
 const ACTION_COLOURS: Record<string, string> = {
-  "auth.sign_in": "bg-blue-50 text-blue-600",
-  "auth.sign_out": "bg-[#F3F4F6] text-[#41505F]",
+  "auth.sign_in": "bg-[#F9FAFC] text-[#41505F]",
+  "auth.sign_out": "bg-[#F9FAFC] text-[#41505F]",
   "record.created": "bg-emerald-50 text-emerald-700",
   "record.updated": "bg-amber-50 text-amber-700",
   "record.deleted": "bg-red-50 text-red-600",
   "import.committed": "bg-emerald-50 text-emerald-700",
   "import.failed": "bg-red-50 text-red-600",
-  "snapshot.published": "bg-purple-50 text-purple-700",
-  "report.published": "bg-purple-50 text-purple-700",
+  "snapshot.published": "bg-[#F9FAFC] text-[#41505F]",
+  "report.published": "bg-[#F9FAFC] text-[#41505F]",
   "field_submission.approved": "bg-emerald-50 text-emerald-700",
   "field_submission.rejected": "bg-red-50 text-red-600",
-  "audit.export_downloaded": "bg-[#F3F4F6] text-[#41505F]",
+  "audit.export_downloaded": "bg-[#F9FAFC] text-[#41505F]",
 };
 
 function ActionBadge({ action }: { action: string }) {
-  const colours = ACTION_COLOURS[action] ?? "bg-[#F3F4F6] text-[#41505F]";
+  const colours = ACTION_COLOURS[action] ?? "bg-[#F9FAFC] text-[#41505F]";
   return (
     <span className={cn("text-[11px] font-mono rounded px-1.5 py-0.5 tracking-tight", colours)}>
       {action}
@@ -193,7 +193,7 @@ export default function AuditLogPage() {
             setActionFilter(e.target.value);
             setLogs([]);
           }}
-          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+          className="h-8 rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
         >
           <option value="">All actions</option>
           <option value="record">record.*</option>

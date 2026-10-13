@@ -137,7 +137,7 @@ export function CreateLegalEntryForm({ orgId }: { orgId: string }) {
             id="l-status"
             value={complianceStatus}
             onChange={(e) => setComplianceStatus(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>

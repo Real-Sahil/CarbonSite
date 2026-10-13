@@ -74,11 +74,11 @@ export default async function AssuranceEngagementsPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F9FAFC]">
             <ClipboardCheck className="h-5 w-5 text-[#41505F]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[#131d29]">Assurance engagements</h1>
+            <h1 className="text-xl text-[#131d29]">Assurance engagements</h1>
             <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
               A scope and materiality, a prepared-by-client evidence list, a sample drawn from the
               weakest data first, and a findings log with management responses. ISAE 3000 / ISO
@@ -100,7 +100,7 @@ export default async function AssuranceEngagementsPage({ params }: PageProps) {
         <div className="grid gap-4 md:grid-cols-2">
           {engagements.map((e) => (
             <Link key={e.id} href={`/orgs/${orgId}/assurance/${e.id}`}>
-              <Card className="transition-colors hover:border-zinc-300">
+              <Card className="transition-colors hover:border-[#E3E8EE]">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -153,7 +153,7 @@ function StatusBadge({ status }: { status: string }) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view assurance engagements.
       </p>

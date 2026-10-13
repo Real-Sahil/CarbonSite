@@ -106,7 +106,7 @@ export function VerifierLinks({ orgId, engagementId, snapshotId }: { orgId: stri
         )}
 
         {rows.length > 0 && (
-          <ul className="divide-y divide-zinc-100 text-sm">
+          <ul className="divide-y divide-[#E3E8EE] text-sm">
             {rows.map((r) => {
               const expired = new Date(r.expiresAt) <= new Date();
               const state = r.revokedAt ? "Withdrawn" : expired ? "Expired" : `Open until ${day(r.expiresAt)}`;

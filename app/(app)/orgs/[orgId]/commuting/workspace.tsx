@@ -235,7 +235,7 @@ function SiteSurveys({ orgId, canEdit, sites }: { orgId: string; canEdit: boolea
               {sites.map((s) => {
                 const link = s.survey && origin ? `${origin}/commute/${s.survey.token}` : null;
                 return (
-                  <tr key={s.id} className="border-b border-[#F3F4F6] align-top last:border-0">
+                  <tr key={s.id} className="border-b border-[#E3E8EE] align-top last:border-0">
                     <td className="px-6 py-3">
                       <div className="font-medium text-[#131d29]">{s.name}</div>
                       <div className="text-xs text-[#5B6A78]">{s.project}</div>
@@ -339,7 +339,7 @@ function ImportsTable({ orgId, canEdit, imports }: { orgId: string; canEdit: boo
               </thead>
               <tbody>
                 {imports.map((i) => (
-                  <tr key={i.id} className="border-b border-[#F3F4F6] last:border-0">
+                  <tr key={i.id} className="border-b border-[#E3E8EE] last:border-0">
                     <td className="px-6 py-3 text-[#131d29]">{monthName(i.month)}</td>
                     <td className="px-3 py-3 text-[#41505F]">{i.site}</td>
                     <td className="px-3 py-3 text-right tabular-nums">{fmt(i.ownDays)}</td>

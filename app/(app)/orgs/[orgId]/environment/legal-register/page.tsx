@@ -69,7 +69,7 @@ export default async function LegalRegisterPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-[#131d29]">Compliance obligations register</h1>
+          <h1 className="text-lg text-[#131d29]">Compliance obligations register</h1>
           <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             The environmental legislation that applies to this organisation and the compliance
             position against each entry. ISO 14001 clause 6.1.3, re-evaluated under clause 9.1.2.
@@ -172,7 +172,7 @@ function ComplianceBadge({ status }: { status: string }) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the legal register.
       </p>

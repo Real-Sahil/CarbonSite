@@ -79,15 +79,15 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
                       <p className="font-semibold text-[#131d29]">{f.shortName}</p>
                       <p className="text-xs text-[#5B6A78]">{f.edition}</p>
                     </div>
-                    <span className="shrink-0 rounded-full bg-[#F3F4F6] px-2.5 py-0.5 text-xs text-[#41505F]">{STATUS_LABELS[a.status] ?? a.status}</span>
+                    <span className="shrink-0 rounded-full bg-[#F9FAFC] px-2.5 py-0.5 text-xs text-[#41505F]">{STATUS_LABELS[a.status] ?? a.status}</span>
                   </div>
                   <div>
                     <div className="flex items-baseline justify-between text-sm">
                       <span className="text-[#41505F]">Implemented</span>
                       <span className="font-semibold tabular-nums text-[#131d29]">{r.percent == null ? "-" : `${r.percent}%`}</span>
                     </div>
-                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F3F4F6]" aria-hidden="true">
-                      <div className="h-full rounded-full bg-[#c2410c]" style={{ width: `${r.percent ?? 0}%` }} />
+                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F9FAFC]" aria-hidden="true">
+                      <div className="h-full rounded-full bg-[#c2400c]" style={{ width: `${r.percent ?? 0}%` }} />
                     </div>
                     <p className="mt-2 text-xs text-[#5B6A78] tabular-nums">
                       {r.implemented} implemented, {r.inProgress} in progress, {r.notStarted} not started
@@ -159,12 +159,12 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
                         {f.name} <span className="text-xs font-normal text-[#5B6A78]">{f.edition}</span>
                       </p>
                       <p className="mt-1 max-w-[80ch] text-sm text-[#5B6A78]">{f.summary}</p>
-                      <p className="mt-1 text-xs text-[#9CA3AF]">
+                      <p className="mt-1 text-xs text-[#5B6A78]">
                         {f.requirementCount} requirements · {f.publisher}
                         {f.jurisdiction ? ` · ${f.jurisdiction}` : ""}
                       </p>
                       {f.supersededBy && (
-                        <p className="mt-1 text-xs text-sky-800">
+                        <p className="mt-1 text-xs text-[#131d29]">
                           Replaced by the {catalogue.find((c) => c.slug === f.supersededBy)?.edition} edition. Existing certificates can stay on this one during the transition period.
                         </p>
                       )}

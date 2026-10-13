@@ -4,7 +4,7 @@
 // so nothing is lost by skipping the server render.
 import dynamic from "next/dynamic";
 
-const Loading = () => <div aria-hidden="true" className="h-64 w-full animate-pulse rounded-xl bg-slate-100" />;
+const Loading = () => <div aria-hidden="true" className="h-64 w-full animate-pulse rounded-xl bg-[#F9FAFC]" />;
 
 export const LazyEmissionsByScopeChart = dynamic(() => import("./EmissionsByScopeChart").then((m) => m.EmissionsByScopeChart), { ssr: false, loading: Loading });
 export const LazyEmissionsTrendChart = dynamic(() => import("./EmissionsTrendChart").then((m) => m.EmissionsTrendChart), { ssr: false, loading: Loading });

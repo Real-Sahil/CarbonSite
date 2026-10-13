@@ -220,7 +220,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                   </TableHeader>
                   <TableBody>
                     {targets.map((target) => (
-                      <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={target.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="text-sm font-medium text-[#131d29] capitalize py-3.5 pl-6">
                           {target.targetType}
                         </TableCell>
@@ -295,7 +295,7 @@ export default async function TargetsPage({ params }: TargetsPageProps) {
                   </TableHeader>
                   <TableBody>
                     {initiatives.map((initiative) => (
-                      <TableRow key={initiative.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={initiative.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="text-sm font-medium text-[#131d29] py-3.5 pl-6">{initiative.name}</TableCell>
                         <TableCell className="py-3.5">
                           <Badge variant={initiative.status === "complete" ? "default" : "outline"}>

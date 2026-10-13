@@ -9,8 +9,8 @@ import { NewProgrammeButton } from "./programmes-actions";
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-800",
   on_hold: "bg-yellow-100 text-yellow-800",
-  completed: "bg-blue-100 text-blue-800",
-  cancelled: "bg-gray-100 text-[#41505F]",
+  completed: "bg-[#F9FAFC] text-[#131d29]",
+  cancelled: "bg-[#F9FAFC] text-[#41505F]",
 };
 
 interface PageProps {
@@ -63,7 +63,7 @@ export default async function ProgrammesPage({ params }: PageProps) {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{p.name}</CardTitle>
-                  <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status] ?? "bg-gray-100 text-[#41505F]"}`}>
+                  <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[p.status] ?? "bg-[#F9FAFC] text-[#41505F]"}`}>
                     {p.status.replaceAll("_", " ")}
                   </span>
                 </div>

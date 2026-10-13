@@ -95,7 +95,7 @@ function mapSignInError(err: { code?: string; message?: string } | null | undefi
 }
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
+  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-[#c2400c]/60 focus:bg-white/8 focus:ring-2 focus:ring-[#c2400c]/20 disabled:opacity-40 transition-all";
 
 export default function SignInPage() {
   const t = useTranslations("signIn");
@@ -128,7 +128,7 @@ export default function SignInPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight text-white">{t("welcomeBack")}</h1>
+        <h1 className="text-xl tracking-tight text-white">{t("welcomeBack")}</h1>
         <p className="text-sm text-white/60 mt-1">{t("subtitle")}</p>
       </div>
 
@@ -159,7 +159,7 @@ export default function SignInPage() {
             <label htmlFor="password" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">
               {t("password")}
             </label>
-            <Link href="/forgot-password" className="text-xs text-amber-400 hover:text-amber-300 transition-colors" tabIndex={-1}>
+            <Link href="/forgot-password" className="text-xs text-[#fb8a4b] hover:underline transition-colors" tabIndex={-1}>
               {t("forgotPassword")}
             </Link>
           </div>
@@ -187,7 +187,7 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full rounded-xl bg-[#c2410c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:bg-[#9a3412] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="mt-1 w-full rounded-xl bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {loading ? t("submitting") : t("submit")}
         </button>
@@ -195,7 +195,7 @@ export default function SignInPage() {
 
       <p className="mt-5 text-center text-sm text-white/60">
         {t("noAccount")}{" "}
-        <Link href="/sign-up" className="text-amber-400 underline underline-offset-4 hover:text-amber-300 transition-colors">
+        <Link href="/sign-up" className="text-[#fb8a4b] underline underline-offset-4 transition-colors">
           {t("createAccount")}
         </Link>
       </p>

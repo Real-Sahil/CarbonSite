@@ -86,8 +86,8 @@ export default async function Pas2080Page({ params }: Props) {
                   </p>
                 </div>
                 <p className="text-xs text-[#5B6A78]">{HIERARCHY[i].prompt}</p>
-                <div className="mt-1.5 flex h-2 overflow-hidden rounded-full bg-[#F3F4F6]" aria-hidden="true">
-                  <div className="bg-[#c2410c]" style={{ width: `${(l.committed / maxLevel) * 100}%` }} />
+                <div className="mt-1.5 flex h-2 overflow-hidden rounded-full bg-[#F9FAFC]" aria-hidden="true">
+                  <div className="bg-[#c2400c]" style={{ width: `${(l.committed / maxLevel) * 100}%` }} />
                   <div className="bg-[#FED7AA]" style={{ width: `${(l.pipeline / maxLevel) * 100}%` }} />
                 </div>
                 <p className="mt-1 text-xs text-[#5B6A78]">

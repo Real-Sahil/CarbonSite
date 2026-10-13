@@ -35,15 +35,15 @@ export default async function ProjectPackPage({ params, searchParams }: { params
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-8 print:p-0">
       <div className="print:hidden">
-        <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">Monthly waste pack</h1>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Monthly waste pack</h1>
         <p className="mt-1 text-sm text-[#5B6A78]">One project, one month, ready to send to a client: loads, KPIs, plan progress and licences to watch. Print it or save it as a PDF.</p>
-        <Link href={`/orgs/${orgId}/waste`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Back to waste</Link>
+        <Link href={`/orgs/${orgId}/waste`} className="mt-2 inline-block text-sm font-medium text-[#c2400c] hover:text-[#a33409]">Back to waste</Link>
         <form className="mt-4 flex flex-wrap items-end gap-3" action={`/orgs/${orgId}/waste/pack`}>
           <div><label htmlFor="pk-project" className="block text-xs text-[#5B6A78]">Project</label>
-            <select id="pk-project" name="projectId" defaultValue={projectId ?? ""} className="h-9 rounded-md border border-gray-300 bg-white px-2 text-sm"><option value="" disabled>Choose</option>{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+            <select id="pk-project" name="projectId" defaultValue={projectId ?? ""} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm"><option value="" disabled>Choose</option>{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
           <div><label htmlFor="pk-month" className="block text-xs text-[#5B6A78]">Month</label>
-            <input id="pk-month" name="month" type="month" defaultValue={month} className="h-9 rounded-md border border-gray-300 px-2 text-sm" /></div>
-          <button className="h-9 rounded-md border border-gray-300 px-3 text-sm">Show</button>
+            <input id="pk-month" name="month" type="month" defaultValue={month} className="h-9 rounded-md border border-[#E3E8EE] px-2 text-sm" /></div>
+          <button className="h-9 rounded-md border border-[#E3E8EE] px-3 text-sm">Show</button>
           {pack && <PrintButton />}
         </form>
       </div>
@@ -64,7 +64,7 @@ export default async function ProjectPackPage({ params, searchParams }: { params
                 <div key={k.id} className="rounded-lg border border-[#E3E8EE] p-3">
                   <dt className="text-xs text-[#5B6A78]">{k.label}</dt>
                   <dd className="text-lg font-semibold tabular-nums">{k.value == null ? "-" : n(k.value, k.decimals)} {k.value != null && k.unit}</dd>
-                  {k.value == null && k.needs && <dd className="text-[11px] text-gray-400">Needs {k.needs}</dd>}
+                  {k.value == null && k.needs && <dd className="text-[11px] text-[#5B6A78]">Needs {k.needs}</dd>}
                 </div>
               ))}
             </dl>
@@ -76,7 +76,7 @@ export default async function ProjectPackPage({ params, searchParams }: { params
               <div className="overflow-x-auto">
                 <Table className="text-sm">
                   <thead><tr className="text-left text-xs text-[#5B6A78]"><th className="py-1 pr-3">Date</th><th className="py-1 pr-3">Waste</th><th className="py-1 pr-3">EWC</th><th className="py-1 pr-3 text-right">Tonnes</th><th className="py-1 pr-3">Route</th><th className="py-1">Carrier / note</th></tr></thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-[#E3E8EE]">
                     {pack.loads.map((l) => (
                       <tr key={l.id}><td className="py-1.5 pr-3 tabular-nums">{l.recordedAt.toISOString().slice(0, 10)}</td><td className="py-1.5 pr-3">{l.wasteType}{l.hazardous ? " (hazardous)" : ""}</td><td className="py-1.5 pr-3">{l.ewcCode ?? "-"}</td><td className="py-1.5 pr-3 text-right tabular-nums">{n(l.weightTonnes, 2)}</td><td className="py-1.5 pr-3">{DISPOSAL_ROUTES.find((r) => r.value === l.disposalRoute)?.label ?? l.disposalRoute}</td><td className="py-1.5">{[l.carrierName, l.transferNoteReference].filter(Boolean).join(" · ") || "-"}</td></tr>
                     ))}
@@ -113,7 +113,7 @@ export default async function ProjectPackPage({ params, searchParams }: { params
               <p className="mt-1 text-xs text-[#5B6A78]">{REGISTER_ATTRIBUTION}.</p>
             </section>
           )}
-          <footer className="border-t pt-2 text-xs text-gray-400">Produced from the project&apos;s records in MetricOra. Figures are as recorded, not independently verified.</footer>
+          <footer className="border-t pt-2 text-xs text-[#5B6A78]">Produced from the project&apos;s records in MetricOra. Figures are as recorded, not independently verified.</footer>
         </article>
       )}
     </div>

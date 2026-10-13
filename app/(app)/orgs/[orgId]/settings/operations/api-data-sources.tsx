@@ -105,7 +105,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
       </div>
 
       {!showForm && (
-        <div className="border-t border-slate-100 px-4 py-3">
+        <div className="border-t border-[#E3E8EE] px-4 py-3">
           <Button type="button" onClick={() => setShowForm(true)} className="gap-1.5">
             <Plus className="h-4 w-4" />
             Add data source
@@ -114,7 +114,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
       )}
 
       {showForm && (
-        <form onSubmit={createSource} className="border-t border-slate-100 p-4 space-y-4">
+        <form onSubmit={createSource} className="border-t border-[#E3E8EE] p-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label="Name" htmlFor="f-name">
               <Input id="f-name" name="name" required maxLength={100} disabled={isPending} placeholder="e.g. Energy Provider API" />
@@ -166,13 +166,13 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
       )}
 
       {sources.length === 0 && !showForm && (
-        <div className="border-t border-slate-100 px-4 py-6 text-center text-sm text-[#5B6A78]">
+        <div className="border-t border-[#E3E8EE] px-4 py-6 text-center text-sm text-[#5B6A78]">
           No API data sources configured.
         </div>
       )}
 
       {sources.length > 0 && (
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#E3E8EE]">
           {sources.map((source) => (
             <ApiDataSourceRow key={source.id} orgId={orgId} source={source} />
           ))}
@@ -260,7 +260,7 @@ function ApiDataSourceRow({ orgId, source }: { orgId: string; source: ApiDataSou
                 Active
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-[#41505F]">
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#F9FAFC] px-2 py-0.5 text-xs text-[#41505F]">
                 Disabled
               </span>
             )}

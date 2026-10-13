@@ -48,7 +48,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
   }
   if (authErr) {
     if (authErr.status === 401) redirect("/sign-in");
-    return <div className="p-8"><h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1><p className="mt-1 text-sm text-[#5B6A78]">Admin or editor access required.</p></div>;
+    return <div className="p-8"><h1 className="text-lg text-[#131d29]">Access denied</h1><p className="mt-1 text-sm text-[#5B6A78]">Admin or editor access required.</p></div>;
   }
 
   const connections = await prisma.integrationConnection.findMany({
@@ -61,16 +61,16 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
   const sageConnected = connectedProviders.has("sage");
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-[#F9FAFC]">
       <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
-          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#c2410c] hover:text-orange-600 mb-4">
+          <Link href={`/orgs/${orgId}/integrations`} className="flex items-center gap-2 text-[#c2400c] hover:text-orange-600 mb-4">
             <ArrowLeft className="h-4 w-4" />
             <span className="text-sm font-medium">Back to Integrations</span>
           </Link>
           <div className="mb-2 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-[#c2410c]" />
-            <span className="text-sm font-semibold text-[#c2410c] uppercase tracking-widest">Accounting Software</span>
+            <BarChart3 className="h-5 w-5 text-[#c2400c]" />
+            <span className="text-sm font-semibold text-[#c2400c] uppercase tracking-widest">Accounting Software</span>
           </div>
           <h1 className="text-3xl text-[#131d29] mb-2">Connect Your Accounting Platform</h1>
           <p className="text-[#5B6A78]">
@@ -118,7 +118,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <XeroConnectButton orgId={orgId} connected={xeroConnected} />
                   <p className="text-xs text-[#5B6A78]">
                     Secure OAuth login. We never store your Xero password.{" "}
-                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2410c] hover:underline">
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2400c] hover:underline">
                       Use your own Xero app
                     </Link>
                   </p>
@@ -129,7 +129,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-[#c2410c]" />
+                    <Zap className="h-5 w-5 text-[#c2400c]" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
@@ -143,7 +143,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-[#c2410c]" />
+                    <Lock className="h-5 w-5 text-[#c2400c]" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
@@ -157,7 +157,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-[#c2410c]" />
+                    <RotateCw className="h-5 w-5 text-[#c2400c]" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>
@@ -174,28 +174,28 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <h3 className="text-lg font-semibold text-[#131d29] mb-6">How Xero Integration Works</h3>
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">1</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2400c] font-semibold text-sm flex-shrink-0">1</div>
                   <div>
                     <h4 className="font-semibold text-[#131d29] mb-1">Invoice Sync</h4>
                     <p className="text-sm text-[#41505F]">We pull vendor invoices, bills, and expenses from your Xero account. Data syncs automatically twice daily.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">2</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2400c] font-semibold text-sm flex-shrink-0">2</div>
                   <div>
                     <h4 className="font-semibold text-[#131d29] mb-1">Anomaly Detection</h4>
                     <p className="text-sm text-[#41505F]">Duplicate invoices, price spikes, and missing receipts are flagged for review before they enter your calculations.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">3</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2400c] font-semibold text-sm flex-shrink-0">3</div>
                   <div>
                     <h4 className="font-semibold text-[#131d29] mb-1">Scope 3 Calculation</h4>
                     <p className="text-sm text-[#41505F]">Spend amounts are automatically mapped to emission categories and converted to tonnes CO₂e.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2410c] font-semibold text-sm flex-shrink-0">4</div>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fff7ed] text-[#c2400c] font-semibold text-sm flex-shrink-0">4</div>
                   <div>
                     <h4 className="font-semibold text-[#131d29] mb-1">Immutable Audit Trail</h4>
                     <p className="text-sm text-[#41505F]">Every invoice and sync event is logged. Show auditors which invoices contributed to your emissions total.</p>
@@ -225,7 +225,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                       <CardDescription>Online accounting software</CardDescription>
                     </div>
                     {quickbooksConnected ? (
-                      <Badge variant="outline" className="border-blue-200 text-blue-700 bg-blue-50">
+                      <Badge variant="outline" className="border-[#E3E8EE] text-[#41505F] bg-[#F9FAFC]">
                         Connected
                       </Badge>
                     ) : (
@@ -242,7 +242,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <QuickBooksConnectButton orgId={orgId} connected={quickbooksConnected} />
                   <p className="text-xs text-[#5B6A78]">
                     Secure OAuth login. We never store your QuickBooks password.{" "}
-                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2410c] hover:underline">
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2400c] hover:underline">
                       Use your own QuickBooks app
                     </Link>
                   </p>
@@ -253,7 +253,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-blue-600" />
+                    <Zap className="h-5 w-5 text-[#c2400c]" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
@@ -267,7 +267,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-blue-600" />
+                    <Lock className="h-5 w-5 text-[#c2400c]" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
@@ -281,7 +281,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-blue-600" />
+                    <RotateCw className="h-5 w-5 text-[#c2400c]" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>
@@ -314,7 +314,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                       <CardDescription>ERP and accounting software</CardDescription>
                     </div>
                     {sageConnected ? (
-                      <Badge variant="outline" className="border-purple-200 text-purple-700 bg-purple-50">
+                      <Badge variant="outline" className="border-[#E3E8EE] text-[#41505F] bg-[#F9FAFC]">
                         Connected
                       </Badge>
                     ) : (
@@ -331,7 +331,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
                   <SageConnectButton orgId={orgId} connected={sageConnected} />
                   <p className="text-xs text-[#5B6A78]">
                     Secure OAuth login. We never store your Sage password.{" "}
-                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2410c] hover:underline">
+                    <Link href={`/orgs/${orgId}/settings/integrations`} className="text-[#c2400c] hover:underline">
                       Use your own Sage app
                     </Link>
                   </p>
@@ -342,7 +342,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <Zap className="h-5 w-5 text-purple-600" />
+                    <Zap className="h-5 w-5 text-[#c2400c]" />
                     Automatic Sync
                   </CardTitle>
                 </CardHeader>
@@ -356,7 +356,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <Lock className="h-5 w-5 text-purple-600" />
+                    <Lock className="h-5 w-5 text-[#c2400c]" />
                     Enterprise Security
                   </CardTitle>
                 </CardHeader>
@@ -370,7 +370,7 @@ export default async function AccountingPage({ params }: AccountingPageProps) {
               <Card className="border-[#E3E8EE] bg-white shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-[#131d29] flex items-center gap-2">
-                    <RotateCw className="h-5 w-5 text-purple-600" />
+                    <RotateCw className="h-5 w-5 text-[#c2400c]" />
                     Recalculate Anytime
                   </CardTitle>
                 </CardHeader>

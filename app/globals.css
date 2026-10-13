@@ -17,7 +17,7 @@
   --color-mk-line-dark:    #2B3A4C;
   --color-mk-text:         #131D29;
   --color-mk-text-2:       #41505F;
-  --color-mk-text-3:       #55646F;
+  --color-mk-text-3:       #5B6A78;
   --color-mk-on-dark:      #F3F6FA;
   --color-mk-on-dark-2:    #B7C3CF;
   --color-mk-on-dark-3:    #8A99A8;
@@ -30,7 +30,7 @@
   /* Teal + Blue dual system — analytical, clean, enterprise BI */
 
   /* Primary: teal brand */
-  /* Product primary is the marketing ember (#C2410C), the same orange the
+  /* Product primary is the marketing ember (#c2400c), the same orange the
      product screens hard-code. Tenant colours override it through
      lib/branding/css-vars.ts only when they pass contrast. */
   --color-primary:        #C2400C;
@@ -91,7 +91,7 @@
   --color-scope-3: #009821;
 
   /* Legacy aliases (keeps old var() references working) */
-  --color-forest-ink:    #C2410C;
+  --color-forest-ink:    #c2400c;
   --color-sage-wash:     #E6F4F1;
   --color-mist-blue:     #EAF1FF;
   --color-mint-veil:     #EAF7EE;
@@ -100,14 +100,14 @@
   --color-hairline-gray: #E2ECEA;
   --color-charcoal:      #17201D;
   --color-graphite:      #5F6F68;
-  --color-brand-primary: #C2410C;
+  --color-brand-primary: #c2400c;
   --color-brand-accent:  #15803D;
 
   /* Brand palette */
   --color-brand-forest: #15803D;
   --color-sky-blue:     #1D4ED8;
   --color-sky-light:    #EAF1FF;
-  --color-cta-orange:   #C2410C;
+  --color-cta-orange:   #c2400c;
   --color-surface-var:  #F4F8F7;
 
   /* Font */
@@ -316,7 +316,7 @@
 /* ── Button & interaction utilities ──────────────────────────────────────── */
 .btn-primary {
   @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full;
-  background-color: #C2410C;
+  background-color: #c2400c;
   color: #ffffff;
   font-weight: 500;
   font-size: 0.875rem;
@@ -681,10 +681,10 @@
 .mk-sky {
   --color-mk-on-dark: #131D29;
   --color-mk-on-dark-2: #41505F;
-  --color-mk-on-dark-3: #55646F;
+  --color-mk-on-dark-3: #5B6A78;
   --color-mk-accent-lit: #C2400C;
   --color-mk-ink-2: #FFFFFF;
   --color-mk-line-dark: #E3E8EE;
-  background: linear-gradient(180deg, #BFD9E8 0%, #DCEAF1 48%, #F9FAFC 100%);
+  background: linear-gradient(180deg, #FFF2EC 0%, #F9FAFC 100%);
   color: #131D29;
 }

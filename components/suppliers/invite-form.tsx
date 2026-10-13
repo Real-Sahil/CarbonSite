@@ -101,7 +101,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
     <Card className="border-[#E3E8EE] bg-white shadow-sm">
       <CardHeader>
         <CardTitle className="text-[#131d29] flex items-center gap-2">
-          <Mail className="h-5 w-5 text-[#c2410c]" />
+          <Mail className="h-5 w-5 text-[#c2400c]" />
           Send Supplier Invitation
         </CardTitle>
         <CardDescription>
@@ -136,8 +136,8 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
                 onClick={() => setInviteMethod("magic-link")}
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   inviteMethod === "magic-link"
-                    ? "border-[#f97316] bg-[#fff7ed]"
-                    : "border-[#E3E8EE] bg-white hover:border-slate-300"
+                    ? "border-[#c2400c] bg-[#fff7ed]"
+                    : "border-[#E3E8EE] bg-white hover:border-[#E3E8EE]"
                 }`}
               >
                 <div className="font-medium text-[#131d29]">Magic Link</div>
@@ -150,8 +150,8 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
                 onClick={() => setInviteMethod("credentials")}
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   inviteMethod === "credentials"
-                    ? "border-[#f97316] bg-[#fff7ed]"
-                    : "border-[#E3E8EE] bg-white hover:border-slate-300"
+                    ? "border-[#c2400c] bg-[#fff7ed]"
+                    : "border-[#E3E8EE] bg-white hover:border-[#E3E8EE]"
                 }`}
               >
                 <div className="font-medium text-[#131d29]">Create Account</div>
@@ -208,8 +208,8 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
 
           {/* Credentials Method Password Info */}
           {inviteMethod === "credentials" && (
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm text-blue-800">
+            <div className="p-4 bg-[#F9FAFC] border border-[#E3E8EE] rounded-lg">
+              <div className="text-sm text-[#131d29]">
                 <p className="font-medium mb-2">Password will be auto-generated and sent via email</p>
                 <p className="text-xs">The supplier will be prompted to change their password on first login.</p>
               </div>
@@ -230,7 +230,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#c2410c] hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
+            className="w-full font-semibold"
           >
             {isLoading ? (
               <>
@@ -251,7 +251,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
           <h4 className="font-semibold text-[#131d29] mb-3">Comparison:</h4>
           <div className="grid gap-4 text-sm">
             <div>
-              <div className="font-medium text-[#c2410c] mb-1">Magic Link</div>
+              <div className="font-medium text-[#c2400c] mb-1">Magic Link</div>
               <ul className="space-y-1 text-[#41505F] text-xs">
                 <li>✓ No account creation required</li>
                 <li>✓ Faster onboarding</li>
@@ -260,7 +260,7 @@ export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
               </ul>
             </div>
             <div>
-              <div className="font-medium text-[#c2410c] mb-1">Create Account</div>
+              <div className="font-medium text-[#c2400c] mb-1">Create Account</div>
               <ul className="space-y-1 text-[#41505F] text-xs">
                 <li>✓ Persistent login access</li>
                 <li>✓ Can return to view submissions</li>

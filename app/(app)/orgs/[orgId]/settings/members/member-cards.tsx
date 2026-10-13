@@ -202,8 +202,8 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
             onClick={() => changeFilter("all")}
             className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
               roleFilter === "all"
-                ? "bg-[#0F766E] text-white border-[#0F766E]"
-                : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-slate-300"
+                ? "bg-[#c2400c] text-white border-[#c2400c]"
+                : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-[#E3E8EE]"
             }`}
           >
             All ({members.length})
@@ -214,8 +214,8 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
               onClick={() => changeFilter(r)}
               className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                 roleFilter === r
-                  ? "bg-[#0F766E] text-white border-[#0F766E]"
-                  : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-slate-300"
+                  ? "bg-[#c2400c] text-white border-[#c2400c]"
+                  : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-[#E3E8EE]"
               }`}
             >
               {ROLE_LABELS[r] ?? r} ({members.filter((m) => m.role === r).length})
@@ -230,7 +230,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
           <p className="text-sm text-[#5B6A78]">No members match this filter.</p>
           <button
             onClick={() => { changeFilter("all"); changeSearch(""); }}
-            className="text-xs text-[#0F766E] hover:underline"
+            className="text-xs text-[#c2400c] hover:underline"
           >
             Clear filters
           </button>
@@ -253,7 +253,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
                 >
                   {/* Avatar + identity */}
                   <div className="flex items-start gap-3 min-w-0">
-                    <div className="h-9 w-9 rounded-full bg-[#CCFBF1] flex items-center justify-center text-[#0F766E] text-sm font-semibold shrink-0 select-none">
+                    <div className="h-9 w-9 rounded-full bg-[#F9FAFC] flex items-center justify-center text-[#c2400c] text-sm font-semibold shrink-0 select-none">
                       {initial}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -275,7 +275,7 @@ export function MemberCards({ orgId, members, currentUserId }: MemberCardsProps)
                   </div>
 
                   {/* Role edit + actions */}
-                  <div className="flex items-center gap-1.5 pt-2.5 border-t border-slate-100">
+                  <div className="flex items-center gap-1.5 pt-2.5 border-t border-[#E3E8EE]">
                     <select
                       value={draft}
                       disabled={isPending}

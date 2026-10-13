@@ -168,7 +168,7 @@ export function InviteLinkGenerator({
 
         <div className="flex items-center gap-3 flex-wrap mt-1">
           <div className="flex flex-col gap-1">
-            <label htmlFor="invite-expires" className="text-xs text-[#555555]">
+            <label htmlFor="invite-expires" className="text-xs text-[#41505F]">
               Link expires after
             </label>
             <select
@@ -185,7 +185,7 @@ export function InviteLinkGenerator({
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-[#555555]">Reusable</span>
+            <span className="text-xs text-[#41505F]">Reusable</span>
             <label className="flex items-center gap-2 h-9 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -193,7 +193,7 @@ export function InviteLinkGenerator({
                 checked={reusable}
                 onChange={(e) => setReusable(e.target.checked)}
                 disabled={loading}
-                className="h-4 w-4 rounded border-[#E3E8EE] accent-blue-600"
+                className="h-4 w-4 rounded border-[#E3E8EE] accent-[#c2400c]"
               />
               <span className="text-xs text-[#41505F]">
                 Never expires, multi-use
@@ -204,7 +204,7 @@ export function InviteLinkGenerator({
 
         <div className="flex items-center gap-3 flex-wrap mt-1">
           <div className="flex flex-col gap-1">
-            <label htmlFor="invite-email" className="text-xs text-[#555555]">
+            <label htmlFor="invite-email" className="text-xs text-[#41505F]">
               Send invite by email <span className="text-[#5B6A78]">(optional)</span>
             </label>
             <Input
@@ -250,7 +250,7 @@ export function InviteLinkGenerator({
             </p>
           )}
         </div>
-        <p className="text-xs text-[#555555]">
+        <p className="text-xs text-[#41505F]">
           Scoping a link to a site auto-assigns the field worker to that site
           when they join — they land straight on their project with no extra setup.
           {sites.length === 0 &&
@@ -263,7 +263,7 @@ export function InviteLinkGenerator({
           <p className="text-xs font-medium text-[#41505F] uppercase tracking-wide">
             Active invite links
           </p>
-          <p className="text-xs text-[#555555]">
+          <p className="text-xs text-[#41505F]">
             Share this link via WhatsApp, SMS, or email. When the field worker taps it on their
             phone, it will open the MetricOra app automatically.
           </p>

@@ -551,7 +551,7 @@ export function SocialValueTargetsSection({
                   : 0;
                 const onTrack = target.actualPounds >= target.targetPounds;
                 return (
-                  <TableRow key={target.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                  <TableRow key={target.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                     <TableCell className="text-sm text-[#41505F] py-3.5 pl-6">{target.contractName}</TableCell>
                     <TableCell className="text-sm text-[#41505F] py-3.5">{target.periodLabel}</TableCell>
                     <TableCell className="text-right text-sm text-[#5B6A78] tabular-nums py-3.5">
@@ -565,9 +565,9 @@ export function SocialValueTargetsSection({
                     </TableCell>
                     <TableCell className="py-3.5">
                       <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-24 rounded-full bg-[#F3F4F6] overflow-hidden">
+                        <div className="h-1.5 w-24 rounded-full bg-[#F9FAFC] overflow-hidden">
                           <div
-                            className={`h-full rounded-full ${onTrack ? "bg-emerald-500" : "bg-[#c2410c]"}`}
+                            className={`h-full rounded-full ${onTrack ? "bg-emerald-500" : "bg-[#c2400c]"}`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>

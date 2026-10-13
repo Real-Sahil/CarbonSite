@@ -8,11 +8,11 @@ import { ImportBatchActions, ImportBatchEvidenceActions } from "./import-actions
 import { DeleteImportButton } from "./delete-import-button";
 
 const STATE_CONFIG: Record<string, { label: string; className: string }> = {
-  uploaded:        { label: "Uploaded",         className: "bg-zinc-100 text-[#41505F] border-transparent" },
-  parsing:         { label: "Parsing",           className: "bg-blue-50 text-blue-700 border-transparent animate-pulse" },
+  uploaded:        { label: "Uploaded",         className: "bg-[#F9FAFC] text-[#41505F] border-transparent" },
+  parsing:         { label: "Parsing",           className: "bg-[#F9FAFC] text-[#41505F] border-transparent animate-pulse" },
   needs_attention: { label: "Needs attention",   className: "bg-amber-50 text-amber-700 border-transparent" },
   ready_to_commit: { label: "Ready to commit",   className: "bg-[#FFF7ED] text-[#131d29] border-transparent" },
-  committed:       { label: "Committed",         className: "bg-[#c2410c] text-white border-transparent" },
+  committed:       { label: "Committed",         className: "bg-[#c2400c] text-white border-transparent" },
   failed:          { label: "Failed",            className: "bg-red-50 text-red-700 border-transparent" },
 };
 
@@ -146,7 +146,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
                 </span>
               )}
               {batch.errorCount > 0 && batch.warningCount > 0 && (
-                <span className="text-zinc-300 mx-1">·</span>
+                <span className="text-[#5B6A78] mx-1">·</span>
               )}
               {batch.warningCount > 0 && (
                 <span className="text-amber-600">

@@ -66,7 +66,7 @@ export function AddCredentialButton({ orgId }: { orgId: string }) {
       <Button
         size="sm"
         onClick={() => setOpen(true)}
-        className="bg-[#131d29] hover:bg-[#1f2937] text-white text-xs h-8 px-3 gap-1.5"
+        className="text-xs h-8 px-3 gap-1.5"
       >
         <Plus className="h-3.5 w-3.5" />
         Add credential
@@ -101,7 +101,7 @@ export function AddCredentialButton({ orgId }: { orgId: string }) {
 
             <DialogFooter className="pt-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
-              <Button type="submit" size="sm" disabled={loading} className="bg-[#131d29] hover:bg-[#1f2937] text-white">
+              <Button type="submit" size="sm" disabled={loading}>
                 {loading ? "Adding..." : "Add credential"}
               </Button>
             </DialogFooter>
@@ -158,7 +158,7 @@ export function EditCredentialButton({ orgId, credential }: { orgId: string; cre
 
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)} className="h-7 w-7 p-0 text-[#9CA3AF] hover:text-[#131d29]">
+      <Button variant="ghost" size="sm" onClick={() => setOpen(true)} className="h-7 w-7 p-0 text-[#5B6A78] hover:text-[#131d29]">
         <Pencil className="h-3.5 w-3.5" />
       </Button>
 
@@ -193,7 +193,7 @@ export function EditCredentialButton({ orgId, credential }: { orgId: string; cre
 
             <DialogFooter className="pt-2">
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
-              <Button type="submit" size="sm" disabled={loading} className="bg-[#131d29] hover:bg-[#1f2937] text-white">
+              <Button type="submit" size="sm" disabled={loading}>
                 {loading ? "Saving..." : "Save"}
               </Button>
             </DialogFooter>
@@ -239,7 +239,7 @@ export function DeleteCredentialButton({ orgId, credentialId, provider }: { orgI
         size="sm"
         onClick={handleDelete}
         disabled={loading}
-        className="h-7 w-7 p-0 text-[#9CA3AF] hover:text-red-600"
+        className="h-7 w-7 p-0 text-[#5B6A78] hover:text-red-600"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </Button>

@@ -207,7 +207,7 @@ export default function WorkflowsPage() {
                     <div>
                       <p className="text-[#41505F]">Next Run</p>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <Clock className="w-4 h-4 text-blue-600" />
+                        <Clock className="w-4 h-4 text-[#c2400c]" />
                         <span className="font-medium text-xs">
                           {new Date(workflow.nextScheduledRun).toLocaleDateString()}
                         </span>
@@ -230,7 +230,7 @@ export default function WorkflowsPage() {
         </div>
       )}
 
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
         <CardHeader>
           <CardTitle className="text-base">About Automation Workflows</CardTitle>
         </CardHeader>

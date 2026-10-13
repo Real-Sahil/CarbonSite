@@ -46,11 +46,11 @@ export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E3E8EE]"
           >
             <Avatar className="h-7 w-7 shrink-0">
               <AvatarImage src={undefined} alt={user.name ?? user.email} />
-              <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{initialsOf(user.name, user.email)}</AvatarFallback>
+              <AvatarFallback className="bg-[#fff7ed] text-[#c2400c] text-xs font-medium border border-[#fed7aa]">{initialsOf(user.name, user.email)}</AvatarFallback>
             </Avatar>
             <span className="max-w-[200px] truncate text-xs font-medium text-[#41505F]">{user.name ?? user.email}</span>
             <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-[#5B6A78] shrink-0" />
@@ -63,17 +63,17 @@ export function OrgTopBar({ orgId, user, themePreference }: OrgTopBarProps) {
                 <p className="text-xs font-medium text-[#41505F] truncate">{user.name}</p>
                 <p className="text-[11px] text-[#5B6A78] truncate">{user.email}</p>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-slate-200" />
+              <DropdownMenuSeparator className="bg-[#E3E8EE]" />
             </>
           )}
           <DropdownMenuItem asChild>
-            <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-slate-100">
+            <Link href={`/orgs/${orgId}/settings/members`} className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-[#F9FAFC]">
               <Users aria-hidden="true" className="h-4 w-4 mr-2" />
               Members and settings
             </Link>
           </DropdownMenuItem>
           <AppearanceMenu saved={themePreference ?? null} />
-          <DropdownMenuSeparator className="bg-slate-200" />
+          <DropdownMenuSeparator className="bg-[#E3E8EE]" />
           <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={signOut}>
             <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
             Sign out

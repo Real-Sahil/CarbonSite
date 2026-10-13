@@ -11,7 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
   appealed: "bg-yellow-100 text-yellow-800",
   complied: "bg-green-100 text-green-800",
   extended: "bg-orange-100 text-orange-800",
-  withdrawn: "bg-gray-100 text-[#41505F]",
+  withdrawn: "bg-[#F9FAFC] text-[#41505F]",
   overdue: "bg-red-200 text-red-900",
 };
 
@@ -96,7 +96,7 @@ export default async function EnforcementNoticesPage({ params }: PageProps) {
                     ) : "-"}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[n.status] ?? "bg-gray-100 text-[#41505F]"}`}>
+                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[n.status] ?? "bg-[#F9FAFC] text-[#41505F]"}`}>
                       {n.status}
                     </span>
                   </td>

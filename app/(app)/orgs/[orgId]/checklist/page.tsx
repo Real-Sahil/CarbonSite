@@ -42,7 +42,7 @@ export default async function ChecklistPage({
               <Link
                 key={f.path}
                 href={`/orgs/${orgId}/${f.path}`}
-                className="inline-flex h-8 items-center rounded-[8px] border border-[#D1D5DB] bg-white px-3 text-xs font-medium text-[#131d29] hover:border-[#9CA3AF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
+                className="inline-flex h-8 items-center rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-xs font-medium text-[#131d29] hover:border-[#E3E8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500"
               >
                 {f.label}
               </Link>
@@ -67,7 +67,7 @@ export default async function ChecklistPage({
                 key={m}
                 href={`/orgs/${orgId}/checklist?month=${m}`}
                 aria-current={m === month ? "page" : undefined}
-                className={`rounded-full border px-3 py-1 text-xs font-medium ${m === month ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#D1D5DB] bg-white text-[#41505F] hover:border-[#9CA3AF]"}`}
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${m === month ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] bg-white text-[#41505F] hover:border-[#E3E8EE]"}`}
               >
                 {monthLabel(m)}
               </Link>

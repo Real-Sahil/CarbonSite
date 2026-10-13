@@ -18,15 +18,15 @@ export default function MonitoringSettingsPage({
   return (
     <div className="flex flex-col gap-[28px] max-w-4xl">
       {/* Setup Status */}
-      <Alert className="border-blue-200 bg-blue-50">
-        <AlertTriangle className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-blue-800">
+      <Alert className="border-[#E3E8EE] bg-[#F9FAFC]">
+        <AlertTriangle className="h-4 w-4 text-[#c2400c]" />
+        <AlertDescription className="text-[#131d29]">
           Grafana Cloud monitoring is optional and configured at the organization level. Free tier includes 3 dashboards and 3 users.{' '}
           <a
             href="https://grafana.com/auth/sign-up/create-account"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold underline hover:text-blue-900"
+            className="font-semibold underline hover:text-[#a33409]"
           >
             Create free account
           </a>
@@ -40,7 +40,7 @@ export default function MonitoringSettingsPage({
             <CardTitle className="text-sm font-medium">Report Pipeline</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Real-time</div>
+            <div className="text-2xl font-semibold tabular-nums">Real-time</div>
             <p className="text-xs text-[#5B6A78] mt-1">5 metrics tracked</p>
             <Badge className="mt-3 bg-green-100 text-green-800">Active</Badge>
           </CardContent>
@@ -51,7 +51,7 @@ export default function MonitoringSettingsPage({
             <CardTitle className="text-sm font-medium">Data Quality</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Real-time</div>
+            <div className="text-2xl font-semibold tabular-nums">Real-time</div>
             <p className="text-xs text-[#5B6A78] mt-1">6 quality checks</p>
             <Badge className="mt-3 bg-green-100 text-green-800">Active</Badge>
           </CardContent>
@@ -62,7 +62,7 @@ export default function MonitoringSettingsPage({
             <CardTitle className="text-sm font-medium">Field Submissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Real-time</div>
+            <div className="text-2xl font-semibold tabular-nums">Real-time</div>
             <p className="text-xs text-[#5B6A78] mt-1">5 metrics tracked</p>
             <Badge className="mt-3 bg-green-100 text-green-800">Active</Badge>
           </CardContent>
@@ -125,7 +125,7 @@ export default function MonitoringSettingsPage({
             </Button>
 
             {showSetupGuide && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="mt-4 p-4 bg-[#F9FAFC] rounded-lg border border-[#E3E8EE]">
                 <h4 className="font-semibold text-sm mb-3">Setup Instructions:</h4>
                 <ol className="text-xs space-y-2 text-[#41505F] list-decimal list-inside">
                   <li>Create a free Grafana Cloud account at grafana.com</li>
@@ -201,7 +201,7 @@ export default function MonitoringSettingsPage({
                   className={
                     alert.status === 'enabled'
                       ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-[#131d29]'
+                      : 'bg-[#F9FAFC] text-[#131d29]'
                   }
                 >
                   {alert.status === 'enabled' ? 'Enabled' : 'Disabled'}

@@ -158,7 +158,7 @@ export default function InvoiceReviewPage() {
       case 'warning':
         return <AlertTriangle className="w-4 h-4 text-yellow-600" />;
       case 'info':
-        return <Info className="w-4 h-4 text-blue-600" />;
+        return <Info className="w-4 h-4 text-[#c2400c]" />;
       default:
         return null;
     }
@@ -185,7 +185,7 @@ export default function InvoiceReviewPage() {
             <CardTitle className="text-sm font-medium text-red-700">Critical Issues</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-700">{stats.critical}</div>
+            <div className="text-2xl font-semibold tabular-nums text-red-700">{stats.critical}</div>
             <p className="text-xs text-muted-foreground">Requires immediate attention</p>
           </CardContent>
         </Card>
@@ -194,16 +194,16 @@ export default function InvoiceReviewPage() {
             <CardTitle className="text-sm font-medium text-yellow-700">Warnings</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-700">{stats.warning}</div>
+            <div className="text-2xl font-semibold tabular-nums text-yellow-700">{stats.warning}</div>
             <p className="text-xs text-muted-foreground">Review recommended</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-700">Info</CardTitle>
+            <CardTitle className="text-sm font-medium text-[#c2400c]">Info</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{stats.info}</div>
+            <div className="text-2xl font-semibold tabular-nums text-[#c2400c]">{stats.info}</div>
             <p className="text-xs text-muted-foreground">FYI items</p>
           </CardContent>
         </Card>
@@ -212,7 +212,7 @@ export default function InvoiceReviewPage() {
             <CardTitle className="text-sm font-medium">Selected</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{selectedIds.size}</div>
+            <div className="text-2xl font-semibold tabular-nums">{selectedIds.size}</div>
             <p className="text-xs text-muted-foreground">For bulk actions</p>
           </CardContent>
         </Card>
@@ -278,7 +278,7 @@ export default function InvoiceReviewPage() {
       </Card>
 
       {selectedIds.size > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -418,7 +418,7 @@ export default function InvoiceReviewPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
         <CardHeader>
           <CardTitle className="text-base">About Invoice Anomaly Detection</CardTitle>
         </CardHeader>

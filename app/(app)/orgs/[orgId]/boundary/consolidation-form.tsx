@@ -100,7 +100,7 @@ export function ConsolidationApproachForm({
           id="approach"
           value={approach}
           onChange={(e) => setApproach(e.target.value)}
-          className="w-full rounded-md border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          className="w-full rounded-md border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
         >
           {APPROACHES.map((a) => (
             <option key={a.value} value={a.value}>

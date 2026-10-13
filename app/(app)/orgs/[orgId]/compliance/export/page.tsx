@@ -54,7 +54,7 @@ export default function EvidenceExportPage() {
       )}
 
       {/* Quick Export Card */}
-      <Card className="border-2 border-blue-200 bg-blue-50">
+      <Card className="border-2 border-[#E3E8EE] bg-[#F9FAFC]">
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
@@ -82,7 +82,7 @@ export default function EvidenceExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-[#c2400c]" />
               Complete Audit Trail
             </CardTitle>
           </CardHeader>
@@ -110,7 +110,7 @@ export default function EvidenceExportPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-purple-600" />
+              <CheckCircle2 className="w-5 h-5 text-[#c2400c]" />
               Framework Compliance
             </CardTitle>
           </CardHeader>
@@ -133,19 +133,19 @@ export default function EvidenceExportPage() {
               <h3 className="font-semibold text-sm">Audit Information</h3>
               <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Complete action audit trail (50+ event types)</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Actor identification and timestamp records</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>IP addresses and session information</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Cryptographic hash chain for tamper detection</span>
                 </li>
               </ul>
@@ -155,19 +155,19 @@ export default function EvidenceExportPage() {
               <h3 className="font-semibold text-sm">Calculation Evidence</h3>
               <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Emission factor library versions and selections</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Calculation formulas for each record</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>GHG Protocol methodology compliance proof</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Data quality checks and validation results</span>
                 </li>
               </ul>
@@ -179,19 +179,19 @@ export default function EvidenceExportPage() {
               <h3 className="font-semibold text-sm">Data Integrity</h3>
               <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Data lineage from source to published output</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Immutable snapshot records with checksums</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Digital signatures for verification</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Tamper detection via hash chains</span>
                 </li>
               </ul>
@@ -201,19 +201,19 @@ export default function EvidenceExportPage() {
               <h3 className="font-semibold text-sm">Compliance Mapping</h3>
               <ul className="text-sm text-[#41505F] space-y-2">
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Framework-specific requirement mapping</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Scope 1, 2, and 3 breakdowns</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-600">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Calculation methodology documentation</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-blue-606">✓</span>
+                  <span className="text-[#c2400c]">✓</span>
                   <span>Third-party factor source verification</span>
                 </li>
               </ul>
@@ -241,7 +241,7 @@ export default function EvidenceExportPage() {
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-blue-600" />
+                <Users className="w-4 h-4 text-[#c2400c]" />
                 <h3 className="font-medium text-sm">Third-Party Verification</h3>
               </div>
               <p className="text-xs text-[#41505F]">

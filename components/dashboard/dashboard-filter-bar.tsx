@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 const FIELD =
-  "h-9 w-full min-w-0 rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full min-w-0 rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
 
 /**
  * Supplier, month range and scope filters for the dashboard. The URL is the
@@ -78,7 +78,7 @@ export function DashboardFilterBar({
             <input
               key={filters.sv ?? ""}
               type="checkbox"
-              className="h-4 w-4 cursor-pointer accent-[#c2410c]"
+              className="h-4 w-4 cursor-pointer accent-[#c2400c]"
               defaultChecked={filters.sv === "1"}
               onChange={(e) => set("sv", e.target.checked ? "1" : "")}
             />

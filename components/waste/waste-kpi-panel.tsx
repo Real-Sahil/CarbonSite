@@ -31,7 +31,7 @@ export function WasteKpiPanel({ set, onlyProjectId, orgId }: { set: WasteKpiSet;
         </div>
       )}
       {projects.map((p) => (
-        <div key={p.id} className="border-t border-gray-100 pt-4 first:border-0 first:pt-0">
+        <div key={p.id} className="border-t border-[#E3E8EE] pt-4 first:border-0 first:pt-0">
           <h3 className="mb-2 text-sm font-semibold text-[#131d29]">{p.name}</h3>
           <Tiles k={p} />
         </div>

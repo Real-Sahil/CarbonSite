@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileUp, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { inputCls, labelCls } from "@/components/structured-forms/ms-fields";
 import type { BillExtraction } from "@/lib/evidence/bill-extractor";
 import { FormField } from "@/components/forms/form-kit";
@@ -116,7 +117,7 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFC]">
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#E3E8EE] px-4 py-4 hover:bg-[#F9FAFC]">
         {busy === "read" ? <Loader2 className="h-5 w-5 animate-spin text-[#5B6A78]" /> : <FileUp className="h-5 w-5 text-[#5B6A78]" />}
         <span className="text-sm text-[#41505F]">
           {busy === "read" ? "Reading the document. Photos can take up to a minute." : "Choose a utility bill or fuel receipt (PDF or photo, up to 10 MB)"}
@@ -200,9 +201,9 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button type="submit" disabled={!!busy} className="inline-flex items-center gap-1.5 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
+            <Button type="submit" disabled={!!busy} className="gap-1.5">
               {busy === "save" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Save for review
-            </button>
+            </Button>
             <button type="button" onClick={() => setRead(null)} className="text-sm text-[#5B6A78]">Discard</button>
             <span className="text-xs text-[#5B6A78]">Read by {read.method === "ocr" ? "text recognition" : "the PDF's text"}. The bill is kept as evidence on the record.</span>
           </div>

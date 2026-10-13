@@ -171,7 +171,7 @@ export function UpsertBrandingForm({ orgId, current, logoPreviewUrl }: UpsertBra
               type="button"
               onClick={() => document.getElementById("logo-upload")?.click()}
               disabled={uploadingLogo || isPending}
-              className="px-3 py-1.5 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] text-sm font-medium text-[#131d29] hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed w-fit transition-colors"
+              className="px-3 py-1.5 rounded-md border border-[#E3E8EE] bg-[#F9FAFC] text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50 disabled:cursor-not-allowed w-fit transition-colors"
             >
               {uploadingLogo ? "Uploading…" : "Choose File"}
             </button>

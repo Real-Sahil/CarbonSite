@@ -45,12 +45,12 @@ interface DataQualityMetrics {
 const SEVERITY_CONFIG = {
   critical: { label: "Critical", icon: AlertCircle, cls: "text-red-600 bg-red-50" },
   warning: { label: "Warning", icon: AlertTriangle, cls: "text-amber-600 bg-amber-50" },
-  info: { label: "Info", icon: TrendingUp, cls: "text-blue-600 bg-blue-50" },
+  info: { label: "Info", icon: TrendingUp, cls: "text-[#41505F] bg-[#F9FAFC]" },
 };
 
 const SCORE_INTERPRETATION = {
   excellent: { label: "Excellent", color: "bg-green-100", textColor: "text-green-900" },
-  good: { label: "Good", color: "bg-blue-100", textColor: "text-blue-900" },
+  good: { label: "Good", color: "bg-emerald-50", textColor: "text-emerald-700" },
   fair: { label: "Fair", color: "bg-amber-100", textColor: "text-amber-900" },
   poor: { label: "Poor", color: "bg-red-100", textColor: "text-red-900" },
 };
@@ -103,7 +103,7 @@ function ScoreGauge({ score }: { score: number }) {
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <p className="text-3xl font-bold text-[#131d29]">{Math.round(percentage)}</p>
+            <p className="text-3xl font-semibold tabular-nums text-[#131d29]">{Math.round(percentage)}</p>
             <p className="text-xs text-[#5B6A78]">out of 100</p>
           </div>
         </div>
@@ -142,8 +142,8 @@ export default function DataQualityPage() {
     return (
       <div className="p-8 max-w-6xl mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3" />
-          <div className="h-96 bg-gray-100 rounded" />
+          <div className="h-8 bg-[#E3E8EE] rounded w-1/3" />
+          <div className="h-96 bg-[#F9FAFC] rounded" />
         </div>
       </div>
     );
@@ -215,14 +215,14 @@ export default function DataQualityPage() {
                 <div>
                   <p className="text-xs font-medium text-[#41505F] mb-1">Records Summary</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-blue-50 p-2 rounded">
-                      <p className="text-2xl font-bold text-blue-900">
+                    <div className="bg-[#F9FAFC] p-2 rounded">
+                      <p className="text-2xl font-semibold tabular-nums text-[#131d29]">
                         {metrics.summary.totalRecords}
                       </p>
-                      <p className="text-xs text-blue-600">Total records</p>
+                      <p className="text-xs text-[#c2400c]">Total records</p>
                     </div>
                     <div className="bg-amber-50 p-2 rounded">
-                      <p className="text-2xl font-bold text-amber-900">
+                      <p className="text-2xl font-semibold tabular-nums text-amber-900">
                         {metrics.summary.pendingReview}
                       </p>
                       <p className="text-xs text-amber-600">Pending review</p>
@@ -245,11 +245,11 @@ export default function DataQualityPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold">{metrics.scoreBreakdown.completeness}%</span>
+                <span className="text-3xl font-semibold tabular-nums">{metrics.scoreBreakdown.completeness}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-[#E3E8EE] rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full"
+                  className="bg-[#c2400c] h-2 rounded-full"
                   style={{ width: `${metrics.scoreBreakdown.completeness}%` }}
                 />
               </div>
@@ -272,9 +272,9 @@ export default function DataQualityPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold">{metrics.scoreBreakdown.accuracy}%</span>
+                <span className="text-3xl font-semibold tabular-nums">{metrics.scoreBreakdown.accuracy}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-[#E3E8EE] rounded-full h-2">
                 <div
                   className="bg-green-600 h-2 rounded-full"
                   style={{ width: `${metrics.scoreBreakdown.accuracy}%` }}
@@ -296,9 +296,9 @@ export default function DataQualityPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold">{metrics.scoreBreakdown.timeliness}%</span>
+                <span className="text-3xl font-semibold tabular-nums">{metrics.scoreBreakdown.timeliness}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-[#E3E8EE] rounded-full h-2">
                 <div
                   className="bg-amber-600 h-2 rounded-full"
                   style={{ width: `${metrics.scoreBreakdown.timeliness}%` }}
@@ -320,11 +320,11 @@ export default function DataQualityPage() {
           <CardContent>
             <div className="space-y-2">
               <div className="flex items-end gap-2">
-                <span className="text-3xl font-bold">{metrics.scoreBreakdown.consistency}%</span>
+                <span className="text-3xl font-semibold tabular-nums">{metrics.scoreBreakdown.consistency}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-[#E3E8EE] rounded-full h-2">
                 <div
-                  className="bg-purple-600 h-2 rounded-full"
+                  className="bg-[#c2400c] h-2 rounded-full"
                   style={{ width: `${metrics.scoreBreakdown.consistency}%` }}
                 />
               </div>
@@ -343,7 +343,7 @@ export default function DataQualityPage() {
           <TabsTrigger value="issues">
             Issues{" "}
             {metrics.issues.some((i) => i.severity === "critical") && (
-              <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white">
+              <span className="ml-1 inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-semibold text-white">
                 !
               </span>
             )}
@@ -413,13 +413,13 @@ export default function DataQualityPage() {
                     <div key={idx} className="flex items-center gap-3">
                       <span className="text-xs font-medium text-[#41505F] w-12">{point.month}</span>
                       <div className="flex-1">
-                        <div className="bg-gray-200 rounded-full h-6 relative">
+                        <div className="bg-[#E3E8EE] rounded-full h-6 relative">
                           <div
-                            className={`h-6 rounded-full flex items-center justify-center text-white text-xs font-bold transition-all ${
+                            className={`h-6 rounded-full flex items-center justify-center text-white text-xs font-semibold transition-all ${
                               point.score >= 80
                                 ? "bg-green-600"
                                 : point.score >= 60
-                                  ? "bg-blue-600"
+                                  ? "bg-[#c2400c]"
                                   : point.score >= 40
                                     ? "bg-amber-600"
                                     : "bg-red-600"

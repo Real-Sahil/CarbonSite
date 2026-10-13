@@ -71,7 +71,7 @@ function SelectAllCheckbox({
       checked={allSelected}
       onChange={(e) => onToggle(e.target.checked)}
       aria-label="Select all"
-      className="h-4 w-4 rounded border border-[#E3E8EE] accent-[#c2410c] cursor-pointer"
+      className="h-4 w-4 rounded border border-[#E3E8EE] accent-[#c2400c] cursor-pointer"
     />
   );
 }
@@ -142,7 +142,7 @@ function BulkActionBar({
         <button
           type="button"
           onClick={onClear}
-          className="ml-1 rounded p-0.5 text-[#5B6A78] hover:text-[#41505F] focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+          className="ml-1 rounded p-0.5 text-[#5B6A78] hover:text-[#41505F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40"
           aria-label="Clear selection"
         >
           <X className="h-4 w-4" />

@@ -134,11 +134,11 @@ export default async function BiodiversityPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-8">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-100">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F9FAFC]">
             <Leaf className="h-5 w-5 text-[#41505F]" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[#131d29]">Biodiversity Net Gain</h1>
+            <h1 className="text-xl text-[#131d29]">Biodiversity Net Gain</h1>
             <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
               Mandatory for development in England since February 2024. A scheme must deliver at
               least {REQUIRED_NET_GAIN_PERCENT}% more biodiversity units than it started with, in
@@ -299,7 +299,7 @@ export default async function BiodiversityPage({ params }: PageProps) {
                   ))}
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-3 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E3E8EE] pt-3 text-sm">
                   <div className="flex flex-wrap gap-4 text-[#5B6A78]">
                     <span>{a._count.parcels} habitat parcels</span>
                     <span>{a._count.speciesRecords} species records</span>
@@ -334,7 +334,7 @@ export default async function BiodiversityPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view biodiversity assessments.
       </p>

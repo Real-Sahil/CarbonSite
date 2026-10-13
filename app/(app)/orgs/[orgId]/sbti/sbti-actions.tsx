@@ -21,8 +21,8 @@ export interface SbtiTarget {
 }
 
 export const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  draft:     { label: "Draft",     cls: "bg-gray-100 text-[#41505F]" },
-  committed: { label: "Committed", cls: "bg-blue-100 text-blue-700" },
+  draft:     { label: "Draft",     cls: "bg-[#F9FAFC] text-[#41505F]" },
+  committed: { label: "Committed", cls: "bg-[#F9FAFC] text-[#41505F]" },
   validated: { label: "Validated", cls: "bg-green-100 text-green-700" },
 };
 
@@ -140,9 +140,9 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#E3E8EE]">
           <h2 className="text-base font-semibold text-[#131d29]">{existing ? "Edit" : "Set"} SBTi net-zero target</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -209,7 +209,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                 )}
                 <button type="button"
                   onClick={() => setForm((f) => ({ ...f, nearTermReductionPct: suggestion!.totalReductionPercent.toFixed(1) }))}
-                  className="mt-2 text-xs font-medium text-[#c2410c] hover:text-[#9a3412]">
+                  className="mt-2 text-xs font-medium text-[#c2400c] hover:text-[#9a3412]">
                   Use this % for near-term reduction
                 </button>
               </div>
@@ -271,11 +271,10 @@ export function SbtiSetTargetButton({ orgId, existing }: { orgId: string; existi
 
   return (
     <>
-      <button onClick={() => setShowModal(true)}
-        className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors">
+      <Button onClick={() => setShowModal(true)}>
         <Target className="h-4 w-4" />
         {existing ? "Edit target" : "Set SBTi target"}
-      </button>
+      </Button>
       {showModal && (
         <SetTargetModal
           orgId={orgId}

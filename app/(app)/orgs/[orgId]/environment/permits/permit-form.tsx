@@ -113,7 +113,7 @@ export function CreatePermitForm({
             id="p-type"
             value={type}
             onChange={(e) => onTypeChange(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             {PERMIT_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -155,7 +155,7 @@ export function CreatePermitForm({
             id="p-fac"
             value={facilityId}
             onChange={(e) => setFacilityId(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="">Organisation wide</option>
             {facilities.map((f) => (

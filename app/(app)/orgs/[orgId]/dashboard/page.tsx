@@ -54,7 +54,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table } from "@/components/ui/table";
 import { CalculationControls } from "./calculation-controls";
@@ -1472,7 +1472,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   href={`/orgs/${orgId}/dashboard`}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
-                      ? "bg-[#c2410c] text-white"
+                      ? "bg-[#c2400c] text-white"
                       : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
@@ -1484,7 +1484,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     href={`/orgs/${orgId}/dashboard?facilityId=${fac.id}`}
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
-                        ? "bg-[#c2410c] text-white"
+                        ? "bg-[#c2400c] text-white"
                         : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                     }`}
                   >
@@ -1513,7 +1513,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-[#E3E8EE]">
                   {(activeFacility ? [activeFacility] : facilityRows).map((fac) => {
                     const share =
                       facilityTotal > 0
@@ -1536,7 +1536,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                           <div className="flex items-center justify-end gap-2">
                             <div className="h-1.5 w-16 overflow-hidden rounded-full bg-orange-50">
                               <div
-                                className="h-full rounded-full bg-[#c2410c]"
+                                className="h-full rounded-full bg-[#c2400c]"
                                 style={{ width: `${share}%` }}
                               />
                             </div>
@@ -1869,7 +1869,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[#E3E8EE] bg-[#c2410c] text-white">
+          <CardHeader className="border-b border-[#E3E8EE] bg-[#c2400c] text-white">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
@@ -2025,7 +2025,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   download={doc.downloadUrl ? true : false}
                   className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
                     doc.downloadUrl
-                      ? "border-[#E3E8EE] hover:border-[#3B82F6] hover:bg-blue-50 cursor-pointer"
+                      ? "border-[#E3E8EE] hover:border-[#c2400c] hover:bg-[#FFF2EC] cursor-pointer"
                       : "border-[#E3E8EE] bg-[#F9FAFC] cursor-not-allowed opacity-50"
                   }`}
                 >
@@ -2033,7 +2033,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     <p className="text-sm font-medium text-[#131d29]">{doc.name}</p>
                     <p className="text-xs text-[#5B6A78]">{doc.audience}</p>
                   </div>
-                  <Download className="h-4 w-4 text-[#3B82F6] ml-3 flex-shrink-0" />
+                  <Download className="h-4 w-4 text-[#c2400c] ml-3 flex-shrink-0" />
                 </a>
               ))}
               {pilotKitData?.data?.generatedAt && (
@@ -2105,7 +2105,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
             <div className="rounded-[14px] border border-[#E3E8EE]">
               {initiativeStatusRows.length > 0 ? (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-[#E3E8EE]">
                   {initiativeStatusRows.map((row) => (
                     <div key={row.status} className="flex items-center justify-between gap-4 p-3">
                       <div>
@@ -2526,7 +2526,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   href={dashboardHref({ contractId: selectedContractId, entityId: e.id || undefined, country: selectedCountry })}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     (selectedEntityId ?? "") === e.id
-                      ? "bg-[#c2410c] text-white"
+                      ? "bg-[#c2400c] text-white"
                       : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
@@ -2544,7 +2544,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: c || undefined })}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     (selectedCountry ?? "") === c
-                      ? "bg-[#c2410c] text-white"
+                      ? "bg-[#c2400c] text-white"
                       : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
@@ -2578,7 +2578,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               href={`/orgs/${orgId}/dashboard`}
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
-                  ? "bg-[#c2410c] text-white"
+                  ? "bg-[#c2400c] text-white"
                   : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
               }`}
             >
@@ -2590,7 +2590,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 href={dashboardHref({ contractId: contract.id, entityId: selectedEntityId, country: selectedCountry })}
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
-                    ? "bg-[#c2410c] text-white"
+                    ? "bg-[#c2400c] text-white"
                     : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                 }`}
               >
@@ -2622,7 +2622,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {latestPeriodRun && (
               <Link
                 href={`/orgs/${orgId}/calculations/${latestPeriodRun.id}`}
-                className="shrink-0 rounded-full bg-[#c2410c] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#9a3412]"
+                className={buttonVariants({ size: "sm", className: "shrink-0" })}
               >
                 Review and publish
               </Link>
@@ -2686,7 +2686,7 @@ function ProgressRow({
         <p className="shrink-0 text-sm font-normal text-[#131d29] tracking-[-0.42px]">{value}</p>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-orange-50">
-        <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />
+        <div className="h-full rounded-full bg-[#c2400c]" style={{ width }} />
       </div>
     </div>
   );
@@ -2712,7 +2712,7 @@ function PipelineRow({
         <span className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">{count.toLocaleString(locale)}</span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-orange-50">
-        <div className="h-full rounded-full bg-[#c2410c]" style={{ width }} />
+        <div className="h-full rounded-full bg-[#c2400c]" style={{ width }} />
       </div>
     </div>
   );

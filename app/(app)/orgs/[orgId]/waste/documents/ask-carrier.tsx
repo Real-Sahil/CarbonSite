@@ -35,7 +35,7 @@ export function AskCarrier({ orgId, docId, missing, askedAt }: { orgId: string; 
   if (!open) {
     return (
       <div className="mt-1 space-y-0.5 text-xs">
-        <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => { setOpen(true); setSent(false); }}>Ask the carrier</button>
+        <button type="button" className="font-medium text-[#c2400c] underline underline-offset-2" onClick={() => { setOpen(true); setSent(false); }}>Ask the carrier</button>
         <div className="text-[#5B6A78]">Missing: {missing.join(", ")}</div>
         {(askedAt || sent) && <div className="text-[#5B6A78]">Asked {askedAt ? new Date(askedAt).toLocaleDateString("en-GB") : "just now"}</div>}
       </div>

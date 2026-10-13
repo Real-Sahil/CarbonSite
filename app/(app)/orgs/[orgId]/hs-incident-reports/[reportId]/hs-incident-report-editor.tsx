@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { LockNotice, StatusBadge, WorkflowBar } from "@/components/structured-forms/workflow-bar";
 import { isLockedStatus } from "@/lib/structured-forms/workflows";
 import { Menu, X, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface HsReportData {
   id: string;
@@ -172,16 +173,16 @@ function InjuredPartySection({ s, onChange, disabled }: { s: HsSections; onChang
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Injured Party</h3>
-        <button
+        <Button
           onClick={() => {
             const newInjury: Injury = { id: Math.random().toString(), name: "", role: "", injuries: "", treatmentLocation: "" };
             onChange({ ...s, injuredParty: { injuries: [...s.injuredParty.injuries, newInjury] } });
           }}
           disabled={disabled}
-          className="text-sm bg-blue-600 text-white px-3 py-1 rounded"
+          size="sm"
         >
           Add Injured Person
-        </button>
+        </Button>
       </div>
       {s.injuredParty.injuries.map((injury, idx) => (
         <div key={injury.id} className="border rounded p-3 space-y-2">
@@ -294,16 +295,16 @@ function InvestigationSection({ s, onChange, disabled }: { s: HsSections; onChan
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Investigation</h3>
-        <button
+        <Button
           onClick={() => {
             const newWitness: Witness = { id: Math.random().toString(), name: "", statement: "" };
             onChange({ ...s, investigation: { ...s.investigation, witnesses: [...s.investigation.witnesses, newWitness] } });
           }}
           disabled={disabled}
-          className="text-sm bg-blue-600 text-white px-3 py-1 rounded"
+          size="sm"
         >
           Add Witness
-        </button>
+        </Button>
       </div>
       <div>
         <label className="block text-sm font-medium">Investigation Date</label>
@@ -544,7 +545,7 @@ export function HsIncidentReportEditor({
         {/* Mobile menu toggle */}
         <div className="lg:hidden p-4 bg-white border-b flex items-center justify-between">
           <h1>{title || "H&S Incident Report"}</h1>
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 hover:bg-gray-100 rounded">
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 hover:bg-[#F9FAFC] rounded">
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
@@ -560,7 +561,7 @@ export function HsIncidentReportEditor({
                   setMobileMenuOpen(false);
                 }}
                 className={`w-full text-left px-4 py-2 rounded ${
-                  activeNav === sec.id ? "bg-blue-100 text-blue-800 font-semibold" : "hover:bg-gray-100"
+                  activeNav === sec.id ? "bg-[#FFF2EC] text-[#c2400c] font-semibold" : "hover:bg-[#F9FAFC]"
                 }`}
               >
                 {sec.label}

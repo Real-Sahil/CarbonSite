@@ -35,17 +35,17 @@ export default async function SupplierDataPage({ params }: PageProps) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
+    <main className="min-h-screen bg-[#F9FAFC] px-4 py-10">
       <div className="mx-auto flex max-w-lg flex-col gap-6">
         {/* Header */}
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#c2400c]">
             {request.organization.name}
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-950">
+          <h1 className="mt-2 text-2xl text-[#131d29]">
             Emissions data request
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-[#41505F]">
             {request.organization.name} is asking you to provide activity data
             for their GHG inventory. This takes about 5 minutes.
           </p>

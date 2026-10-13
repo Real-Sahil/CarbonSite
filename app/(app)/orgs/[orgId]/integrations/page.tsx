@@ -43,17 +43,17 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
   }
   if (authErr) {
     if (authErr.status === 401) redirect("/sign-in");
-    return <div className="p-8"><h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1><p className="mt-1 text-sm text-[#5B6A78]">Admin or editor access required.</p></div>;
+    return <div className="p-8"><h1 className="text-lg text-[#131d29]">Access denied</h1><p className="mt-1 text-sm text-[#5B6A78]">Admin or editor access required.</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-[#F9FAFC]">
       {/* Header */}
       <div className="border-b border-[#E3E8EE] bg-white">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="mb-2 flex items-center gap-2">
-            <Zap className="h-5 w-5 text-[#c2410c]" />
-            <span className="text-sm font-semibold text-[#c2410c] uppercase tracking-widest">Integrations</span>
+            <Zap className="h-5 w-5 text-[#c2400c]" />
+            <span className="text-sm font-semibold text-[#c2400c] uppercase tracking-widest">Integrations</span>
           </div>
           <h1 className="text-3xl text-[#131d29] mb-2">Connect Your Tools</h1>
           <p className="text-[#5B6A78]">
@@ -69,7 +69,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
           <div>
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-[#131d29] flex items-center gap-2 mb-2">
-                <BarChart3 className="h-5 w-5 text-[#c2410c]" />
+                <BarChart3 className="h-5 w-5 text-[#c2400c]" />
                 Accounting Software
               </h2>
               <p className="text-[#5B6A78]">Connect your accounting platform to automatically sync invoices and calculate Scope 3 emissions from supplier spend.</p>
@@ -92,7 +92,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
                   <p className="text-sm text-[#41505F]">
                     Automatically sync invoices and bill details to calculate spend-based Scope 3 emissions from your suppliers.
                   </p>
-                  <div className="flex items-center text-[#c2410c] text-sm font-medium">
+                  <div className="flex items-center text-[#c2400c] text-sm font-medium">
                     Manage Accounting Connections <ArrowRight className="h-4 w-4 ml-2" />
                   </div>
                 </CardContent>
@@ -104,7 +104,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
           <div className="border-t border-[#E3E8EE] pt-12">
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-[#131d29] flex items-center gap-2 mb-2">
-                <Truck className="h-5 w-5 text-[#c2410c]" />
+                <Truck className="h-5 w-5 text-[#c2400c]" />
                 Supplier Collaboration
               </h2>
               <p className="text-[#5B6A78]">Invite suppliers to submit emissions data or respond to surveys. Collect Scope 3 data directly from your supply chain.</p>
@@ -128,7 +128,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
                     Send secure links to suppliers to submit emissions data, facilities information, and facility photos. Track supplier responses and maintain audit trails for compliance.
                   </p>
                   <div className="flex items-center gap-4">
-                    <div className="flex items-center text-[#c2410c] text-sm font-medium">
+                    <div className="flex items-center text-[#c2400c] text-sm font-medium">
                       Manage Suppliers <ArrowRight className="h-4 w-4 ml-2" />
                     </div>
                   </div>
@@ -141,7 +141,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
           <div className="border-t border-[#E3E8EE] pt-12">
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-[#131d29] flex items-center gap-2 mb-2">
-                <FileText className="h-5 w-5 text-[#c2410c]" />
+                <FileText className="h-5 w-5 text-[#c2400c]" />
                 Data Quality & Monitoring
               </h2>
               <p className="text-[#5B6A78]">View data lineage, audit trails, and ensure data integrity across all integration sources.</p>
@@ -158,7 +158,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
                     <p className="text-sm text-[#41505F] mb-4">
                       See the complete journey of your emissions data. Trace any record back to its source, the factors applied, and the calculation method used.
                     </p>
-                    <div className="flex items-center text-[#c2410c] text-sm font-medium">
+                    <div className="flex items-center text-[#c2400c] text-sm font-medium">
                       View Lineage <ArrowRight className="h-4 w-4 ml-2" />
                     </div>
                   </CardContent>
@@ -175,7 +175,7 @@ export default async function IntegrationsPage({ params }: IntegrationsPageProps
                     <p className="text-sm text-[#41505F] mb-4">
                       Review all changes made to emissions data, calculations, and reports. Maintain compliance with regulatory requirements.
                     </p>
-                    <div className="flex items-center text-[#c2410c] text-sm font-medium">
+                    <div className="flex items-center text-[#c2400c] text-sm font-medium">
                       View Audit Trail <ArrowRight className="h-4 w-4 ml-2" />
                     </div>
                   </CardContent>

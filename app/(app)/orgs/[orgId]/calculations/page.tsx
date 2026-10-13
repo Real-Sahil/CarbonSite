@@ -44,13 +44,13 @@ function statusConfig(status: string) {
     case "queued":
       return {
         label: "Queued",
-        className: "bg-zinc-100 text-[#41505F] border-transparent",
+        className: "bg-[#F9FAFC] text-[#41505F] border-transparent",
         icon: Clock,
       };
     case "running":
       return {
         label: "Running",
-        className: "bg-blue-50 text-blue-700 border-transparent animate-pulse",
+        className: "bg-[#F9FAFC] text-[#41505F] border-transparent animate-pulse",
         icon: Loader2,
       };
     case "succeeded":
@@ -285,10 +285,10 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                   </span>
                 </CardTitle>
                 {hasInFlight && (
-                  <div className="flex items-center gap-1.5 text-xs text-blue-600">
+                  <div className="flex items-center gap-1.5 text-xs text-[#c2400c]">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c2400c] opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#c2400c]" />
                     </span>
                     Live
                   </div>
@@ -319,7 +319,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                       const cfg = statusConfig(run.status);
                       const StatusIcon = cfg.icon;
                       return (
-                        <TableRow key={run.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableRow key={run.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                           <TableCell className="py-3.5 pl-6">
                             <Link
                               href={`/orgs/${orgId}/calculations/${run.id}`}
@@ -371,7 +371,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                           </TableCell>
                           <TableCell className="text-sm text-[#5B6A78] py-3.5 tabular-nums">
                             {run.status === "running"
-                              ? <span className="text-blue-600">{formatDuration(run.startedAt, null)}</span>
+                              ? <span className="text-[#c2400c]">{formatDuration(run.startedAt, null)}</span>
                               : formatDuration(run.startedAt, run.finishedAt)
                             }
                           </TableCell>
@@ -384,7 +384,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                             {run.status === "succeeded" && (
                               <Link
                                 href={`/orgs/${orgId}/calculations/${run.id}`}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-[#c2410c] hover:text-[#9a3412] hover:underline underline-offset-2"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[#c2400c] hover:text-[#9a3412] hover:underline underline-offset-2"
                               >
                                 View &amp; publish
                               </Link>
@@ -428,7 +428,7 @@ function StatPill({
 }) {
   const colors = {
     green: "bg-[#FFF7ED] text-[#131d29]",
-    blue: "bg-blue-50 text-blue-700",
+    blue: "bg-[#F9FAFC] text-[#41505F]",
     red: "bg-red-50 text-red-700",
   };
   const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";

@@ -169,7 +169,7 @@ export default function WebhooksPage() {
         </h2>
         <p className="text-sm text-[#5B6A78] mt-0.5">
           MetricOra will POST a signed JSON payload to your endpoint when selected events occur.
-          Verify deliveries using the <code className="text-xs bg-zinc-100 px-1 py-0.5 rounded">X-MetricOra-Signature</code> header (HMAC-SHA256).
+          Verify deliveries using the <code className="text-xs bg-[#F9FAFC] px-1 py-0.5 rounded">X-MetricOra-Signature</code> header (HMAC-SHA256).
         </p>
       </div>
 
@@ -222,8 +222,8 @@ export default function WebhooksPage() {
                   onClick={() => toggleEvent(ev)}
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                     active
-                      ? "bg-[#c2410c] text-white border-[#c2410c]"
-                      : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-zinc-400"
+                      ? "bg-[#c2400c] text-white border-[#c2400c]"
+                      : "bg-white text-[#41505F] border-[#E3E8EE] hover:border-[#131d29]/25"
                   }`}
                 >
                   {active && <Zap className="h-3 w-3" />}
@@ -336,10 +336,10 @@ export default function WebhooksPage() {
       <div className="rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] p-4 text-sm text-[#41505F]">
         <p className="font-medium text-[#131d29] mb-2">Verifying deliveries</p>
         <p className="text-xs text-[#5B6A78] mb-2">
-          Each request includes a <code className="bg-zinc-100 px-1 rounded">X-MetricOra-Signature</code> header.
+          Each request includes a <code className="bg-[#F9FAFC] px-1 rounded">X-MetricOra-Signature</code> header.
           Verify with HMAC-SHA256:
         </p>
-        <pre className="bg-zinc-900 text-zinc-100 rounded px-3 py-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
+        <pre className="bg-[#131d29] text-[#5B6A78] rounded px-3 py-2 text-xs font-mono overflow-x-auto whitespace-pre-wrap">
 {`const sig = crypto
   .createHmac("sha256", webhookSecret)
   .update(rawBody)

@@ -87,7 +87,7 @@ export function AddressPicker({
               key={`${s.label}-${i}`}
               role="option"
               aria-selected={false}
-              className="cursor-pointer px-3 py-2 hover:bg-slate-100"
+              className="cursor-pointer px-3 py-2 hover:bg-[#F9FAFC]"
               onMouseDown={(e) => {
                 e.preventDefault();
                 const line = s.addressLine || s.label;

@@ -13,7 +13,7 @@ import { SCOPE_COLORS } from "@/components/charts/palette";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
-const FIELD = "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+const FIELD = "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
 
 export function SiteHero({
   orgId,
@@ -147,7 +147,7 @@ export function SiteHero({
                 })}
               </svg>
             ) : (
-              <p className="rounded-[10px] border border-dashed border-[#D1D5DB] p-4 text-sm text-[#41505F]">
+              <p className="rounded-[10px] border border-dashed border-[#E3E8EE] p-4 text-sm text-[#41505F]">
                 None of your sites has a position yet, so none can be pinned. Use the list or the project choice above.
               </p>
             )}

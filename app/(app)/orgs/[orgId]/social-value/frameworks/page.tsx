@@ -143,13 +143,13 @@ export default async function FrameworksPage({ params }: Props) {
                           </span>
                         </summary>
                         {theme.outcomes.length > 0 && (
-                          <div className="px-6 pb-3 ml-6 border-l-2 border-[#F3F4F6] ml-10">
+                          <div className="px-6 pb-3 ml-6 border-l-2 border-[#E3E8EE] ml-10">
                             {theme.outcomes.map((outcome) => (
                               <div key={outcome.id} className="py-1.5">
                                 <div className="flex items-center justify-between gap-2">
                                   <div className="flex items-center gap-2">
                                     {outcome.code && (
-                                      <span className="text-xs font-mono text-[#c2410c]">{outcome.code}</span>
+                                      <span className="text-xs font-mono text-[#c2400c]">{outcome.code}</span>
                                     )}
                                     <span className="text-xs text-[#41505F]">{outcome.name}</span>
                                   </div>

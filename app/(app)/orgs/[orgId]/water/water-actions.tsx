@@ -77,9 +77,9 @@ function AddRecordModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#E3E8EE]">
           <h2 className="text-base font-semibold text-[#131d29]">Add water record</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -181,9 +181,9 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#E3E8EE]">
           <h2 className="text-base font-semibold text-[#131d29]">Bulk upload water records</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -197,14 +197,14 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
               </p>
             </div>
             <button type="button" onClick={downloadTemplate}
-              className="shrink-0 flex items-center gap-1.5 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-xs font-medium text-[#41505F] hover:bg-gray-100 transition-colors">
+              className="shrink-0 flex items-center gap-1.5 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] transition-colors">
               <Upload className="h-3.5 w-3.5 rotate-180" />
               Template
             </button>
           </div>
           <input type="file" accept=".csv,.xlsx,.xls"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="text-sm text-[#41505F] file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-2 file:text-xs file:font-medium" />
+            className="text-sm text-[#41505F] file:mr-3 file:rounded-lg file:border-0 file:bg-[#F9FAFC] file:px-3 file:py-2 file:text-xs file:font-medium" />
           {result && (
             <div className="rounded-lg bg-[#F9FAFC] p-3 text-xs text-[#41505F]">
               <p>{result.created} created, {result.failed} failed.</p>
@@ -213,10 +213,9 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
               ))}
             </div>
           )}
-          <button onClick={handleUpload} disabled={!file || loading}
-            className="w-full rounded-lg bg-[#0ea5e9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284c7] disabled:opacity-60 transition-colors">
+          <Button onClick={handleUpload} disabled={!file || loading} className="w-full">
             {loading ? "Uploading..." : "Upload"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -238,11 +237,10 @@ export function WaterAddButtons({ orgId, facilities, periods }: {
           <Upload className="h-4 w-4" />
           Bulk upload
         </button>
-        <button onClick={() => setShowAdd(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#0ea5e9] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#0284c7] transition-colors">
+        <Button onClick={() => setShowAdd(true)}>
           <Plus className="h-4 w-4" />
           Add water record
-        </button>
+        </Button>
       </div>
       {showAdd && (
         <AddRecordModal
@@ -273,7 +271,7 @@ export function DeleteWaterButton({ orgId, id }: { orgId: string; id: string }) 
 
   return (
     <button onClick={handleDelete} className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center group">
-      <X className="h-3.5 w-3.5 text-gray-300 group-hover:text-red-500 transition-colors" />
+      <X className="h-3.5 w-3.5 text-[#5B6A78] group-hover:text-red-500 transition-colors" />
     </button>
   );
 }

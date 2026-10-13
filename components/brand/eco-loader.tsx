@@ -68,7 +68,7 @@ export function EcoLoader({
       </svg>
 
       <div className="flex flex-col items-center gap-1.5 text-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0F766E]">MetricOra</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c2400c]">MetricOra</p>
         <div className="eco-taglines relative h-6 w-[min(22rem,90vw)]" aria-hidden="true">
           {TAGLINES.map((t, i) => (
             <p

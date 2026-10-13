@@ -37,10 +37,10 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
   if (!selectedId) {
     return (
       <div className="p-6 md:p-8">
-        <h1 className="text-2xl font-semibold text-[#131d29]">Data lineage</h1>
+        <h1 className="text-2xl text-[#131d29]">Data lineage</h1>
         <p className="mt-2 max-w-xl text-sm text-[#5B6A78]">
           Lineage traces a published snapshot back to its records. Publish a calculation run from{" "}
-          <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/calculations`}>
+          <Link className="text-[#c2400c] underline" href={`/orgs/${orgId}/calculations`}>
             Calculations
           </Link>{" "}
           to see it here.
@@ -155,7 +155,7 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
     <div className="space-y-6 p-6 md:p-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29]">Data lineage</h1>
+          <h1 className="text-2xl text-[#131d29]">Data lineage</h1>
           <p className="mt-1 text-sm text-[#5B6A78]">How the published figures for {snapshot.reportingPeriod.label} were produced, from records to reports.</p>
         </div>
         <form className="flex items-center gap-2">
@@ -181,11 +181,11 @@ export default async function DataLineagePage({ params, searchParams }: Props) {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-4 pb-2">
                 <CardTitle className="flex items-center gap-3 text-base">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#fff7ed] text-xs font-medium text-[#c2410c]">{i + 1}</span>
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#fff7ed] text-xs font-medium text-[#c2400c]">{i + 1}</span>
                   {stage.title}
                 </CardTitle>
                 {stage.href ? (
-                  <Link href={stage.href.to} className="text-sm text-[#c2410c] hover:underline">
+                  <Link href={stage.href.to} className="text-sm text-[#c2400c] hover:underline">
                     {stage.href.label}
                   </Link>
                 ) : null}

@@ -37,8 +37,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_CLASSES: Record<string, string> = {
-  queued: "bg-slate-100 text-[#41505F] border-transparent",
-  running: "bg-blue-100 text-blue-700 border-transparent",
+  queued: "bg-[#F9FAFC] text-[#41505F] border-transparent",
+  running: "bg-[#F9FAFC] text-[#41505F] border-transparent",
   succeeded: "bg-green-100 text-green-700 border-transparent",
   failed: "bg-red-100 text-red-700 border-transparent",
 };

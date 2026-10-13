@@ -28,7 +28,7 @@ export default async function MapPage({ params }: { params: Promise<{ orgId: str
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-8">
-      <h1 className="text-2xl font-semibold text-[#131d29]">Site map</h1>
+      <h1 className="text-2xl text-[#131d29]">Site map</h1>
       <p className="mt-1 max-w-[70ch] text-sm text-[#41505F]">
         Where the emissions are, by site, from your published snapshots. Move the slider to see how the picture changed from one published period to the next. Figures are the published ones, never live.
       </p>

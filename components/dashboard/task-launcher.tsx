@@ -33,13 +33,13 @@ export function TaskLauncher({ orgId, role }: { orgId: string; role: string }) {
             <li key={t.label}>
               <Link
                 href={`/orgs/${orgId}/${t.path}`}
-                className="group relative flex h-full flex-col gap-3 rounded-2xl border border-[#E3E8EE] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2410c]"
+                className="group relative flex h-full flex-col gap-3 rounded-2xl border border-[#E3E8EE] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c2400c]"
               >
                 <span className="flex items-center justify-between">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-[#c2410c] ring-1 ring-orange-100 transition-colors group-hover:bg-[#c2410c] group-hover:text-white group-hover:ring-[#c2410c]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-50 text-[#c2400c] ring-1 ring-orange-100 transition-colors group-hover:bg-[#c2400c] group-hover:text-white group-hover:ring-[#c2400c]">
                     <Icon className="h-[18px] w-[18px]" aria-hidden="true" />
                   </span>
-                  <ArrowUpRight className="h-4 w-4 text-slate-300 transition-colors group-hover:text-[#c2410c]" aria-hidden="true" />
+                  <ArrowUpRight className="h-4 w-4 text-[#5B6A78] transition-colors group-hover:text-[#c2400c]" aria-hidden="true" />
                 </span>
                 <span>
                   <span className="block text-sm font-semibold tracking-tight text-[#131d29]">{t.label}</span>

@@ -198,7 +198,7 @@ export function PilotKitPanel({
         description="Generate comprehensive onboarding documentation for pilot clients including stakeholder guides, integration instructions, and compliance frameworks."
       />
 
-      <div className="border-t border-slate-100 p-4 space-y-6">
+      <div className="border-t border-[#E3E8EE] p-4 space-y-6">
         {/* Organization & Facility Info */}
         <div className="space-y-3">
           <h3 className="font-medium text-[#131d29]">Organization & Facilities</h3>
@@ -419,7 +419,7 @@ export function PilotKitPanel({
       </div>
 
       {/* Action */}
-      <div className="flex items-center gap-3 border-t border-slate-100 px-4 py-3">
+      <div className="flex items-center gap-3 border-t border-[#E3E8EE] px-4 py-3">
         <Button
           onClick={generateKit}
           disabled={isPending}
@@ -449,7 +449,7 @@ export function PilotKitPanel({
 
 function PanelHeader({ title, description }: { title: string; description: string }) {
   return (
-    <div className="bg-gradient-to-r from-slate-50 to-slate-100 px-4 py-4 border-b border-[#E3E8EE]">
+    <div className="bg-gradient-to-r from-[#F9FAFC] to-[#F9FAFC] px-4 py-4 border-b border-[#E3E8EE]">
       <h2 className="font-semibold text-[#131d29] text-base">{title}</h2>
       <p className="text-sm text-[#41505F] mt-1">{description}</p>
     </div>

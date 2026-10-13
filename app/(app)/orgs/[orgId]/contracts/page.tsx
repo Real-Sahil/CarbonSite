@@ -227,7 +227,7 @@ export default async function ContractsPage({ params }: Props) {
                   </TableHeader>
                   <TableBody>
                     {contracts.map((contract) => (
-                      <TableRow key={contract.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={contract.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="text-sm font-medium text-[#131d29] py-3.5 pl-6">
                           <Link
                             href={`/orgs/${orgId}/contracts/${contract.id}`}

@@ -220,7 +220,7 @@ function MonitoringEventChip({
         type="button"
         disabled={!canRecord}
         onClick={() => canRecord && setRecording(true)}
-        className={`${chipClass} text-left ${canRecord ? "cursor-pointer hover:border-zinc-400" : "cursor-default"}`}
+        className={`${chipClass} text-left ${canRecord ? "cursor-pointer hover:border-[#131d29]/25" : "cursor-default"}`}
       >
         <div className="text-xs font-medium text-[#41505F]">Year {event.monitoringYear}</div>
         <div className="font-mono text-xs tabular-nums text-[#5B6A78]">{fmtDate(event.dueOn)}</div>
@@ -261,7 +261,7 @@ function MonitoringEventChip({
             id={`me-condition-${event.id}`}
             value={conditionFound}
             onChange={(e) => setConditionFound(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="">Not recorded</option>
             {CONDITION_OPTIONS.map((c) => (

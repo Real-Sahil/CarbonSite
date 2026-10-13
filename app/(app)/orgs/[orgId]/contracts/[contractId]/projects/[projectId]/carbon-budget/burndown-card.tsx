@@ -28,7 +28,7 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
 
   return (
     <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-start justify-between gap-3">
+      <div className="px-6 py-4 border-b border-[#E3E8EE] flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-[#131d29]">Burn-down and forecast</h3>
           <p className="text-xs text-[#5B6A78] mt-0.5 max-w-[60ch]">{METHOD[burndown.method]}</p>
@@ -36,7 +36,7 @@ export function BurndownCard({ burndown }: { burndown: Burndown }) {
         <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${s.cls}`}>{s.label}</span>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 py-4 border-b border-gray-100">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 py-4 border-b border-[#E3E8EE]">
         <Stat label="Measured to date" value={`${t(burndown.actualToDate)} t`} />
         <Stat label="Planned to date" value={burndown.plannedToDate == null ? "Needs project dates" : `${t(burndown.plannedToDate)} t`} />
         <Stat label="Forecast at completion" value={burndown.forecastAtCompletion == null ? "–" : `${t(burndown.forecastAtCompletion)} t`} />

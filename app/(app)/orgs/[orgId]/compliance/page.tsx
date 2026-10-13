@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { ShieldCheck, Plus, ChevronDown, ChevronUp, ExternalLink, User, ListChecks, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { FormField, fieldClass } from "@/components/forms/form-kit";
 
 interface ComplianceRecord {
@@ -33,9 +34,9 @@ const FRAMEWORKS = [
 ];
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  draft:       { label: "Draft",       cls: "bg-gray-100 text-[#41505F]" },
+  draft:       { label: "Draft",       cls: "bg-[#F9FAFC] text-[#41505F]" },
   in_progress: { label: "In progress", cls: "bg-amber-100 text-amber-700" },
-  submitted:   { label: "Submitted",   cls: "bg-blue-100 text-blue-700" },
+  submitted:   { label: "Submitted",   cls: "bg-[#F9FAFC] text-[#41505F]" },
   verified:    { label: "Verified",    cls: "bg-green-100 text-green-700" },
 };
 
@@ -122,16 +123,15 @@ export default function CompliancePage() {
     <div className="p-8 max-w-5xl mx-auto bg-[#F9FAFC]">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Compliance</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Compliance</h1>
           <p className="text-sm text-[#5B6A78] mt-1">Track regulatory and framework disclosure obligations, owners, and next steps.</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowAdd(!showAdd)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add framework
-        </button>
+        </Button>
       </div>
 
       {/* Add form */}
@@ -189,10 +189,9 @@ export default function CompliancePage() {
             </FormField>
             {error && <p className="col-span-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
             <div className="col-span-2 flex gap-3">
-              <button type="submit" disabled={saving}
-                className="rounded-lg bg-[#c2410c] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-60 transition-colors">
+              <Button type="submit" disabled={saving}>
                 {saving ? "Saving..." : "Save"}
-              </button>
+              </Button>
               <button type="button" onClick={() => setShowAdd(false)}
                 className="rounded-lg border border-[#E3E8EE] px-4 py-2 text-sm font-medium text-[#41505F] hover:bg-[#F9FAFC] transition-colors">
                 Cancel
@@ -209,21 +208,21 @@ export default function CompliancePage() {
         ) : records.length === 0 ? (
           <div className="p-12 text-center">
             <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#fff7ed] flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5 text-[#c2410c]" />
+              <ShieldCheck className="h-5 w-5 text-[#c2400c]" />
             </div>
             <p className="text-sm font-medium text-[#41505F]">No compliance records</p>
             <p className="text-xs text-[#5B6A78] mt-1">Add your first regulatory framework to start tracking obligations.</p>
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Framework", "Year", "Status", "Owner", "Due date", "Submitted", ""].map((h, i) => (
                   <th key={i} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {records.map((r) => {
                 const sc = STATUS_CONFIG[r.status] ?? STATUS_CONFIG.draft;
                 const isExpanded = expandedId === r.id;
@@ -245,7 +244,7 @@ export default function CompliancePage() {
                             {r.owner}
                           </span>
                         ) : (
-                          <span className="text-gray-300">-</span>
+                          <span className="text-[#5B6A78]">-</span>
                         )}
                       </td>
                       <td className="py-3 px-4 text-[#5B6A78] tabular-nums">
@@ -301,7 +300,7 @@ export default function CompliancePage() {
                                   href={r.externalLink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-sm text-[#c2410c] hover:underline inline-flex items-center gap-1"
+                                  className="text-sm text-[#c2400c] hover:underline inline-flex items-center gap-1"
                                 >
                                   {r.externalLink}
                                   <ExternalLink className="h-3 w-3" />

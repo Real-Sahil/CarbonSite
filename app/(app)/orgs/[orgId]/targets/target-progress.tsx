@@ -80,7 +80,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
                 ? "bg-emerald-100 text-emerald-700"
                 : color === "amber"
                   ? "bg-amber-100 text-amber-700"
-                  : "bg-[#f3f4f6] text-[#5B6A78]"
+                  : "bg-[#F9FAFC] text-[#5B6A78]"
             }`}
           >
             {Math.round(Math.max(0, progressPercent))}% achieved
@@ -96,7 +96,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
           <p className="text-sm text-[#41505F]">
             {target.baselineTonnes !== null
               ? `${formatTonnes(target.baselineTonnes)} tCO₂e`
-              : <span className="text-[#9ca3af] text-xs">No data</span>}
+              : <span className="text-[#5B6A78] text-xs">No data</span>}
           </p>
         </div>
         <div className="flex flex-col gap-0.5">
@@ -105,7 +105,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
           <p className="text-sm text-[#41505F]">
             {target.currentTonnes !== null
               ? `${formatTonnes(target.currentTonnes)} tCO₂e`
-              : <span className="text-[#9ca3af] text-xs">No data yet</span>}
+              : <span className="text-[#5B6A78] text-xs">No data yet</span>}
           </p>
         </div>
       </div>
@@ -123,7 +123,7 @@ function TargetProgressCard({ target }: { target: TargetWithProgress }) {
       ) : (
         <div className="flex flex-col gap-1.5">
           <div className="h-2 w-full rounded-full bg-[#E3E8EE]" />
-          <p className="text-xs text-[#9ca3af] tracking-[-0.3px]">
+          <p className="text-xs text-[#5B6A78] tracking-[-0.3px]">
             {target.baselineTonnes === null
               ? "No calculation data yet — run a calculation for the baseline period to see progress."
               : `No calculation data yet for the target period · target: reduce by ${formatTonnes(reductionTargetTonnes)} tCO₂e${targetReductionPct !== null ? ` (${Math.round(targetReductionPct)}%)` : ""}`}

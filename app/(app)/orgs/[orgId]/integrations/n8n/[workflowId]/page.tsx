@@ -65,7 +65,7 @@ export default function WorkflowDetailPage() {
       case 'error':
         return <AlertCircle className="w-4 h-4 text-red-600" />;
       case 'running':
-        return <Clock className="w-4 h-4 text-blue-600 animate-spin" />;
+        return <Clock className="w-4 h-4 text-[#c2400c] animate-spin" />;
       default:
         return null;
     }
@@ -176,7 +176,7 @@ export default function WorkflowDetailPage() {
             <CardTitle className="text-sm font-medium">Total Executions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{executions.length}</div>
+            <div className="text-2xl font-semibold tabular-nums">{executions.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -184,7 +184,7 @@ export default function WorkflowDetailPage() {
             <CardTitle className="text-sm font-medium">Successful</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-semibold tabular-nums text-green-600">
               {executions.filter(e => e.status === 'success').length}
             </div>
           </CardContent>
@@ -194,7 +194,7 @@ export default function WorkflowDetailPage() {
             <CardTitle className="text-sm font-medium">Failed</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-semibold tabular-nums text-red-600">
               {executions.filter(e => e.status === 'error').length}
             </div>
           </CardContent>

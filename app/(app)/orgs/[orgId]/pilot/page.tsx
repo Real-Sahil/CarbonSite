@@ -45,7 +45,7 @@ export default async function PilotPage({ params }: PilotPageProps) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-[#F9FAFC] to-white">
       <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
         {/* Header */}
         <div className="mb-8 md:mb-12">
@@ -65,9 +65,9 @@ export default async function PilotPage({ params }: PilotPageProps) {
 
         {/* Information Boxes */}
         <div className="grid md:grid-cols-3 gap-4 mb-12">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-1">6 Customized Documents</h3>
-            <p className="text-sm text-blue-800">
+          <div className="bg-[#F9FAFC] border border-[#E3E8EE] rounded-lg p-4">
+            <h3 className="font-semibold text-[#131d29] mb-1">6 Customized Documents</h3>
+            <p className="text-sm text-[#131d29]">
               Executive summary, manager guides, technical integration, and compliance documentation
             </p>
           </div>

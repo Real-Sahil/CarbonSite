@@ -7,6 +7,7 @@ import { resolveAuditorToken, touchAuditorAccess } from "@/lib/management-system
 import { rowInScope } from "@/lib/management-systems/certification-pack";
 import { REGISTERS, type RegisterKey } from "@/lib/management-systems/registers/config";
 import { delegate } from "@/lib/management-systems/registers/server";
+import { buttonVariants } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Management system audit", robots: { index: false, follow: false } };
@@ -21,8 +22,8 @@ export default async function AuditorPage({ params }: { params: Promise<{ token:
   const access = await resolveAuditorToken(token);
   if (!access) {
     return (
-      <main className="min-h-[100dvh] bg-slate-50 px-4 py-16">
-        <p className="mx-auto max-w-lg rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-700">
+      <main className="min-h-[100dvh] bg-[#F9FAFC] px-4 py-16">
+        <p className="mx-auto max-w-lg rounded-lg border border-[#E3E8EE] bg-white p-5 text-sm text-[#41505F]">
           This link has expired or been withdrawn. Ask the organisation for a new one.
         </p>
       </main>
@@ -47,16 +48,16 @@ export default async function AuditorPage({ params }: { params: Promise<{ token:
   const fileHref = (id: string) => `/api/public/ms-audit/${token}/files/${id}`;
 
   return (
-    <main className="min-h-[100dvh] bg-slate-50 px-4 py-8">
+    <main className="min-h-[100dvh] bg-[#F9FAFC] px-4 py-8">
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
         <header className="flex flex-col gap-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">{org?.name}</p>
-          <h1 className="text-2xl font-bold text-slate-950">Management system records for audit</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#5B6A78]">{org?.name}</p>
+          <h1 className="text-2xl text-[#131d29]">Management system records for audit</h1>
+          <p className="text-sm text-[#41505F]">
             Shared with {access.name}{access.company ? `, ${access.company}` : ""}, read only, until {access.expiresAt.toISOString().slice(0, 10)}. Every visit and download is recorded in the organisation&apos;s audit log.
             Guidance text is not shown: statuses, notes and interpretations are the organisation&apos;s own.
           </p>
-          <a href={`/api/public/ms-audit/${token}/pack`} className="self-start rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-black">Download the certification pack (ZIP)</a>
+          <a href={`/api/public/ms-audit/${token}/pack`} className={buttonVariants({ className: "self-start" })}>Download the certification pack (ZIP)</a>
         </header>
 
         {access.frameworks.map((slug) => {
@@ -69,27 +70,27 @@ export default async function AuditorPage({ params }: { params: Promise<{ token:
           const headings = headingCodes(framework);
           return (
             <section key={slug} className="flex flex-col gap-3">
-              <h2 className="text-lg font-semibold text-slate-950">{framework.shortName} <span className="text-sm font-normal text-slate-500">{framework.edition}</span></h2>
-              <p className="text-sm tabular-nums text-slate-600">
+              <h2 className="text-lg font-semibold text-[#131d29]">{framework.shortName} <span className="text-sm font-normal text-[#5B6A78]">{framework.edition}</span></h2>
+              <p className="text-sm tabular-nums text-[#41505F]">
                 {r.implemented} of {r.total - r.notApplicable} applicable requirements implemented; {r.inProgress} in progress; {r.notApplicable} not applicable.
                 {adoption.scope ? ` Scope: ${adoption.scope}` : ""}
                 {adoption.certificateNumber ? ` Certificate ${adoption.certificateNumber}${adoption.certifiedUntil ? ` valid until ${iso(adoption.certifiedUntil)}` : ""}.` : ""}
               </p>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <div className="overflow-x-auto rounded-xl border border-[#E3E8EE] bg-white">
                 <table className="w-full text-left text-sm">
-                  <thead className="border-b border-slate-200 text-xs text-slate-500">
+                  <thead className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
                     <tr><th className="px-3 py-2">Clause</th><th className="px-3 py-2">Status</th><th className="px-3 py-2">How it is met</th><th className="px-3 py-2">Evidence</th></tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[#E3E8EE]">
                     {framework.requirements.map((q) => {
-                      if (headings.has(q.code)) return <tr key={q.code} className="bg-slate-50"><td colSpan={4} className="px-3 py-2 text-xs font-semibold text-slate-700">{q.code} {q.title}</td></tr>;
+                      if (headings.has(q.code)) return <tr key={q.code} className="bg-[#F9FAFC]"><td colSpan={4} className="px-3 py-2 text-xs font-semibold text-[#41505F]">{q.code} {q.title}</td></tr>;
                       const s = byCode.get(q.code);
                       const ev = fl.filter((l) => l.requirementCode === q.code);
                       return (
                         <tr key={q.code} className="align-top">
-                          <td className="px-3 py-2"><span className="font-mono text-xs text-slate-500">{q.code}</span> {q.title}</td>
+                          <td className="px-3 py-2"><span className="font-mono text-xs text-[#5B6A78]">{q.code}</span> {q.title}</td>
                           <td className="whitespace-nowrap px-3 py-2">{STATE[(s?.status as RequirementState) ?? "not_started"]}</td>
-                          <td className="max-w-[360px] whitespace-pre-wrap px-3 py-2 text-slate-700">{[s?.interpretation, s?.notes].filter(Boolean).join("\n\n") || "-"}</td>
+                          <td className="max-w-[360px] whitespace-pre-wrap px-3 py-2 text-[#41505F]">{[s?.interpretation, s?.notes].filter(Boolean).join("\n\n") || "-"}</td>
                           <td className="px-3 py-2">
                             {ev.length ? (
                               <ul className="flex flex-col gap-1">
@@ -119,13 +120,13 @@ export default async function AuditorPage({ params }: { params: Promise<{ token:
           const cols = config.columns.filter((c) => config.fields.some((f) => f.name === c && !["member", "person", "row", "file", "checklist"].includes(f.type)));
           return (
             <section key={key} className="flex flex-col gap-2">
-              <h2 className="text-base font-semibold text-slate-950">{config.label}</h2>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <h2 className="text-base font-semibold text-[#131d29]">{config.label}</h2>
+              <div className="overflow-x-auto rounded-xl border border-[#E3E8EE] bg-white">
                 <table className="w-full text-left text-sm">
-                  <thead className="border-b border-slate-200 text-xs text-slate-500">
+                  <thead className="border-b border-[#E3E8EE] text-xs text-[#5B6A78]">
                     <tr><th className="px-3 py-2">{config.fields.find((f) => f.name === config.titleField)?.label}</th>{cols.map((c) => <th key={c} className="px-3 py-2">{config.fields.find((f) => f.name === c)?.label}</th>)}</tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[#E3E8EE]">
                     {rows.map((row) => (
                       <tr key={row.id} className="align-top">
                         <td className="max-w-[360px] px-3 py-2">
@@ -135,7 +136,7 @@ export default async function AuditorPage({ params }: { params: Promise<{ token:
                         {cols.map((c) => {
                           const f = config.fields.find((x) => x.name === c)!;
                           const v = row[c];
-                          return <td key={c} className="whitespace-nowrap px-3 py-2 text-slate-700">{f.type === "select" ? (f.options?.find(([k]) => k === v)?.[1] ?? iso(v)) : Array.isArray(v) ? v.join(", ") : iso(v)}</td>;
+                          return <td key={c} className="whitespace-nowrap px-3 py-2 text-[#41505F]">{f.type === "select" ? (f.options?.find(([k]) => k === v)?.[1] ?? iso(v)) : Array.isArray(v) ? v.join(", ") : iso(v)}</td>;
                         })}
                       </tr>
                     ))}

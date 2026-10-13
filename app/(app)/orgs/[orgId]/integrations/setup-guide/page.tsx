@@ -40,7 +40,7 @@ export default function SetupGuidePage() {
                     href="https://n8n.io"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-[#c2400c] hover:underline"
                   >
                     n8n.io
                   </a>
@@ -124,7 +124,7 @@ export default function SetupGuidePage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded p-4">
+              <div className="bg-[#F9FAFC] border border-[#E3E8EE] rounded p-4">
                 <p className="text-sm">
                   <strong>Popular Workflows:</strong> Report ready emails, submission approvals,
                   import failure alerts, daily digests, anomaly notifications
@@ -151,7 +151,7 @@ export default function SetupGuidePage() {
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>
                     dbt is already configured in MetricOra. When an external data sync lands
-                    rows in <code className="bg-slate-100 px-2 py-1 rounded text-xs">staged_external_data</code>,
+                    rows in <code className="bg-[#F9FAFC] px-2 py-1 rounded text-xs">staged_external_data</code>,
                     a dbt job automatically:
                   </p>
                   <ol className="list-decimal list-inside space-y-1 ml-2">
@@ -166,7 +166,7 @@ export default function SetupGuidePage() {
 
               <div className="space-y-3">
                 <h3 className="font-semibold">Data Flow</h3>
-                <div className="bg-slate-100 rounded p-4 text-xs font-mono space-y-1">
+                <div className="bg-[#F9FAFC] rounded p-4 text-xs font-mono space-y-1">
                   <div>External Data Source (accounting software, custom connector)</div>
                   <div className="ml-4">↓</div>
                   <div>Direct Sync (HTTP API)</div>
@@ -209,7 +209,7 @@ export default function SetupGuidePage() {
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p>
                     To customize dbt transformations, modify models in{' '}
-                    <code className="bg-slate-100 px-2 py-1 rounded text-xs">dbt/models/</code>:
+                    <code className="bg-[#F9FAFC] px-2 py-1 rounded text-xs">dbt/models/</code>:
                   </p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
                     <li>
@@ -226,7 +226,7 @@ export default function SetupGuidePage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded p-4">
+              <div className="bg-[#F9FAFC] border border-[#E3E8EE] rounded p-4">
                 <p className="text-sm">
                   <strong>Zero Manual Steps:</strong> After a sync lands data, dbt runs automatically.
                   No manual data mapping or transformation scripts needed.

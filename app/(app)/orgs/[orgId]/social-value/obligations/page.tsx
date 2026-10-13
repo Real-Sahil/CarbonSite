@@ -51,7 +51,7 @@ export default async function ObligationsPage({ params }: { params: Promise<{ or
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       <header>
-        <h1 className="text-xl font-semibold">Planning obligations</h1>
+        <h1 className="text-xl">Planning obligations</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           What each site&apos;s Section 106 agreement or planning conditions require, and whether it is on track.
           Link an obligation to a social value commitment and its approved activities count as delivery, in the obligation&apos;s unit.

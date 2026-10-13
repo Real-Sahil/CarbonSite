@@ -80,7 +80,7 @@ export function SubmissionLinks({ orgId, purpose = "bills" }: { orgId: string; p
               <FormSection cols={3}>
                 <FormField label="Who is it for" htmlFor="sl-label" hint="For example Acme Haulage."><Input id="sl-label" name="label" required maxLength={120} /></FormField>
                 <FormField label="Project" htmlFor="sl-project" optional>
-                  <select id="sl-project" name="projectId" className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
+                  <select id="sl-project" name="projectId" className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
                     <option value="">Any</option>
                     {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>

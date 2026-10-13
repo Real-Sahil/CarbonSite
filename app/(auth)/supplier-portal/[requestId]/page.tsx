@@ -106,7 +106,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-zinc-500">Loading request...</p>
+        <p className="text-[#5B6A78]">Loading request...</p>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
   const canSubmit = ["sent", "opened", "rejected"].includes(request.status) && !isExpired;
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[#F9FAFC]">
       <div className="mx-auto max-w-2xl px-4 py-8">
         {/* Back button */}
         <Button variant="ghost" onClick={() => router.push("/supplier-portal")} className="mb-6">
@@ -139,8 +139,8 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
         <div className="mb-6">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">{request.categoryName}</h1>
-              <p className="mt-1 text-zinc-600">{request.periodLabel}</p>
+              <h1 className="text-3xl tracking-tight text-[#131d29]">{request.categoryName}</h1>
+              <p className="mt-1 text-[#41505F]">{request.periodLabel}</p>
             </div>
             <Badge variant={isApproved ? "default" : isRejected ? "destructive" : "outline"}>
               {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
@@ -201,10 +201,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
                       {flag.severity}
                     </Badge>
                     <div>
-                      <p className="font-medium text-zinc-900">{flag.field}</p>
-                      <p className="text-sm text-zinc-600">{flag.message}</p>
+                      <p className="font-medium text-[#131d29]">{flag.field}</p>
+                      <p className="text-sm text-[#41505F]">{flag.message}</p>
                       {flag.suggestedRange && (
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-[#5B6A78]">
                           Suggested range: {flag.suggestedRange.min} — {flag.suggestedRange.max}
                         </p>
                       )}
@@ -298,17 +298,17 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-zinc-600">Quantity</p>
+                    <p className="text-sm text-[#41505F]">Quantity</p>
                     <p className="text-lg font-medium">{request.submittedData?.quantity}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-600">Unit</p>
+                    <p className="text-sm text-[#41505F]">Unit</p>
                     <p className="text-lg font-medium">{request.submittedData?.unit}</p>
                   </div>
                 </div>
                 {request.submittedData?.description && (
                   <div>
-                    <p className="text-sm text-zinc-600">Notes</p>
+                    <p className="text-sm text-[#41505F]">Notes</p>
                     <p className="text-sm">{request.submittedData.description}</p>
                   </div>
                 )}

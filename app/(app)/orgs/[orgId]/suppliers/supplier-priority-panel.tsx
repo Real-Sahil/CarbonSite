@@ -81,7 +81,7 @@ export async function SupplierPriorityPanel({ orgId }: { orgId: string }) {
                     <TableCell>{row.emissionsRank ?? "-"}</TableCell>
                     <TableCell>
                       <Link
-                        className="text-blue-600 hover:underline"
+                        className="text-[#c2400c] hover:underline"
                         href={`/orgs/${orgId}/records?supplier=${encodeURIComponent(row.supplierName)}`}
                       >
                         {f.number(row.recordCount, 0)}

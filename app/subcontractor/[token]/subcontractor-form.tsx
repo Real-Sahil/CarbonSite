@@ -65,14 +65,14 @@ export function SubcontractorForm({ token, view }: { token: string; view: Portal
         ? `${view.orgName} has verified your figures. Nothing more is needed from you.`
         : `Your figures were sent to ${view.orgName}${fmtDate(view.submittedAt) ? ` on ${fmtDate(view.submittedAt)}` : ""} and are waiting to be checked. This link no longer takes changes.`;
     return (
-      <p role="status" className="rounded-lg border border-slate-200 bg-white p-5 text-sm text-slate-700">
+      <p role="status" className="rounded-lg border border-[#E3E8EE] bg-white p-5 text-sm text-[#41505F]">
         {message}
       </p>
     );
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5 rounded-lg border border-slate-200 bg-white p-5">
+    <form onSubmit={submit} className="flex flex-col gap-5 rounded-lg border border-[#E3E8EE] bg-white p-5">
       {view.status === "rejected" && view.rejectionReason && (
         <p role="alert" className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           {view.orgName} sent back your last figures: {view.rejectionReason} Send them again below.

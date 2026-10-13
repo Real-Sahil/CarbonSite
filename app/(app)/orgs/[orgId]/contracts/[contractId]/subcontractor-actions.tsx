@@ -44,7 +44,7 @@ function statusBadge(status: Submission["status"]) {
     case "verified":
       return <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100">Verified</Badge>;
     case "submitted":
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100">Submitted</Badge>;
+      return <Badge className="bg-[#F9FAFC] text-[#131d29] border-[#E3E8EE] hover:bg-[#FFF2EC]">Submitted</Badge>;
     case "overdue":
       return <Badge variant="destructive">Overdue</Badge>;
     case "rejected":
@@ -283,7 +283,7 @@ export function SubmissionRow({
 
   return (
     <>
-      <tr className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors align-top">
+      <tr className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors align-top">
         <td className="py-3.5 pl-6 text-sm font-medium text-[#131d29]">
           {submission.subcontractorName}
           {submission.contactEmail && (
@@ -413,7 +413,7 @@ export function SubmissionRow({
         </td>
       </tr>
       {linkUrl && (
-        <tr className="border-b border-[#F3F4F6] bg-[#F9FAFC]">
+        <tr className="border-b border-[#E3E8EE] bg-[#F9FAFC]">
           <td colSpan={6} className="px-6 py-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Input

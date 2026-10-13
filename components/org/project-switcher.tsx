@@ -40,7 +40,7 @@ export function ProjectSwitcher({ orgId, projects, selectedId }: { orgId: string
         value={value}
         disabled={busy}
         onChange={(e) => void change(e.target.value)}
-        className="h-8 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+        className="h-8 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
       >
         <option value="">All projects</option>
         {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}

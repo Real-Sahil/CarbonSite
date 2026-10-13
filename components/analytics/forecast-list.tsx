@@ -41,7 +41,7 @@ const forecastTypeLabels: Record<string, string> = {
 };
 
 const forecastTypeBadgeMap: Record<string, string> = {
-  emissions: "bg-blue-100 text-blue-800",
+  emissions: "bg-[#F9FAFC] text-[#131d29]",
   supplier_quality: "bg-green-100 text-green-800",
   anomaly_rate: "bg-orange-100 text-orange-800",
 };

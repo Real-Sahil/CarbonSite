@@ -71,12 +71,12 @@ export default function SignPage() {
   if (phase === "done" && outcome) {
     return (
       <Shell>
-        <div className={`rounded-xl border p-8 text-center ${outcome === "signed" ? "border-emerald-200 bg-emerald-50" : "border-zinc-200 bg-zinc-50"}`}>
+        <div className={`rounded-xl border p-8 text-center ${outcome === "signed" ? "border-emerald-200 bg-emerald-50" : "border-[#E3E8EE] bg-[#F9FAFC]"}`}>
           <div className="text-4xl mb-3">{outcome === "signed" ? "✓" : "–"}</div>
-          <h2 className="text-xl font-semibold text-zinc-900">
+          <h2 className="text-xl font-semibold text-[#131d29]">
             {outcome === "signed" ? "Acknowledgment recorded" : "Acknowledgment declined"}
           </h2>
-          <p className="mt-2 text-sm text-zinc-500">
+          <p className="mt-2 text-sm text-[#5B6A78]">
             {outcome === "signed"
               ? "Your acknowledgment has been cryptographically stamped into the report PDF and recorded in the audit log."
               : "Your response has been recorded. The sender has been notified."}
@@ -94,11 +94,11 @@ export default function SignPage() {
     <Shell>
       <header className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-1">Acknowledgment Request</p>
-        <h1 className="text-2xl font-bold text-zinc-900">{meta.report.organizationName}</h1>
-        <p className="text-sm text-zinc-500 mt-1">Report type: <span className="font-medium text-zinc-700">{formatReportType(meta.report.type)}</span></p>
+        <h1 className="text-2xl text-[#131d29]">{meta.report.organizationName}</h1>
+        <p className="text-sm text-[#5B6A78] mt-1">Report type: <span className="font-medium text-[#41505F]">{formatReportType(meta.report.type)}</span></p>
       </header>
 
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 mb-6 text-sm space-y-1">
+      <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4 mb-6 text-sm space-y-1">
         <Row label="Addressed to" value={`${meta.signatoryName} (${meta.signatoryEmail})`} />
         <Row label="Report ID" value={meta.report.id} />
         {expiresAt && <Row label="Link expires" value={expiresAt.toLocaleString()} />}
@@ -121,7 +121,7 @@ export default function SignPage() {
         <button
           onClick={() => act("decline")}
           disabled={phase === "submitting"}
-          className="rounded-lg border border-zinc-300 px-4 py-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 transition-colors"
+          className="rounded-lg border border-[#E3E8EE] px-4 py-3 text-sm font-semibold text-[#41505F] hover:bg-[#F9FAFC] disabled:opacity-50 transition-colors"
         >
           Decline
         </button>
@@ -132,14 +132,14 @@ export default function SignPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-[100dvh] bg-zinc-50 flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] bg-[#F9FAFC] flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         <div className="mb-6 flex items-center gap-2">
           <span className="text-lg font-bold text-emerald-700">MetricOra</span>
-          <span className="text-zinc-300">|</span>
-          <span className="text-sm text-zinc-500">Secure document acknowledgment</span>
+          <span className="text-[#5B6A78]">|</span>
+          <span className="text-sm text-[#5B6A78]">Secure document acknowledgment</span>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-[#E3E8EE] bg-white p-6 shadow-sm">
           {children}
         </div>
       </div>
@@ -150,14 +150,14 @@ function Shell({ children }: { children: React.ReactNode }) {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between gap-4">
-      <span className="text-zinc-500 shrink-0">{label}</span>
-      <span className="font-medium text-zinc-800 text-right break-all">{value}</span>
+      <span className="text-[#5B6A78] shrink-0">{label}</span>
+      <span className="font-medium text-[#131d29] text-right break-all">{value}</span>
     </div>
   );
 }
 
 function Spinner() {
-  return <div className="h-8 w-8 mx-auto rounded-full border-2 border-zinc-200 border-t-emerald-600 animate-spin" />;
+  return <div className="h-8 w-8 mx-auto rounded-full border-2 border-[#E3E8EE] border-t-emerald-600 animate-spin" />;
 }
 
 function formatReportType(type: string): string {

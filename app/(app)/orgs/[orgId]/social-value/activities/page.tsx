@@ -227,14 +227,14 @@ export default async function ActivitiesPage({ params, searchParams }: Props) {
                   </TableHeader>
                   <TableBody>
                     {activities.map((a) => (
-                      <TableRow key={a.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={a.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6 max-w-[240px]">
                           <span className="text-sm font-medium text-[#131d29] truncate block">{a.title}</span>
                           {a.facility && (
                             <span className="text-xs text-[#5B6A78]">{a.facility.name}</span>
                           )}
                           {a.aiExtracted && (
-                            <span className="text-xs text-[#6366f1] font-medium">AI extracted</span>
+                            <span className="text-xs text-[#c2400c] font-medium">AI extracted</span>
                           )}
                         </TableCell>
                         <TableCell className="text-sm text-[#41505F] py-3.5">

@@ -9,7 +9,7 @@ const TONES: Record<Tone, { icon: LucideIcon; ring: string; chip: string; tile: 
   ok: { icon: ShieldCheck, ring: "border-emerald-200", chip: "bg-emerald-50 text-emerald-800", tile: "bg-emerald-100 text-emerald-700" },
   warn: { icon: ShieldAlert, ring: "border-amber-200", chip: "bg-amber-50 text-amber-900", tile: "bg-amber-100 text-amber-700" },
   bad: { icon: ShieldX, ring: "border-red-200", chip: "bg-red-50 text-red-800", tile: "bg-red-100 text-red-700" },
-  idle: { icon: CircleHelp, ring: "border-[#E3E8EE]", chip: "bg-slate-100 text-[#41505F]", tile: "bg-slate-100 text-[#41505F]" },
+  idle: { icon: CircleHelp, ring: "border-[#E3E8EE]", chip: "bg-[#F9FAFC] text-[#41505F]", tile: "bg-[#F9FAFC] text-[#41505F]" },
 };
 
 /**
@@ -50,7 +50,7 @@ export function RegisterResultCard({ tone, title, subtitle, facts, children, att
           {children && <div className="mt-2 leading-relaxed text-[#41505F]">{children}</div>}
         </div>
       </div>
-      {attribution && <p className="border-t border-slate-100 bg-[#F9FAFC] px-3 py-1.5 text-[10px] text-[#5B6A78]">{attribution}</p>}
+      {attribution && <p className="border-t border-[#E3E8EE] bg-[#F9FAFC] px-3 py-1.5 text-[10px] text-[#5B6A78]">{attribution}</p>}
     </section>
   );
 }

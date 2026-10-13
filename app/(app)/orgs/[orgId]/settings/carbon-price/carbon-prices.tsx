@@ -115,7 +115,7 @@ export function CarbonPrices({
         </div>
 
         {coverage && (
-          <div className="grid grid-cols-1 gap-4 border-t border-slate-100 p-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 border-t border-[#E3E8EE] p-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-[#5B6A78]">Emissions covered ({coverage.periodLabel}, snapshot v{coverage.version})</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{tonnes.format(coverage.coveredTco2e)} tCO₂e</p>
@@ -134,17 +134,17 @@ export function CarbonPrices({
         )}
 
         {gaps.length > 0 && (
-          <ul className="border-t border-slate-100 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <ul className="border-t border-[#E3E8EE] bg-amber-50 px-4 py-3 text-sm text-amber-800">
             {gaps.map((g) => <li key={g}>{g}</li>)}
           </ul>
         )}
 
         {prices.length === 0 ? (
-          <div className="border-t border-slate-100">
+          <div className="border-t border-[#E3E8EE]">
             <EmptyState title="No prices recorded yet" description="Add a shadow, internal or implicit price to value your emissions in decisions." />
           </div>
         ) : (
-          <div className="overflow-x-auto border-t border-slate-100">
+          <div className="overflow-x-auto border-t border-[#E3E8EE]">
             <Table className="w-full text-sm">
               <thead className="text-left text-xs text-[#5B6A78]">
                 <tr>
@@ -158,7 +158,7 @@ export function CarbonPrices({
               </thead>
               <tbody className="tabular-nums">
                 {prices.map((p) => (
-                  <tr key={p.id} className="border-t border-slate-100 align-top">
+                  <tr key={p.id} className="border-t border-[#E3E8EE] align-top">
                     <td className="px-4 py-2">
                       <p className="text-[#131d29]">{p.name}</p>
                       <p className="text-xs text-[#5B6A78]">
@@ -197,7 +197,7 @@ export function CarbonPrices({
             <h2 className="text-base font-semibold text-[#131d29]">Add a price</h2>
             <p className="mt-1 text-sm text-[#5B6A78]">{PRICE_TYPES[priceType].help}</p>
           </div>
-          <div className="grid grid-cols-1 gap-3 border-t border-slate-100 p-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 border-t border-[#E3E8EE] p-4 md:grid-cols-2">
             <FormSection title="The price" cols={3}>
               <FormField label="Name" htmlFor="cp-name">
                 <Input id="cp-name" name="name" required maxLength={200} placeholder="e.g. Capital appraisal shadow price 2026" />

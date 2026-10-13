@@ -39,7 +39,7 @@ export function UploadForm({ token, purpose = "bills" }: { token: string; purpos
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5 rounded-lg border border-slate-200 bg-white p-5">
+    <form onSubmit={submit} className="flex flex-col gap-5 rounded-lg border border-[#E3E8EE] bg-white p-5">
       <FormSection title="Who is sending" cols={2}>
         <FormField label="Your name" htmlFor="name"><Input id="name" name="name" required maxLength={120} autoComplete="name" /></FormField>
         <FormField label="Company" htmlFor="company" optional><Input id="company" name="company" maxLength={160} autoComplete="organization" /></FormField>
@@ -48,7 +48,7 @@ export function UploadForm({ token, purpose = "bills" }: { token: string; purpos
         {purpose === "waste_documents" && (
           <>
             <FormField label="Kind of document" htmlFor="kind">
-              <select id="kind" name="kind" required defaultValue="" className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
+              <select id="kind" name="kind" required defaultValue="" className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
                 <option value="" disabled>Choose</option>
                 {DOC_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
               </select>

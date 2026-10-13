@@ -90,7 +90,7 @@ export function FacilitiesPanel({ orgId, facilities }: { orgId: string; faciliti
       </div>
 
       {adding && (
-        <div className="border-t border-slate-100 bg-slate-50/50 p-4">
+        <div className="border-t border-[#E3E8EE] bg-[#F9FAFC] p-4">
           <FacilityForm
             orgId={orgId}
             initial={EMPTY}
@@ -102,15 +102,15 @@ export function FacilitiesPanel({ orgId, facilities }: { orgId: string; faciliti
       )}
 
       {facilities.length === 0 && !adding ? (
-        <div className="border-t border-slate-100">
+        <div className="border-t border-[#E3E8EE]">
           <EmptyState icon={Building2} title="No facilities yet" description="Add the first site to place records and field submissions." />
         </div>
       ) : (
-        <ul className="divide-y divide-slate-100 border-t border-slate-100">
+        <ul className="divide-y divide-[#E3E8EE] border-t border-[#E3E8EE]">
           {facilities.map((facility) => (
             <li key={facility.id}>
               {editing === facility.id ? (
-                <div className="bg-slate-50/50 p-4">
+                <div className="bg-[#F9FAFC] p-4">
                   <FacilityForm
                     orgId={orgId}
                     initial={facility}

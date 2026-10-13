@@ -84,20 +84,20 @@ export default async function SupplierPortalPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[#F9FAFC]">
       <div className="mx-auto max-w-7xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">Data submission portal</h1>
-          <p className="mt-2 text-zinc-600">Welcome, {user.name || user.email}</p>
-          <p className="text-sm text-zinc-500">{supplierMembership.organization.name}</p>
+          <h1 className="text-3xl tracking-tight text-[#131d29]">Data submission portal</h1>
+          <p className="mt-2 text-[#41505F]">Welcome, {user.name || user.email}</p>
+          <p className="text-sm text-[#5B6A78]">{supplierMembership.organization.name}</p>
         </div>
 
         {/* Summary cards */}
         <div className="mb-8 grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Total requests</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#41505F]">Total requests</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{requests.length}</div>
@@ -105,7 +105,7 @@ export default async function SupplierPortalPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Awaiting submission</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#41505F]">Awaiting submission</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
@@ -115,7 +115,7 @@ export default async function SupplierPortalPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Approved</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#41505F]">Approved</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
@@ -125,7 +125,7 @@ export default async function SupplierPortalPage() {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-zinc-600">Needs attention</CardTitle>
+              <CardTitle className="text-sm font-medium text-[#41505F]">Needs attention</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-amber-600">
@@ -140,8 +140,8 @@ export default async function SupplierPortalPage() {
           <Card>
             <CardContent className="py-12">
               <div className="text-center">
-                <p className="text-zinc-500">No data requests assigned yet.</p>
-                <p className="mt-1 text-sm text-zinc-500">Check back later or contact your administrator.</p>
+                <p className="text-[#5B6A78]">No data requests assigned yet.</p>
+                <p className="mt-1 text-sm text-[#5B6A78]">Check back later or contact your administrator.</p>
               </div>
             </CardContent>
           </Card>
@@ -168,8 +168,8 @@ export default async function SupplierPortalPage() {
                     return (
                       <TableRow key={request.id}>
                         <TableCell className="font-medium capitalize">{categoryName}</TableCell>
-                        <TableCell className="text-zinc-600">{request.reportingPeriod.label}</TableCell>
-                        <TableCell className="text-zinc-600 tabular-nums">
+                        <TableCell className="text-[#41505F]">{request.reportingPeriod.label}</TableCell>
+                        <TableCell className="text-[#41505F] tabular-nums">
                           {format(new Date(request.expiresAt), "d MMM yyyy")}
                         </TableCell>
                         <TableCell>

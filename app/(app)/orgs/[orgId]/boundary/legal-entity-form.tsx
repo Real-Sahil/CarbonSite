@@ -147,7 +147,7 @@ export function CreateLegalEntityForm({
             id="le-parent"
             value={parentId}
             onChange={(e) => setParentId(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="">Top of group</option>
             {entities.map((e) => (
@@ -188,7 +188,7 @@ export function CreateLegalEntityForm({
             type="checkbox"
             checked={operationalControl}
             onChange={(e) => setOperationalControl(e.target.checked)}
-            className="h-4 w-4 accent-zinc-900"
+            className="h-4 w-4 accent-[#c2400c]"
           />
           Group holds operational control
         </label>
@@ -197,7 +197,7 @@ export function CreateLegalEntityForm({
             type="checkbox"
             checked={financialControl}
             onChange={(e) => setFinancialControl(e.target.checked)}
-            className="h-4 w-4 accent-zinc-900"
+            className="h-4 w-4 accent-[#c2400c]"
           />
           Group holds financial control
         </label>

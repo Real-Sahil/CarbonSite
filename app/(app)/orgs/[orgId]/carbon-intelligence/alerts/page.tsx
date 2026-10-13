@@ -76,7 +76,7 @@ export default async function AlertsPage({ params, searchParams }: Props) {
       <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9FAFC]">
               <AlertTriangle className="h-4 w-4 text-[#131d29]" />
             </div>
             <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Carbon Intelligence</span>
@@ -144,7 +144,7 @@ export default async function AlertsPage({ params, searchParams }: Props) {
                   </TableHeader>
                   <TableBody>
                     {alerts.map((a) => (
-                      <TableRow key={a.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={a.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6 max-w-[280px]">
                           <p className="text-sm font-medium text-[#131d29] truncate">{a.title}</p>
                           <p className="text-xs text-[#5B6A78] truncate">{a.message}</p>

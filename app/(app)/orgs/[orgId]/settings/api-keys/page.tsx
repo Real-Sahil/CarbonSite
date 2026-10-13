@@ -221,7 +221,7 @@ export default function ApiKeysPage() {
         <p className="text-xs text-[#5B6A78] mb-2">
           Authenticate REST API requests with your key in the Authorization header:
         </p>
-        <pre className="bg-zinc-900 text-zinc-100 rounded px-3 py-2 text-xs font-mono overflow-x-auto">
+        <pre className="bg-[#131d29] text-[#5B6A78] rounded px-3 py-2 text-xs font-mono overflow-x-auto">
           {`Authorization: Bearer csk_your_api_key_here`}
         </pre>
       </div>

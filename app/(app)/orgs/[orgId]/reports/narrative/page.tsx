@@ -39,7 +39,7 @@ export default async function NarrativePage({
   return (
     <div className="mx-auto max-w-[760px] px-4 py-8 sm:px-8">
       <p className="text-xs"><Link href={`/orgs/${orgId}/reports`} className="underline underline-offset-2 text-[#41505F]">Back to reports</Link></p>
-      <h1 className="mt-2 text-2xl font-semibold text-[#131d29]">Report summary</h1>
+      <h1 className="mt-2 text-2xl text-[#131d29]">Report summary</h1>
       <p className="mt-1 max-w-[65ch] text-sm text-[#41505F]">
         The summary page of your inventory reports, in your own words. When you save text here it replaces generated wording for that period, and each report says your team wrote it. With nothing saved, reports are exactly as they were.
       </p>

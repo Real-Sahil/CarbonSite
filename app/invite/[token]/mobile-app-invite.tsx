@@ -51,15 +51,15 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
   return (
     <div className="flex flex-col gap-4">
       {/* Primary CTA */}
-      <div className="rounded-2xl border border-teal-200 bg-teal-50 p-6 flex flex-col items-center gap-4 text-center">
-        <div className="h-14 w-14 rounded-2xl bg-[#0F766E] flex items-center justify-center">
+      <div className="rounded-2xl border border-[#E3E8EE] bg-[#F9FAFC] p-6 flex flex-col items-center gap-4 text-center">
+        <div className="h-14 w-14 rounded-2xl bg-[#c2400c] flex items-center justify-center">
           <Smartphone className="h-7 w-7 text-white" />
         </div>
         <div>
-          <p className="font-semibold text-teal-900 text-lg">
+          <p className="font-semibold text-[#131d29] text-lg">
             {opening ? "Opening MetricOra app…" : "Open in MetricOra app"}
           </p>
-          <p className="text-sm text-teal-800 mt-1">
+          <p className="text-sm text-[#131d29] mt-1">
             You&apos;ve been invited to join <strong>{orgName}</strong>.
             {opening
               ? " If the app doesn't open, tap the button below."
@@ -68,7 +68,7 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
         </div>
         <Button
           size="lg"
-          className="w-full bg-[#0F766E] hover:bg-[#0B5F59] text-white gap-2 h-14 text-base rounded-xl"
+          className="w-full gap-2 h-14 text-base"
           onClick={handleOpenApp}
           disabled={opening}
         >
@@ -85,11 +85,11 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
 
       {/* App not installed — shown after timeout */}
       {showFallback && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 flex flex-col gap-3">
-          <p className="text-sm font-medium text-slate-700">
+        <div className="rounded-xl border border-[#E3E8EE] bg-white p-5 flex flex-col gap-3">
+          <p className="text-sm font-medium text-[#41505F]">
             App not installed?
           </p>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[#5B6A78]">
             Install the MetricOra app on this device, then tap{" "}
             <strong>Open MetricOra App</strong> again.
           </p>
@@ -101,7 +101,7 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
               }
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-sm text-[#0F766E] hover:text-[#0B5F59] font-medium"
+              className="inline-flex items-center gap-1.5 text-sm text-[#c2400c] hover:text-[#0B5F59] font-medium"
             >
               Get the MetricOra app on Google Play
               <ExternalLink className="h-3.5 w-3.5" />
@@ -114,16 +114,16 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
       <>
       {/* Divider */}
       <div className="flex items-center gap-3">
-        <div className="flex-1 border-t border-slate-200" />
-        <span className="text-xs text-slate-500">or join on web</span>
-        <div className="flex-1 border-t border-slate-200" />
+        <div className="flex-1 border-t border-[#E3E8EE]" />
+        <span className="text-xs text-[#5B6A78]">or join on web</span>
+        <div className="flex-1 border-t border-[#E3E8EE]" />
       </div>
 
-      <p className="text-xs text-slate-500 text-center">
+      <p className="text-xs text-[#5B6A78] text-center">
         If you manage this organisation,{" "}
         <a
           href="?webform=1"
-          className="text-[#0F766E] hover:underline"
+          className="text-[#c2400c] hover:underline"
         >
           use the web form instead
         </a>

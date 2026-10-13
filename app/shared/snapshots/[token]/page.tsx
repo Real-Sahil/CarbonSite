@@ -43,54 +43,54 @@ export default async function SharedSnapshotPage({ params }: Props) {
   ];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 py-12 px-4">
+    <div className="min-h-screen bg-[#F9FAFC] dark:bg-zinc-950 py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <header className="mb-10">
-          <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-2">
+          <p className="text-xs font-mono uppercase tracking-widest text-[#5B6A78] mb-2">
             GHG Emissions Disclosure
           </p>
-          <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-50 mb-1">
+          <h1 className="text-3xl text-[#131d29] dark:text-zinc-50 mb-1">
             {snapshot.organization.name}
           </h1>
-          <p className="text-zinc-500 text-sm">
+          <p className="text-[#5B6A78] text-sm">
             {snapshot.reportingPeriod.label} &bull; Published{" "}
             {format(new Date(snapshot.publishedAt), "d MMM yyyy")} &bull; v{snapshot.version}
           </p>
         </header>
 
-        <section className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-8 mb-6">
-          <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-1">
+        <section className="bg-white dark:bg-zinc-900 rounded-xl border border-[#E3E8EE] dark:border-zinc-800 p-8 mb-6">
+          <p className="text-xs font-mono uppercase tracking-widest text-[#5B6A78] mb-1">
             Total emissions
           </p>
-          <p className="text-5xl font-bold text-zinc-900 dark:text-zinc-50 tabular-nums">
+          <p className="text-5xl font-semibold tabular-nums text-[#131d29] dark:text-zinc-50 tabular-nums">
             {(total / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1 })}
           </p>
-          <p className="text-sm text-zinc-500 mt-1">tCO₂e</p>
+          <p className="text-sm text-[#5B6A78] mt-1">tCO₂e</p>
         </section>
 
         <section className="grid grid-cols-3 gap-4 mb-6">
           {scopes.map((s) => (
             <div
               key={s.label}
-              className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5"
+              className="bg-white dark:bg-zinc-900 rounded-xl border border-[#E3E8EE] dark:border-zinc-800 p-5"
             >
-              <p className="text-xs font-mono uppercase tracking-widest text-zinc-400 mb-1">
+              <p className="text-xs font-mono uppercase tracking-widest text-[#5B6A78] mb-1">
                 {s.label}
               </p>
-              <p className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50 tabular-nums">
+              <p className="text-2xl font-semibold text-[#131d29] dark:text-zinc-50 tabular-nums">
                 {s.value != null
                   ? (s.value / 1000).toLocaleString("en-GB", { maximumFractionDigits: 1 })
                   : "-"}
               </p>
-              <p className="text-xs text-zinc-400 mt-0.5">tCO₂e</p>
-              <p className="text-xs text-zinc-500 mt-1">{s.description}</p>
+              <p className="text-xs text-[#5B6A78] mt-0.5">tCO₂e</p>
+              <p className="text-xs text-[#5B6A78] mt-1">{s.description}</p>
             </div>
           ))}
         </section>
 
         {agg.biogenicCo2e != null && agg.biogenicCo2e > 0 && (
-          <section className="bg-zinc-100 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-            <span className="font-medium text-zinc-800 dark:text-zinc-200">
+          <section className="bg-[#F9FAFC] dark:bg-zinc-800/50 rounded-xl border border-[#E3E8EE] dark:border-zinc-700 p-5 mb-6 text-sm text-[#41505F] dark:text-zinc-400">
+            <span className="font-medium text-[#131d29] dark:text-zinc-200">
               Biogenic CO2 (memo):
             </span>{" "}
             {(agg.biogenicCo2e / 1000).toLocaleString("en-GB", { maximumFractionDigits: 2 })} tCO2
@@ -98,7 +98,7 @@ export default async function SharedSnapshotPage({ params }: Props) {
           </section>
         )}
 
-        <footer className="text-xs text-zinc-400 text-center mt-8">
+        <footer className="text-xs text-[#5B6A78] text-center mt-8">
           Prepared with MetricOra &bull; GHG Protocol methodology &bull; AR6 GWP
         </footer>
       </div>

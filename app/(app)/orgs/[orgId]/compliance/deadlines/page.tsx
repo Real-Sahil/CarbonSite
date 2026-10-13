@@ -328,7 +328,7 @@ function getDaysUntil(dateStr: string): number {
 }
 
 function getUrgencyColor(days: number): string {
-  if (days < 0) return 'bg-gray-100 text-[#5B6A78] border-[#E3E8EE]';
+  if (days < 0) return 'bg-[#F9FAFC] text-[#5B6A78] border-[#E3E8EE]';
   if (days <= 30) return 'bg-red-100 text-red-800 border-red-200';
   if (days <= 90) return 'bg-amber-100 text-amber-800 border-amber-200';
   return 'bg-green-100 text-green-800 border-green-200';
@@ -336,14 +336,14 @@ function getUrgencyColor(days: number): string {
 
 function getCategoryBadge(cat: string) {
   switch (cat) {
-    case 'uk': return 'bg-blue-100 text-blue-800';
-    case 'eu': return 'bg-purple-100 text-purple-800';
+    case 'uk': return 'bg-[#F9FAFC] text-[#131d29]';
+    case 'eu': return 'bg-[#F9FAFC] text-[#131d29]';
     case 'uae': return 'bg-emerald-100 text-emerald-800';
     case 'us': return 'bg-amber-100 text-amber-800';
     case 'au': return 'bg-orange-100 text-orange-800';
     case 'ca': return 'bg-rose-100 text-rose-800';
-    case 'de': return 'bg-violet-100 text-violet-800';
-    default: return 'bg-gray-100 text-[#41505F]';
+    case 'de': return 'bg-[#F9FAFC] text-[#131d29]';
+    default: return 'bg-[#F9FAFC] text-[#41505F]';
   }
 }
 
@@ -403,7 +403,7 @@ export default function RegulatoryCalendarPage() {
         </div>
         <Link
           href={`/orgs/${orgId}/compliance`}
-          className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+          className="flex items-center gap-1 text-sm text-[#c2400c] hover:underline"
         >
           Compliance tracker <ChevronRight className="h-4 w-4" />
         </Link>
@@ -415,7 +415,7 @@ export default function RegulatoryCalendarPage() {
             {showAll ? 'Showing every region.' : `Showing ${scope.regions.map((r) => r.toUpperCase()).join(', ')} and international, from your headquarters and sites.`}
             {!showAll && scope.unloaded.length > 0 && ` No rules are loaded yet for ${scope.unloaded.join(', ')}.`}
           </span>
-          <button type="button" onClick={() => setShowAll((v) => !v)} className="text-blue-600 hover:underline">
+          <button type="button" onClick={() => setShowAll((v) => !v)} className="text-[#c2400c] hover:underline">
             {showAll ? 'Show only mine' : 'Show all regions'}
           </button>
         </div>
@@ -464,9 +464,9 @@ export default function RegulatoryCalendarPage() {
                     {deadline.penalty && (
                       <p className="text-xs text-red-600"><span className="font-medium">Penalty:</span> {deadline.penalty}</p>
                     )}
-                    <a href={deadline.source} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">Official source</a>
+                    <a href={deadline.source} target="_blank" rel="noopener noreferrer" className="text-xs text-[#c2400c] hover:underline">Official source</a>
                     {deadline.action && (
-                      <Link href={`/orgs/${orgId}/${deadline.action.path}`} className="ml-3 text-xs text-blue-600 hover:underline">{deadline.action.label}</Link>
+                      <Link href={`/orgs/${orgId}/${deadline.action.path}`} className="ml-3 text-xs text-[#c2400c] hover:underline">{deadline.action.label}</Link>
                     )}
                   </div>
                   <div className="text-right shrink-0">
@@ -492,7 +492,7 @@ export default function RegulatoryCalendarPage() {
           {past.map((deadline) => {
             const orgRecord = getOrgStatus(deadline);
             return (
-              <Card key={deadline.id} className="border-gray-100 bg-gray-50/50 opacity-70">
+              <Card key={deadline.id} className="border-[#E3E8EE] bg-[#F9FAFC] opacity-70">
                 <CardContent className="pt-5">
                   <div className="flex items-center justify-between gap-4">
                     <div>
@@ -504,7 +504,7 @@ export default function RegulatoryCalendarPage() {
                         {orgRecord ? (
                           <Badge className="text-xs bg-green-100 text-green-800">{orgRecord.status}</Badge>
                         ) : (
-                          <Badge className="text-xs bg-gray-100 text-[#5B6A78]">Not recorded</Badge>
+                          <Badge className="text-xs bg-[#F9FAFC] text-[#5B6A78]">Not recorded</Badge>
                         )}
                       </div>
                       <p className="text-sm text-[#5B6A78]">{deadline.description}</p>

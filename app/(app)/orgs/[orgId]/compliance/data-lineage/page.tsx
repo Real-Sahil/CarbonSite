@@ -133,7 +133,7 @@ export default function DataLineagePage() {
               <ul className="space-y-2">
                 {step.details.map((detail, i) => (
                   <li key={i} className="text-sm text-[#41505F] flex gap-2">
-                    <span className="text-blue-600 font-semibold">•</span>
+                    <span className="text-[#c2400c] font-semibold">•</span>
                     {detail}
                   </li>
                 ))}

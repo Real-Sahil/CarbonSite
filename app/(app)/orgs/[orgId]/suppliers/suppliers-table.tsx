@@ -114,7 +114,7 @@ export function SuppliersTable({ orgId, filters }: { orgId: string; filters: Rec
                       <TableCell className="font-medium">
                         <Link
                           href={`/orgs/${orgId}/suppliers/${supplier.supplierId}/dashboard`}
-                          className="text-blue-600 hover:underline"
+                          className="text-[#c2400c] hover:underline"
                         >
                           {supplier.supplierName}
                         </Link>

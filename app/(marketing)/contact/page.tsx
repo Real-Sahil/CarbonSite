@@ -30,7 +30,7 @@ export default function ContactPage() {
         <div className="grid gap-14 lg:grid-cols-[1fr_1.1fr]">
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-3">
-              <h2 className="text-[26px] font-semibold tracking-[-0.02em]">What to bring</h2>
+              <h2 className="font-display text-[26px] font-light tracking-[-0.02em]">What to bring</h2>
               <p className="max-w-[52ch] text-[16px] leading-relaxed text-mk-text-2">Real records make a better pilot than sample data.</p>
             </div>
             <ul className="grid gap-6">
@@ -50,7 +50,7 @@ export default function ContactPage() {
             </p>
           </div>
           <div className="rounded-[12px] border border-mk-line bg-mk-paper p-7 sm:p-9">
-            <h2 className="mb-6 text-[22px] font-semibold tracking-[-0.02em]">Tell us about the project</h2>
+            <h2 className="mb-6 font-display text-[22px] font-light tracking-[-0.02em]">Tell us about the project</h2>
             <ContactForm />
           </div>
         </div>

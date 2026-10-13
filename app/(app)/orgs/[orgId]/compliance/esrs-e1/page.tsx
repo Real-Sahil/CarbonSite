@@ -378,7 +378,7 @@ export default function EsrsE1GapPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#c2400c]" />
       </div>
     );
   }
@@ -410,7 +410,7 @@ export default function EsrsE1GapPage() {
           href="https://www.efrag.org/Assets/Download?assetUrl=%2Fsites%2Fwebpublishing%2FSiteAssets%2FESRS%20E1%20Climate%20Change.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1 text-sm text-blue-600 hover:underline shrink-0"
+          className="flex items-center gap-1 text-sm text-[#c2400c] hover:underline shrink-0"
         >
           ESRS E1 Standard <ExternalLink className="h-3.5 w-3.5" />
         </a>
@@ -420,7 +420,7 @@ export default function EsrsE1GapPage() {
       <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
         <div className="flex flex-wrap items-center gap-6">
           <div>
-            <div className="text-3xl font-bold text-[#131d29]">{coverageScore}%</div>
+            <div className="text-3xl font-semibold tabular-nums text-[#131d29]">{coverageScore}%</div>
             <div className="text-sm text-[#5B6A78]">Data coverage score</div>
           </div>
           <div className="flex gap-4">
@@ -438,7 +438,7 @@ export default function EsrsE1GapPage() {
             </div>
           </div>
           <div className="flex-1 min-w-32">
-            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-[#F9FAFC] rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-green-500 to-emerald-400 rounded-full transition-all duration-700"
                 style={{ width: `${coverageScore}%` }}
@@ -476,7 +476,7 @@ export default function EsrsE1GapPage() {
             <CardContent className="pt-0">
               <div className="space-y-2">
                 {disc.dataPoints.map((dp) => (
-                  <div key={dp.id} className="flex items-start gap-2.5 rounded-lg bg-white border border-gray-100 px-3 py-2.5">
+                  <div key={dp.id} className="flex items-start gap-2.5 rounded-lg bg-white border border-[#E3E8EE] px-3 py-2.5">
                     <StatusIcon status={dp.status} />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[#131d29]">{dp.label}</p>

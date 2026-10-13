@@ -116,7 +116,7 @@ export default function SupplierAnalyticsPage() {
             <CardTitle className="text-sm font-medium text-[#41505F] uppercase">Total Submissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-[#131d29]">{metrics.totalSubmissions}</p>
+            <p className="text-3xl font-semibold tabular-nums text-[#131d29]">{metrics.totalSubmissions}</p>
             <p className="mt-1 text-xs text-[#5B6A78]">All submitted records</p>
           </CardContent>
         </Card>
@@ -127,7 +127,7 @@ export default function SupplierAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-green-600">{metrics.approvalRate.toFixed(1)}%</p>
+              <p className="text-3xl font-semibold tabular-nums text-green-600">{metrics.approvalRate.toFixed(1)}%</p>
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <p className="mt-1 text-xs text-[#5B6A78]">{metrics.approvedSubmissions} approved</p>
@@ -140,7 +140,7 @@ export default function SupplierAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-red-600">{rejectionRate.toFixed(1)}%</p>
+              <p className="text-3xl font-semibold tabular-nums text-red-600">{rejectionRate.toFixed(1)}%</p>
               <XCircle className="w-5 h-5 text-red-600" />
             </div>
             <p className="mt-1 text-xs text-[#5B6A78]">{metrics.rejectedSubmissions} rejected</p>
@@ -153,8 +153,8 @@ export default function SupplierAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-blue-600">{metrics.onTimeRate.toFixed(1)}%</p>
-              <Clock className="w-5 h-5 text-blue-600" />
+              <p className="text-3xl font-semibold tabular-nums text-[#c2400c]">{metrics.onTimeRate.toFixed(1)}%</p>
+              <Clock className="w-5 h-5 text-[#c2400c]" />
             </div>
             <p className="mt-1 text-xs text-[#5B6A78]">{metrics.onTimeSubmissions} on time</p>
           </CardContent>
@@ -171,13 +171,13 @@ export default function SupplierAnalyticsPage() {
             {perf.dataQualityScore !== null ? (
               <div className="flex items-end gap-4">
                 <div>
-                  <p className="text-4xl font-bold text-blue-600">{Number(perf.dataQualityScore).toFixed(1)}</p>
+                  <p className="text-4xl font-semibold tabular-nums text-[#c2400c]">{Number(perf.dataQualityScore).toFixed(1)}</p>
                   <p className="mt-2 text-sm text-[#41505F]">out of 100</p>
                 </div>
                 <div className="flex-1">
-                  <div className="h-2 rounded-full bg-gray-200">
+                  <div className="h-2 rounded-full bg-[#E3E8EE]">
                     <div
-                      className="h-full rounded-full bg-blue-600"
+                      className="h-full rounded-full bg-[#c2400c]"
                       style={{ width: `${Math.min(Number(perf.dataQualityScore), 100)}%` }}
                     />
                   </div>
@@ -198,11 +198,11 @@ export default function SupplierAnalyticsPage() {
             {perf.completenessScore !== null ? (
               <div className="flex items-end gap-4">
                 <div>
-                  <p className="text-4xl font-bold text-emerald-600">{Number(perf.completenessScore).toFixed(1)}</p>
+                  <p className="text-4xl font-semibold tabular-nums text-emerald-600">{Number(perf.completenessScore).toFixed(1)}</p>
                   <p className="mt-2 text-sm text-[#41505F]">out of 100</p>
                 </div>
                 <div className="flex-1">
-                  <div className="h-2 rounded-full bg-gray-200">
+                  <div className="h-2 rounded-full bg-[#E3E8EE]">
                     <div
                       className="h-full rounded-full bg-emerald-600"
                       style={{ width: `${Math.min(Number(perf.completenessScore), 100)}%` }}
@@ -247,15 +247,15 @@ export default function SupplierAnalyticsPage() {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold text-green-600">{metrics.approvedSubmissions}</p>
+              <p className="text-2xl font-semibold tabular-nums text-green-600">{metrics.approvedSubmissions}</p>
               <p className="text-xs text-[#41505F] uppercase">Approved</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-red-600">{metrics.rejectedSubmissions}</p>
+              <p className="text-2xl font-semibold tabular-nums text-red-600">{metrics.rejectedSubmissions}</p>
               <p className="text-xs text-[#41505F] uppercase">Rejected</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-yellow-600">{Math.max(0, metrics.totalSubmissions - metrics.approvedSubmissions - metrics.rejectedSubmissions)}</p>
+              <p className="text-2xl font-semibold tabular-nums text-yellow-600">{Math.max(0, metrics.totalSubmissions - metrics.approvedSubmissions - metrics.rejectedSubmissions)}</p>
               <p className="text-xs text-[#41505F] uppercase">Pending</p>
             </div>
           </div>

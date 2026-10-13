@@ -35,7 +35,7 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
     <div className="mx-auto max-w-6xl space-y-5 p-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">KPI report</h1>
+          <h1 className="text-2xl tracking-tight text-[#131d29]">KPI report</h1>
           <p className="mt-1 text-sm text-[#5B6A78]">Pick the measures you report on. The table shows the company, then each business unit and project, so you can compare them. Save the choice as a view to run it again.</p>
         </div>
         {viewRoles().includes(role as never) && <SavedViewsMenu orgId={orgId} surface="kpis" filters={filters} canShare={mayShare(role)} isAdmin={role === "admin"} />}
@@ -49,15 +49,15 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
         <div className="overflow-x-auto rounded-xl border border-[#E3E8EE] bg-white">
           <table className="w-full min-w-[640px] text-sm">
             <caption className="sr-only">Waste KPIs for {data.periodLabel}, by company, business unit and project</caption>
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-[#E3E8EE]">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{data.periodLabel}</th>
                 {defs.map((d) => (
-                  <th key={d.id} scope="col" className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{d.label}{d.unit && <span className="block font-normal normal-case text-gray-400">{d.unit}</span>}</th>
+                  <th key={d.id} scope="col" className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{d.label}{d.unit && <span className="block font-normal normal-case text-[#5B6A78]">{d.unit}</span>}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {(["company", "unit", "project"] as const).map((level) => {
                 const rows = data.rows.filter((r) => r.level === level);
                 if (rows.length === 0) return null;
@@ -70,7 +70,7 @@ export default async function KpiReportPage({ params, searchParams }: { params: 
                       <th scope="row" className="px-4 py-3 text-left font-medium text-[#131d29]">{r.name}</th>
                       {defs.map((d) => {
                         const v = d.compute(r.agg);
-                        return <td key={d.id} className="px-4 py-3 text-right tabular-nums text-[#131d29]">{v == null ? <span title={d.needs ? `Needs ${d.needs}` : undefined} className="text-gray-400">-</span> : n(v, d.decimals)}</td>;
+                        return <td key={d.id} className="px-4 py-3 text-right tabular-nums text-[#131d29]">{v == null ? <span title={d.needs ? `Needs ${d.needs}` : undefined} className="text-[#5B6A78]">-</span> : n(v, d.decimals)}</td>;
                       })}
                     </tr>
                   )),

@@ -14,6 +14,7 @@ import {
   type NavSection,
 } from "@/components/structured-forms/ms-fields";
 import { BOUNDARY_APPROACHES, SCOPE3_STATUSES, type CrpCheck, type CrpSectionKey, type CrpSections } from "@/lib/crp/plan";
+import { Button } from "@/components/ui/button";
 
 // ── Types from GET /carbon-reduction-plans/[planId] (dates arrive as strings) ─
 
@@ -98,7 +99,7 @@ function Checks({ checks, section, orgId }: { checks: CrpCheck[]; section: CrpSe
             </span>
             {c.fix ? <span className="block text-xs text-[#41505F]">{c.fix}</span> : null}
             {c.link ? (
-              <Link className="block text-xs font-medium text-[#c2410c] underline underline-offset-2" href={`/orgs/${orgId}/${c.link.path}`}>
+              <Link className="block text-xs font-medium text-[#c2400c] underline underline-offset-2" href={`/orgs/${orgId}/${c.link.path}`}>
                 {c.link.label}
               </Link>
             ) : null}
@@ -134,7 +135,7 @@ function MeasureRows({
   const set = (id: string, k: keyof (typeof rows)[number], v: string) => onChange(rows.map((r) => (r.id === id ? { ...r, [k]: v } : r)));
   return (
     <div className="space-y-3">
-      {rows.length === 0 ? <p className="text-xs text-gray-400">None added.</p> : null}
+      {rows.length === 0 ? <p className="text-xs text-[#5B6A78]">None added.</p> : null}
       {rows.map((m, i) => (
         <div key={m.id} className="rounded border border-[#E3E8EE] bg-white p-3">
           <div className="grid gap-3 sm:grid-cols-[1fr_110px_150px_32px]">
@@ -308,15 +309,15 @@ export function CrpWizard({
       </div>
       <p className="text-sm text-[#41505F]">
         {ctx.records.approved.toLocaleString("en-GB")} of {ctx.records.total.toLocaleString("en-GB")} records are approved. Add missing data under{" "}
-        <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/imports`}>
+        <Link className="text-[#c2400c] underline" href={`/orgs/${orgId}/imports`}>
           Imports
         </Link>
         ,{" "}
-        <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/records`}>
+        <Link className="text-[#c2400c] underline" href={`/orgs/${orgId}/records`}>
           Records
         </Link>{" "}
         or{" "}
-        <Link className="text-[#c2410c] underline" href={`/orgs/${orgId}/submissions`}>
+        <Link className="text-[#c2400c] underline" href={`/orgs/${orgId}/submissions`}>
           Submissions
         </Link>
         , then come back to this plan.
@@ -397,11 +398,11 @@ export function CrpWizard({
                 api(`${base}/calculation-runs`, { method: "POST", body: JSON.stringify({ reportingPeriodId: ctx.period.id, ...ctx.runDefaults }) }),
               )
             }
-            className="flex items-center gap-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50"
+            className="flex items-center gap-1 rounded border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50"
           >
             {busy === "calculate" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Calculate {ctx.period.label}
           </button>
-          <button
+          <Button
             type="button"
             disabled={!!busy || !latestSucceeded || (ctx.snapshot?.calculationRunId === latestSucceeded.id)}
             onClick={() =>
@@ -409,10 +410,10 @@ export function CrpWizard({
                 api(`${base}/snapshots`, { method: "POST", body: JSON.stringify({ reportingPeriodId: ctx.period.id, calculationRunId: latestSucceeded!.id }) }),
               )
             }
-            className="flex items-center gap-1 rounded bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="gap-1"
           >
             {busy === "publish" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Publish latest calculation
-          </button>
+          </Button>
           {ctx.latestRun && ctx.latestRun.status !== "succeeded" ? <span className="self-center text-xs text-[#41505F]">Latest run: {ctx.latestRun.status}</span> : null}
         </div>
       ) : null}
@@ -523,7 +524,7 @@ export function CrpWizard({
           You have {ctx.initiatives.length} reduction initiative{ctx.initiatives.length === 1 ? "" : "s"} under Targets.{" "}
           <button
             type="button"
-            className="font-medium text-[#c2410c] underline"
+            className="font-medium text-[#c2400c] underline"
             onClick={() =>
               update((p) => {
                 const have = new Set([...p.measures.completed, ...p.measures.planned].map((m) => m.name.trim().toLowerCase()));
@@ -668,9 +669,9 @@ export function CrpWizard({
       })}
       {canEdit ? (
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" disabled={!data.ready || !!busy || pending} onClick={generate} className="flex items-center gap-1 rounded bg-[#c2410c] px-4 py-2 text-sm font-medium text-white hover:bg-[#9a3412] disabled:opacity-50">
+          <Button type="button" disabled={!data.ready || !!busy || pending} onClick={generate} className="gap-1">
             {busy === "generate" ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Generate Carbon Reduction Plan{s.secr.include ? " and SECR report" : ""}
-          </button>
+          </Button>
           {pending ? <span className="text-xs text-[#5B6A78]">Saving your latest changes first…</span> : null}
         </div>
       ) : null}
@@ -702,21 +703,21 @@ export function CrpWizard({
     <div className="flex h-[calc(100vh-56px)] overflow-hidden">
       <SectionNav sections={nav} active={active} onSelect={setActive} open={navOpen} onClose={() => setNavOpen(false)} footer={`${passedRequired}/${required.length} required items`} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4 py-2.5">
-          <button className="flex h-8 w-8 items-center justify-center rounded hover:bg-gray-100 md:hidden" onClick={() => setNavOpen(true)} aria-label="Open sections">
+        <div className="flex flex-shrink-0 items-center gap-3 border-b border-[#E3E8EE] bg-white px-4 py-2.5">
+          <button className="flex h-8 w-8 items-center justify-center rounded hover:bg-[#F9FAFC] md:hidden" onClick={() => setNavOpen(true)} aria-label="Open sections">
             <Menu className="h-4 w-4 text-[#5B6A78]" />
           </button>
           <Link href={`/orgs/${orgId}/carbon-reduction-plan`} className="flex items-center gap-1 text-xs text-[#5B6A78] hover:text-[#131d29]">
             <ChevronLeft className="h-3.5 w-3.5" /> Carbon Reduction Plans
           </Link>
-          <span className="text-gray-300">/</span>
+          <span className="text-[#5B6A78]">/</span>
           <span className="truncate text-sm font-medium text-[#131d29]">{ctx.period.label}</span>
           <span className={`ml-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${data.plan.status === "generated" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"}`}>
             {data.plan.status === "generated" ? "Generated" : "Draft"}
           </span>
           <div className="ml-auto flex items-center gap-2" aria-live="polite">
             {saveState === "saving" ? (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
+              <span className="flex items-center gap-1 text-xs text-[#5B6A78]">
                 <Save className="h-3 w-3 animate-pulse" /> Saving…
               </span>
             ) : null}
@@ -791,7 +792,7 @@ function BaselineSection({
           <div className="overflow-x-auto rounded border border-[#E3E8EE] bg-white">
             <table className="w-full min-w-[420px] text-sm">
               <thead>
-                <tr className="border-b border-gray-100 text-left text-xs text-[#5B6A78]">
+                <tr className="border-b border-[#E3E8EE] text-left text-xs text-[#5B6A78]">
                   <th className="px-3 py-2 font-medium">Scope</th>
                   <th className="px-3 py-2 text-right font-medium">Baseline</th>
                   <th className="px-3 py-2 text-right font-medium">{ctx.period.label}</th>
@@ -807,7 +808,7 @@ function BaselineSection({
                     ["Total", by.total, current?.total],
                   ] as const
                 ).map(([label, b, c]) => (
-                  <tr key={label} className="border-b border-gray-50 last:border-0">
+                  <tr key={label} className="border-b border-[#E3E8EE] last:border-0">
                     <td className="px-3 py-2">{label}</td>
                     <td className="px-3 py-2 text-right">{fmtT(b)}</td>
                     <td className="px-3 py-2 text-right">{c != null ? fmtT(c) : "Not published"}</td>
@@ -818,14 +819,13 @@ function BaselineSection({
             </table>
           </div>
           {by.status !== "active" && canSetBaseYear ? (
-            <button
+            <Button
               type="button"
               disabled={!!busy}
               onClick={() => onRun("activate", () => api(`${base}/base-years/${by.id}`, { method: "PATCH", body: JSON.stringify({ status: "active" }) }))}
-              className="rounded bg-gray-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
             >
               Make {by.label} the active base year
-            </button>
+            </Button>
           ) : null}
         </>
       ) : (
@@ -860,7 +860,7 @@ function BaselineSection({
                   await api(`${base}/base-years/${created.id}`, { method: "PATCH", body: JSON.stringify({ status: "active" }) });
                 })
               }
-              className="h-9 rounded border border-gray-300 bg-white px-3 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50"
+              className="h-9 rounded border border-[#E3E8EE] bg-white px-3 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50"
             >
               {busy === "baseyear" ? "Setting…" : "Set as active base year"}
             </button>

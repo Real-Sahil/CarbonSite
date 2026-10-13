@@ -82,10 +82,10 @@ export default function SupplierPortalPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F9FAFC] flex items-center justify-center px-4">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-orange-500 mx-auto mb-3" />
-          <p className="text-slate-600">Loading your requests...</p>
+          <p className="text-[#41505F]">Loading your requests...</p>
         </div>
       </div>
     );
@@ -93,11 +93,11 @@ export default function SupplierPortalPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-[#F9FAFC] flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md border-red-200 bg-red-50">
           <div className="p-8 text-center">
             <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-            <h1 className="text-lg font-semibold text-red-900 mb-2">Portal Access Error</h1>
+            <h1 className="text-lg text-red-900 mb-2">Portal Access Error</h1>
             <p className="text-sm text-red-700 mb-4">{error}</p>
             <p className="text-xs text-red-600">Please contact the organization that sent you this link for help.</p>
           </div>
@@ -108,12 +108,12 @@ export default function SupplierPortalPage() {
 
   if (displayRequests.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6">
+      <div className="min-h-screen bg-[#F9FAFC] p-6">
         <div className="max-w-4xl mx-auto">
           <Card className="text-center py-12 border-dashed">
             <AlertTriangle className="h-12 w-12 text-amber-600 mx-auto mb-3 opacity-40" />
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">No Active Requests</h2>
-            <p className="text-sm text-slate-600 max-w-sm mx-auto">
+            <h2 className="text-lg font-semibold text-[#131d29] mb-2">No Active Requests</h2>
+            <p className="text-sm text-[#41505F] max-w-sm mx-auto">
               You don't have any active data requests right now. Check back later or contact the organization directly for
               updates.
             </p>
@@ -126,20 +126,20 @@ export default function SupplierPortalPage() {
   const readinessPercentage = Math.round((displayRequests.filter((r) => r.status === "approved" || r.status === "converted").length / displayRequests.length) * 100);
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-[#F9FAFC] p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Your Emissions Data Requests</h1>
-          <p className="text-slate-600">Review each request and submit the data when ready.</p>
+          <h1 className="text-3xl text-[#131d29] mb-2">Your Emissions Data Requests</h1>
+          <p className="text-[#41505F]">Review each request and submit the data when ready.</p>
 
           {displayRequests.length > 1 && (
-            <div className="mt-6 p-4 bg-white rounded-lg border border-slate-200">
+            <div className="mt-6 p-4 bg-white rounded-lg border border-[#E3E8EE]">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-700">Completion Status</span>
-                <span className="text-2xl font-bold text-orange-600">{readinessPercentage}%</span>
+                <span className="text-sm font-medium text-[#41505F]">Completion Status</span>
+                <span className="text-2xl font-semibold tabular-nums text-orange-600">{readinessPercentage}%</span>
               </div>
-              <div className="mt-3 w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+              <div className="mt-3 w-full bg-[#E3E8EE] rounded-full h-2 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-orange-500 to-amber-400 h-full transition-all"
                   style={{ width: `${readinessPercentage}%` }}
@@ -157,8 +157,8 @@ export default function SupplierPortalPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 p-6 bg-white rounded-lg border border-slate-200 text-center">
-          <p className="text-sm text-slate-600">
+        <div className="mt-12 p-6 bg-white rounded-lg border border-[#E3E8EE] text-center">
+          <p className="text-sm text-[#41505F]">
             Questions about what data to submit? Contact the organization directly using the contact information in the data request
             email.
           </p>
@@ -172,8 +172,8 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
   const [isOpen, setIsOpen] = useState(false);
 
   const statusIcons: Record<string, React.ReactNode> = {
-    sent: <Clock className="h-5 w-5 text-slate-500" />,
-    opened: <Clock className="h-5 w-5 text-blue-500" />,
+    sent: <Clock className="h-5 w-5 text-[#5B6A78]" />,
+    opened: <Clock className="h-5 w-5 text-[#c2400c]" />,
     submitted: <Clock className="h-5 w-5 text-amber-500" />,
     flagged: <AlertTriangle className="h-5 w-5 text-orange-600" />,
     approved: <CheckCircle2 className="h-5 w-5 text-green-600" />,
@@ -190,8 +190,8 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
               <div className="flex-shrink-0 mt-1">{statusIcons[request.status] || statusIcons.sent}</div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-slate-900 mb-1">{request.categoryName}</h3>
-                <p className="text-sm text-slate-600 mb-3">Period: {request.periodLabel}</p>
+                <h3 className="text-lg font-semibold text-[#131d29] mb-1">{request.categoryName}</h3>
+                <p className="text-sm text-[#41505F] mb-3">Period: {request.periodLabel}</p>
 
                 <div className="flex flex-wrap gap-2">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${request.statusColor}`}>
@@ -242,36 +242,36 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
 
           {/* Details Section */}
           {isOpen && (
-            <div className="mt-6 pt-6 border-t border-slate-200 space-y-4">
+            <div className="mt-6 pt-6 border-t border-[#E3E8EE] space-y-4">
               {request.submittedAt && (
                 <div>
-                  <p className="text-xs text-slate-600 uppercase tracking-wide font-medium">Submitted</p>
-                  <p className="text-sm text-slate-900 mt-1">{new Date(request.submittedAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium">Submitted</p>
+                  <p className="text-sm text-[#131d29] mt-1">{new Date(request.submittedAt).toLocaleDateString()}</p>
                 </div>
               )}
 
               {request.reviewedAt && (
                 <div>
-                  <p className="text-xs text-slate-600 uppercase tracking-wide font-medium">Reviewed</p>
-                  <p className="text-sm text-slate-900 mt-1">{new Date(request.reviewedAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium">Reviewed</p>
+                  <p className="text-sm text-[#131d29] mt-1">{new Date(request.reviewedAt).toLocaleDateString()}</p>
                 </div>
               )}
 
               {request.qualityFlags && request.qualityFlags.length > 0 && (
                 <div>
-                  <p className="text-xs text-slate-600 uppercase tracking-wide font-medium mb-3">Quality Flags</p>
+                  <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium mb-3">Quality Flags</p>
                   <ul className="space-y-2">
                     {request.qualityFlags.map((flag, i) => (
-                      <li key={i} className="p-3 bg-slate-50 rounded text-sm">
+                      <li key={i} className="p-3 bg-[#F9FAFC] rounded text-sm">
                         <div className="flex items-start gap-2">
-                          <span className={`text-xs font-bold px-2 py-1 rounded ${flag.severity === "critical" ? "bg-red-200 text-red-700" : "bg-amber-200 text-amber-700"}`}>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded ${flag.severity === "critical" ? "bg-red-200 text-red-700" : "bg-amber-200 text-amber-700"}`}>
                             {flag.severity === "critical" ? "CRITICAL" : "WARNING"}
                           </span>
                           <div className="flex-1">
-                            <p className="font-medium text-slate-900">{flag.field}</p>
-                            <p className="text-xs text-slate-600 mt-0.5">{flag.message}</p>
+                            <p className="font-medium text-[#131d29]">{flag.field}</p>
+                            <p className="text-xs text-[#41505F] mt-0.5">{flag.message}</p>
                             {flag.suggestedRange && (
-                              <p className="text-xs text-slate-500 mt-1">Expected: {flag.suggestedRange.min} – {flag.suggestedRange.max}</p>
+                              <p className="text-xs text-[#5B6A78] mt-1">Expected: {flag.suggestedRange.min} – {flag.suggestedRange.max}</p>
                             )}
                           </div>
                         </div>
@@ -284,7 +284,7 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
               {request.canSubmit && (
                 <div className="pt-2">
                   <Link href={`/supplier-data/${token}?requestId=${request.id}`}>
-                    <Button className="w-full bg-[#c2410c] hover:bg-[#9a3412] text-white">
+                    <Button className="w-full">
                       {request.status === "flagged" || request.status === "rejected" ? "Resubmit Data" : "Submit Data"}
                     </Button>
                   </Link>

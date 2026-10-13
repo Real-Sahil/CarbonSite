@@ -125,7 +125,7 @@ export default function SupplierDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-semibold tabular-nums">
               {performance.submissionCount}
             </div>
           </CardContent>
@@ -139,7 +139,7 @@ export default function SupplierDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-baseline gap-2">
-              <div className="text-3xl font-bold">
+              <div className="text-3xl font-semibold tabular-nums">
                 {Math.round(performance.dataQualityScore)}
               </div>
               <span className="text-[#5B6A78]">/100</span>
@@ -160,7 +160,7 @@ export default function SupplierDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-semibold tabular-nums">
               {Math.round(statistics.approvalRate)}%
             </div>
           </CardContent>
@@ -173,7 +173,7 @@ export default function SupplierDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-semibold tabular-nums">
               {Math.round(statistics.onTimeRate)}%
             </div>
           </CardContent>
@@ -293,15 +293,15 @@ export default function SupplierDashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="border-l-4 border-green-500 pl-4">
               <p className="text-sm text-[#41505F]">Approved Submissions</p>
-              <p className="text-2xl font-bold">{performance.approvedCount}</p>
+              <p className="text-2xl font-semibold tabular-nums">{performance.approvedCount}</p>
             </div>
             <div className="border-l-4 border-red-500 pl-4">
               <p className="text-sm text-[#41505F]">Rejected Submissions</p>
-              <p className="text-2xl font-bold">{performance.rejectedCount}</p>
+              <p className="text-2xl font-semibold tabular-nums">{performance.rejectedCount}</p>
             </div>
-            <div className="border-l-4 border-blue-500 pl-4">
+            <div className="border-l-4 border-[#c2400c] pl-4">
               <p className="text-sm text-[#41505F]">On-Time Submissions</p>
-              <p className="text-2xl font-bold">{performance.onTimeCount}</p>
+              <p className="text-2xl font-semibold tabular-nums">{performance.onTimeCount}</p>
             </div>
           </div>
         </CardContent>

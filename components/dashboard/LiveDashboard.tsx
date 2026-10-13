@@ -201,7 +201,7 @@ export function LiveDashboard({
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Total CO2e</p>
-          <p className="mt-2 text-2xl font-bold text-[#131d29]">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-[#131d29]">
             {(data.aggregates.totalCo2e / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
@@ -209,7 +209,7 @@ export function LiveDashboard({
 
         <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Scope 1</p>
-          <p className="mt-2 text-2xl font-bold text-orange-600">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-orange-600">
             {(data.aggregates.scope1 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
@@ -217,7 +217,7 @@ export function LiveDashboard({
 
         <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Scope 2</p>
-          <p className="mt-2 text-2xl font-bold text-blue-600">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-[#c2400c]">
             {(data.aggregates.scope2 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
@@ -225,7 +225,7 @@ export function LiveDashboard({
 
         <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Scope 3</p>
-          <p className="mt-2 text-2xl font-bold text-green-600">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-green-600">
             {(data.aggregates.scope3 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </p>
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>

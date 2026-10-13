@@ -19,12 +19,12 @@ export const PROJECT_TYPES = [
 
 export const STATUS_COLORS: Record<string, string> = {
   forestry:           "bg-green-100 text-green-700",
-  renewable_energy:   "bg-[#fff7ed] text-[#c2410c]",
-  methane_capture:    "bg-purple-100 text-purple-700",
-  blue_carbon:        "bg-blue-100 text-blue-700",
+  renewable_energy:   "bg-[#fff7ed] text-[#c2400c]",
+  methane_capture:    "bg-[#F9FAFC] text-[#41505F]",
+  blue_carbon:        "bg-[#F9FAFC] text-[#41505F]",
   soil_carbon:        "bg-amber-100 text-amber-700",
   direct_air_capture: "bg-rose-100 text-rose-700",
-  other:              "bg-gray-100 text-[#41505F]",
+  other:              "bg-[#F9FAFC] text-[#41505F]",
 };
 
 const STANDARDS = ["VCS", "Gold_Standard", "REDD+", "Plan_Vivo", "ACR", "CAR", "Other"];
@@ -80,9 +80,9 @@ function AddOffsetModal({ orgId, onClose, onSaved }: { orgId: string; onClose: (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#E3E8EE]">
           <h2 className="text-base font-semibold text-[#131d29]">Add carbon offset</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -145,11 +145,10 @@ export function AddOffsetButton({ orgId }: { orgId: string }) {
 
   return (
     <>
-      <button onClick={() => setShowAdd(true)}
-        className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors">
+      <Button onClick={() => setShowAdd(true)} className="shrink-0 whitespace-nowrap">
         <Plus className="h-4 w-4" />
         Add offset
-      </button>
+      </Button>
       {showAdd && (
         <AddOffsetModal
           orgId={orgId}
@@ -203,12 +202,12 @@ export function OffsetRowActions({ orgId, id, retirementRef, retirementVerified 
           className="h-7 w-7 rounded-lg hover:bg-green-50 flex items-center justify-center group disabled:opacity-50">
           {verifying
             ? <Loader2 className="h-3.5 w-3.5 text-[#5B6A78] animate-spin" />
-            : <ShieldCheck className="h-3.5 w-3.5 text-gray-300 group-hover:text-green-600 transition-colors" />
+            : <ShieldCheck className="h-3.5 w-3.5 text-[#5B6A78] group-hover:text-green-600 transition-colors" />
           }
         </button>
       )}
       <button onClick={handleDelete} className="h-7 w-7 rounded-lg hover:bg-red-50 flex items-center justify-center group">
-        <Trash2 className="h-3.5 w-3.5 text-gray-300 group-hover:text-red-500 transition-colors" />
+        <Trash2 className="h-3.5 w-3.5 text-[#5B6A78] group-hover:text-red-500 transition-colors" />
       </button>
     </div>
   );

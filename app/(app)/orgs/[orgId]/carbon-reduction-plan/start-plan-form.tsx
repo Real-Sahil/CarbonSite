@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FieldRow, inputCls } from "@/components/structured-forms/ms-fields";
+import { Button } from "@/components/ui/button";
 
 export function StartPlanForm({ orgId, periods }: { orgId: string; periods: { id: string; label: string }[] }) {
   const router = useRouter();
@@ -41,13 +42,12 @@ export function StartPlanForm({ orgId, periods }: { orgId: string; periods: { id
           </select>
         </FieldRow>
       </div>
-      <button
+      <Button
         onClick={start}
         disabled={busy || !periodId}
-        className="h-9 rounded bg-gray-900 px-4 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
       >
         {busy ? "Starting…" : "Start guided plan"}
-      </button>
+      </Button>
       {error ? <p role="alert" className="w-full text-sm text-red-700">{error}</p> : null}
     </div>
   );

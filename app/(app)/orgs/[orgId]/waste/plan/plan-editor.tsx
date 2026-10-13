@@ -84,7 +84,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
             </tbody>
           </Table>
         </div>
-        {!dis && <button type="button" className="text-sm font-medium text-teal-700 underline underline-offset-2 print:hidden" onClick={() => setLines((ls) => [...ls, { wasteType: "", ewcCode: "", forecastTonnes: 0, plannedRoute: "recycle" }])}>Add a waste type</button>}
+        {!dis && <button type="button" className="text-sm font-medium text-[#c2400c] underline underline-offset-2 print:hidden" onClick={() => setLines((ls) => [...ls, { wasteType: "", ewcCode: "", forecastTonnes: 0, plannedRoute: "recycle" }])}>Add a waste type</button>}
       </section>
 
       <FormSection title="Targets and actions" cols={2}>

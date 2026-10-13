@@ -152,7 +152,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                 {pathway ? "Expected vs. actual, from your committed SBTi pathway." : "No SBTi target set yet."}
               </CardDescription>
             </div>
-            <Link href={`/orgs/${orgId}/sbti`} className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412] flex items-center gap-1">
+            <Link href={`/orgs/${orgId}/sbti`} className="text-xs font-medium text-[#c2400c] hover:text-[#9a3412] flex items-center gap-1">
               {pathway ? "View full trajectory" : "Set a target"} <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
@@ -160,7 +160,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             {!pathway ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
-                  <Target className="h-6 w-6 text-[#c2410c]" />
+                  <Target className="h-6 w-6 text-[#c2400c]" />
                 </div>
                 <p className="text-sm text-[#41505F] max-w-sm">
                   Set a Science-Based Target to see a real target line here, checked against your actual
@@ -204,7 +204,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                           ? "border-red-200 bg-red-50 text-red-800"
                           : alert.severity === "warning"
                             ? "border-amber-200 bg-amber-50 text-amber-800"
-                            : "border-blue-200 bg-blue-50 text-blue-800";
+                            : "border-[#E3E8EE] bg-[#F9FAFC] text-[#131d29]";
                       return (
                         <div key={i} className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${cls}`}>
                           <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
@@ -234,7 +234,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                 {currentPeriod ? `Completeness for ${currentPeriod.label}.` : "No reporting period found."}
               </CardDescription>
             </div>
-            <Link href={`/orgs/${orgId}/completeness`} className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412] flex items-center gap-1">
+            <Link href={`/orgs/${orgId}/completeness`} className="text-xs font-medium text-[#c2400c] hover:text-[#9a3412] flex items-center gap-1">
               View full matrix <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
@@ -279,7 +279,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                 {unconverted.length > 0 && ` Left out, currency not convertible: ${unconverted.join(", ")}.`}
               </CardDescription>
             </div>
-            <Link href={`/orgs/${orgId}/scenarios`} className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412] flex items-center gap-1">
+            <Link href={`/orgs/${orgId}/scenarios`} className="text-xs font-medium text-[#c2400c] hover:text-[#9a3412] flex items-center gap-1">
               View full curve <ArrowRight className="h-3 w-3" />
             </Link>
           </CardHeader>
@@ -287,7 +287,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
             {topInitiatives.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#FFF7ED]">
-                  <TrendingDown className="h-6 w-6 text-[#c2410c]" />
+                  <TrendingDown className="h-6 w-6 text-[#c2400c]" />
                 </div>
                 <p className="text-sm text-[#41505F] max-w-sm">
                   No initiatives with an estimated impact yet.{" "}

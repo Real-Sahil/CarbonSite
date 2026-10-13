@@ -69,7 +69,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">SBTi Net-Zero Roadmap</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">SBTi Net-Zero Roadmap</h1>
           <p className="text-sm text-[#5B6A78] mt-1">Science-Based Targets aligned with the 1.5°C pathway.</p>
         </div>
         {canEdit && <SbtiSetTargetButton orgId={orgId} existing={target} />}
@@ -78,7 +78,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
       {!target ? (
         <div className="rounded-xl border border-[#E3E8EE] bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
-            <TrendingDown className="h-5 w-5 text-[#c2410c]" />
+            <TrendingDown className="h-5 w-5 text-[#c2400c]" />
           </div>
           <p className="text-sm font-medium text-[#41505F]">No SBTi target set</p>
           <p className="text-xs text-[#5B6A78] mt-1 max-w-xs mx-auto">
@@ -93,7 +93,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                 {statusConfig.label}
               </span>
             )}
-            <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#FFF7ED] text-[#c2410c]">
+            <span className="rounded-full px-3 py-1 text-xs font-medium bg-[#FFF7ED] text-[#c2400c]">
               {target.pathway} pathway
             </span>
             <span className="text-xs text-[#5B6A78]">Base year: {target.baseYear}</span>
@@ -118,7 +118,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
             <h3 className="text-sm font-semibold text-[#131d29] mb-4">Baseline emissions by scope</h3>
             <div className="space-y-3">
               {[
-                { label: "Scope 1 (Direct)", value: target.baselineScope1Tco2e, color: "bg-[#c2410c]" },
+                { label: "Scope 1 (Direct)", value: target.baselineScope1Tco2e, color: "bg-[#c2400c]" },
                 { label: "Scope 2 (Electricity)", value: target.baselineScope2Tco2e, color: "bg-emerald-500" },
                 ...(target.baselineScope3Tco2e != null
                   ? [{ label: "Scope 3 (Value chain)", value: target.baselineScope3Tco2e, color: "bg-violet-500" }]
@@ -133,7 +133,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                         {value.toFixed(1)} tCO₂e <span className="text-[#5B6A78] font-normal">({pct.toFixed(0)}%)</span>
                       </span>
                     </div>
-                    <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-2 rounded-full bg-[#F9FAFC] overflow-hidden">
                       <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
                     </div>
                   </div>
@@ -150,7 +150,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                     ? "border-red-200 bg-red-50 text-red-800"
                     : alert.severity === "warning"
                       ? "border-amber-200 bg-amber-50 text-amber-800"
-                      : "border-blue-200 bg-blue-50 text-blue-800";
+                      : "border-[#E3E8EE] bg-[#F9FAFC] text-[#131d29]";
                 return (
                   <div key={i} className={`flex items-start gap-2 rounded-lg border px-4 py-2.5 text-xs ${cls}`}>
                     <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
@@ -166,7 +166,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-[#131d29]">Reduction pathway: expected vs. actual</h3>
                 <div className="flex items-center gap-3 text-xs text-[#5B6A78]">
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#c2410c]" />Expected</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#c2400c]" />Expected</span>
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-500" />On track</span>
                   <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-400" />Behind</span>
                 </div>
@@ -183,27 +183,27 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                     return (
                       <div key={point.year} className="flex flex-col items-center gap-1 flex-shrink-0" style={{ minWidth: actualPct != null ? "36px" : "24px" }}>
                         <div className="flex items-end gap-0.5" style={{ height: "100%" }}>
-                          <div className="w-4 rounded-t-sm bg-[#c2410c] transition-all"
+                          <div className="w-4 rounded-t-sm bg-[#c2400c] transition-all"
                             style={{ height: `${Math.max(expectedPct, 2)}%`, opacity: isNearTerm || isNetZero ? 1 : 0.7 }} />
                           {actualPct != null && (
                             <div className={`w-4 rounded-t-sm transition-all ${actualColor}`}
                               style={{ height: `${Math.max(actualPct, 2)}%` }} />
                           )}
                         </div>
-                        <span className={`text-[9px] tabular-nums ${isNearTerm || isNetZero ? "text-[#c2410c] font-semibold" : "text-gray-300"}`}>
+                        <span className={`text-[9px] tabular-nums ${isNearTerm || isNetZero ? "text-[#c2400c] font-semibold" : "text-[#5B6A78]"}`}>
                           {point.year}
                         </span>
                       </div>
                     );
                   })}
               </div>
-              <div className="flex items-center gap-6 mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-6 mt-3 pt-3 border-t border-[#E3E8EE]">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-3.5 w-3.5 text-green-500" />
                   <span className="text-xs text-[#5B6A78]">Near-term: {nearTermTarget.toFixed(0)} tCO₂e by {target.nearTermYear}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Target className="h-3.5 w-3.5 text-[#c2410c]" />
+                  <Target className="h-3.5 w-3.5 text-[#c2400c]" />
                   <span className="text-xs text-[#5B6A78]">Net-zero: {netZeroTarget.toFixed(0)} tCO₂e by {target.netZeroYear}</span>
                 </div>
               </div>
@@ -212,7 +212,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
 
           <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-5">
             <div className="flex items-start gap-3">
-              <Info className="h-4 w-4 text-[#c2410c] mt-0.5 flex-shrink-0" />
+              <Info className="h-4 w-4 text-[#c2400c] mt-0.5 flex-shrink-0" />
               <div>
                 <p className="text-sm font-medium text-[#9A3412] mb-1">About SBTi alignment</p>
                 <p className="text-xs text-[#7C3D12] leading-relaxed">

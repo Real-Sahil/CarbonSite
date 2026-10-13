@@ -48,7 +48,7 @@ export function RetryCalculationButton({
     <Button
       variant="ghost"
       size="sm"
-      className="h-7 px-2 text-xs text-[#5B6A78] hover:text-[#131d29] hover:bg-zinc-100"
+      className="h-7 px-2 text-xs text-[#5B6A78] hover:text-[#131d29] hover:bg-[#F9FAFC]"
       onClick={handleRetry}
       disabled={loading}
     >

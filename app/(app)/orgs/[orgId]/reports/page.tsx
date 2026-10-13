@@ -71,9 +71,9 @@ const REPORT_TYPE_LABELS: Record<string, string> = {
 function statusConfig(status: string) {
   switch (status) {
     case "queued":
-      return { label: "Queued", className: "bg-zinc-100 text-[#41505F] border-transparent", icon: Clock };
+      return { label: "Queued", className: "bg-[#F9FAFC] text-[#41505F] border-transparent", icon: Clock };
     case "generating":
-      return { label: "Generating", className: "bg-blue-50 text-blue-700 border-transparent animate-pulse", icon: Loader2 };
+      return { label: "Generating", className: "bg-[#F9FAFC] text-[#41505F] border-transparent animate-pulse", icon: Loader2 };
     case "ready":
       return { label: "Ready", className: "bg-[#FFF7ED] text-[#131d29] border-transparent", icon: CheckCircle2 };
     case "failed":
@@ -253,7 +253,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                   </TableHeader>
                   <TableBody>
                     {snapshots.map((snapshot) => (
-                      <TableRow key={snapshot.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={snapshot.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6">
                           <span className="font-semibold text-sm text-[#131d29]">v{snapshot.version}</span>
                         </TableCell>
@@ -306,10 +306,10 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                 </CardTitle>
               </div>
               {hasInFlight && (
-                <div className="flex items-center gap-1.5 text-xs text-blue-600">
+                <div className="flex items-center gap-1.5 text-xs text-[#c2400c]">
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c2400c] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#c2400c]" />
                   </span>
                   Live
                 </div>
@@ -320,7 +320,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="px-6 py-5 border-b border-[#f3f4f6]">
+            <div className="px-6 py-5 border-b border-[#E3E8EE]">
               <CreateReportForm
                 orgId={orgId}
                 snapshots={snapshots.map((s) => ({
@@ -360,7 +360,7 @@ export default async function ReportsPage({ params, searchParams }: ReportsPageP
                       const cfg = statusConfig(report.status);
                       const StatusIcon = cfg.icon;
                       return (
-                        <TableRow key={report.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableRow key={report.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                           <TableCell className="py-3.5 pl-6">
                             <span className="text-sm font-medium text-[#131d29]">
                               {REPORT_TYPE_LABELS[report.type] ?? report.type.replaceAll("_", " ")}
@@ -425,7 +425,7 @@ function StatPill({
 }) {
   const colors = {
     green: "bg-[#FFF7ED] text-[#131d29]",
-    blue: "bg-blue-50 text-blue-700",
+    blue: "bg-[#F9FAFC] text-[#41505F]",
   };
   const base = accent ? colors[accent] : "bg-white text-[#41505F] border border-[#E3E8EE]";
   return (

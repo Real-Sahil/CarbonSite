@@ -34,11 +34,11 @@ interface AuditLogsResponse {
 
 const actionColors: Record<string, string> = {
   create: 'bg-green-100 text-green-800',
-  update: 'bg-blue-100 text-blue-800',
+  update: 'bg-[#F9FAFC] text-[#131d29]',
   delete: 'bg-red-100 text-red-800',
   approve: 'bg-emerald-100 text-emerald-800',
   reject: 'bg-orange-100 text-orange-800',
-  publish: 'bg-purple-100 text-purple-800',
+  publish: 'bg-[#F9FAFC] text-[#131d29]',
 };
 
 export default function AuditLogsPage() {
@@ -87,7 +87,7 @@ export default function AuditLogsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#c2400c]" />
       </div>
     );
   }
@@ -157,13 +157,13 @@ export default function AuditLogsPage() {
                   key={log.id}
                   className="flex items-start gap-4 border rounded-lg p-4 hover:bg-[#F9FAFC]"
                 >
-                  <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
+                  <div className="rounded-lg bg-[#F9FAFC] p-2 text-[#41505F]">
                     <Shield className="h-4 w-4" />
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <Badge className={actionColors[log.action] || 'bg-gray-100 text-[#131d29]'}>
+                      <Badge className={actionColors[log.action] || 'bg-[#F9FAFC] text-[#131d29]'}>
                         {log.action}
                       </Badge>
                       <span className="text-sm font-medium text-[#131d29]">

@@ -97,7 +97,7 @@ function FlagCell({ value, label }: { value: boolean; label: string }) {
       {value ? (
         <CheckCircle2 className="h-4 w-4 text-[#131d29]" aria-hidden="true" />
       ) : (
-        <MinusCircle className="h-4 w-4 text-[#999]" aria-hidden="true" />
+        <MinusCircle className="h-4 w-4 text-[#5B6A78]" aria-hidden="true" />
       )}
       <span className="text-sm text-[#41505F] tracking-[-0.42px]">{label}</span>
     </div>

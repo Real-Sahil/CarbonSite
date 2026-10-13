@@ -41,7 +41,7 @@ export default async function CarbonReductionPlansPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6 md:p-8">
       <div>
-        <h1 className="text-2xl font-semibold text-[#131d29]">Carbon Reduction Plan</h1>
+        <h1 className="text-2xl text-[#131d29]">Carbon Reduction Plan</h1>
         <p className="mt-2 max-w-2xl text-sm text-[#41505F]">
           A guided PPN 006 plan for central government contracts of £5 million a year or more. Each step checks what an evaluator
           looks for, the figures come from your published emissions, and the plan is generated in the Cabinet Office format with a
@@ -61,7 +61,7 @@ export default async function CarbonReductionPlansPage({ params }: Props) {
             ) : (
               <p className="text-sm text-[#41505F]">
                 Create a reporting period first under{" "}
-                <Link href={`/orgs/${orgId}/settings/periods`} className="text-[#c2410c] underline">
+                <Link href={`/orgs/${orgId}/settings/periods`} className="text-[#c2400c] underline">
                   Settings
                 </Link>
                 .
@@ -76,7 +76,7 @@ export default async function CarbonReductionPlansPage({ params }: Props) {
         {plans.length === 0 ? (
           <p className="mt-2 text-sm text-[#41505F]">No plans yet.</p>
         ) : (
-          <ul className="mt-3 divide-y divide-gray-100 rounded-lg border border-[#E3E8EE] bg-white">
+          <ul className="mt-3 divide-y divide-[#E3E8EE] rounded-lg border border-[#E3E8EE] bg-white">
             {plans.map((p) => {
               const st = STATUS[p.status] ?? STATUS.draft;
               return (

@@ -54,7 +54,7 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
 
       <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-8">
         {profiles.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#D1D5DB] bg-white p-8 text-sm text-[#5B6A78]">
+          <div className="rounded-xl border border-dashed border-[#E3E8EE] bg-white p-8 text-sm text-[#5B6A78]">
             No profiles yet. Templates for SAP, Causeway Financials, COINS and Sage suggest the columns; you confirm them against a sample export and add rules for your chart of accounts.
           </div>
         ) : (
@@ -71,10 +71,10 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
               </thead>
               <tbody>
                 {profiles.map((p) => (
-                  <tr key={p.id} className="border-t border-[#F3F4F6]">
+                  <tr key={p.id} className="border-t border-[#E3E8EE]">
                     <td className="px-5 py-3">
                       {canEdit ? (
-                        <Link href={`/orgs/${orgId}/imports/profiles/${p.id}`} className="font-medium text-[#131d29] hover:text-[#c2410c]">{p.name}</Link>
+                        <Link href={`/orgs/${orgId}/imports/profiles/${p.id}`} className="font-medium text-[#131d29] hover:text-[#c2400c]">{p.name}</Link>
                       ) : (
                         <span className="font-medium text-[#131d29]">{p.name}</span>
                       )}

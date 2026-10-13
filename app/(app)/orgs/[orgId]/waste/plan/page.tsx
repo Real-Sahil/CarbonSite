@@ -29,9 +29,9 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
 
   const header = (
     <div className="mb-6">
-      <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">Site Waste Management Plan</h1>
+      <h1 className="text-2xl tracking-tight text-[#131d29]">Site Waste Management Plan</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">One plan per project: who is responsible, the waste you expect and where it should go, your diversion target, and how you will reduce waste. The page sets the plan beside the waste you have actually recorded.</p>
-      <Link href={`/orgs/${orgId}/waste`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800 print:hidden">Back to waste</Link>
+      <Link href={`/orgs/${orgId}/waste`} className="mt-2 inline-block text-sm font-medium text-[#c2400c] hover:text-[#a33409] print:hidden">Back to waste</Link>
     </div>
   );
 
@@ -59,7 +59,7 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
     <div className="mx-auto max-w-5xl space-y-6 p-8">
       {header}
       <div className="flex flex-wrap items-center gap-3 text-sm">
-        <span className="rounded-full bg-gray-100 px-3 py-1 font-medium">{project.name}</span>
+        <span className="rounded-full bg-[#F9FAFC] px-3 py-1 font-medium">{project.name}</span>
         <span className={`rounded-full px-3 py-1 text-xs font-medium ${data.status === "approved" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-800"}`}>
           {data.exists ? `${data.status === "approved" ? "Approved" : "Draft"} · version ${data.version}` : "No plan yet"}
         </span>
@@ -67,7 +67,7 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
         {projects.length > 1 && (
           <form className="ml-auto print:hidden" action={`/orgs/${orgId}/waste/plan`}>
             <label htmlFor="swmp-project" className="sr-only">Project</label>
-            <select id="swmp-project" name="projectId" defaultValue={project.id} className="h-9 rounded-md border border-gray-300 bg-white px-2 text-sm">{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+            <select id="swmp-project" name="projectId" defaultValue={project.id} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">{projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
             <button className="ml-2 text-sm underline underline-offset-2">Open</button>
           </form>
         )}
@@ -99,7 +99,7 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
               <Table className="text-sm">
                 <caption className="sr-only">Forecast and recorded waste by type</caption>
                 <thead><tr className="text-left text-xs text-[#5B6A78]"><th className="py-1 pr-3">Waste type</th><th className="py-1 pr-3 text-right">Forecast (t)</th><th className="py-1 pr-3 text-right">Recorded (t)</th><th className="py-1 pr-3 text-right">Difference (t)</th><th className="py-1">Planned route</th></tr></thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-[#E3E8EE]">
                   {c.rows.map((r, i) => (
                     <tr key={i}><td className="py-2 pr-3">{r.wasteType}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.forecastTonnes)}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.actualTonnes)}</td><td className={`py-2 pr-3 text-right tabular-nums ${r.varianceTonnes > 0 ? "text-amber-800" : ""}`}>{r.varianceTonnes > 0 ? "+" : ""}{n(r.varianceTonnes)}</td><td className="py-2">{ROUTE_LABEL[r.plannedRoute]}</td></tr>
                   ))}

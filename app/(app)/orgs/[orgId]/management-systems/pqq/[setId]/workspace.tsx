@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -47,11 +47,11 @@ export function PqqWorkspace({ orgId, setId, custom, cards, files, canEdit }: { 
       <div className="flex flex-wrap items-center gap-3">
         <div className="min-w-[220px] flex-1">
           <p className="text-sm tabular-nums text-[#41505F]">{done} of {cards.length} answered</p>
-          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F3F4F6]" aria-hidden="true">
-            <div className="h-full rounded-full bg-[#c2410c]" style={{ width: `${cards.length ? Math.round((done / cards.length) * 100) : 0}%` }} />
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-[#F9FAFC]" aria-hidden="true">
+            <div className="h-full rounded-full bg-[#c2400c]" style={{ width: `${cards.length ? Math.round((done / cards.length) * 100) : 0}%` }} />
           </div>
         </div>
-        {canEdit && <a href={`/api/orgs/${orgId}/pqq/export?set=${encodeURIComponent(setId)}`} className="rounded-lg bg-[#131d29] px-3 py-1.5 text-sm text-white hover:bg-black">Download answer pack</a>}
+        {canEdit && <a href={`/api/orgs/${orgId}/pqq/export?set=${encodeURIComponent(setId)}`} className={buttonVariants({ size: "sm" })}>Download answer pack</a>}
         {canEdit && custom && <Button size="sm" variant="outline" onClick={removeSet} className="text-red-600">Delete questionnaire</Button>}
       </div>
       <div className="flex flex-wrap gap-2" role="group" aria-label="Show">
@@ -121,8 +121,8 @@ function Card({ orgId, card, canEdit, files, addFile }: { orgId: string; card: A
       {card.texts.length > 0 && <ul className="list-disc pl-5 text-sm text-[#41505F]">{card.texts.map((t, i) => <li key={i}>{t}</li>)}</ul>}
       {card.guidance && <p className="text-xs text-[#5B6A78]">{card.guidance}</p>}
       {card.draft && canEdit && !answer && (
-        <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3 text-sm text-[#41505F]">
-          <p className="text-xs font-medium uppercase tracking-wide text-sky-800">Drafted from your records</p>
+        <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-3 text-sm text-[#41505F]">
+          <p className="text-xs font-medium uppercase tracking-wide text-[#131d29]">Drafted from your records</p>
           <p className="mt-1 whitespace-pre-wrap">{card.draft.answer}</p>
           <Button size="sm" variant="outline" className="mt-2" onClick={() => { setAnswer(card.draft!.answer); if (card.draft!.response) setResponse(card.draft!.response); }}>Use this draft</Button>
         </div>

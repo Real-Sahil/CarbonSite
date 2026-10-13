@@ -47,14 +47,14 @@ export function SupplierInvitesList({
     if (new Date() > expiresAt && inviteMethod === "magic-link") {
       return {
         label: "Expired",
-        color: "bg-slate-100 text-[#5B6A78] border-[#E3E8EE]",
+        color: "bg-[#F9FAFC] text-[#5B6A78] border-[#E3E8EE]",
         icon: <XCircle className="h-4 w-4" />,
       };
     }
 
     return {
       label: "Pending",
-      color: "bg-[#fff7ed] text-[#c2410c] border-[#fed7aa]",
+      color: "bg-[#fff7ed] text-[#c2400c] border-[#fed7aa]",
       icon: <Clock className="h-4 w-4" />,
     };
   };
@@ -63,7 +63,7 @@ export function SupplierInvitesList({
     <Card className="border-[#E3E8EE] bg-white shadow-sm">
       <CardHeader>
         <CardTitle className="text-[#131d29] flex items-center gap-2">
-          <Users className="h-5 w-5 text-[#c2410c]" />
+          <Users className="h-5 w-5 text-[#c2400c]" />
           Supplier Invitations
         </CardTitle>
         <CardDescription>
@@ -91,7 +91,7 @@ export function SupplierInvitesList({
               return (
                 <div
                   key={invite.id}
-                  className="flex items-center justify-between p-4 bg-white border border-[#E3E8EE] rounded-lg hover:border-slate-300 transition-colors"
+                  className="flex items-center justify-between p-4 bg-white border border-[#E3E8EE] rounded-lg hover:border-[#E3E8EE] transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
@@ -110,7 +110,7 @@ export function SupplierInvitesList({
                         {status.icon}
                         {status.label}
                       </Badge>
-                      <Badge variant="outline" className="text-xs border-slate-300 text-[#41505F]">
+                      <Badge variant="outline" className="text-xs border-[#E3E8EE] text-[#41505F]">
                         {invite.inviteMethod === "magic-link"
                           ? "Magic Link"
                           : "Account Created"}

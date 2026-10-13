@@ -133,7 +133,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex items-center gap-2 h-11 px-5 rounded-[10px] bg-mk-accent text-white text-[15px] font-medium hover:bg-mk-accent-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors active:scale-[0.97]"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mk-accent px-6 text-[15px] font-semibold text-white transition-colors hover:bg-mk-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mk-accent disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.97]"
       >
         {isSubmitting ? (
           <>

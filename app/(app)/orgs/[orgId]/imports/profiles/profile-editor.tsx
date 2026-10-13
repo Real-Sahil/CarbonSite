@@ -12,7 +12,7 @@ import { PROFILE_TEMPLATES, templateFor } from "@/lib/imports/profile-templates"
 type Category = { code: string; name: string; scope: number };
 type RuleDraft = Omit<ProfileRule, "basis"> & { basis: "spend" | "quantity"; key: number };
 
-const field = "h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/30";
+const field = "h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/30";
 const label = "text-xs text-[#41505F] tracking-[-0.36px]";
 
 let nextKey = 1;
@@ -254,7 +254,7 @@ export function ProfileEditor({
                 {rules.map((r) => {
                   const off = r.action === "ignore";
                   return (
-                    <tr key={r.key} className="border-t border-[#F3F4F6]">
+                    <tr key={r.key} className="border-t border-[#E3E8EE]">
                       <td className="px-1.5 py-1.5"><Input aria-label="Account" value={r.account ?? ""} onChange={(e) => update(r.key, { account: e.target.value })} className="h-8 w-24" /></td>
                       <td className="px-1.5 py-1.5"><Input aria-label="Cost code" value={r.costCode ?? ""} onChange={(e) => update(r.key, { costCode: e.target.value })} className="h-8 w-24" /></td>
                       <td className="px-1.5 py-1.5">
@@ -283,7 +283,7 @@ export function ProfileEditor({
                       <td className="px-1.5 py-1.5"><Input aria-label="Site" disabled={off} value={r.facilityName ?? ""} onChange={(e) => update(r.key, { facilityName: e.target.value })} className="h-8 w-28" /></td>
                       <td className="px-1.5 py-1.5"><Input aria-label="Note" value={r.note ?? ""} onChange={(e) => update(r.key, { note: e.target.value })} className="h-8 w-32" /></td>
                       <td className="px-1.5 py-1.5">
-                        <button type="button" aria-label="Remove rule" onClick={() => setRules((rs) => rs.filter((x) => x.key !== r.key))} className="rounded p-1.5 text-[#5B6A78] hover:bg-[#F3F4F6] hover:text-red-600">
+                        <button type="button" aria-label="Remove rule" onClick={() => setRules((rs) => rs.filter((x) => x.key !== r.key))} className="rounded p-1.5 text-[#5B6A78] hover:bg-[#F9FAFC] hover:text-red-600">
                           <Trash2 aria-hidden="true" className="h-4 w-4" />
                         </button>
                       </td>
@@ -321,7 +321,7 @@ export function ProfileEditor({
                 </thead>
                 <tbody>
                   {summary.byCategory.map((c) => (
-                    <tr key={c.categoryCode} className="border-t border-[#F3F4F6]">
+                    <tr key={c.categoryCode} className="border-t border-[#E3E8EE]">
                       <td className="py-1">{categoryName(c.categoryCode)}</td>
                       <td className="py-1 text-right tabular-nums">{c.lines}</td>
                       <td className="py-1 text-right tabular-nums">{c.netAmount.toLocaleString("en-GB", { minimumFractionDigits: 2 })}</td>
@@ -336,7 +336,7 @@ export function ProfileEditor({
                 <table className="mt-2 w-full max-w-3xl text-sm">
                   <tbody>
                     {summary.unmatched.map((u) => (
-                      <tr key={`${u.account ?? ""}|${u.costCode ?? ""}`} className="border-t border-[#F3F4F6]">
+                      <tr key={`${u.account ?? ""}|${u.costCode ?? ""}`} className="border-t border-[#E3E8EE]">
                         <td className="py-1.5 font-mono text-xs">{[u.account, u.costCode].filter(Boolean).join(" / ")}</td>
                         <td className="py-1.5 text-[#5B6A78]">{u.example}</td>
                         <td className="py-1.5 text-right tabular-nums">{u.lines} lines</td>
@@ -344,7 +344,7 @@ export function ProfileEditor({
                         <td className="py-1.5 pl-3 text-right">
                           <button
                             type="button"
-                            className="text-xs text-[#c2410c] hover:text-[#9a3412]"
+                            className="text-xs text-[#c2400c] hover:text-[#9a3412]"
                             onClick={() => setRules((rs) => [...rs, draft({ account: u.account, costCode: u.account ? undefined : u.costCode, note: u.example?.slice(0, 200) })])}
                           >
                             Add rule

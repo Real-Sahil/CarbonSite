@@ -56,7 +56,7 @@ function DeltaChip({ delta, goodUp }: { delta: { value: number; label: string };
   const up = delta.value > 0;
   const good = flat ? null : up === goodUp;
   const arrow = flat ? "→" : up ? "↑" : "↓";
-  const tone = good === null ? "bg-[#F3F4F6] text-[#41505F]" : good ? "bg-[#ECFDF5] text-[#047857]" : "bg-[#FEF2F2] text-[#B91C1C]";
+  const tone = good === null ? "bg-[#F9FAFC] text-[#41505F]" : good ? "bg-[#ECFDF5] text-[#047857]" : "bg-[#FEF2F2] text-[#B91C1C]";
   return (
     <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium", tone)}>
       <span aria-hidden="true">{arrow}</span>
@@ -105,7 +105,7 @@ function KpiCard({ stat }: { stat: KpiStat }) {
         href={stat.href}
         className={cn(
           className,
-          "transition-[border-color,box-shadow] duration-200 hover:border-[#FDBA74] hover:shadow-[0_4px_12px_rgba(16,24,40,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2410c]/40",
+          "transition-[border-color,box-shadow] duration-200 hover:border-[#FDBA74] hover:shadow-[0_4px_12px_rgba(16,24,40,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40",
         )}
       >
         {body}

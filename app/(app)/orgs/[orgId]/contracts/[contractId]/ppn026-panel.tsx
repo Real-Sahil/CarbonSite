@@ -70,15 +70,15 @@ export function Ppn026Panel(p: Props) {
         </p>
         {p.canEdit ? (
           <div>
-            <button
+            <Button
               type="button"
               disabled={!!busy}
               onClick={() => run("install", () => send(`/api/orgs/${p.orgId}/sv/frameworks/ppn-026`, {}))}
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937] disabled:opacity-50"
+              className="gap-1.5"
             >
               {busy === "install" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Add the PPN 026 Social Value Model
-            </button>
+            </Button>
           </div>
         ) : null}
         {error ? <p role="alert" className="text-sm text-red-600">{error}</p> : null}
@@ -129,18 +129,18 @@ export function Ppn026Panel(p: Props) {
                 <tbody>
                   {rows.map((c) => (
                     <Fragment key={c.code}>
-                      <tr className="border-t border-[#F3F4F6]">
+                      <tr className="border-t border-[#E3E8EE]">
                         <td colSpan={5} className="py-2 pl-4 text-xs font-medium text-[#41505F]">
                           {c.name}
-                          {c.kpis.length === 0 ? <span className="ml-2 font-normal text-[#9CA3AF]">No KPI</span> : null}
+                          {c.kpis.length === 0 ? <span className="ml-2 font-normal text-[#5B6A78]">No KPI</span> : null}
                         </td>
                       </tr>
                       {c.kpis.map((k) => (
-                        <tr key={k.id} className="border-t border-[#F3F4F6]">
+                        <tr key={k.id} className="border-t border-[#E3E8EE]">
                           <td className="py-2 pl-8 text-[#131d29]">
                             {k.title}
                             {k.pendingEntries > 0 ? (
-                              <Link href={`/orgs/${p.orgId}/social-value/activities`} className="ml-2 text-xs text-[#c2410c] underline">
+                              <Link href={`/orgs/${p.orgId}/social-value/activities`} className="ml-2 text-xs text-[#c2400c] underline">
                                 {k.pendingEntries} awaiting review
                               </Link>
                             ) : null}
@@ -225,7 +225,7 @@ export function Ppn026Panel(p: Props) {
               <input id="ppn026-qty" type="number" min="0" step="any" required className={inputCls} value={entry.quantity} onChange={(e) => setEntry({ ...entry, quantity: e.target.value })} />
             </FormField>
             <FormField label="Evidence" htmlFor="ppn026-file" span={3} optional hint="Upload a file or paste a link to the payroll extract, training record or timesheet">
-              <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#41505F] file:mr-3 file:rounded-md file:border file:border-[#D1D5DB] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+              <input id="ppn026-file" type="file" accept="application/pdf,image/*,.csv,.xlsx,.docx" className="block w-full text-sm text-[#41505F] file:mr-3 file:rounded-md file:border file:border-[#E3E8EE] file:bg-white file:px-3 file:py-1.5 file:text-sm" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               <input id="ppn026-evidence" type="url" aria-label="Or a link to the evidence" placeholder="https://" className={inputCls} value={entry.evidence} onChange={(e) => setEntry({ ...entry, evidence: e.target.value })} />
             </FormField>
             <FormField label="Note" htmlFor="ppn026-note" span={3} optional>
@@ -291,7 +291,7 @@ export function Ppn026Panel(p: Props) {
           </form>
         ) : (
           <div>
-            <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-1 rounded-md border border-[#D1D5DB] px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC]">
+            <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-1 rounded-md border border-[#E3E8EE] px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC]">
               <Plus className="h-3.5 w-3.5" /> Add KPI
             </button>
           </div>

@@ -62,7 +62,7 @@ export default async function LocalSpendPage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-6">
       <header>
-        <h1 className="text-xl font-semibold">Local spend</h1>
+        <h1 className="text-xl">Local spend</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Share of a site&apos;s supplier spend that went to businesses within a set distance, and to SMEs. Distances are
           straight-line from the site&apos;s postcode. Counts GBP spend on reviewed and approved records that name a supplier you have placed below.
@@ -175,7 +175,7 @@ export default async function LocalSpendPage({ params, searchParams }: Props) {
                           <span className="block text-[#41505F]">{s.companyNumber}</span>
                           <CompanyFlags flags={((s.companyCheck as { flags?: { level: "red" | "amber"; text: string }[] } | null)?.flags) ?? []} />
                         </span>
-                      ) : <span className="text-gray-400">Not matched</span>}
+                      ) : <span className="text-[#5B6A78]">Not matched</span>}
                     </TableCell>
                     <TableCell>{s.postcode}</TableCell>
                     <TableCell>{s.sme === null ? <Badge variant="outline">Not known</Badge> : s.sme ? "Yes" : "No"}</TableCell>

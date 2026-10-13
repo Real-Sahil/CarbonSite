@@ -76,7 +76,7 @@ export default function ResourcesPage() {
           <div className="flex flex-col divide-y divide-mk-line">
             {GUIDES.map((g) => (
               <article key={g.id} id={g.id} className="scroll-mt-24 py-10 first:pt-0">
-                <h2 className="text-[26px] font-semibold tracking-[-0.02em]">{g.title}</h2>
+                <h2 className="font-display text-[26px] font-light tracking-[-0.02em]">{g.title}</h2>
                 <ol className="mt-5 grid gap-4">
                   {g.body.map((p, i) => (
                     <li key={i} className="flex gap-4">

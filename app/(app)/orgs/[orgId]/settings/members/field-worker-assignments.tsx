@@ -280,7 +280,7 @@ export function FieldWorkerAssignments({
         </form>
 
         <div className="rounded-lg border border-[#E3E8EE] flex flex-col min-w-0">
-          <div className="border-b border-slate-100 px-4 py-3">
+          <div className="border-b border-[#E3E8EE] px-4 py-3">
             <p className="text-sm font-semibold text-[#131d29]">Current site access</p>
           </div>
           {assignments.length === 0 ? (
@@ -315,7 +315,7 @@ export function FieldWorkerAssignments({
                   <p className="text-sm text-[#5B6A78]">No assignments for this site.</p>
                   <button
                     onClick={() => { setSiteFilter("all"); setAssignPage(0); }}
-                    className="text-xs text-[#0F766E] hover:underline"
+                    className="text-xs text-[#c2400c] hover:underline"
                   >
                     Show all
                   </button>
@@ -331,7 +331,7 @@ export function FieldWorkerAssignments({
                           className="rounded-xl border border-[#E3E8EE] border-l-4 border-l-orange-400 bg-white p-4 flex flex-col gap-3 min-w-0 transition-opacity"
                         >
                           <div className="flex items-start gap-3 min-w-0">
-                            <div className="h-9 w-9 rounded-full bg-[#CCFBF1] flex items-center justify-center text-[#0F766E] text-sm font-semibold shrink-0 select-none">
+                            <div className="h-9 w-9 rounded-full bg-[#F9FAFC] flex items-center justify-center text-[#c2400c] text-sm font-semibold shrink-0 select-none">
                               {initial}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -353,7 +353,7 @@ export function FieldWorkerAssignments({
                               </p>
                             </div>
                           </div>
-                          <div className="pt-2 border-t border-slate-100 flex justify-end">
+                          <div className="pt-2 border-t border-[#E3E8EE] flex justify-end">
                             <Button
                               type="button"
                               size="icon"

@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button";
 import { WORKFLOWS, isLockedStatus, type StructuredFormKey } from "@/lib/structured-forms/workflows";
 
 const TONE_CLASSES = {
-  neutral: "bg-gray-100 text-[#41505F]",
-  active: "bg-blue-100 text-blue-800",
+  neutral: "bg-[#F9FAFC] text-[#41505F]",
+  active: "bg-[#FFF2EC] text-[#c2400c]",
   warning: "bg-amber-100 text-amber-800",
   done: "bg-green-100 text-green-800",
   stopped: "bg-red-100 text-red-800",
@@ -29,7 +29,7 @@ export function LockNotice({ form, status }: { form: StructuredFormKey; status: 
   const workflow = WORKFLOWS[form];
   const canRevise = workflow.revise?.from.includes(status);
   return (
-    <div className="flex gap-2 rounded border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+    <div className="flex gap-2 rounded border border-[#E3E8EE] bg-[#F9FAFC] px-4 py-3 text-sm text-[#131d29]">
       <Lock className="mt-0.5 h-4 w-4 flex-shrink-0" aria-hidden="true" />
       <span>
         This {workflow.noun} is {workflow.statuses[status]?.label.toLowerCase() ?? status} and read-only.

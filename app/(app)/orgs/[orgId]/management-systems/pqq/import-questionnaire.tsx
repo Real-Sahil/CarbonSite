@@ -93,7 +93,7 @@ export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: 
               </li>
             ))}
           </ol>
-          <Button size="sm" onClick={save} disabled={isPending || !meta.name.trim()} className="self-start bg-[#c2410c] text-white hover:bg-[#9a3412]">
+          <Button size="sm" onClick={save} disabled={isPending || !meta.name.trim()} className="self-start">
             {isPending ? "Saving…" : `Save ${questions.length} questions`}
           </Button>
         </div>

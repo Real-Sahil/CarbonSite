@@ -207,7 +207,7 @@ export function AssuranceClient({ orgId, snapshotId, snapshot, existingAssurance
                 )}
 
                 {canRetract && (
-                  <div className="pt-2 border-t border-[#f3f4f6]">
+                  <div className="pt-2 border-t border-[#E3E8EE]">
                     <Button
                       variant="outline"
                       size="sm"

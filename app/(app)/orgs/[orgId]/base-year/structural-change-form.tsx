@@ -117,7 +117,7 @@ export function RecordStructuralChangeForm({
             id="sc-type"
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             {CHANGE_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -147,7 +147,7 @@ export function RecordStructuralChangeForm({
             id="sc-entity"
             value={legalEntityId}
             onChange={(e) => setLegalEntityId(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="">Group wide</option>
             {entities.map((e) => (

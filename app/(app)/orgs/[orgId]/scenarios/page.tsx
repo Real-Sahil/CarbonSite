@@ -172,7 +172,7 @@ function AdjustmentRow({
         <select
           value={adj.scope}
           onChange={(e) => onChange(index, "scope", e.target.value)}
-          className="rounded-md border border-[#E3E8EE] bg-white px-2 py-1 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+          className="rounded-md border border-[#E3E8EE] bg-white px-2 py-1 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
         >
           <option value="">All scopes</option>
           <option value="1">Scope 1</option>
@@ -204,7 +204,7 @@ function AdjustmentRow({
           step={1}
           value={adj.reductionPercent}
           onChange={(e) => onChange(index, "reductionPercent", Number(e.target.value))}
-          className="w-full accent-zinc-900"
+          className="w-full accent-[#c2400c]"
         />
       </div>
 
@@ -301,7 +301,7 @@ function MaccCard({ orgId }: { orgId: string }) {
     return (
       <Card>
         <CardContent className="py-10 text-center">
-          <PoundSterling className="mx-auto h-6 w-6 text-zinc-300 mb-2" />
+          <PoundSterling className="mx-auto h-6 w-6 text-[#5B6A78] mb-2" />
           <p className="text-sm text-[#5B6A78]">
             No reduction initiatives have a cost and expected CO2e impact recorded yet.
           </p>
@@ -347,7 +347,7 @@ function MaccCard({ orgId }: { orgId: string }) {
                   {point.name}
                 </div>
                 <div className="flex-1 flex items-center h-6 relative">
-                  <div className="absolute left-1/2 top-0 bottom-0 w-px bg-zinc-200" />
+                  <div className="absolute left-1/2 top-0 bottom-0 w-px bg-[#E3E8EE]" />
                   <div
                     className={`h-5 rounded-sm ${isNegative ? "bg-green-500" : "bg-amber-500"}`}
                     style={{
@@ -530,11 +530,11 @@ export default function ScenariosPage() {
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#F9FAFC]">
           <FlaskConical className="h-5 w-5 text-[#41505F]" />
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-[#131d29]">What-If Scenarios</h1>
+          <h1 className="text-xl text-[#131d29]">What-If Scenarios</h1>
           <p className="text-sm text-[#5B6A78]">
             Model hypothetical emission reductions against a completed calculation run.
           </p>
@@ -567,7 +567,7 @@ export default function ScenariosPage() {
               <select
                 value={selectedRunId}
                 onChange={(e) => setSelectedRunId(e.target.value)}
-                className="w-full rounded-md border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                className="w-full rounded-md border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
               >
                 {calcRuns.map((r) => (
                   <option key={r.id} value={r.id}>

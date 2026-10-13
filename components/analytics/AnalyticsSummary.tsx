@@ -84,7 +84,7 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
           className="bg-white rounded-lg border border-[#E3E8EE] p-6 shadow-sm hover:shadow-md transition-shadow"
         >
           <p className="text-sm font-medium text-[#41505F]">{metric.label}</p>
-          <p className="text-3xl font-bold text-[#131d29] mt-2">{metric.value}</p>
+          <p className="text-3xl font-semibold tabular-nums text-[#131d29] mt-2">{metric.value}</p>
           {metric.change !== undefined && (
             <div className="flex items-center gap-2 mt-3">
               {metric.trend === "up" ? (

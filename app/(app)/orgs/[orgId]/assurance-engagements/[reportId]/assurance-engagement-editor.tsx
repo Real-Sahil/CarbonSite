@@ -127,7 +127,7 @@ export function AssuranceEngagementEditor({
       <div className="sticky top-0 z-10 bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-semibold">{title || "Untitled"}</h1>
+            <h1 className="text-xl">{title || "Untitled"}</h1>
             <p className="text-sm text-[#41505F]">v{initialEngagement.version}</p>
           </div>
           <div className="flex gap-2">

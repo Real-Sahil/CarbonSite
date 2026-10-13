@@ -74,7 +74,7 @@ export default function FieldAppPage() {
           <div className="overflow-x-auto rounded-[12px] border border-mk-line bg-mk-surface">
             <table className="w-full min-w-[480px] text-left text-[15px]">
               <thead>
-                <tr className="border-b border-mk-line font-mono text-[12px] uppercase tracking-[0.1em] text-mk-text-3">
+                <tr className="border-b border-mk-line font-sans text-[12px] uppercase tracking-[0.1em] text-mk-text-3">
                   <th className="px-5 py-3 font-medium">Document</th>
                   <th className="px-5 py-3 font-medium">Fields</th>
                 </tr>

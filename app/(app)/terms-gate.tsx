@@ -6,7 +6,7 @@ export function TermsGate() {
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-12">
       <div>
-        <h1 className="text-xl font-semibold text-[#131d29]">Accept the Terms of Service</h1>
+        <h1 className="text-xl text-[#131d29]">Accept the Terms of Service</h1>
         <p className="mt-2 text-sm text-[#41505F]">
           Before you use MetricOra, please read and accept the Terms of Service (version {TERMS_VERSION}) and the Privacy Policy.
           Your organisation&apos;s administrator may have added you without you signing up, so this step is needed once.

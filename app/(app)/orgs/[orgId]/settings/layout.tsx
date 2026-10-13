@@ -28,7 +28,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   const activeSegment = TABS.find((t) => pathname.includes(`/settings/${t.segment}`))?.segment ?? TABS[0].segment;
 
   return (
-    <div className="min-h-[100dvh] bg-[#F8F9FA]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
       <div className="border-b border-[#E3E8EE] bg-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8 pb-0">
@@ -44,7 +44,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
             <select
               value={activeSegment}
               onChange={(e) => router.push(`/orgs/${orgId}/settings/${e.target.value}`)}
-              className="w-full rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2410c]/40"
+              className="w-full rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
               aria-label="Settings section"
             >
               {TABS.map((tab) => (
@@ -67,7 +67,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
                   className={cn(
                     "px-4 py-2 text-sm font-normal tracking-[-0.42px] border-b-2 -mb-px transition-colors whitespace-nowrap",
                     isActive
-                      ? "border-[#c2410c] text-[#c2410c]"
+                      ? "border-[#c2400c] text-[#c2400c]"
                       : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
                   )}
                 >

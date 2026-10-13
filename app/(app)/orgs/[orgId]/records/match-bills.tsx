@@ -4,6 +4,7 @@ import { Table } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileStack, Loader2, Mail } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { SubmissionLinks } from "./submission-links";
 
 type Match = {
@@ -203,7 +204,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
 
       <SubmissionLinks orgId={orgId} />
 
-      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#D1D5DB] px-4 py-4 hover:bg-[#F9FAFC]">
+      <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-[#E3E8EE] px-4 py-4 hover:bg-[#F9FAFC]">
         {busy ? <Loader2 className="h-5 w-5 animate-spin text-[#5B6A78]" /> : <FileStack className="h-5 w-5 text-[#5B6A78]" />}
         <span className="text-sm text-[#41505F]">
           {busy ? "Reading and matching. Photos can take up to a minute each." : `Choose up to ${MAX_FILES} bills or receipts (PDF or photo)`}
@@ -235,7 +236,7 @@ export function MatchBills({ orgId }: { orgId: string }) {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.key} className="border-b border-[#F3F4F6] align-top">
+                <tr key={row.key} className="border-b border-[#E3E8EE] align-top">
                   <td className="py-2.5 pr-3 max-w-[180px]">
                     <span className="block truncate" title={row.filename}>{row.filename}</span>
                     {row.from && <span className="block truncate text-xs text-[#5B6A78]" title={row.from}>Emailed by {row.from}</span>}
@@ -309,9 +310,9 @@ export function MatchBills({ orgId }: { orgId: string }) {
 
       {ready > 1 && (
         <div>
-          <button type="button" disabled={busy} onClick={attachAllChosen} className="inline-flex items-center gap-1.5 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50">
+          <Button type="button" disabled={busy} onClick={attachAllChosen}>
             Attach {ready} selected
-          </button>
+          </Button>
         </div>
       )}
     </div>

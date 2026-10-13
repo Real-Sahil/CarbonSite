@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { loadWasteRegister } from "@/lib/waste/register";
@@ -53,7 +54,7 @@ export default async function WasteRegisterPage({
       </Link>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Duty of care register</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Duty of care register</h1>
           <p className="mt-1 max-w-[65ch] text-sm text-[#5B6A78]">
             Every waste transfer with its EWC code, carrier registration and transfer note, checked against the duty of
             care. Keep transfer notes for two years and hazardous consignment notes for three.
@@ -99,7 +100,7 @@ export default async function WasteRegisterPage({
         <label className="flex h-9 items-center gap-2 text-sm text-[#41505F]">
           <input type="checkbox" name="gaps" value="1" defaultChecked={sp.gaps === "1"} /> Only transfers with gaps
         </label>
-        <button type="submit" className="h-9 rounded-md bg-gray-900 px-3 text-sm font-medium text-white hover:bg-gray-800">Apply</button>
+        <Button type="submit" className="px-3">Apply</Button>
       </form>
 
       {sites.length > 1 && (
@@ -115,7 +116,7 @@ export default async function WasteRegisterPage({
             </thead>
             <tbody className="tabular-nums">
               {sites.map((s) => (
-                <tr key={s.name} className="border-t border-gray-100">
+                <tr key={s.name} className="border-t border-[#E3E8EE]">
                   <td className="px-4 py-2 text-[#131d29]">{s.name}</td>
                   <td className="px-4 py-2 text-right text-[#41505F]">{tonnes.format(s.tonnes)}</td>
                   <td className="px-4 py-2 text-right text-[#41505F]">{pct(s.diversionRate)}</td>
@@ -148,7 +149,7 @@ export default async function WasteRegisterPage({
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-t border-gray-100 align-top">
+                <tr key={r.id} className="border-t border-[#E3E8EE] align-top">
                   <td className="px-4 py-3 whitespace-nowrap tabular-nums text-[#41505F]">{date(r.recordedAt)}</td>
                   <td className="px-4 py-3 text-[#131d29]">{r.facility}</td>
                   <td className="px-4 py-3 text-[#41505F]">

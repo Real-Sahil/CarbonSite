@@ -125,10 +125,10 @@ export default function SupplierDataSubmissionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9FAFC] to-[#F9FAFC]">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-600" />
-          <p className="text-slate-600">Loading data request...</p>
+          <Loader2 className="h-8 w-8 animate-spin text-[#41505F]" />
+          <p className="text-[#41505F]">Loading data request...</p>
         </div>
       </div>
     );
@@ -136,7 +136,7 @@ export default function SupplierDataSubmissionPage() {
 
   if (error || !dataRequest) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9FAFC] to-[#F9FAFC] p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -145,8 +145,8 @@ export default function SupplierDataSubmissionPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600">{error || "Data request not found"}</p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#41505F]">{error || "Data request not found"}</p>
+            <p className="text-sm text-[#5B6A78]">
               The link may have expired or been revoked. Please contact{" "}
               <span className="font-medium">the requesting organization</span> for a new link.
             </p>
@@ -161,7 +161,7 @@ export default function SupplierDataSubmissionPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9FAFC] to-[#F9FAFC] p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-600">
@@ -170,19 +170,19 @@ export default function SupplierDataSubmissionPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#41505F]">
               Thank you for submitting your emissions data to{" "}
               <span className="font-medium">{dataRequest.organizationName}</span>.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[#5B6A78]">
               Your submission is now under review. You'll be notified once the review is complete.
             </p>
-            <div className="p-3 bg-slate-50 rounded text-sm text-gray-600">
+            <div className="p-3 bg-[#F9FAFC] rounded text-sm text-[#41505F]">
               <p>
                 <strong>Submission Details:</strong>
               </p>
               <p className="mt-1">{formData.totalAmount} {formData.unit}</p>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-[#5B6A78] mt-2">
                 Category: {dataRequest.emissionCategory.name}
               </p>
             </div>
@@ -203,7 +203,7 @@ export default function SupplierDataSubmissionPage() {
   const isOverdue = dueDate < new Date();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-[#F9FAFC] to-[#F9FAFC] p-4 py-12">
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
@@ -224,27 +224,27 @@ export default function SupplierDataSubmissionPage() {
               </Alert>
             )}
 
-            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
+            <div className="grid grid-cols-2 gap-4 p-4 bg-[#F9FAFC] rounded-lg">
               <div>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-medium text-[#41505F] uppercase tracking-wide">
                   Organization
                 </p>
                 <p className="mt-1 font-medium">{dataRequest.organizationName}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-medium text-[#41505F] uppercase tracking-wide">
                   Category
                 </p>
                 <p className="mt-1 font-medium">{dataRequest.emissionCategory.name}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-medium text-[#41505F] uppercase tracking-wide">
                   Reporting Year
                 </p>
                 <p className="mt-1 font-medium">{dataRequest.reportingYear}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <p className="text-xs font-medium text-[#41505F] uppercase tracking-wide">
                   Due Date
                 </p>
                 <p className="mt-1 font-medium">{dueDate.toLocaleDateString()}</p>
@@ -253,7 +253,7 @@ export default function SupplierDataSubmissionPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#41505F] mb-2">
                   Emission Amount *
                 </label>
                 <div className="flex gap-2">
@@ -319,8 +319,8 @@ export default function SupplierDataSubmissionPage() {
                 />
               </FormField>
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-900">
+              <div className="p-4 bg-[#F9FAFC] border border-[#E3E8EE] rounded-lg">
+                <p className="text-sm text-[#131d29]">
                   <strong>Next Steps:</strong> After you submit, your data will be reviewed by{" "}
                   {dataRequest.organizationName}. You'll receive a notification when the review is
                   complete.
@@ -346,7 +346,7 @@ export default function SupplierDataSubmissionPage() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-gray-500 text-center mt-4">
+        <p className="text-xs text-[#5B6A78] text-center mt-4">
           Your data submission will be securely transmitted and reviewed by authorized staff only.
         </p>
       </div>

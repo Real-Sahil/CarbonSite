@@ -119,7 +119,7 @@ export function SupplierPerformanceClient() {
       case 'declining':
         return <TrendingDown className="w-4 h-4 text-red-600" />;
       case 'stable':
-        return <Activity className="w-4 h-4 text-blue-600" />;
+        return <Activity className="w-4 h-4 text-[#c2400c]" />;
       default:
         return null;
     }
@@ -163,7 +163,7 @@ export function SupplierPerformanceClient() {
               <CardTitle className="text-sm font-medium">Avg Data Quality</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.avgQualityScore}%</div>
+              <div className="text-2xl font-semibold tabular-nums">{stats.avgQualityScore}%</div>
               <p className="text-xs text-muted-foreground">Across all suppliers</p>
             </CardContent>
           </Card>
@@ -172,7 +172,7 @@ export function SupplierPerformanceClient() {
               <CardTitle className="text-sm font-medium">Avg Completeness</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.avgCompletenessScore}%</div>
+              <div className="text-2xl font-semibold tabular-nums">{stats.avgCompletenessScore}%</div>
               <p className="text-xs text-muted-foreground">Field fill rate</p>
             </CardContent>
           </Card>
@@ -181,7 +181,7 @@ export function SupplierPerformanceClient() {
               <CardTitle className="text-sm font-medium text-green-700">Improving</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-700">{stats.improvingSuppliers}</div>
+              <div className="text-2xl font-semibold tabular-nums text-green-700">{stats.improvingSuppliers}</div>
               <p className="text-xs text-muted-foreground">Upward trend</p>
             </CardContent>
           </Card>
@@ -190,7 +190,7 @@ export function SupplierPerformanceClient() {
               <CardTitle className="text-sm font-medium text-red-700">Declining</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-700">{stats.decliningSuppliers}</div>
+              <div className="text-2xl font-semibold tabular-nums text-red-700">{stats.decliningSuppliers}</div>
               <p className="text-xs text-muted-foreground">Downward trend</p>
             </CardContent>
           </Card>
@@ -353,7 +353,7 @@ export function SupplierPerformanceClient() {
         </div>
       )}
 
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
         <CardHeader>
           <CardTitle className="text-base">About Supplier Performance</CardTitle>
         </CardHeader>

@@ -22,12 +22,12 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">Carrier scorecard</h1>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Carrier scorecard</h1>
         <p className="mt-1 text-sm text-[#5B6A78]">
           What each carrier&apos;s loads and transfer notes show. Flags say what to look at; nothing here is a verdict on a carrier.
           Edit counts start once a carrier has {MIN_MEASURED} approved notes.
         </p>
-        <Link href={`/orgs/${orgId}/waste/documents`} className="mt-2 inline-block text-sm font-medium text-teal-700 hover:text-teal-800">Back to waste documents</Link>
+        <Link href={`/orgs/${orgId}/waste/documents`} className="mt-2 inline-block text-sm font-medium text-[#c2400c] hover:text-[#a33409]">Back to waste documents</Link>
       </header>
 
       {rows.length === 0 ? (
@@ -35,14 +35,14 @@ export default async function CarrierScorecardPage({ params }: { params: Promise
       ) : (
         <div className="overflow-x-auto rounded-xl border border-[#E3E8EE] bg-white">
           <Table className="text-sm">
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Carrier", "Loads", "Tonnes", "Median load", "Notes in / recorded", "Edits per note", "Flags"].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {rows.map((r) => (
                 <tr key={r.key}>
                   <td className="px-4 py-3">

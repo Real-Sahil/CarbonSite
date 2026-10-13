@@ -28,7 +28,7 @@ export default async function AppEntryPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-8">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#F0F9FF]">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[14px] bg-[#F9FAFC]">
             <Smartphone aria-hidden="true" className="h-7 w-7 text-[#131d29]" />
           </div>
           <h1

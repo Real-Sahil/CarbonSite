@@ -352,7 +352,7 @@ export function CreateReportForm({
             <button
               type="button"
               onClick={() => setShowAll((v) => !v)}
-              className="text-xs font-medium text-[#c2410c] hover:underline"
+              className="text-xs font-medium text-[#c2400c] hover:underline"
               aria-expanded={showAll}
             >
               {showAll ? "Show recommended only" : `Show all report types (${REPORT_TYPE_OPTIONS.length})`}
@@ -612,7 +612,7 @@ function ValidationResults({
 }
 
 const inputClass =
-  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm placeholder:text-[#9CA3AF] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50";
+  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm placeholder:text-[#5B6A78] hover:border-[#131d29]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40";
 
 const selectClass =
-  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full rounded-[8px] border border-[#E3E8EE] bg-white px-3 text-sm hover:border-[#131d29]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40 disabled:cursor-not-allowed disabled:opacity-50";

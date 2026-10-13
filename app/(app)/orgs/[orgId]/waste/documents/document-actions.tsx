@@ -34,7 +34,7 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
     <form onSubmit={submit} className="w-full max-w-xl rounded-xl border border-[#E3E8EE] bg-white p-5">
       <FormSection title="Add a document" cols={2}>
         <FormField label="Kind" htmlFor="wd-kind">
-          <select id="wd-kind" name="kind" required defaultValue="" className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
+          <select id="wd-kind" name="kind" required defaultValue="" className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
             <option value="" disabled>Choose</option>
             {DOC_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
           </select>
@@ -44,7 +44,7 @@ export function AddDocument({ orgId, projects, defaultProjectId }: { orgId: stri
         <FormField label="Carrier or site it covers" htmlFor="wd-issuer" optional><Input id="wd-issuer" name="issuer" maxLength={160} /><CompanyFinder base={`/api/orgs/${orgId}/companies`} getName={() => (document.getElementById("wd-issuer") as HTMLInputElement | null)?.value ?? ""} label="Find company" onPick={(p) => { const el = document.getElementById("wd-issuer") as HTMLInputElement | null; if (el) el.value = p.company.name; }} /></FormField>
         <FormField label="Valid until" htmlFor="wd-valid" optional hint="For licences, permits and exemptions."><Input id="wd-valid" name="validUntil" type="date" /></FormField>
         <FormField label="Project" htmlFor="wd-project" optional>
-          <select id="wd-project" name="projectId" defaultValue={defaultProjectId ?? ""} className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm">
+          <select id="wd-project" name="projectId" defaultValue={defaultProjectId ?? ""} className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
             <option value="">Not tied to a project</option>
             {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
@@ -80,7 +80,7 @@ type PermitCheck =
   | { status: "effective" | "not_effective"; reference: string; holder: string | null; site: string | null; siteType: string | null; registerStatus: string | null; codes: string[]; expiryDate: string | null; checkedAt: string };
 const EA = "Contains Environment Agency information © Environment Agency and/or database right. England only; not an Agency endorsement.";
 const HAND_CHECK = <>Check it by hand on the regulator&apos;s own register: {OTHER_REGISTERS.map(([name, href], i) => (
-  <span key={name}>{i > 0 && ", "}<a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">{name}</a></span>
+  <span key={name}>{i > 0 && ", "}<a href={href} target="_blank" rel="noopener noreferrer" className="font-medium text-[#c2400c] underline underline-offset-2">{name}</a></span>
 ))}.</>;
 
 function CarrierResult({ check }: { check: RegisterCheck }) {
@@ -89,7 +89,7 @@ function CarrierResult({ check }: { check: RegisterCheck }) {
   if (check.status === "not_found") {
     return (
       <RegisterResultCard tone="warn" title="Not on the England register" subtitle={check.registration} attribution={EA}>
-        <p>Check the number, or the carrier may have lapsed. Welsh registrations use the same CBDU and CBDL numbers, so also check <a href={OTHER_REGISTERS[1][1]} target="_blank" rel="noopener noreferrer" className="font-medium text-teal-700 underline underline-offset-2">Natural Resources Wales</a>.</p>
+        <p>Check the number, or the carrier may have lapsed. Welsh registrations use the same CBDU and CBDL numbers, so also check <a href={OTHER_REGISTERS[1][1]} target="_blank" rel="noopener noreferrer" className="font-medium text-[#c2400c] underline underline-offset-2">Natural Resources Wales</a>.</p>
       </RegisterResultCard>
     );
   }
@@ -197,7 +197,7 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
       {kind === "transfer_note" && recorded && <span className="text-green-700">Recorded as waste</span>}
       {status === "pending" && (
         <>
-          <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => void call("PATCH", { status: "accepted" })}>Accept</button>
+          <button type="button" className="font-medium text-[#c2400c] underline underline-offset-2" onClick={() => void call("PATCH", { status: "accepted" })}>Accept</button>
           <button type="button" className="text-[#41505F] underline underline-offset-2" onClick={() => void call("PATCH", { status: "rejected" })}>Reject</button>
         </>
       )}
@@ -209,7 +209,7 @@ export function DocumentActions({ orgId, id, kind, status, extracted, recorded, 
           <>
             <p className="font-medium">Found in the file</p>
             <p>{LABELS.filter(([k]) => found[k] !== undefined).map(([k, l]) => `${l}: ${found[k]}`).join(" · ")}</p>
-            <button type="button" className="mt-1 font-medium text-teal-700 underline underline-offset-2" onClick={() => void apply()}>Fill empty fields</button>
+            <button type="button" className="mt-1 font-medium text-[#c2400c] underline underline-offset-2" onClick={() => void apply()}>Fill empty fields</button>
           </>
         )}
       </div>

@@ -61,7 +61,7 @@ export function RegisterWorkspace({
   return (
     <div className="flex flex-col gap-4">
       {canEdit && !adding && (
-        <Button size="sm" onClick={() => setAdding(true)} className="self-start bg-[#c2410c] text-white hover:bg-[#9a3412]">Add {config.singular}</Button>
+        <Button size="sm" onClick={() => setAdding(true)} className="self-start">Add {config.singular}</Button>
       )}
       {adding && (
         <section className="rounded-[14px] border border-[#E3E8EE] bg-white p-5">

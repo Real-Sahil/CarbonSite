@@ -68,7 +68,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
               key={w}
               href={`/orgs/${orgId}/plant?days=${w}`}
               aria-current={w === days ? "page" : undefined}
-              className={`rounded px-3 py-1 ${w === days ? "bg-[#131d29] text-white" : "text-[#41505F] hover:bg-[#F3F4F6]"}`}
+              className={`rounded px-3 py-1 ${w === days ? "bg-[#131d29] text-white" : "text-[#41505F] hover:bg-[#F9FAFC]"}`}
             >
               {w === 365 ? "12 months" : `${w} days`}
             </Link>
@@ -130,7 +130,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
                 </thead>
                 <tbody className="tabular-nums">
                   {assets.map((a) => (
-                    <tr key={a.asset.id} className="border-b border-[#F3F4F6]">
+                    <tr key={a.asset.id} className="border-b border-[#E3E8EE]">
                       <td className="py-2.5 pr-3">
                         <p className="font-medium text-[#131d29]">{a.asset.name}</p>
                         <p className="text-xs text-[#5B6A78]">
@@ -175,7 +175,7 @@ export default async function PlantPage({ params, searchParams }: Props) {
               </thead>
               <tbody>
                 {reconciliation.map((r) => (
-                  <tr key={r.siteId} className="border-b border-[#F3F4F6]">
+                  <tr key={r.siteId} className="border-b border-[#E3E8EE]">
                     <td className="py-2.5 pr-3 text-[#131d29]">{r.siteName}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.telematicsLitres)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.recordedLitres)}</td>
@@ -212,8 +212,8 @@ export default async function PlantPage({ params, searchParams }: Props) {
                 <p className="font-medium text-[#131d29]">Automatic feed</p>
                 <p className="mt-1">
                   POST an ISO 15143-3 (AEMP 2.0) fleet snapshot to{" "}
-                  <code className="rounded bg-[#F3F4F6] px-1">/api/orgs/{orgId}/integrations/plant/ingest</code> with an API key
-                  (Settings → API keys) as <code className="rounded bg-[#F3F4F6] px-1">{`{"format":"iso15143","snapshot":{...}}`}</code>.
+                  <code className="rounded bg-[#F9FAFC] px-1">/api/orgs/{orgId}/integrations/plant/ingest</code> with an API key
+                  (Settings → API keys) as <code className="rounded bg-[#F9FAFC] px-1">{`{"format":"iso15143","snapshot":{...}}`}</code>.
                   Cumulative hours and fuel are differenced between snapshots; resending a snapshot changes nothing.
                 </p>
               </div>

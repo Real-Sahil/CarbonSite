@@ -154,7 +154,7 @@ export default async function AssessmentDetailPage({ params }: PageProps) {
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold text-[#131d29]">{assessment.name}</h1>
+          <h1 className="text-xl text-[#131d29]">{assessment.name}</h1>
           <p className="mt-0.5 text-sm text-[#5B6A78]">
             {[
               assessment.project?.name,
@@ -453,7 +453,7 @@ function LicenceBadge({ status, expiresOn }: { status: string; expiresOn: Date |
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view this assessment.
       </p>

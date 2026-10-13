@@ -48,7 +48,7 @@ export function AcceptAsRecord({ orgId, docId, prefill, facilities, periods }: {
     setError(d?.message ?? "Could not record the load.");
   }
 
-  if (!open) return <button type="button" className="font-medium text-teal-700 underline underline-offset-2" onClick={() => setOpen(true)}>Record this load</button>;
+  if (!open) return <button type="button" className="font-medium text-[#c2400c] underline underline-offset-2" onClick={() => setOpen(true)}>Record this load</button>;
   return (
     <form ref={formRef} onSubmit={(e) => { e.preventDefault(); void submit(); }} className="mt-2 w-[min(640px,90vw)] rounded-lg border border-[#E3E8EE] bg-white p-3 text-left">
       <FormSection title="Record this load as waste" cols={2}>
@@ -70,7 +70,7 @@ export function AcceptAsRecord({ orgId, docId, prefill, facilities, periods }: {
         <FormField label="Carrier registration" htmlFor={`ar-reg-${docId}`} optional><Input id={`ar-reg-${docId}`} name="carrierRegistration" maxLength={40} defaultValue={prefill.carrierRegistration ?? ""} /></FormField>
         <FormField label="Destination" htmlFor={`ar-dest-${docId}`} optional><Input id={`ar-dest-${docId}`} name="destination" maxLength={200} defaultValue={prefill.defaults?.destination ?? ""} /></FormField>
         <FormField label="Vehicle" htmlFor={`ar-veh-${docId}`} optional><Input id={`ar-veh-${docId}`} name="vehicleRegistration" maxLength={20} defaultValue={prefill.vehicle ?? ""} /></FormField>
-        <label className="flex items-center gap-2 text-sm text-[#41505F] sm:col-span-2"><input type="checkbox" name="hazardous" defaultChecked={prefill.defaults?.hazardous} className="h-4 w-4 rounded border-gray-300" /> Hazardous waste</label>
+        <label className="flex items-center gap-2 text-sm text-[#41505F] sm:col-span-2"><input type="checkbox" name="hazardous" defaultChecked={prefill.defaults?.hazardous} className="h-4 w-4 rounded border-[#E3E8EE]" /> Hazardous waste</label>
       </FormSection>
       <div className="mt-3 space-y-2">
         <FormError>{error}</FormError>

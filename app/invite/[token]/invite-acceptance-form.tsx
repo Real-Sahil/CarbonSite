@@ -122,7 +122,7 @@ export function InviteAcceptanceForm({
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Smartphone className="h-4 w-4 text-[#0F766E]" />
+              <Smartphone className="h-4 w-4 text-[#c2400c]" />
               Open in the mobile app
             </CardTitle>
             <Badge variant="outline">field worker</Badge>
@@ -153,11 +153,11 @@ export function InviteAcceptanceForm({
               </Button>
             </div>
           </div>
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-[#5B6A78]">
             You&apos;ll sign in using your PIN — no email account needed.
           </p>
-          <p className="flex items-start gap-2 text-xs text-slate-500">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E]" />
+          <p className="flex items-start gap-2 text-xs text-[#5B6A78]">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#c2400c]" />
             Open MetricOra mobile, paste the invite link or token, enter the
             worker name, then set the device PIN.
           </p>
@@ -196,7 +196,7 @@ export function InviteAcceptanceForm({
             />
           </div>
           {isFieldWorker ? (
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-[#5B6A78]">
               You&apos;ll sign in using your PIN — no email account needed.
             </p>
           ) : (
@@ -237,8 +237,8 @@ export function InviteAcceptanceForm({
           <Button type="submit" disabled={loading}>
             {loading ? "Accepting..." : `Join ${orgName}`}
           </Button>
-          <p className="flex items-start gap-2 text-xs text-slate-500">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#0F766E]" />
+          <p className="flex items-start gap-2 text-xs text-[#5B6A78]">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#c2400c]" />
             Team invites use your MetricOra account before joining the organisation.
           </p>
         </form>

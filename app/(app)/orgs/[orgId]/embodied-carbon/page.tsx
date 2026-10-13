@@ -147,7 +147,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                   return (
                     <div key={category} className="flex items-center gap-3">
                       <div className="w-28 shrink-0 text-xs text-[#41505F] capitalize font-medium">{category}</div>
-                      <div className="flex-1 bg-[#f3f4f6] rounded-full h-2">
+                      <div className="flex-1 bg-[#F9FAFC] rounded-full h-2">
                         <div
                           className="bg-[#228B22] h-2 rounded-full transition-all"
                           style={{ width: `${pct.toFixed(1)}%` }}
@@ -228,7 +228,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                   </TableHeader>
                   <TableBody>
                     {records.map((record) => (
-                      <TableRow key={record.id} className="border-b border-[#f3f4f6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={record.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="py-3.5 pl-6">
                           <span className="text-sm font-medium text-[#131d29]">
                             {record.material?.name ?? record.epd?.productName ?? record.description ?? "Custom"}
@@ -238,7 +238,7 @@ export default async function EmbodiedCarbonPage({ params }: PageProps) {
                           )}
                         </TableCell>
                         <TableCell className="py-3.5">
-                          <span className="text-xs capitalize text-[#41505F] bg-zinc-100 px-2 py-0.5 rounded-full">
+                          <span className="text-xs capitalize text-[#41505F] bg-[#F9FAFC] px-2 py-0.5 rounded-full">
                             {record.material?.category ?? "custom"}
                           </span>
                         </TableCell>

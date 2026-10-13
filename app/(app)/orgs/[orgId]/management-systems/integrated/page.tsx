@@ -10,10 +10,10 @@ import { integratedView } from "@/lib/management-systems/integrated";
 import type { RequirementState } from "@/lib/management-systems/readiness";
 
 const STYLE: Record<RequirementState, string> = {
-  not_started: "bg-[#F3F4F6] text-[#41505F]",
+  not_started: "bg-[#F9FAFC] text-[#41505F]",
   in_progress: "bg-amber-50 text-amber-800",
   implemented: "bg-emerald-50 text-emerald-800",
-  not_applicable: "bg-slate-100 text-[#5B6A78]",
+  not_applicable: "bg-[#F9FAFC] text-[#5B6A78]",
 };
 const LABEL: Record<RequirementState, string> = { not_started: "Not started", in_progress: "In progress", implemented: "Implemented", not_applicable: "Not applicable" };
 
@@ -78,7 +78,7 @@ export default async function IntegratedPage({ params }: { params: Promise<{ org
                             <span className="text-xs tabular-nums text-[#5B6A78]">{c.evidence} evidence</span>
                           </Link>
                         ) : (
-                          <span className="text-[#D1D5DB]">-</span>
+                          <span className="text-[#5B6A78]">-</span>
                         )}
                       </td>
                     );

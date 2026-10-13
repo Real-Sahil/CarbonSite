@@ -118,7 +118,7 @@ export default function AbuDhabiMrvPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <Link href={`/orgs/${orgId}/compliance/deadlines`} className="text-sm text-blue-600 hover:underline">Regulatory calendar</Link>
+        <Link href={`/orgs/${orgId}/compliance/deadlines`} className="text-sm text-[#c2400c] hover:underline">Regulatory calendar</Link>
         <h1 className="mt-2 text-3xl text-[#131d29]">Abu Dhabi MRV: facility Scope 1 data</h1>
         <p className="mt-2 max-w-3xl text-[#41505F]">
           Facility-level Scope 1 emissions for a calendar year, taken from your latest published snapshot that covers the whole year, in the order of the Environment Agency&apos;s identifier and source stream sections.

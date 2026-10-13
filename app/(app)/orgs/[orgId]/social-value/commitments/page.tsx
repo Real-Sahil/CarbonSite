@@ -215,7 +215,7 @@ export default async function CommitmentsPage({ params }: Props) {
                     {commitmentsWithProgress.map((c) => (
                       <TableRow
                         key={c.id}
-                        className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors"
+                        className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors"
                       >
                         <TableCell className="py-3.5 pl-6 max-w-[260px]">
                           <Link
@@ -258,7 +258,7 @@ export default async function CommitmentsPage({ params }: Props) {
                               <div className="flex items-center gap-2">
                                 <div className="w-16 h-1.5 rounded-full bg-[#E3E8EE] overflow-hidden">
                                   <div
-                                    className="h-full rounded-full bg-[#c2410c]"
+                                    className="h-full rounded-full bg-[#c2400c]"
                                     style={{ width: `${c.progressPct}%` }}
                                   />
                                 </div>
@@ -302,7 +302,7 @@ function EmptyState({ orgId, canEdit }: { orgId: string; canEdit: boolean }) {
       }
     >
       {canEdit && (
-        <Link href={`/orgs/${orgId}/social-value/frameworks`} className="text-sm text-[#c2410c] underline underline-offset-4">
+        <Link href={`/orgs/${orgId}/social-value/frameworks`} className="text-sm text-[#c2400c] underline underline-offset-4">
           Set up a framework first
         </Link>
       )}

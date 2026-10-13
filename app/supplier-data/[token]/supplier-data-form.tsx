@@ -153,7 +153,7 @@ export function SupplierDataForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-[#5B6A78]">
             If you need to update your submission, please contact {orgName} directly.
           </p>
         </CardContent>
@@ -186,24 +186,24 @@ export function SupplierDataForm({
   return (
     <div className="flex flex-col gap-4">
       {/* Context card */}
-      <Card className="border-sky-100 bg-sky-50">
+      <Card className="border-[#E3E8EE] bg-[#F9FAFC]">
         <CardContent className="pt-5">
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div>
-              <dt className="text-slate-500">Category</dt>
-              <dd className="font-medium text-slate-900 capitalize">{categoryName}</dd>
+              <dt className="text-[#5B6A78]">Category</dt>
+              <dd className="font-medium text-[#131d29] capitalize">{categoryName}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Reporting period</dt>
-              <dd className="font-medium text-slate-900">{periodLabel}</dd>
+              <dt className="text-[#5B6A78]">Reporting period</dt>
+              <dd className="font-medium text-[#131d29]">{periodLabel}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Requested by</dt>
-              <dd className="font-medium text-slate-900">{orgName}</dd>
+              <dt className="text-[#5B6A78]">Requested by</dt>
+              <dd className="font-medium text-[#131d29]">{orgName}</dd>
             </div>
             <div>
-              <dt className="text-slate-500">Deadline</dt>
-              <dd className="font-medium text-slate-900">
+              <dt className="text-[#5B6A78]">Deadline</dt>
+              <dd className="font-medium text-[#131d29]">
                 {expires.toLocaleDateString("en-GB", {
                   day: "numeric",
                   month: "short",
@@ -213,7 +213,7 @@ export function SupplierDataForm({
             </div>
           </dl>
           {notes && (
-            <p className="mt-3 border-t border-sky-100 pt-3 text-sm text-slate-600">
+            <p className="mt-3 border-t border-[#E3E8EE] pt-3 text-sm text-[#41505F]">
               <span className="font-medium">Note from {orgName}:</span> {notes}
             </p>
           )}
@@ -222,11 +222,11 @@ export function SupplierDataForm({
 
       {/* Guidance */}
       {guidance && (
-        <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
+        <div className="flex items-start gap-3 rounded-lg border border-[#E3E8EE] bg-white px-4 py-3">
           <Leaf className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
-          <div className="text-sm text-slate-600">
+          <div className="text-sm text-[#41505F]">
             <p>{guidance.hint}</p>
-            <p className="mt-0.5 text-slate-500">{guidance.example.replaceAll("£", sym)}</p>
+            <p className="mt-0.5 text-[#5B6A78]">{guidance.example.replaceAll("£", sym)}</p>
           </div>
         </div>
       )}
@@ -287,7 +287,7 @@ export function SupplierDataForm({
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="description">
                 Description{" "}
-                <span className="font-normal text-slate-500">(optional)</span>
+                <span className="font-normal text-[#5B6A78]">(optional)</span>
               </Label>
               <Textarea
                 id="description"
@@ -298,7 +298,7 @@ export function SupplierDataForm({
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={loading}
               />
-              <p className="text-right text-xs text-slate-500">
+              <p className="text-right text-xs text-[#5B6A78]">
                 {description.length}/500
               </p>
             </div>
@@ -317,7 +317,7 @@ export function SupplierDataForm({
               {loading ? "Submitting..." : "Submit data"}
             </Button>
 
-            <p className="flex items-start gap-2 text-xs text-slate-500">
+            <p className="flex items-start gap-2 text-xs text-[#5B6A78]">
               <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600" />
               Your data is only used for {orgName}&apos;s GHG inventory and is
               not shared with third parties.

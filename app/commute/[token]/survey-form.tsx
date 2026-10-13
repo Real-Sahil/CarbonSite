@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { MAX_ROUND_TRIP_MILES, SURVEY_MODES, SURVEY_MODE_KEYS, VEHICLE_MODES as VEHICLE, type SurveyMode } from "@/lib/commuting/attendance";
 
 export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: string }) {
@@ -39,16 +40,16 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
   }
 
   if (state === "done") {
-    return <p className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-800">Thank you. Your answer is saved.</p>;
+    return <p className="rounded-lg border border-[#E3E8EE] bg-white p-4 text-sm text-[#131d29]">Thank you. Your answer is saved.</p>;
   }
 
   // Question numbers: the vehicle question only appears for vehicles.
   const asked = mode && VEHICLE.includes(mode) ? 2 : 1;
-  const option = "flex cursor-pointer items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 has-[:checked]:border-slate-900 has-[:checked]:bg-slate-100";
+  const option = "flex cursor-pointer items-center gap-3 rounded-md border border-[#E3E8EE] bg-white px-3 py-2.5 text-sm text-[#131d29] has-[:checked]:border-[#41505F] has-[:checked]:bg-[#F9FAFC]";
   return (
     <form onSubmit={submit} className="flex flex-col gap-6">
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-semibold text-slate-900">1. How do you usually travel to this site?</legend>
+        <legend className="mb-2 text-sm font-semibold text-[#131d29]">1. How do you usually travel to this site?</legend>
         {SURVEY_MODE_KEYS.map((m) => (
           <label key={m} className={option}>
             <input type="radio" name="mode" id={`mode-${m}`} value={m} checked={mode === m} onChange={() => setMode(m)} />
@@ -59,12 +60,12 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
 
       {mode && VEHICLE.includes(mode) && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-semibold text-slate-900">2. How many people are usually in the vehicle, including you?</legend>
+          <legend className="mb-2 text-sm font-semibold text-[#131d29]">2. How many people are usually in the vehicle, including you?</legend>
           <select
             id="occupancy"
             value={occupancy}
             onChange={(e) => setOccupancy(Number(e.target.value))}
-            className="rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm"
+            className="rounded-md border border-[#E3E8EE] bg-white px-3 py-2.5 text-sm"
           >
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <option key={n} value={n}>{n === 1 ? "Just me" : n === 6 ? "6 or more" : n}</option>
@@ -74,10 +75,10 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
       )}
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="round-trip-miles" className="text-sm font-semibold text-slate-900">
+        <label htmlFor="round-trip-miles" className="text-sm font-semibold text-[#131d29]">
           {asked + 1}. How many miles is your journey from home to this site and back?
         </label>
-        <p id="round-trip-help" className="text-xs text-slate-600">
+        <p id="round-trip-help" className="text-xs text-[#41505F]">
           The whole round trip on a usual day. A rough figure is fine: 12 miles each way is 24.
         </p>
         <div className="flex items-center gap-2">
@@ -91,14 +92,14 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
             value={miles}
             onChange={(e) => setMiles(e.target.value)}
             aria-describedby="round-trip-help"
-            className="w-32 rounded-md border border-slate-200 bg-white px-3 py-2.5 text-sm tabular-nums"
+            className="w-32 rounded-md border border-[#E3E8EE] bg-white px-3 py-2.5 text-sm tabular-nums"
           />
-          <span className="text-sm text-slate-700">miles</span>
+          <span className="text-sm text-[#41505F]">miles</span>
         </div>
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-semibold text-slate-900">{asked + 2}. Who employs you?</legend>
+        <legend className="mb-2 text-sm font-semibold text-[#131d29]">{asked + 2}. Who employs you?</legend>
         <label className={option}>
           <input type="radio" name="workforce" id="workforce-own" checked={workforce === "own"} onChange={() => setWorkforce("own")} />
           {orgName}
@@ -110,13 +111,12 @@ export function CommuteSurveyForm({ token, orgName }: { token: string; orgName: 
       </fieldset>
 
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <button
+      <Button
         type="submit"
         disabled={state === "sending"}
-        className="rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
       >
         {state === "sending" ? "Sending" : "Send"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -62,7 +62,7 @@ function StatusBadge({ status }: { status: string }) {
       );
     case "running":
       return (
-        <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100">
+        <Badge className="bg-[#F9FAFC] text-[#131d29] border-[#E3E8EE] hover:bg-[#FFF2EC]">
           Running
         </Badge>
       );
@@ -164,7 +164,7 @@ export default async function EcologyPage({ params }: Props) {
   if (!ecologyData.ok) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2 mb-4">
+        <h1 className="text-2xl tracking-tight flex items-center gap-2 mb-4">
           <Leaf className="h-6 w-6 text-green-600" />
           Ecology Scans
         </h1>
@@ -191,7 +191,7 @@ export default async function EcologyPage({ params }: Props) {
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+        <h1 className="text-2xl tracking-tight flex items-center gap-2">
           <Leaf className="h-6 w-6 text-green-600" />
           Ecology Scans
         </h1>
@@ -308,7 +308,7 @@ export default async function EcologyPage({ params }: Props) {
                           {/* Species breakdown — clickable cards filter the table below */}
                           <div>
                             <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
-                              <Bird className="h-4 w-4 text-sky-600" />
+                              <Bird className="h-4 w-4 text-[#c2400c]" />
                               Species breakdown (within {Number(scan.radiusKm)} km)
                             </h3>
                             <SpeciesBreakdownSection

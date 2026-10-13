@@ -76,7 +76,7 @@ export function AppearanceMenu({ saved }: { saved: ThemeChoice | null }) {
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-slate-100 cursor-pointer">
+      <DropdownMenuSubTrigger className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-[#F9FAFC] cursor-pointer">
         <Sun aria-hidden="true" className="h-4 w-4 mr-2" />
         Appearance
       </DropdownMenuSubTrigger>
@@ -123,7 +123,7 @@ export function ThemeToggle() {
       onClick={flip}
       aria-label={label}
       title={label}
-      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#41505F] transition-colors hover:bg-slate-100 hover:text-[#131d29] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#41505F] transition-colors hover:bg-[#F9FAFC] hover:text-[#131d29] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E3E8EE]"
     >
       <Icon aria-hidden="true" className="h-4 w-4" />
     </button>

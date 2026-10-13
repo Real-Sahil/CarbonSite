@@ -40,7 +40,7 @@ export function SageConnectButton({ orgId, connected = false }: SageConnectButto
       <Button
         onClick={handleConnect}
         disabled={isLoading}
-        className="w-full bg-slate-700 hover:bg-slate-800 text-white font-semibold"
+        className="w-full font-semibold"
       >
         {isLoading ? (
           <>

@@ -110,7 +110,7 @@ export default async function PermitsPage({ params }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-[#131d29]">Permits and consents</h1>
+          <h1 className="text-lg text-[#131d29]">Permits and consents</h1>
           <p className="mt-0.5 max-w-[65ch] text-sm text-[#5B6A78]">
             Every permit, consent, licence and registration the organisation holds, with
             compliance tracked per numbered condition.
@@ -215,7 +215,7 @@ export default async function PermitsPage({ params }: PageProps) {
 function Denied() {
   return (
     <div className="p-8">
-      <h1 className="text-lg font-semibold text-[#131d29]">Access denied</h1>
+      <h1 className="text-lg text-[#131d29]">Access denied</h1>
       <p className="mt-1 text-sm text-[#5B6A78]">
         You do not have permission to view the permit register.
       </p>

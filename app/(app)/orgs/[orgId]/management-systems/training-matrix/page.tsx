@@ -73,7 +73,7 @@ export default async function TrainingMatrixPage({ params }: { params: Promise<{
                             {cell.expiresOn ? `${cell.state === "expired" ? "Expired" : "To"} ${cell.expiresOn}` : "Held"}
                           </Link>
                         ) : (
-                          <span className="block px-2 py-1 text-[#D1D5DB]">-</span>
+                          <span className="block px-2 py-1 text-[#5B6A78]">-</span>
                         )}
                       </td>
                     );

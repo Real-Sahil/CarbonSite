@@ -7,12 +7,12 @@ import Link from "next/link";
 import { NewMethodStatementButton } from "./method-statements-actions";
 
 const STATUS_COLORS: Record<string, string> = {
-  draft:      "bg-gray-100 text-[#41505F]",
+  draft:      "bg-[#F9FAFC] text-[#41505F]",
   review:     "bg-amber-100 text-amber-800",
-  approved:   "bg-blue-100 text-blue-800",
+  approved:   "bg-[#F9FAFC] text-[#131d29]",
   issued:     "bg-green-100 text-green-800",
   signed_off: "bg-green-100 text-green-800",
-  superseded: "bg-gray-100 text-[#5B6A78]",
+  superseded: "bg-[#F9FAFC] text-[#5B6A78]",
 };
 
 interface PageProps {
@@ -79,7 +79,7 @@ export default async function MethodStatementsPage({ params }: PageProps) {
                   </td>
                   <td className="px-4 py-3 font-mono text-xs">{ms.version}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[ms.status] ?? "bg-gray-100 text-[#41505F]"}`}>
+                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[ms.status] ?? "bg-[#F9FAFC] text-[#41505F]"}`}>
                       {ms.status.replaceAll("_", " ")}
                     </span>
                   </td>

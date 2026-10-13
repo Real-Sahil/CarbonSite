@@ -130,7 +130,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <IconComponent className="h-6 w-6 text-[#41505F]" />
-                    <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                    <span className="text-xs font-semibold bg-[#F9FAFC] text-[#41505F] px-2 py-1 rounded">
                       PDF
                     </span>
                   </div>
@@ -169,7 +169,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
           <CardContent>
             <ol className="space-y-4">
               <li className="flex gap-4">
-                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-[#F9FAFC] text-[#41505F] font-semibold text-sm">
                   1
                 </span>
                 <div>
@@ -180,7 +180,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                 </div>
               </li>
               <li className="flex gap-4">
-                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-[#F9FAFC] text-[#41505F] font-semibold text-sm">
                   2
                 </span>
                 <div>
@@ -191,7 +191,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                 </div>
               </li>
               <li className="flex gap-4">
-                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-[#F9FAFC] text-[#41505F] font-semibold text-sm">
                   3
                 </span>
                 <div>
@@ -202,7 +202,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                 </div>
               </li>
               <li className="flex gap-4">
-                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-[#F9FAFC] text-[#41505F] font-semibold text-sm">
                   4
                 </span>
                 <div>
@@ -213,7 +213,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
                 </div>
               </li>
               <li className="flex gap-4">
-                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-full bg-[#F9FAFC] text-[#41505F] font-semibold text-sm">
                   5
                 </span>
                 <div>

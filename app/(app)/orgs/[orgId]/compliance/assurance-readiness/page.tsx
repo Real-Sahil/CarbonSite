@@ -12,7 +12,7 @@ function StatusIcon({ status }: { status: AssuranceCheck['status'] }) {
     case 'pass': return <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />;
     case 'fail': return <XCircle className="h-5 w-5 text-red-500 shrink-0" />;
     case 'partial': return <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />;
-    default: return <MinusCircle className="h-5 w-5 text-gray-300 shrink-0" />;
+    default: return <MinusCircle className="h-5 w-5 text-[#5B6A78] shrink-0" />;
   }
 }
 
@@ -20,7 +20,7 @@ function ScoreBar({ score }: { score: number }) {
   const color = score >= 80 ? 'bg-green-500' : score >= 50 ? 'bg-amber-400' : 'bg-red-400';
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 w-24 bg-[#F9FAFC] rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
       </div>
       <span className="text-xs text-[#5B6A78] tabular-nums">{score}%</span>
@@ -57,7 +57,7 @@ export default function AssuranceReadinessPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#c2400c]" />
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function AssuranceReadinessPage() {
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`text-3xl font-bold tabular-nums ${scoreColor}`}>{data.overallScore}</span>
+                <span className={`text-3xl font-semibold tabular-nums tabular-nums ${scoreColor}`}>{data.overallScore}</span>
                 <span className="text-xs text-[#5B6A78]">/ 100</span>
               </div>
             </div>
@@ -121,15 +121,15 @@ export default function AssuranceReadinessPage() {
             <AssuranceLevelBadge level={data.assuranceLevel} />
             <div className="grid grid-cols-3 gap-3 mt-2">
               <div className="rounded-lg bg-green-50 p-3 text-center">
-                <div className="text-2xl font-bold text-green-700">{data.summary.passed}</div>
+                <div className="text-2xl font-semibold tabular-nums text-green-700">{data.summary.passed}</div>
                 <div className="text-xs text-green-600">Passed</div>
               </div>
               <div className="rounded-lg bg-amber-50 p-3 text-center">
-                <div className="text-2xl font-bold text-amber-600">{data.summary.partial}</div>
+                <div className="text-2xl font-semibold tabular-nums text-amber-600">{data.summary.partial}</div>
                 <div className="text-xs text-amber-600">Partial</div>
               </div>
               <div className="rounded-lg bg-red-50 p-3 text-center">
-                <div className="text-2xl font-bold text-red-600">{data.summary.failed}</div>
+                <div className="text-2xl font-semibold tabular-nums text-red-600">{data.summary.failed}</div>
                 <div className="text-xs text-red-600">Failed</div>
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function AssuranceReadinessPage() {
             <CardHeader className="pb-3">
               <CardTitle className="text-base">{category}</CardTitle>
             </CardHeader>
-            <CardContent className="divide-y divide-gray-50">
+            <CardContent className="divide-y divide-[#E3E8EE]">
               {catChecks.map((check) => (
                 <div key={check.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
                   <StatusIcon status={check.status} />

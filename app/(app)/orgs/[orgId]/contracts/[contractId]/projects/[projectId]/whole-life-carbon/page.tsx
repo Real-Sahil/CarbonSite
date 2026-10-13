@@ -28,7 +28,7 @@ interface Assessment {
 }
 
 const MODULES = [
-  { key: "aStagesKgCo2e", label: "A1-A5", sub: "Product & construction", color: "bg-[#c2410c]" },
+  { key: "aStagesKgCo2e", label: "A1-A5", sub: "Product & construction", color: "bg-[#c2400c]" },
   { key: "b4ReplacementKgCo2e", label: "B4", sub: "Replacement", color: "bg-amber-400" },
   { key: "b6OperationalEnergyKgCo2e", label: "B6", sub: "Operational energy (measured)", color: "bg-blue-400" },
   { key: "b7OperationalWaterKgCo2e", label: "B7", sub: "Operational water", color: "bg-cyan-400" },
@@ -89,9 +89,9 @@ function SettingsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#E3E8EE]">
           <h2 className="text-base font-semibold text-[#131d29]">Assessment settings</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -162,7 +162,7 @@ export default function WholeLifeCarbonPage() {
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Whole-life carbon</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Whole-life carbon</h1>
           <p className="text-sm text-[#5B6A78] mt-1">
             EN 15978 modules A to D, per the RICS whole life carbon assessment methodology.
           </p>
@@ -191,7 +191,7 @@ export default function WholeLifeCarbonPage() {
       ) : !result ? (
         <div className="rounded-xl border border-[#E3E8EE] bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
-            <Layers className="h-5 w-5 text-[#c2410c]" />
+            <Layers className="h-5 w-5 text-[#c2400c]" />
           </div>
           <p className="text-sm font-medium text-[#41505F]">No whole-life carbon data yet</p>
           <p className="text-xs text-[#5B6A78] mt-1">Add embodied carbon records for this project to see a breakdown.</p>
@@ -210,10 +210,10 @@ export default function WholeLifeCarbonPage() {
           </div>
 
           <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100">
+            <div className="px-6 py-4 border-b border-[#E3E8EE]">
               <h3 className="text-sm font-semibold text-[#131d29]">Breakdown by module</h3>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-[#E3E8EE]">
               {MODULES.map((m) => {
                 const value = result[m.key];
                 const widthPct = maxModuleKg > 0 ? (Math.abs(value) / maxModuleKg) * 100 : 0;
@@ -226,7 +226,7 @@ export default function WholeLifeCarbonPage() {
                       </div>
                       <span className="text-sm text-[#41505F] tabular-nums">{fmt(value)}</span>
                     </div>
-                    <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-2 rounded-full bg-[#F9FAFC] overflow-hidden">
                       <div className={`h-full rounded-full ${m.color}`} style={{ width: `${widthPct}%` }} />
                     </div>
                   </div>

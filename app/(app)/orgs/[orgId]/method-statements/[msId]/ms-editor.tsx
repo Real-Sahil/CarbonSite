@@ -7,6 +7,7 @@ import {
   Plus, Trash2, Copy, Printer
 } from "lucide-react";
 import { CheckGroup, FieldRow, inputCls, labelCls, textareaCls } from "@/components/structured-forms/ms-fields";
+import { Button } from "@/components/ui/button";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -174,12 +175,12 @@ const NAV_SECTIONS = [
 type SectionKey = typeof NAV_SECTIONS[number]["key"];
 
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  draft:      { label: "Draft",      cls: "bg-gray-100 text-[#41505F]" },
+  draft:      { label: "Draft",      cls: "bg-[#F9FAFC] text-[#41505F]" },
   review:     { label: "Review",     cls: "bg-amber-100 text-amber-800" },
-  approved:   { label: "Approved",   cls: "bg-blue-100 text-blue-800" },
+  approved:   { label: "Approved",   cls: "bg-[#F9FAFC] text-[#131d29]" },
   issued:     { label: "Issued",     cls: "bg-green-100 text-green-800" },
   signed_off: { label: "Signed off", cls: "bg-green-100 text-green-800" },
-  superseded: { label: "Superseded", cls: "bg-gray-100 text-[#5B6A78]" },
+  superseded: { label: "Superseded", cls: "bg-[#F9FAFC] text-[#5B6A78]" },
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -373,7 +374,7 @@ function ResourcesSection({ s, onChange, disabled }: {
           )}
         </div>
         {s.equipment.length === 0 ? (
-          <p className="text-xs text-gray-400 py-2">No equipment added.</p>
+          <p className="text-xs text-[#5B6A78] py-2">No equipment added.</p>
         ) : (
           <div className="space-y-2">
             {s.equipment.map((eq) => (
@@ -383,14 +384,14 @@ function ResourcesSection({ s, onChange, disabled }: {
                 <input type="number" min={1} className={inputCls} disabled={disabled} value={eq.quantity} placeholder="Qty"
                   onChange={(e) => setEquip(eq.id, "quantity", e.target.value)} />
                 <label className="flex items-center gap-1.5 text-xs text-[#41505F] cursor-pointer">
-                  <input type="checkbox" className="h-3.5 w-3.5 accent-gray-800" disabled={disabled}
+                  <input type="checkbox" className="h-3.5 w-3.5 accent-[#c2400c]" disabled={disabled}
                     checked={eq.certRequired} onChange={(e) => setEquip(eq.id, "certRequired", e.target.checked)} />
                   Cert required
                 </label>
                 {!disabled && (
                   <button type="button" onClick={() => delEquip(eq.id)}
                     className="h-7 w-7 rounded hover:bg-red-50 flex items-center justify-center">
-                    <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
+                    <Trash2 className="h-3.5 w-3.5 text-[#5B6A78] hover:text-red-500" />
                   </button>
                 )}
               </div>
@@ -431,7 +432,7 @@ function RiskControlsSection({ s, onChange, disabled }: {
           )}
         </div>
         {s.hazards.length === 0 ? (
-          <p className="text-xs text-gray-400 py-2">No hazards recorded yet.</p>
+          <p className="text-xs text-[#5B6A78] py-2">No hazards recorded yet.</p>
         ) : (
           <div className="space-y-4">
             {s.hazards.map((h, idx) => (
@@ -440,7 +441,7 @@ function RiskControlsSection({ s, onChange, disabled }: {
                   <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Hazard {idx + 1}</span>
                   {!disabled && (
                     <button type="button" onClick={() => delHazard(h.id)} className="hover:text-red-500">
-                      <Trash2 className="h-3.5 w-3.5 text-gray-300" />
+                      <Trash2 className="h-3.5 w-3.5 text-[#5B6A78]" />
                     </button>
                   )}
                 </div>
@@ -463,7 +464,7 @@ function RiskControlsSection({ s, onChange, disabled }: {
                     <div className="flex gap-3 mt-1">
                       {RISK_LEVELS.map((l) => (
                         <label key={l} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                          <input type="radio" className="accent-gray-800" disabled={disabled}
+                          <input type="radio" className="accent-[#c2400c]" disabled={disabled}
                             checked={h.initialRisk === l}
                             onChange={() => setHazard(h.id, "initialRisk", l)} />
                           <RiskBadge level={l} />
@@ -475,7 +476,7 @@ function RiskControlsSection({ s, onChange, disabled }: {
                     <div className="flex gap-3 mt-1">
                       {RISK_LEVELS.map((l) => (
                         <label key={l} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                          <input type="radio" className="accent-gray-800" disabled={disabled}
+                          <input type="radio" className="accent-[#c2400c]" disabled={disabled}
                             checked={h.residualRisk === l}
                             onChange={() => setHazard(h.id, "residualRisk", l)} />
                           <RiskBadge level={l} />
@@ -539,30 +540,30 @@ function SequenceSection({ s, onChange, disabled }: {
         )}
       </div>
       {s.workSteps.length === 0 ? (
-        <p className="text-xs text-gray-400 py-2">No steps added. Use + Add step to build the sequence.</p>
+        <p className="text-xs text-[#5B6A78] py-2">No steps added. Use + Add step to build the sequence.</p>
       ) : (
         <div className="space-y-3">
           {s.workSteps.map((step, idx) => (
             <div key={step.id} className="rounded border border-[#E3E8EE] p-4">
               <div className="flex items-center gap-2 mb-3">
-                <span className="h-6 w-6 rounded-full bg-gray-100 text-xs font-semibold text-[#41505F] flex items-center justify-center flex-shrink-0">{step.order}</span>
+                <span className="h-6 w-6 rounded-full bg-[#F9FAFC] text-xs font-semibold text-[#41505F] flex items-center justify-center flex-shrink-0">{step.order}</span>
                 {!disabled && (
                   <div className="flex gap-1 ml-auto">
                     <button type="button" onClick={() => moveStep(step.id, -1)} disabled={idx === 0}
-                      className="h-6 w-6 rounded hover:bg-gray-100 flex items-center justify-center disabled:opacity-30">
+                      className="h-6 w-6 rounded hover:bg-[#F9FAFC] flex items-center justify-center disabled:opacity-30">
                       <ChevronLeft className="h-3.5 w-3.5" />
                     </button>
                     <button type="button" onClick={() => moveStep(step.id, 1)} disabled={idx === s.workSteps.length - 1}
-                      className="h-6 w-6 rounded hover:bg-gray-100 flex items-center justify-center disabled:opacity-30">
+                      className="h-6 w-6 rounded hover:bg-[#F9FAFC] flex items-center justify-center disabled:opacity-30">
                       <ChevronRight className="h-3.5 w-3.5" />
                     </button>
                     <button type="button" onClick={() => dupStep(step.id)}
-                      className="h-6 w-6 rounded hover:bg-gray-100 flex items-center justify-center">
-                      <Copy className="h-3.5 w-3.5 text-gray-400" />
+                      className="h-6 w-6 rounded hover:bg-[#F9FAFC] flex items-center justify-center">
+                      <Copy className="h-3.5 w-3.5 text-[#5B6A78]" />
                     </button>
                     <button type="button" onClick={() => delStep(step.id)}
                       className="h-6 w-6 rounded hover:bg-red-50 flex items-center justify-center">
-                      <Trash2 className="h-3.5 w-3.5 text-gray-300 hover:text-red-500" />
+                      <Trash2 className="h-3.5 w-3.5 text-[#5B6A78] hover:text-red-500" />
                     </button>
                   </div>
                 )}
@@ -645,7 +646,7 @@ function EnvEmergencySection({ s, onChange, disabled }: {
           )}
         </div>
         {s.emergencyContacts.length === 0 ? (
-          <p className="text-xs text-gray-400 py-2">No emergency contacts added.</p>
+          <p className="text-xs text-[#5B6A78] py-2">No emergency contacts added.</p>
         ) : (
           <div className="space-y-2">
             {s.emergencyContacts.map((c) => (
@@ -659,7 +660,7 @@ function EnvEmergencySection({ s, onChange, disabled }: {
                 {!disabled && (
                   <button type="button" onClick={() => delContact(c.id)}
                     className="h-7 w-7 rounded hover:bg-red-50 flex items-center justify-center">
-                    <Trash2 className="h-3.5 w-3.5 text-gray-400 hover:text-red-500" />
+                    <Trash2 className="h-3.5 w-3.5 text-[#5B6A78] hover:text-red-500" />
                   </button>
                 )}
               </div>
@@ -828,23 +829,23 @@ export function MsEditor({
   return (
     <div className="flex h-[calc(100vh-56px)] overflow-hidden">
       {/* Navigator */}
-      <aside className={`${navOpen ? "flex" : "hidden md:flex"} flex-col w-48 border-r border-gray-100 bg-white flex-shrink-0`}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+      <aside className={`${navOpen ? "flex" : "hidden md:flex"} flex-col w-48 border-r border-[#E3E8EE] bg-white flex-shrink-0`}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#E3E8EE]">
           <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Sections</span>
           <button className="md:hidden" onClick={() => setNavOpen(false)}>
-            <X className="h-4 w-4 text-gray-400" />
+            <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
         <nav className="flex-1 overflow-y-auto py-2">
           {NAV_SECTIONS.map((s) => (
             <button key={s.key}
               onClick={() => { setActiveSection(s.key); setNavOpen(false); }}
-              className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeSection === s.key ? "bg-gray-100 text-[#131d29] font-medium" : "text-[#41505F] hover:bg-[#F9FAFC]"}`}>
+              className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeSection === s.key ? "bg-[#F9FAFC] text-[#131d29] font-medium" : "text-[#41505F] hover:bg-[#F9FAFC]"}`}>
               {s.label}
             </button>
           ))}
         </nav>
-        <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
+        <div className="px-4 py-3 border-t border-[#E3E8EE] text-xs text-[#5B6A78]">
           v{version}
         </div>
       </aside>
@@ -853,20 +854,20 @@ export function MsEditor({
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Top bar */}
-        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 bg-white flex-shrink-0">
-          <button className="md:hidden h-8 w-8 rounded flex items-center justify-center hover:bg-gray-100" onClick={() => setNavOpen(true)}>
+        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-[#E3E8EE] bg-white flex-shrink-0">
+          <button className="md:hidden h-8 w-8 rounded flex items-center justify-center hover:bg-[#F9FAFC]" onClick={() => setNavOpen(true)}>
             <Menu className="h-4 w-4 text-[#5B6A78]" />
           </button>
           <button onClick={() => router.push(`/orgs/${initialMs.orgId}/method-statements`)}
             className="flex items-center gap-1 text-xs text-[#5B6A78] hover:text-[#131d29]">
             <ChevronLeft className="h-3.5 w-3.5" /> Method Statements
           </button>
-          <span className="text-gray-300">/</span>
+          <span className="text-[#5B6A78]">/</span>
           <span className="text-sm font-medium text-[#131d29] truncate max-w-[240px]">{title}</span>
           <span className={`ml-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusCfg.cls}`}>{statusCfg.label}</span>
           <div className="ml-auto flex items-center gap-2">
             {/* Save status */}
-            {saveState === "saving" && <span className="text-xs text-gray-400 flex items-center gap-1"><Save className="h-3 w-3 animate-pulse" /> Saving...</span>}
+            {saveState === "saving" && <span className="text-xs text-[#5B6A78] flex items-center gap-1"><Save className="h-3 w-3 animate-pulse" /> Saving...</span>}
             {saveState === "saved" && <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Saved</span>}
             {saveState === "error" && <span className="text-xs text-red-600 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {saveError}</span>}
             {isEditable && saveState === "idle" && (
@@ -938,7 +939,7 @@ export function MsEditor({
         </div>
 
         {/* Bottom bar: nav + status transitions */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-white flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#E3E8EE] bg-white flex-shrink-0">
           <button disabled={!canGoBack} onClick={() => setActiveSection(NAV_SECTIONS[sectionIdx - 1]!.key)}
             className="flex items-center gap-1 text-sm text-[#41505F] hover:text-[#131d29] disabled:opacity-30 disabled:cursor-not-allowed">
             <ChevronLeft className="h-4 w-4" /> Back
@@ -947,10 +948,9 @@ export function MsEditor({
           {/* Status action buttons */}
           <div className="flex items-center gap-2">
             {canEdit && status === "draft" && (
-              <button onClick={() => handleTransition("review")} disabled={transitioning}
-                className="rounded bg-gray-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 disabled:opacity-50">
+              <Button size="sm" onClick={() => handleTransition("review")} disabled={transitioning}>
                 Submit for review
-              </button>
+              </Button>
             )}
             {isAdmin && status === "review" && (
               <>
@@ -958,10 +958,9 @@ export function MsEditor({
                   className="rounded border border-[#E3E8EE] px-3 py-1.5 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] disabled:opacity-50">
                   Return to draft
                 </button>
-                <button onClick={() => handleTransition("approved")} disabled={transitioning}
-                  className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+                <Button size="sm" onClick={() => handleTransition("approved")} disabled={transitioning}>
                   Approve
-                </button>
+                </Button>
               </>
             )}
             {isAdmin && status === "approved" && (

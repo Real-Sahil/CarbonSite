@@ -120,7 +120,7 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
     return (
       <div className="flex flex-col flex-1 min-h-0">
         <div className="border-b border-[#E3E8EE] px-6 py-4">
-          <h1 className="text-lg font-semibold text-[#131d29]">Supplier Reports</h1>
+          <h1 className="text-lg text-[#131d29]">Supplier Reports</h1>
         </div>
         <div className="flex flex-col items-center justify-center flex-1 gap-3 text-center px-8">
           <p className="text-sm text-[#5B6A78]">{dbError}</p>
@@ -134,13 +134,13 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
       <div className="border-b border-[#E3E8EE] px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold text-[#131d29]">Supplier Reports</h1>
+            <h1 className="text-lg text-[#131d29]">Supplier Reports</h1>
             <p className="mt-0.5 text-sm text-[#5B6A78]">
               Review Scope 3 data submitted by your suppliers. Accept to convert into an activity record.
             </p>
           </div>
           <div className="text-right shrink-0">
-            <span className="text-2xl font-bold text-[#131d29]">{total}</span>
+            <span className="text-2xl font-semibold tabular-nums text-[#131d29]">{total}</span>
             <span className="ml-1.5 text-sm text-[#5B6A78]">total reports</span>
           </div>
         </div>
@@ -157,15 +157,15 @@ export default async function SupplierReportsPage({ params, searchParams }: Prop
                 className={[
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
                   isActive
-                    ? "bg-[#fff7ed] text-[#c2410c] border border-[#fed7aa]"
-                    : "text-[#5B6A78] hover:text-[#131d29] hover:bg-slate-100 border border-transparent",
+                    ? "bg-[#fff7ed] text-[#c2400c] border border-[#fed7aa]"
+                    : "text-[#5B6A78] hover:text-[#131d29] hover:bg-[#F9FAFC] border border-transparent",
                 ].join(" ")}
               >
                 {tab.label}
                 {count > 0 && (
                   <span className={[
                     "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                    isActive ? "bg-[#fed7aa] text-[#c2410c]" : "bg-slate-100 text-[#5B6A78]",
+                    isActive ? "bg-[#fed7aa] text-[#c2400c]" : "bg-[#F9FAFC] text-[#5B6A78]",
                   ].join(" ")}>
                     {count}
                   </span>

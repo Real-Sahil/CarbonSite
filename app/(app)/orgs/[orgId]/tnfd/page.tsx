@@ -62,14 +62,14 @@ export default async function TnfdPage({ params }: { params: Promise<{ orgId: st
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Scenarios</CardTitle>
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{scenarios.length}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums">{scenarios.length}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">High / Critical Risk</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${criticalCount > 0 ? "text-red-600" : ""}`}>{criticalCount}</div>
+            <div className={`text-2xl font-semibold tabular-nums ${criticalCount > 0 ? "text-red-600" : ""}`}>{criticalCount}</div>
           </CardContent>
         </Card>
       </div>
@@ -104,7 +104,7 @@ export default async function TnfdPage({ params }: { params: Promise<{ orgId: st
                   <td className="px-4 py-3 capitalize">{s.timeHorizon?.replaceAll("_", " ") ?? "-"}</td>
                   <td className="px-4 py-3">
                     {s.riskRating ? (
-                      <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${RISK_CLASSES[s.riskRating] ?? "bg-gray-100 text-[#41505F]"}`}>
+                      <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${RISK_CLASSES[s.riskRating] ?? "bg-[#F9FAFC] text-[#41505F]"}`}>
                         {s.riskRating}
                       </span>
                     ) : "-"}

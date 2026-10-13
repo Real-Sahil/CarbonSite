@@ -205,7 +205,7 @@ function NavContent({ nav, onNavClick, isCollapsed }: { nav: SidebarNav; onNavCl
         <button
           type="button"
           onClick={nav.onToggleShowAll}
-          className="mt-3 w-full rounded-lg border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-[12px] text-[#41505F] transition-colors hover:border-slate-400 hover:bg-[#F9FAFC] hover:text-[#131d29]"
+          className="mt-3 w-full rounded-lg border border-dashed border-[#E3E8EE] px-2.5 py-1.5 text-left text-[12px] text-[#41505F] transition-colors hover:border-[#131d29]/25 hover:bg-[#F9FAFC] hover:text-[#131d29]"
         >
           {showAll ? "Show the short menu" : "Show all pages"}
           <span className="block text-[11px] text-[#5B6A78]">{showAll ? "Only the everyday jobs" : "Everything, including reports and compliance tools"}</span>
@@ -248,7 +248,7 @@ function SidebarInner({ orgId, orgName, projects, selectedProjectId, collapsed, 
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("metricora:open-palette"))}
-            className="flex w-full items-center gap-2 rounded-md border border-[#131d29]/[0.08] bg-white px-2.5 py-2 text-left text-xs text-[#41505F] hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+            className="flex w-full items-center gap-2 rounded-md border border-[#131d29]/[0.08] bg-white px-2.5 py-2 text-left text-xs text-[#41505F] hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E3E8EE]"
           >
             <Search className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span className="flex-1">Search pages and tasks</span>
@@ -480,7 +480,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
           fixed positioning. Solid white because backdrop-filter on a pinned
           bar is another source of iOS repaint bugs. */}
       <header className="flex md:hidden sticky top-0 z-40 items-center h-14 px-4 bg-[#F9FAFC] border-b border-[#131d29]/[0.08] shrink-0">
-        <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="flex items-center justify-center h-9 w-9 rounded-lg hover:bg-slate-100 transition-colors">
+        <button aria-label="Open menu" onClick={() => setMobileOpen(true)} className="flex items-center justify-center h-9 w-9 rounded-lg hover:bg-[#F9FAFC] transition-colors">
           <Menu className="h-5 w-5 text-[#5B6A78]" aria-hidden="true" />
         </button>
         <div className="ml-3 flex items-center gap-2 min-w-0">
@@ -507,7 +507,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
                   <span className="text-xs text-[#5B6A78] block truncate">{orgName}</span>
                 </div>
               </div>
-              <button aria-label="Close menu" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-slate-100 transition-colors ml-2 shrink-0">
+              <button aria-label="Close menu" onClick={() => setMobileOpen(false)} className="flex items-center justify-center h-8 w-8 rounded-lg hover:bg-[#F9FAFC] transition-colors ml-2 shrink-0">
                 <X className="h-4 w-4 text-[#5B6A78]" aria-hidden="true" />
               </button>
             </div>
@@ -517,10 +517,10 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
             <div className="border-t border-[#131d29]/[0.08] px-2 py-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-slate-100 transition-colors text-left">
+                  <button className="flex items-center gap-2.5 w-full px-2 py-2 rounded-lg hover:bg-[#F9FAFC] transition-colors text-left">
                     <Avatar className="h-7 w-7 shrink-0">
                       <AvatarImage src={undefined} alt={user.name ?? user.email} />
-                      <AvatarFallback className="bg-[#fff7ed] text-[#c2410c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
+                      <AvatarFallback className="bg-[#fff7ed] text-[#c2400c] text-xs font-medium border border-[#fed7aa]">{getInitials(user.name, user.email)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       {user.name && <p className="text-xs font-medium text-[#41505F] truncate">{user.name}</p>}
@@ -531,13 +531,13 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" side="top" className="w-52 rounded-xl bg-white border-[#131d29]/[0.08] shadow-lg">
                   <DropdownMenuItem asChild>
-                    <Link href={`/orgs/${orgId}/settings/members`} onClick={() => setMobileOpen(false)} className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-slate-100">
+                    <Link href={`/orgs/${orgId}/settings/members`} onClick={() => setMobileOpen(false)} className="rounded-lg text-[#41505F] focus:text-[#131d29] focus:bg-[#F9FAFC]">
                       <Users aria-hidden="true" className="h-4 w-4 mr-2" />
                       Members and settings
                     </Link>
                   </DropdownMenuItem>
                   <AppearanceMenu saved={themePreference} />
-                  <DropdownMenuSeparator className="bg-slate-200" />
+                  <DropdownMenuSeparator className="bg-[#E3E8EE]" />
                   <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={handleSignOut}>
                     <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />
                     Sign out
@@ -567,7 +567,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
         <button
           onClick={toggleCollapsed}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-[#131d29]/[0.08] bg-white shadow-sm hover:bg-[#F9FAFC] hover:border-slate-300 transition-colors"
+          className="absolute -right-3 top-[72px] z-20 flex h-6 w-6 items-center justify-center rounded-full border border-[#131d29]/[0.08] bg-white shadow-sm hover:bg-[#F9FAFC] hover:border-[#E3E8EE] transition-colors"
         >
           {collapsed ? <ChevronRight className="h-3 w-3 text-[#5B6A78]" /> : <ChevronLeft className="h-3 w-3 text-[#5B6A78]" />}
         </button>

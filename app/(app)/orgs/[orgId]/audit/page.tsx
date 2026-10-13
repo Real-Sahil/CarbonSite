@@ -193,7 +193,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                 <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
               </Field>
               <div className="flex items-end gap-2">
-                <Button type="submit" className="w-full lg:w-auto bg-[#c2410c] hover:bg-[#9a3412] text-white">Apply</Button>
+                <Button type="submit" className="w-full lg:w-auto">Apply</Button>
                 <Button asChild variant="outline" className="w-full lg:w-auto border-[#E3E8EE] text-[#41505F]">
                   <a href={`/orgs/${orgId}/audit`}>Clear</a>
                 </Button>
@@ -227,7 +227,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                     </TableHeader>
                     <TableBody>
                       {logs.map((log) => (
-                        <TableRow key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                        <TableRow key={log.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                           <TableCell className="whitespace-nowrap text-sm text-[#5B6A78] tabular-nums py-3.5 pl-6">
                             <time dateTime={log.createdAt.toISOString()}>
                               {log.createdAt.toLocaleString("en-GB", {

@@ -52,7 +52,7 @@ export function CrosswalkView({
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <header>
-        <h1 className="text-xl font-semibold text-[#131d29]">Framework datapoint crosswalk</h1>
+        <h1 className="text-xl text-[#131d29]">Framework datapoint crosswalk</h1>
         <p className="mt-0.5 max-w-[70ch] text-sm text-[#5B6A78]">
           For each disclosure requirement: whether this organisation&apos;s own data actually answers it
           today, checked live, or whether it still needs manual evidence. &ldquo;Ready for CSRD&rdquo;
@@ -68,8 +68,8 @@ export function CrosswalkView({
             className={cn(
               "rounded-lg border p-4 text-left transition-colors",
               activeFramework === f.framework
-                ? "border-zinc-900 bg-zinc-900 text-white"
-                : "border-[#E3E8EE] bg-white hover:border-zinc-300",
+                ? "border-[#41505F] bg-[#131d29] text-white"
+                : "border-[#E3E8EE] bg-white hover:border-[#E3E8EE]",
             )}
           >
             <div className="flex items-center justify-between">
@@ -81,11 +81,11 @@ export function CrosswalkView({
             <div
               className={cn(
                 "mt-2 h-1.5 w-full overflow-hidden rounded-full",
-                activeFramework === f.framework ? "bg-white/20" : "bg-zinc-100",
+                activeFramework === f.framework ? "bg-white/20" : "bg-[#F9FAFC]",
               )}
             >
               <div
-                className={cn("h-full rounded-full", activeFramework === f.framework ? "bg-white" : "bg-zinc-900")}
+                className={cn("h-full rounded-full", activeFramework === f.framework ? "bg-white" : "bg-[#131d29]")}
                 style={{ width: `${f.readinessPercent}%` }}
               />
             </div>
@@ -155,7 +155,7 @@ function DatapointRow({
                 <span className="font-mono text-xs text-[#5B6A78]">{datapoint.code}</span>
                 <span className="font-medium text-[#131d29]">{datapoint.title}</span>
                 {datapoint.source === "automatic" && (
-                  <span className="flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-[#5B6A78]">
+                  <span className="flex items-center gap-1 rounded-full bg-[#F9FAFC] px-2 py-0.5 text-xs text-[#5B6A78]">
                     <Zap className="h-3 w-3" />
                     Live
                   </span>
@@ -176,7 +176,7 @@ function DatapointRow({
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                  className="h-8 rounded-md border border-[#E3E8EE] bg-white px-2 text-xs text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
                 >
                   <option value="satisfied">Satisfied</option>
                   <option value="partial">Partial</option>
@@ -216,7 +216,7 @@ function StatusIcon({ status }: { status: string }) {
   if (status === "satisfied") return <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />;
   if (status === "partial") return <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />;
   if (status === "gap") return <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />;
-  return <MinusCircle className="mt-0.5 h-4 w-4 shrink-0 text-zinc-300" />;
+  return <MinusCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#5B6A78]" />;
 }
 
 function StatusBadge({ status }: { status: string }) {

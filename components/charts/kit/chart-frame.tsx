@@ -90,7 +90,7 @@ export function ChartFrame({
             </thead>
             <tbody>
               {table.rows.map((row, r) => (
-                <tr key={r} className="border-b border-[#F3F4F6] text-[#131d29]">
+                <tr key={r} className="border-b border-[#E3E8EE] text-[#131d29]">
                   {row.map((cell, i) => (
                     <td key={i} className={`py-1.5 pr-3 tabular-nums ${i > 0 ? "text-right" : ""}`}>{cell}</td>
                   ))}

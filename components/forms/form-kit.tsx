@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 // reads well on a full page, in a half-width panel and inside a dialog.
 /** Native inputs, selects and textareas that sit beside the shadcn Input: same border, radius, focus ring. */
 export const fieldClass =
-  "block min-h-9 w-full rounded-[12px] border border-[#131d29]/15 bg-white px-3 py-2 text-sm text-[#131d29] placeholder:text-[#9CA3AF] hover:border-[#D1D5DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50 disabled:cursor-not-allowed disabled:opacity-50";
+  "block min-h-9 w-full rounded-[12px] border border-[#131d29]/15 bg-white px-3 py-2 text-sm text-[#131d29] placeholder:text-[#5B6A78] hover:border-[#131d29]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40 disabled:cursor-not-allowed disabled:opacity-50";
 
 const GRID = "grid grid-cols-1 gap-x-4 gap-y-4";
 const COLS: Record<2 | 3 | 4, string> = {
@@ -96,9 +96,9 @@ export function FormField({
 /** Fields the person rarely needs, folded under a native disclosure (keyboard and screen reader friendly). */
 export function FormDisclosure({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <details className="group @container rounded-md border border-[#E3E8EE] bg-zinc-50/60 open:bg-white">
+    <details className="group @container rounded-md border border-[#E3E8EE] bg-[#F9FAFC] open:bg-white">
       <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-[#41505F] marker:content-none [&::-webkit-details-marker]:hidden">
-        <span className="mr-2 inline-block text-zinc-400 transition-transform group-open:rotate-90" aria-hidden="true">›</span>
+        <span className="mr-2 inline-block text-[#5B6A78] transition-transform group-open:rotate-90" aria-hidden="true">›</span>
         {title}
       </summary>
       <div className={cn(GRID, COLS[4], "border-t border-[#E3E8EE] p-3")}>{children}</div>

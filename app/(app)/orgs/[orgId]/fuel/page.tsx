@@ -69,9 +69,9 @@ export default async function FuelPage({ params, searchParams }: Props) {
           </p>
         </div>
         <nav className="flex items-center gap-1 rounded-md border border-[#E3E8EE] p-1 text-sm" aria-label="Month">
-          <Link className="rounded px-3 py-1 text-[#41505F] hover:bg-[#F3F4F6]" href={qs(shiftMonth(month, -1))}>Earlier</Link>
+          <Link className="rounded px-3 py-1 text-[#41505F] hover:bg-[#F9FAFC]" href={qs(shiftMonth(month, -1))}>Earlier</Link>
           <span aria-current="page" className="rounded bg-[#131d29] px-3 py-1 text-white">{month}</span>
-          <Link className="rounded px-3 py-1 text-[#41505F] hover:bg-[#F3F4F6]" href={qs(shiftMonth(month, 1))}>Later</Link>
+          <Link className="rounded px-3 py-1 text-[#41505F] hover:bg-[#F9FAFC]" href={qs(shiftMonth(month, 1))}>Later</Link>
         </nav>
       </div>
 
@@ -118,7 +118,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
               </thead>
               <tbody>
                 {stores.map((s) => (
-                  <tr key={s.store.id} className={`border-b border-[#F3F4F6] ${s.store.active ? "" : "opacity-60"}`}>
+                  <tr key={s.store.id} className={`border-b border-[#E3E8EE] ${s.store.active ? "" : "opacity-60"}`}>
                     <td className="py-2.5 pr-3">
                       <p className="font-medium text-[#131d29]">{s.store.name}</p>
                       <p className="text-xs text-[#5B6A78]">{[s.store.kind.replace("_", " "), s.store.fuelType, `${n(s.store.capacityLitres)} L`, s.store.ownership === "hired" ? "Hired" : null, s.store.active ? null : "Retired"].filter(Boolean).join(" · ")}</p>
@@ -165,7 +165,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
               </thead>
               <tbody>
                 {machines.map((m) => (
-                  <tr key={m.id ?? m.label} className="border-b border-[#F3F4F6]">
+                  <tr key={m.id ?? m.label} className="border-b border-[#E3E8EE]">
                     <td className="py-2.5 pr-3 font-medium text-[#131d29]">{m.label}{!m.id && <span className="ml-2 text-xs font-normal text-[#5B6A78]">not in register</span>}</td>
                     <td className="py-2.5 pr-3 text-right">{n(m.issued)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(m.telematicsLitres)}</td>
@@ -201,7 +201,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
               </thead>
               <tbody>
                 {siteRows.filter((r) => r.siteId).map((r) => (
-                  <tr key={r.siteId} className="border-b border-[#F3F4F6]">
+                  <tr key={r.siteId} className="border-b border-[#E3E8EE]">
                     <td className="py-2.5 pr-3 text-[#131d29]">{r.siteName}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.delivered)}</td>
                     <td className="py-2.5 pr-3 text-right">{n(r.recorded)}</td>
@@ -223,7 +223,7 @@ export default async function FuelPage({ params, searchParams }: Props) {
             <Table className="text-sm tabular-nums">
               <tbody>
                 {entries.map((e) => (
-                  <tr key={`${e.kind}${e.id}`} className="border-b border-[#F3F4F6]">
+                  <tr key={`${e.kind}${e.id}`} className="border-b border-[#E3E8EE]">
                     <td className="py-2 pr-3 text-[#41505F]">{day(e.on)}</td>
                     <td className="py-2 pr-3 font-medium text-[#131d29]">{KIND[e.kind]}</td>
                     <td className="py-2 pr-3 text-[#41505F]">{storeName.get(e.storeId) ?? ""}</td>

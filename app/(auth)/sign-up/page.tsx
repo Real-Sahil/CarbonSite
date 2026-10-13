@@ -36,7 +36,7 @@ function mapSignUpError(err: { code?: string; message?: string } | null | undefi
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const INPUT_CLS =
-  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-amber-500/60 focus:bg-white/8 focus:ring-2 focus:ring-amber-500/20 disabled:opacity-40 transition-all";
+  "w-full rounded-xl border border-white/10 bg-white/6 px-4 py-2.5 text-sm text-white placeholder:text-white/45 outline-none focus:border-[#c2400c]/60 focus:bg-white/8 focus:ring-2 focus:ring-[#c2400c]/20 disabled:opacity-40 transition-all";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -125,16 +125,16 @@ export default function SignUpPage() {
       <div>
         <div className="mb-6">
           <div className="flex items-center gap-2.5 mb-4">
-            <div className="h-8 w-8 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-amber-400" />
+            <div className="h-8 w-8 rounded-xl bg-[#c2400c]/15 border border-[#c2400c]/20 flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-[#fb8a4b]" />
             </div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-amber-400">Step 2 of 2</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#fb8a4b]">Step 2 of 2</p>
           </div>
           <div className="flex gap-1.5 mb-4">
-            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
-            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
+            <div className="h-0.5 w-8 rounded-full bg-[#c2400c]" />
+            <div className="h-0.5 w-8 rounded-full bg-[#c2400c]" />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">Set up your organisation</h1>
+          <h1 className="text-xl tracking-tight text-white">Set up your organisation</h1>
           <p className="text-sm text-white/60 mt-1">Welcome, {name.split(" ")[0]}. Name your workspace.</p>
         </div>
 
@@ -159,9 +159,9 @@ export default function SignUpPage() {
               disabled={loading}
               className={INPUT_CLS}
             >
-              <option value="" className="bg-zinc-900">Select a country</option>
+              <option value="" className="bg-[#131d29]">Select a country</option>
               {COUNTRIES.map((c) => (
-                <option key={c.code} value={c.code} className="bg-zinc-900">{c.name}</option>
+                <option key={c.code} value={c.code} className="bg-[#131d29]">{c.name}</option>
               ))}
             </select>
             <p className="text-[11px] text-white/60">Sets the grid electricity and fuel factors used when a site has no country of its own.</p>
@@ -169,9 +169,9 @@ export default function SignUpPage() {
           <div className="flex flex-col gap-1.5">
             <label htmlFor="reportingCurrency" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Reporting currency</label>
             <select id="reportingCurrency" value={currency} onChange={(e) => setCurrency(e.target.value)} disabled={loading || !hqCountry} className={INPUT_CLS}>
-              {!currency && <option value="" className="bg-zinc-900">Choose a country first</option>}
+              {!currency && <option value="" className="bg-[#131d29]">Choose a country first</option>}
               {CURRENCIES.map((c) => (
-                <option key={c} value={c} className="bg-zinc-900">{c}</option>
+                <option key={c} value={c} className="bg-[#131d29]">{c}</option>
               ))}
             </select>
             <p className="text-[11px] text-white/60">Used for spend, revenue and how money prints in your reports. You can change it later in settings.</p>
@@ -180,7 +180,7 @@ export default function SignUpPage() {
             <label htmlFor="fiscalYearStartMonth" className="text-[11px] font-medium text-white/60 uppercase tracking-[0.08em]">Financial year starts</label>
             <select id="fiscalYearStartMonth" value={startMonth} onChange={(e) => setStartMonth(Number(e.target.value))} disabled={loading} className={INPUT_CLS}>
               {MONTHS.map((m, i) => (
-                <option key={m} value={i + 1} className="bg-zinc-900">{m}</option>
+                <option key={m} value={i + 1} className="bg-[#131d29]">{m}</option>
               ))}
             </select>
             <p className="text-[11px] text-white/60">Suggests the dates and label when you add a reporting period.</p>
@@ -191,7 +191,7 @@ export default function SignUpPage() {
               <span>{error}</span>
             </div>
           )}
-          <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2410c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:bg-[#9a3412] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
             {loading ? "Creating your workspace…" : "Create organisation"}
           </button>
           <button type="button" onClick={() => { setStep("account"); setError(""); }} className="text-sm text-white/60 hover:text-white/60 transition-colors text-center" disabled={loading}>
@@ -208,11 +208,11 @@ export default function SignUpPage() {
         <div className="flex items-center justify-between mb-4">
           <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-white/60">Step 1 of 2</p>
           <div className="flex gap-1.5">
-            <div className="h-0.5 w-8 rounded-full bg-gradient-to-r from-orange-500 to-amber-400" />
+            <div className="h-0.5 w-8 rounded-full bg-[#c2400c]" />
             <div className="h-0.5 w-8 rounded-full bg-white/12" />
           </div>
         </div>
-        <h1 className="text-xl font-semibold tracking-tight text-white">Create your account</h1>
+        <h1 className="text-xl tracking-tight text-white">Create your account</h1>
         <p className="text-sm text-white/60 mt-1">Start tracking your organisation&apos;s emissions.</p>
       </div>
 
@@ -236,12 +236,12 @@ export default function SignUpPage() {
           </div>
         )}
         <div className="flex items-start gap-2.5">
-          <input id="acceptedTerms" type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} required disabled={loading} className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 bg-white/6 accent-amber-500" />
+          <input id="acceptedTerms" type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} required disabled={loading} className="mt-1 h-4 w-4 shrink-0 rounded border-white/20 bg-white/6 accent-[#c2400c]" />
           <label htmlFor="acceptedTerms" className="text-xs leading-5 text-white/70">
-            I accept the <Link href="/terms" target="_blank" className="text-amber-400 underline underline-offset-2">Terms of Service</Link> and the <Link href="/privacy" target="_blank" className="text-amber-400 underline underline-offset-2">Privacy Policy</Link>.
+            I accept the <Link href="/terms" target="_blank" className="text-[#fb8a4b] underline underline-offset-2">Terms of Service</Link> and the <Link href="/privacy" target="_blank" className="text-[#fb8a4b] underline underline-offset-2">Privacy Policy</Link>.
           </label>
         </div>
-        <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2410c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_28px_rgba(245,158,11,0.5)] hover:bg-[#9a3412] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
           Continue
           <ArrowRight className="h-4 w-4" />
         </button>
@@ -249,7 +249,7 @@ export default function SignUpPage() {
 
       <p className="mt-5 text-center text-sm text-white/60">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-amber-400 underline underline-offset-4 hover:text-amber-300 transition-colors">Sign in</Link>
+        <Link href="/sign-in" className="text-[#fb8a4b] underline underline-offset-4 transition-colors">Sign in</Link>
       </p>
     </div>
   );

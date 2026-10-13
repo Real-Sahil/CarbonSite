@@ -1,6 +1,6 @@
 // Tenant branding → CSS custom properties. Pure: no database, no React.
 //
-// Product primary is the orange in app/globals.css (#c2410c). A tenant colour
+// Product primary is the orange in app/globals.css (#c2400c). A tenant colour
 // only replaces it when it is a valid hex, is not the schema default
 // (TenantBranding.primaryHex = #0f4c8a, which means "not chosen") and gives
 // white button text at least WCAG AA contrast (4.5:1).

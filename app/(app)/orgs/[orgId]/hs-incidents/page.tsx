@@ -10,7 +10,7 @@ import { ReportIncidentButton } from "./hs-incidents-actions";
 
 const STATUS_COLORS: Record<string, string> = {
   reported: "bg-yellow-100 text-yellow-800",
-  investigating: "bg-blue-100 text-blue-800",
+  investigating: "bg-[#F9FAFC] text-[#131d29]",
   action_required: "bg-orange-100 text-orange-800",
   closed: "bg-green-100 text-green-800",
 };
@@ -68,15 +68,15 @@ export default async function HsIncidentsPage({ params }: PageProps) {
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Open / Investigating</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold">{openCount}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums">{openCount}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">RIDDOR Reportable</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-red-600">{riddorCount}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums text-red-600">{riddorCount}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Closed</CardTitle></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-green-600">{closedCount}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums text-green-600">{closedCount}</div></CardContent>
         </Card>
       </div>
 
@@ -106,7 +106,7 @@ export default async function HsIncidentsPage({ params }: PageProps) {
                   <td className="px-4 py-3 capitalize">{inc.incidentType.replaceAll("_", " ")}</td>
                   <td className="px-4 py-3">{new Date(inc.occurredAt).toLocaleDateString("en-GB")}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[inc.status] ?? "bg-gray-100 text-[#41505F]"}`}>
+                    <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[inc.status] ?? "bg-[#F9FAFC] text-[#41505F]"}`}>
                       {inc.status.replaceAll("_", " ")}
                     </span>
                   </td>

@@ -42,7 +42,7 @@ function riskScore(l: number, i: number) { return l * i; }
 
 function riskBadge(score: number) {
   if (score >= 20) return <Badge variant="destructive">Critical</Badge>;
-  if (score >= 12) return <Badge className="bg-[#c2410c] text-white">High</Badge>;
+  if (score >= 12) return <Badge className="bg-[#c2400c] text-white">High</Badge>;
   if (score >= 6) return <Badge className="bg-yellow-500 text-black">Medium</Badge>;
   return <Badge variant="secondary">Low</Badge>;
 }
@@ -242,7 +242,7 @@ export default function TcfdScenarioPage() {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{scenario.name}</h1>
+          <h1 className="text-2xl tracking-tight">{scenario.name}</h1>
           <p className="text-sm text-muted-foreground">
             {scenario.scenarioType === "physical" ? "Physical" : "Transition"} scenario
             {scenario.temperaturePathway && ` — ${scenario.temperaturePathway}`}

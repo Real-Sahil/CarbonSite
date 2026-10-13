@@ -3,14 +3,14 @@ import { brandingCss, brandingVars, contrastWithWhite, normaliseHex } from "../c
 
 describe("normaliseHex", () => {
   it("accepts six-digit hex with or without #, lower-cased", () => {
-    expect(normaliseHex("#C2410C")).toBe("#c2410c");
-    expect(normaliseHex("c2410c")).toBe("#c2410c");
+    expect(normaliseHex("#c2400c")).toBe("#c2400c");
+    expect(normaliseHex("c2400c")).toBe("#c2400c");
   });
 
   it("rejects anything that could leave a style value", () => {
     expect(normaliseHex("red")).toBeNull();
     expect(normaliseHex("#fff")).toBeNull();
-    expect(normaliseHex("#c2410c; background:url(x)")).toBeNull();
+    expect(normaliseHex("#c2400c; background:url(x)")).toBeNull();
     expect(normaliseHex(null)).toBeNull();
   });
 });
@@ -22,7 +22,7 @@ describe("contrastWithWhite", () => {
   });
 
   it("puts the product orange above AA for button text", () => {
-    expect(contrastWithWhite("#c2410c")).toBeGreaterThanOrEqual(4.5);
+    expect(contrastWithWhite("#c2400c")).toBeGreaterThanOrEqual(4.5);
   });
 });
 

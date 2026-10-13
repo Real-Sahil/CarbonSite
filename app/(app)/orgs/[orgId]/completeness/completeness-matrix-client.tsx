@@ -48,7 +48,7 @@ const STATUS_STYLES: Record<MatrixCell["status"], string> = {
   green: "bg-green-500 hover:bg-green-600",
   amber: "bg-amber-400 hover:bg-amber-500",
   red: "bg-red-500 hover:bg-red-600",
-  not_required: "bg-zinc-100",
+  not_required: "bg-[#F9FAFC]",
 };
 
 const STATUS_LABEL: Record<MatrixCell["status"], string> = {
@@ -161,7 +161,7 @@ export function CompletenessMatrixClient({
         ) : !data || data.setupNeeded ? (
           <Card>
             <CardContent className="py-12 text-center">
-              <ClipboardList className="mx-auto h-8 w-8 text-zinc-300 mb-3" />
+              <ClipboardList className="mx-auto h-8 w-8 text-[#5B6A78] mb-3" />
               <p className="text-sm font-medium text-[#41505F]">No completeness requirements configured yet</p>
               <p className="text-xs text-[#5B6A78] mt-1 max-w-sm mx-auto">
                 Add a requirement for each facility x emission category combination you expect data for, with an owner
@@ -277,7 +277,7 @@ function CellDetailModal({
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-[#131d29]">{facilityName}</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -358,7 +358,7 @@ function RequirementFormModal({
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-[#131d29]">Add completeness requirement</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -396,7 +396,7 @@ function RequirementFormModal({
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 resize-none"
+              className="w-full rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] outline-none focus:border-[#c2400c] focus:ring-2 focus:ring-[#c2400c]/40 resize-none"
             />
           </div>
           {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}

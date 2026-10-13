@@ -93,7 +93,7 @@ export function CalculationRunsLive({ orgId, initialRuns }: Props) {
   return (
     <div className="grid gap-2">
       {hasInFlight && (
-        <div className="flex items-center gap-3 rounded-[14px] border border-[#BAE6FD] bg-[#F0F9FF]/20 px-4 py-3">
+        <div className="flex items-center gap-3 rounded-[14px] border border-[#E3E8EE] bg-[#F9FAFC]/20 px-4 py-3">
           <Loader2 className="h-4 w-4 text-[#131d29] animate-spin shrink-0" />
           <div>
             <p className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">

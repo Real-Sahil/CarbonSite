@@ -114,14 +114,14 @@ export function EnergyInstruments({
         </div>
 
         {instruments.length === 0 ? (
-          <div className="border-t border-slate-100">
+          <div className="border-t border-[#E3E8EE]">
             <EmptyState
               title="No contracts yet"
               description="Market-based electricity records use the factor library, and each one carries a warning saying so."
             />
           </div>
         ) : (
-          <div className="overflow-x-auto border-t border-slate-100">
+          <div className="overflow-x-auto border-t border-[#E3E8EE]">
             <Table className="w-full text-sm">
               <thead className="text-left text-xs text-[#5B6A78]">
                 <tr>
@@ -136,7 +136,7 @@ export function EnergyInstruments({
               </thead>
               <tbody className="tabular-nums">
                 {instruments.map((i) => (
-                  <tr key={i.id} className="border-t border-slate-100">
+                  <tr key={i.id} className="border-t border-[#E3E8EE]">
                     <td className="px-4 py-2 text-[#131d29]">{typeInfo(i.type).label}</td>
                     <td className="px-4 py-2 text-[#41505F]">{i.facilityName ?? "All sites"}</td>
                     <td className="px-4 py-2 text-[#41505F]">{[i.supplierName, i.reference].filter(Boolean).join(" · ") || "-"}</td>
@@ -164,7 +164,7 @@ export function EnergyInstruments({
             <h2 className="text-base font-semibold text-[#131d29]">Add a contract</h2>
             <p className="mt-1 text-sm text-[#5B6A78]">{info.help}</p>
           </div>
-          <div className="grid gap-3 border-t border-slate-100 p-4 grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-3 border-t border-[#E3E8EE] p-4 grid-cols-1 md:grid-cols-2">
             <FormSection title="Add an instrument" description="Certificates, PPAs and tariffs used for market-based Scope 2." cols={3}>
               <FormField label="Type" htmlFor="ei-type" optional>
                 <select id="ei-type" value={type} onChange={(e) => setType(e.target.value as InstrumentType)} className={selectClass}>

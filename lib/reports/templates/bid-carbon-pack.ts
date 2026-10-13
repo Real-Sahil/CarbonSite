@@ -259,7 +259,7 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
   table.sign td:last-child { height: 28px }
   .contract { margin-bottom: 14px; page-break-inside: avoid }
   .contract td.indent { padding-left: 18px; color: #5b6b70 }
-  .answer { margin-top: 8px; padding: 8px 10px; background: #f6f8f7; border-left: 3px solid #c2410c }
+  .answer { margin-top: 8px; padding: 8px 10px; background: #f6f8f7; border-left: 3px solid #c2400c }
   .answer p { margin: 2px 0 }
   .qa { margin-bottom: 12px; page-break-inside: avoid }
   .qa .q { font-weight: 700; color: #16323d }

@@ -56,7 +56,7 @@ export default async function ReportingPeriodsPage({ params }: Props) {
                 <PeriodNumbers orgId={orgId} periodId={p.id} revenue={p.revenueAmount != null ? Number(p.revenueAmount) : null} currency={p.revenueCurrency ?? currency} fte={p.fteCount != null ? Number(p.fteCount) : null} locked={p.status === "locked"} />
               </div>
               {p.status === "locked" && (
-                <span className="text-xs bg-gray-100 text-[#41505F] px-2 py-1 rounded-full">
+                <span className="text-xs bg-[#F9FAFC] text-[#41505F] px-2 py-1 rounded-full">
                   Locked
                 </span>
               )}

@@ -3,7 +3,7 @@
 import { Table } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField, FormSection } from "@/components/forms/form-kit";
 
@@ -64,7 +64,7 @@ export function CertificationWorkspace({ orgId, frameworks, canEdit, canPack, li
           <a
             href={`/api/orgs/${orgId}/management-systems/certification-pack?frameworks=${encodeURIComponent(packFor.join(","))}`}
             aria-disabled={!packFor.length}
-            className={`self-start rounded-lg px-4 py-2 text-sm font-medium text-white ${packFor.length ? "bg-[#c2410c] hover:bg-[#9a3412]" : "pointer-events-none bg-[#D1D5DB]"}`}
+            className={packFor.length ? buttonVariants({ className: "self-start" }) : "self-start rounded-lg px-4 py-2 text-sm font-medium text-white pointer-events-none bg-[#D1D5DB]"}
           >
             Download ZIP
           </a>

@@ -95,7 +95,7 @@ export function CommandPalette({ orgId, role, canUseViews }: { orgId: string; ro
             aria-expanded
             aria-controls="palette-results"
             aria-activedescendant={results[active] ? `palette-${results[active].key}` : undefined}
-            className="h-10 w-full rounded-[10px] border border-[#E3E8EE] px-3 text-sm outline-none focus:ring-2 focus:ring-amber-400/50"
+            className="h-10 w-full rounded-[10px] border border-[#E3E8EE] px-3 text-sm outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           />
           <ul id="palette-results" role="listbox" className="mt-2 max-h-80 overflow-auto">
             {results.length === 0 ? <li className="px-3 py-6 text-center text-sm text-[#5B6A78]">Nothing matches.</li> : null}

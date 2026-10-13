@@ -44,7 +44,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Carbon Offsets</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Carbon Offsets</h1>
           <p className="text-sm text-[#5B6A78] mt-1">
             Track verified carbon credits purchased to offset residual emissions.
           </p>
@@ -76,14 +76,14 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Project", "Type", "Standard", "Vintage", "Quantity (tCO₂e)", "Purchased", "Verified", ""].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {offsets.map((o) => (
                 <tr key={o.id} className="hover:bg-[#F9FAFC] transition-colors">
                   <td className="py-3 pl-6 pr-4">
@@ -91,7 +91,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
                     <p className="text-xs text-[#5B6A78] mt-0.5 truncate max-w-[200px]">{o.provider}</p>
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[o.projectType] ?? "bg-gray-100 text-[#41505F]"}`}>
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[o.projectType] ?? "bg-[#F9FAFC] text-[#41505F]"}`}>
                       {PROJECT_TYPES.find((t) => t.value === o.projectType)?.label ?? o.projectType}
                     </span>
                   </td>

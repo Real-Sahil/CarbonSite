@@ -9,7 +9,7 @@ import { REVIEW_STATUS_LABELS } from "@/lib/saved-views/labels";
 type Option = { id: string; label: string };
 
 const FIELD =
-  "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-amber-400/50";
+  "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
 
 /**
  * Filters for the records table. The URL is the state: choosing a value rewrites

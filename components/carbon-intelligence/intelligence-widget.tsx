@@ -79,7 +79,7 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
 function Stat({ value, label, href, alarm }: { value: number; label: string; href?: string; alarm?: boolean }) {
   const body = (
     <>
-      <span className={`text-2xl font-bold tabular-nums ${alarm ? "text-red-600" : "text-[#131d29]"}`}>
+      <span className={`text-2xl font-semibold tabular-nums tabular-nums ${alarm ? "text-red-600" : "text-[#131d29]"}`}>
         {value.toLocaleString("en-GB")}
       </span>
       <span className="text-xs text-[#5B6A78]">{label}</span>

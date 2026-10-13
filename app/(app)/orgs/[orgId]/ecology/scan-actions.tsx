@@ -57,7 +57,7 @@ const RISK_BADGE: Record<string, { label: string; cls: string }> = {
   endangered:      { label: "EN",   cls: "bg-orange-100 text-orange-800 border-orange-300" },
   vulnerable:      { label: "VU",   cls: "bg-amber-100 text-amber-800 border-amber-300" },
   near_threatened: { label: "NT",   cls: "bg-yellow-100 text-yellow-800 border-yellow-300" },
-  protected:       { label: "Protected", cls: "bg-blue-100 text-blue-800 border-blue-300" },
+  protected:       { label: "Protected", cls: "bg-[#F9FAFC] text-[#131d29] border-[#E3E8EE]" },
   least_concern:   { label: "LC",   cls: "bg-green-100 text-green-800 border-green-300" },
 };
 

@@ -114,7 +114,7 @@ export default function SupplierInvitePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#c2400c]" />
       </div>
     );
   }
@@ -167,16 +167,16 @@ export default function SupplierInvitePage() {
               </AlertDescription>
             </Alert>
           ) : (
-            <div className="mb-4 space-y-3 rounded-lg bg-blue-50 p-3">
-              <p className="text-sm font-medium text-gray-700">
+            <div className="mb-4 space-y-3 rounded-lg bg-[#F9FAFC] p-3">
+              <p className="text-sm font-medium text-[#41505F]">
                 Email: <span className="font-semibold">{inviteData.email}</span>
               </p>
               {inviteData.companyName && (
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-[#41505F]">
                   Company: <span className="font-semibold">{inviteData.companyName}</span>
                 </p>
               )}
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-[#41505F]">
                 Invitation expires in {daysUntilExpiry} days
               </p>
             </div>
@@ -185,7 +185,7 @@ export default function SupplierInvitePage() {
           {!isExpired && (
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#41505F] mb-2">
                   Password
                 </label>
                 <Input
@@ -195,13 +195,13 @@ export default function SupplierInvitePage() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={submitting}
                 />
-                <p className="text-xs text-gray-600 mt-2">
+                <p className="text-xs text-[#41505F] mt-2">
                   Use a strong password with uppercase, lowercase, numbers, and symbols
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#41505F] mb-2">
                   Confirm Password
                 </label>
                 <Input
@@ -237,9 +237,9 @@ export default function SupplierInvitePage() {
             </form>
           )}
 
-          <p className="mt-4 text-center text-xs text-gray-500">
+          <p className="mt-4 text-center text-xs text-[#5B6A78]">
             Already have an account?{" "}
-            <a href="/sign-in" className="text-blue-600 hover:underline">
+            <a href="/sign-in" className="text-[#c2400c] hover:underline">
               Sign in
             </a>
           </p>

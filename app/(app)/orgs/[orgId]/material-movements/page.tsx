@@ -19,8 +19,8 @@ interface Props {
 
 const STATUSES = ["planned", "dispatched", "received", "rejected", "cancelled"] as const;
 const STATUS_STYLE: Record<string, string> = {
-  planned: "bg-slate-100 text-[#41505F]", dispatched: "bg-blue-100 text-blue-800", received: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800", cancelled: "bg-slate-100 text-[#5B6A78]",
+  planned: "bg-[#F9FAFC] text-[#41505F]", dispatched: "bg-[#F9FAFC] text-[#131d29]", received: "bg-green-100 text-green-800",
+  rejected: "bg-red-100 text-red-800", cancelled: "bg-[#F9FAFC] text-[#5B6A78]",
 };
 const day = (d: Date | null) => (d ? d.toISOString().slice(0, 10) : "–");
 const n = (v: number | null | undefined, dp = 1) => (v == null ? "–" : v.toLocaleString("en-GB", { maximumFractionDigits: dp }));
@@ -84,7 +84,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
         {sites.length > 1 && (<>
           <Link href={qs({ siteId: null })} aria-current={!siteId ? "page" : undefined} className={`rounded-full border px-3 py-1 ${!siteId ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>All sites</Link>
           {sites.map((s) => <Link key={s.id} href={qs({ siteId: s.id })} aria-current={siteId === s.id ? "page" : undefined} className={`rounded-full border px-3 py-1 ${siteId === s.id ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>{s.name}</Link>)}
-          <span className="mx-1 self-center text-[#D1D5DB]">|</span>
+          <span className="mx-1 self-center text-[#5B6A78]">|</span>
         </>)}
         <Link href={qs({ status: null })} aria-current={!status ? "page" : undefined} className={`rounded-full border px-3 py-1 ${!status ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>Any status</Link>
         {STATUSES.map((s) => <Link key={s} href={qs({ status: s })} aria-current={status === s ? "page" : undefined} className={`rounded-full border px-3 py-1 capitalize ${status === s ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F]"}`}>{s}</Link>)}
@@ -114,7 +114,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
                   const errs = m.check.issues.filter((i) => i.level === "error");
                   const warns = m.check.issues.filter((i) => i.level === "warning");
                   return (
-                    <tr key={m.id} className="border-b border-[#F3F4F6] align-top">
+                    <tr key={m.id} className="border-b border-[#E3E8EE] align-top">
                       <td className="py-2.5 pr-3 text-[#41505F]">{day(m.receivedOn ?? m.plannedOn)}</td>
                       <td className="py-2.5 pr-3"><p className="font-medium text-[#131d29]">{m.classificationName}</p><p className="text-xs text-[#5B6A78]">{ewc(m.ewcCode)}{m.hazardous ? " · hazardous" : ""}{m.siteName ? ` · ${m.siteName}` : ""}</p></td>
                       <td className="py-2.5 pr-3 text-[#41505F]">{m.destinationName}{m.destinationPermit && <span className="block text-xs text-[#5B6A78]">{m.destinationPermit}</span>}</td>
@@ -165,7 +165,7 @@ export default async function MaterialMovementsPage({ params, searchParams }: Pr
               </thead>
               <tbody>
                 {classifications.map((c) => (
-                  <tr key={c.id} className={`border-b border-[#F3F4F6] align-top ${c.status === "withdrawn" ? "opacity-60" : ""}`}>
+                  <tr key={c.id} className={`border-b border-[#E3E8EE] align-top ${c.status === "withdrawn" ? "opacity-60" : ""}`}>
                     <td className="py-2.5 pr-3"><p className="font-medium text-[#131d29]">{c.name}</p><p className="text-xs text-[#5B6A78]">{(MATERIAL_KINDS as readonly string[]).includes(c.materialKind) ? MATERIAL_KIND_LABELS[c.materialKind as (typeof MATERIAL_KINDS)[number]] : c.materialKind}{c.siteName ? ` · ${c.siteName}` : ""}{c.labReference ? ` · lab ${c.labReference}` : ""}</p></td>
                     <td className="py-2.5 pr-3 tabular-nums">{ewc(c.ewcCode)}{c.hazardous && <span className="block text-xs text-red-700">Hazardous{c.hazardousProperties.length ? `: ${c.hazardousProperties.join(", ")}` : ""}</span>}</td>
                     <td className="py-2.5 pr-3 text-[#41505F]">{c.classifiedBy ?? "–"}{c.classifiedOn && <span className="block text-xs text-[#5B6A78]">{day(c.classifiedOn)}</span>}</td>

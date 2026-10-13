@@ -89,7 +89,7 @@ function statusBadge(row: RequestRow) {
     return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Submitted</Badge>;
   }
   if (row.status === "opened") {
-    return <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-100">Opened</Badge>;
+    return <Badge className="bg-[#F9FAFC] text-[#131d29] hover:bg-[#FFF2EC]">Opened</Badge>;
   }
   return <Badge variant="outline" className="text-[#5B6A78]">Awaiting</Badge>;
 }
@@ -221,14 +221,14 @@ export function SupplierRequestsTable({
               onClick={() => setFilter("status", f.value)}
               className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
                 currentStatus === f.value
-                  ? "bg-slate-900 text-white"
+                  ? "bg-[#131d29] text-white"
                   : "text-[#41505F] hover:bg-[#F9FAFC]"
               }`}
             >
               {f.label}
               {counts[f.value] > 0 && (
                 <span className={`ml-1.5 text-xs ${
-                  currentStatus === f.value ? "text-slate-300" : "text-[#5B6A78]"
+                  currentStatus === f.value ? "text-[#5B6A78]" : "text-[#5B6A78]"
                 }`}>
                   {counts[f.value]}
                 </span>
@@ -259,7 +259,7 @@ export function SupplierRequestsTable({
       {filtered.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
-            <Send className="mx-auto mb-3 h-8 w-8 text-slate-300" />
+            <Send className="mx-auto mb-3 h-8 w-8 text-[#5B6A78]" />
             <p className="text-sm font-medium text-[#41505F]">No requests found</p>
             <p className="mt-1 text-xs text-[#5B6A78]">
               {currentStatus !== "all"
@@ -275,7 +275,7 @@ export function SupplierRequestsTable({
         <div className="overflow-x-auto rounded-lg border border-[#E3E8EE] bg-white">
           <Table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-[#F9FAFC] text-left text-xs font-medium text-[#5B6A78]">
+              <tr className="border-b border-[#E3E8EE] bg-[#F9FAFC] text-left text-xs font-medium text-[#5B6A78]">
                 <th className="px-4 py-3">Supplier</th>
                 <th className="px-4 py-3">Category</th>
                 <th className="px-4 py-3">Period</th>
@@ -285,11 +285,11 @@ export function SupplierRequestsTable({
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {filtered.map((row) => {
                 const alreadyConverted = convertedIds.has(row.id);
                 return (
-                  <tr key={row.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={row.id} className="hover:bg-[#F9FAFC] transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium text-[#131d29]">
                         {row.supplierName ?? row.supplierEmail}
@@ -310,7 +310,7 @@ export function SupplierRequestsTable({
                           {row.submittedData.quantity.toLocaleString("en-GB")} {row.submittedData.unit}
                         </span>
                       ) : (
-                        <span className="text-slate-300">—</span>
+                        <span className="text-[#5B6A78]">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-[#5B6A78] text-xs">
@@ -339,7 +339,7 @@ export function SupplierRequestsTable({
                           Review
                         </Button>
                       ) : (
-                        <span className="text-xs text-slate-300">
+                        <span className="text-xs text-[#5B6A78]">
                           {row.expired ? "Expired" : "Pending"}
                         </span>
                       )}
@@ -366,7 +366,7 @@ export function SupplierRequestsTable({
           {reviewRow && (
             <div className="flex flex-col gap-4 py-2">
               {/* Submission summary */}
-              <div className="rounded-lg border border-slate-100 bg-[#F9FAFC] px-4 py-3 text-sm">
+              <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] px-4 py-3 text-sm">
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                   <div>
                     <dt className="text-[#5B6A78] text-xs">Supplier</dt>
@@ -386,7 +386,7 @@ export function SupplierRequestsTable({
                   </div>
                 </dl>
                 {reviewRow.submittedData?.description && (
-                  <p className="mt-2 border-t border-slate-100 pt-2 text-xs text-[#5B6A78]">
+                  <p className="mt-2 border-t border-[#E3E8EE] pt-2 text-xs text-[#5B6A78]">
                     {reviewRow.submittedData.description}
                   </p>
                 )}
@@ -437,7 +437,7 @@ export function SupplierRequestsTable({
                 </p>
               )}
 
-              <div className="rounded-md border border-slate-100 bg-[#F9FAFC] px-3 py-2 text-xs text-[#5B6A78]">
+              <div className="rounded-md border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2 text-xs text-[#5B6A78]">
                 The record will be created with <strong>draft</strong> review
                 status and must be approved before it is included in a
                 calculation run.

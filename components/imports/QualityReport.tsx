@@ -71,7 +71,7 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
     return (
       <Card>
         <CardContent className="py-8 flex items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-blue-600 mr-2" />
+          <Loader2 className="h-5 w-5 animate-spin text-[#c2400c] mr-2" />
           <span className="text-[#41505F]">Analyzing data quality...</span>
         </CardContent>
       </Card>
@@ -127,7 +127,7 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
           <div className={`p-6 rounded-lg ${scoreBackground}`}>
             <div className="flex items-center justify-between">
               <div>
-                <div className={`text-5xl font-bold ${scoreColor}`}>
+                <div className={`text-5xl font-semibold tabular-nums ${scoreColor}`}>
                   {scorePercentage}%
                 </div>
                 <p className="text-sm text-[#41505F] mt-2">

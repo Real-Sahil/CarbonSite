@@ -112,7 +112,7 @@ export function FindTenderImport({ orgId }: { orgId: string }) {
         <div className="flex flex-col gap-4 border-t border-[#E3E8EE] pt-4">
           <p className="text-xs text-[#5B6A78]">
             {preview.stage === "award" ? "Award notice" : "Tender notice"} ·{" "}
-            <a href={preview.noticeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+            <a href={preview.noticeUrl} target="_blank" rel="noopener noreferrer" className="text-[#c2400c] hover:underline">
               View on Find a Tender
             </a>
             {preview.suppliers.length > 0 && <> · Supplier: {preview.suppliers.join(", ")}</>}

@@ -15,7 +15,7 @@ import {
   Loader2,
   ChevronRight,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 type StepId =
   | "org_profile"
@@ -212,7 +212,7 @@ export default function OnboardingPage() {
             setLoading(true);
             void fetchProgress();
           }}
-          className="rounded-md border border-[#D1D5DB] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F3F4F6]"
+          className="rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC]"
         >
           Retry
         </button>
@@ -221,14 +221,14 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#F8F9FA]">
+    <div className="min-h-[100dvh] bg-[#F9FAFC]">
       <div className="max-w-2xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-10">
-          <p className="text-xs font-medium tracking-widest uppercase text-[#c2410c] mb-3">
+          <p className="text-xs font-medium tracking-widest uppercase text-[#c2400c] mb-3">
             Setup
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#131d29] mb-2">
+          <h1 className="text-3xl tracking-tight text-[#131d29] mb-2">
             Get MetricOra ready
           </h1>
           <p className="text-sm text-[#5B6A78] leading-relaxed">
@@ -247,7 +247,7 @@ export default function OnboardingPage() {
           </div>
           <Link
             href={`/orgs/${orgId}/carbon-reduction-plan`}
-            className="shrink-0 rounded-md bg-[#131d29] px-3 py-1.5 text-sm font-medium text-white hover:bg-[#1F2937]"
+            className={buttonVariants({ className: "shrink-0" })}
           >
             Start your Carbon Reduction Plan
           </Link>
@@ -297,7 +297,7 @@ export default function OnboardingPage() {
                         ? "bg-[#D1FAE5]"
                         : isActive
                         ? "bg-[#FFF7ED] border border-[#FED7AA]"
-                        : "bg-[#F3F4F6]"
+                        : "bg-[#F9FAFC]"
                     }`}
                   >
                     {done ? (
@@ -305,7 +305,7 @@ export default function OnboardingPage() {
                     ) : (
                       <span
                         className={`text-xs font-semibold ${
-                          isActive ? "text-[#c2410c]" : "text-[#5B6A78]"
+                          isActive ? "text-[#c2400c]" : "text-[#5B6A78]"
                         }`}
                       >
                         {i + 1}
@@ -318,7 +318,7 @@ export default function OnboardingPage() {
                     <div className="flex items-center gap-2 mb-0.5">
                       <Icon
                         className={`h-3.5 w-3.5 shrink-0 ${
-                          done ? "text-emerald-600" : isActive ? "text-[#c2410c]" : "text-[#5B6A78]"
+                          done ? "text-emerald-600" : isActive ? "text-[#c2400c]" : "text-[#5B6A78]"
                         }`}
                       />
                       <p
@@ -341,7 +341,7 @@ export default function OnboardingPage() {
                         <Link href={def.href(orgId)}>
                           <Button
                             size="sm"
-                            className="h-7 px-3 text-xs bg-[#c2410c] text-white border-0 hover:bg-[#9a3412]"
+                            className="h-7 px-3 text-xs"
                           >
                             {def.cta}
                             <ArrowRight className="ml-1 h-3 w-3" />

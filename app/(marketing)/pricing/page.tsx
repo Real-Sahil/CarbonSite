@@ -187,7 +187,7 @@ export default function PricingPage() {
               <div className="flex items-center justify-between">
                 <H3 className="text-[20px]">{t.name}</H3>
                 {t.highlight ? (
-                  <span className="rounded-full bg-mk-accent-soft px-2.5 py-1 font-mono text-[11px] uppercase tracking-[0.1em] text-mk-accent-hover">Most chosen</span>
+                  <span className="rounded-full bg-mk-accent-soft px-2.5 py-1 font-sans text-[11px] uppercase tracking-[0.1em] text-mk-accent-hover">Most chosen</span>
                 ) : null}
               </div>
               <p className="text-[15px] text-mk-text-2">{t.forWho}</p>

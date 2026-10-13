@@ -38,7 +38,7 @@ type Lineage = {
   records: { categoryId: string; nextCursor: string | null; items: Item[] } | null;
 };
 
-const TIER_BAR: Record<EvidenceTier, string> = { verified: "bg-emerald-500", partial: "bg-amber-400", estimated: "bg-slate-300" };
+const TIER_BAR: Record<EvidenceTier, string> = { verified: "bg-emerald-500", partial: "bg-amber-400", estimated: "bg-[#E3E8EE]" };
 const TIER_CHIP: Record<EvidenceTier, string> = {
   verified: "border-emerald-200 bg-emerald-50 text-emerald-800",
   partial: "border-amber-200 bg-amber-50 text-amber-800",
@@ -138,7 +138,7 @@ export default function LineagePage() {
   if (!data.snapshot) {
     return (
       <div className="mx-auto max-w-3xl p-8">
-        <h1 className="text-2xl font-semibold text-[#131d29]">Trace a figure</h1>
+        <h1 className="text-2xl text-[#131d29]">Trace a figure</h1>
         <p className="mt-2 text-sm text-[#41505F]">Nothing is published yet. Calculate a period and publish it, then every figure can be traced here to its source.</p>
       </div>
     );
@@ -162,7 +162,7 @@ export default function LineagePage() {
             </>
           ) : null}
         </nav>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#131d29]">Trace a figure</h1>
+        <h1 className="text-2xl tracking-tight text-[#131d29]">Trace a figure</h1>
         <p className="mt-1 max-w-[70ch] text-sm text-[#41505F]">
           Every published figure, from the category total down to the record, the factor, the formula and the ticket or invoice behind it.
           {s.factorLibrary ? ` Factors: ${s.factorLibrary}.` : ""}
@@ -180,7 +180,7 @@ export default function LineagePage() {
       {data.tiers ? (
         <section aria-labelledby="tiers" className="flex flex-col gap-3">
           <h2 id="tiers" className="text-sm font-semibold text-[#131d29]">Evidence behind the headline total</h2>
-          <div className="flex h-2.5 overflow-hidden rounded-full bg-[#F3F4F6]">
+          <div className="flex h-2.5 overflow-hidden rounded-full bg-[#F9FAFC]">
             {EVIDENCE_TIER_ORDER.map((k) => (
               <div key={k} className={TIER_BAR[k]} style={{ width: `${data.tiers![k].percent}%` }} />
             ))}
@@ -218,7 +218,7 @@ export default function LineagePage() {
               </thead>
               <tbody>
                 {data.categories.map((c) => (
-                  <tr key={c.id} className="border-t border-[#F3F4F6] hover:bg-[#F9FAFC]">
+                  <tr key={c.id} className="border-t border-[#E3E8EE] hover:bg-[#F9FAFC]">
                     <td className="py-2.5 pl-4">
                       <button type="button" onClick={() => go(c.id)} className="text-left text-[#131d29] underline-offset-2 hover:underline">
                         <span className="mr-2 text-xs text-[#5B6A78]">Scope {c.scope}</span>
@@ -295,7 +295,7 @@ export default function LineagePage() {
           </ol>
           {cursor ? (
             <div>
-              <button type="button" disabled={more} onClick={loadMore} className="rounded-md border border-[#D1D5DB] px-3 py-1.5 text-sm text-[#131d29] disabled:opacity-50">
+              <button type="button" disabled={more} onClick={loadMore} className="rounded-md border border-[#E3E8EE] px-3 py-1.5 text-sm text-[#131d29] disabled:opacity-50">
                 {more ? "Loading..." : "Show more"}
               </button>
             </div>

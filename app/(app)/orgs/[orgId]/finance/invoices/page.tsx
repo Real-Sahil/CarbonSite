@@ -142,7 +142,7 @@ export default function InvoicePage() {
   };
 
   const severityColor = {
-    info: 'bg-blue-50 text-blue-900',
+    info: 'bg-[#F9FAFC] text-[#131d29]',
     warning: 'bg-amber-50 text-amber-900',
     critical: 'bg-red-50 text-red-900',
   };
@@ -190,7 +190,7 @@ export default function InvoicePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{pendingCount}</div>
+            <div className="text-3xl font-semibold tabular-nums">{pendingCount}</div>
             <p className="text-xs text-[#5B6A78] mt-1">
               Awaiting approval or rejection
             </p>
@@ -204,7 +204,7 @@ export default function InvoicePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">{criticalCount}</div>
+            <div className="text-3xl font-semibold tabular-nums text-red-600">{criticalCount}</div>
             <p className="text-xs text-[#5B6A78] mt-1">
               Duplicates, over-billing detected
             </p>
@@ -218,7 +218,7 @@ export default function InvoicePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{selectedIds.size}</div>
+            <div className="text-3xl font-semibold tabular-nums">{selectedIds.size}</div>
             <p className="text-xs text-[#5B6A78] mt-1">
               Ready for bulk action
             </p>
@@ -291,7 +291,7 @@ export default function InvoicePage() {
 
       {/* Bulk Actions */}
       {selectedIds.size > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">
@@ -343,7 +343,7 @@ export default function InvoicePage() {
             <div className="text-center py-8 text-sm text-[#41505F]">
               <p>{error}</p>
               {upgradeRequired ? (
-                <Link href={`/orgs/${orgId}/settings/billing`} className="mt-2 inline-block text-[#c2410c] hover:underline">
+                <Link href={`/orgs/${orgId}/settings/billing`} className="mt-2 inline-block text-[#c2400c] hover:underline">
                   See plans
                 </Link>
               ) : null}

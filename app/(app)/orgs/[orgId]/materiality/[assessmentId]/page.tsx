@@ -65,7 +65,7 @@ export default async function MaterialityAssessmentPage({ params }: { params: Pr
       )}
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#F3F4F6] px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E3E8EE] px-5 py-4">
           <div>
             <h2 className="text-base font-semibold text-[#131d29]">Topics</h2>
             <p className="mt-1 max-w-[70ch] text-xs text-[#5B6A78]">

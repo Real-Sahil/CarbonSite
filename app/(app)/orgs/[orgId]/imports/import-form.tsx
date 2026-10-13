@@ -249,7 +249,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
           label="Read with"
           htmlFor="f-profile"
           aside={
-            <Link href={`/orgs/${orgId}/imports/profiles`} className="text-xs font-normal text-[#c2410c] hover:text-[#9a3412]">
+            <Link href={`/orgs/${orgId}/imports/profiles`} className="text-xs font-normal text-[#c2400c] hover:text-[#9a3412]">
               ERP profiles
             </Link>
           }
@@ -277,7 +277,7 @@ export function CreateImportForm({ orgId, periods, profiles = [] }: CreateImport
             <a
               href={`/api/orgs/${orgId}/imports/template`}
               download="metricora-import-template.xlsx"
-              className="flex items-center gap-1 text-xs font-normal text-[#c2410c] hover:text-[#9a3412]"
+              className="flex items-center gap-1 text-xs font-normal text-[#c2400c] hover:text-[#9a3412]"
               tabIndex={busy ? -1 : 0}
             >
               <Download aria-hidden="true" className="h-3 w-3" />

@@ -48,9 +48,9 @@ function alertLevel(actualTco2e: number, budgetTco2e: number) {
 
 function ProgressBar({ actual, budget }: { actual: number; budget: number }) {
   const pct = budget > 0 ? Math.min((actual / budget) * 100, 130) : 0;
-  const color = pct >= 120 ? "bg-red-500" : pct >= 100 ? "bg-orange-500" : pct >= 80 ? "bg-amber-400" : "bg-[#c2410c]";
+  const color = pct >= 120 ? "bg-red-500" : pct >= 100 ? "bg-orange-500" : pct >= 80 ? "bg-amber-400" : "bg-[#c2400c]";
   return (
-    <div className="relative h-2.5 rounded-full bg-gray-100 overflow-hidden">
+    <div className="relative h-2.5 rounded-full bg-[#F9FAFC] overflow-hidden">
       <div className={`h-full rounded-full transition-all duration-500 ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
       {pct > 100 && (
         <div className="absolute inset-y-0 right-0 w-1 bg-red-600 rounded-r-full" />
@@ -122,9 +122,9 @@ function SetBudgetModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-[#E3E8EE]">
           <h2 className="text-base font-semibold text-[#131d29]">{existing ? "Edit" : "Set"} carbon budget</h2>
-          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="h-8 w-8 rounded-lg hover:bg-[#F9FAFC] flex items-center justify-center">
             <X className="h-4 w-4 text-[#5B6A78]" />
           </button>
         </div>
@@ -148,7 +148,7 @@ function SetBudgetModal({
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-[#41505F]">Budget by phase</p>
               <button type="button" onClick={() => setPhases([...phases, { name: "", budgetTco2e: "", notes: "" }])}
-                className="text-xs text-[#c2410c] hover:text-[#c2410c] font-medium">+ Add phase</button>
+                className="text-xs text-[#c2400c] hover:text-[#c2400c] font-medium">+ Add phase</button>
             </div>
             <div className="space-y-2">
               {phases.map((phase, i) => (
@@ -158,10 +158,10 @@ function SetBudgetModal({
                     className={`${inputCls} flex-1`} />
                   <input type="number" min="0" step="0.01" value={phase.budgetTco2e} placeholder="tCO₂e"
                     onChange={(e) => setPhases(phases.map((p, j) => j === i ? { ...p, budgetTco2e: e.target.value } : p))}
-                    className="w-28 rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] outline-none focus:border-[#c2410c] focus:ring-2 focus:ring-[#c2410c]/15" />
+                    className="w-28 rounded-lg border border-[#E3E8EE] bg-white px-3 py-2 text-sm text-[#131d29] outline-none focus:border-[#c2400c] focus:ring-2 focus:ring-[#c2400c]/15" />
                   <button type="button" onClick={() => setPhases(phases.filter((_, j) => j !== i))}
                     className="h-8 w-8 rounded-lg hover:bg-red-50 flex items-center justify-center flex-shrink-0">
-                    <X className="h-3.5 w-3.5 text-gray-300 hover:text-red-500" />
+                    <X className="h-3.5 w-3.5 text-[#5B6A78] hover:text-red-500" />
                   </button>
                 </div>
               ))}
@@ -243,7 +243,7 @@ function PhaseRow({
             </span>
           )}
           {!phaseAlert && phaseActual === 0 && (
-            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-[#5B6A78] border border-[#E3E8EE]">
+            <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-[#F9FAFC] text-[#5B6A78] border border-[#E3E8EE]">
               Not started
             </span>
           )}
@@ -261,7 +261,7 @@ function PhaseRow({
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="text-xs font-medium text-[#c2410c] hover:text-[#9a3412]"
+              className="text-xs font-medium text-[#c2400c] hover:text-[#9a3412]"
             >
               Update
             </button>
@@ -293,16 +293,16 @@ function PhaseRow({
               className={fieldClass}
             />
           </FormField>
-          <button
+          <Button
+            size="sm"
             onClick={handleSave}
             disabled={saving}
-            className="rounded-md bg-[#c2410c] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#9a3412] disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save"}
-          </button>
+          </Button>
           <button
             onClick={() => setEditing(false)}
-            className="rounded-md border border-[#E3E8EE] px-3 py-1.5 text-xs font-medium text-[#41505F] hover:bg-gray-100"
+            className="rounded-md border border-[#E3E8EE] px-3 py-1.5 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC]"
           >
             Cancel
           </button>
@@ -328,8 +328,8 @@ function CarbonEvmCard({ phases }: { phases: Phase[] }) {
 
   return (
     <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
-        <Gauge className="h-4 w-4 text-[#c2410c]" />
+      <div className="px-6 py-4 border-b border-[#E3E8EE] flex items-center gap-2">
+        <Gauge className="h-4 w-4 text-[#c2400c]" />
         <div>
           <h3 className="text-sm font-semibold text-[#131d29]">Carbon earned value</h3>
           <p className="text-xs text-[#5B6A78] mt-0.5">
@@ -339,7 +339,7 @@ function CarbonEvmCard({ phases }: { phases: Phase[] }) {
           </p>
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-50">
+      <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#E3E8EE]">
         <div className="p-5">
           <div className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest mb-1">Earned value</div>
           <div className="text-xl font-semibold text-[#131d29] tabular-nums">{evm.earnedValueTco2e.toFixed(1)}</div>
@@ -418,16 +418,15 @@ export default function CarbonBudgetPage() {
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Carbon Budget</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Carbon Budget</h1>
           <p className="text-sm text-[#5B6A78] mt-1">Track emissions against project carbon budget in real time.</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#9a3412] transition-colors"
         >
           {budget ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
           {budget ? "Edit budget" : "Set budget"}
-        </button>
+        </Button>
       </div>
 
       {loading ? (
@@ -445,7 +444,7 @@ export default function CarbonBudgetPage() {
       ) : !budget ? (
         <div className="rounded-xl border border-[#E3E8EE] bg-white p-12 text-center">
           <div className="mx-auto mb-3 h-10 w-10 rounded-full bg-[#FFF7ED] flex items-center justify-center">
-            <Target className="h-5 w-5 text-[#c2410c]" />
+            <Target className="h-5 w-5 text-[#c2400c]" />
           </div>
           <p className="text-sm font-medium text-[#41505F]">No carbon budget set</p>
           <p className="text-xs text-[#5B6A78] mt-1">Set a tCO₂e limit to track project emissions against your budget.</p>
@@ -498,7 +497,7 @@ export default function CarbonBudgetPage() {
               {intensityPerM2 && (
                 <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-[#c2410c]" />
+                    <TrendingUp className="h-4 w-4 text-[#c2400c]" />
                     <span className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest">Budget intensity</span>
                   </div>
                   <div className="text-xl font-semibold text-[#131d29] tabular-nums">{intensityPerM2}</div>
@@ -508,7 +507,7 @@ export default function CarbonBudgetPage() {
               {intensityPerMGbp && (
                 <div className="rounded-xl border border-[#E3E8EE] bg-white p-5">
                   <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="h-4 w-4 text-[#c2410c]" />
+                    <TrendingUp className="h-4 w-4 text-[#c2400c]" />
                     <span className="text-xs font-medium text-[#5B6A78] uppercase tracking-widest">Spend intensity</span>
                   </div>
                   <div className="text-xl font-semibold text-[#131d29] tabular-nums">{intensityPerMGbp}</div>
@@ -521,13 +520,13 @@ export default function CarbonBudgetPage() {
           {/* Phases */}
           {budget.phases.length > 0 && (
             <div className="rounded-xl border border-[#E3E8EE] bg-white overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100">
+              <div className="px-6 py-4 border-b border-[#E3E8EE]">
                 <h3 className="text-sm font-semibold text-[#131d29]">Budget by phase</h3>
                 <p className="text-xs text-[#5B6A78] mt-0.5">
                   Actual tCO₂e and percent complete are reconciled manually per phase.
                 </p>
               </div>
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-[#E3E8EE]">
                 {budget.phases.map((phase) => (
                   <PhaseRow
                     key={phase.id}

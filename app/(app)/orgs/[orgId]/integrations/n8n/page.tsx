@@ -114,7 +114,7 @@ export default function N8nPage() {
             <CardTitle className="text-sm font-medium">Active Workflows</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{workflows.filter(w => w.enabled).length}</div>
+            <div className="text-2xl font-semibold tabular-nums">{workflows.filter(w => w.enabled).length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -122,7 +122,7 @@ export default function N8nPage() {
             <CardTitle className="text-sm font-medium">Total</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{workflows.length}</div>
+            <div className="text-2xl font-semibold tabular-nums">{workflows.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -130,7 +130,7 @@ export default function N8nPage() {
             <CardTitle className="text-sm font-medium">Recent Failures</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
+            <div className="text-2xl font-semibold tabular-nums text-red-600">
               {workflows.reduce((sum, w) => sum + w.failureCount, 0)}
             </div>
           </CardContent>
@@ -285,7 +285,7 @@ export default function N8nPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
         <CardHeader>
           <CardTitle className="text-base">Setup Instructions</CardTitle>
         </CardHeader>
@@ -298,7 +298,7 @@ export default function N8nPage() {
                 href="https://n8n.io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-[#c2400c] hover:underline"
               >
                 n8n
               </a>

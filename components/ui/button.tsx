@@ -15,11 +15,11 @@ const buttonVariants = cva(
         outline:
           "border border-[#131d29]/10 bg-white text-[#131d29] rounded-full shadow-[0_1px_4px_rgba(19,29,41,0.05)] hover:bg-[#F9FAFC] hover:border-[#131d29]/25",
         secondary:
-          "bg-amber-50 text-amber-700 rounded-full hover:bg-amber-100 border border-amber-200",
+          "border border-[#131d29]/10 bg-white text-[#131d29] rounded-full shadow-[0_2px_8px_rgba(19,29,41,0.05)] hover:border-[#131d29]/25",
         ghost:
           "text-[#41505F] rounded-full hover:bg-white hover:text-[#131d29]",
         link:
-          "text-amber-600 underline-offset-4 hover:underline",
+          "text-[#c2400c] underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-[21px] py-[14px] max-sm:min-h-11",

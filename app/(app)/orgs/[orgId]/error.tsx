@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function OrgError({
   error,
@@ -36,22 +37,22 @@ export default function OrgError({
         <h1 className="text-[32px] leading-tight text-[#131d29] mb-3">
           Something went wrong
         </h1>
-        <p className="text-sm text-[#555] mb-2 leading-relaxed">
+        <p className="text-sm text-[#41505F] mb-2 leading-relaxed">
           There was an unexpected error. Please try refreshing or go back to the home page.
         </p>
         {error.digest && (
-          <p className="text-xs text-[#888] mb-6">
-            Reference: <code className="bg-[#f0f0f0] px-1.5 py-0.5 rounded text-[11px]">{error.digest}</code>
+          <p className="text-xs text-[#5B6A78] mb-6">
+            Reference: <code className="bg-[#F9FAFC] px-1.5 py-0.5 rounded text-[11px]">{error.digest}</code>
           </p>
         )}
         <div className="flex gap-3 justify-center">
-          <button
+          <Button
             onClick={handleReset}
             disabled={resetCount > 2}
-            className="px-5 py-2.5 bg-[#c2410c] text-white rounded-lg text-sm font-medium hover:bg-[#9a3412] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5"
           >
             {resetCount > 2 ? "Please refresh page" : "Try again"}
-          </button>
+          </Button>
           <button
             onClick={() => { window.location.href = "/"; }}
             className="px-5 py-2.5 bg-[#fff7ed] text-[#131d29] rounded-lg text-sm font-medium hover:bg-[#FFEDD5] transition-colors"

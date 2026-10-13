@@ -89,7 +89,7 @@ export function DemoAnalytics() {
       <div ref={ref} className="grid gap-6 p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-mk-text-3">Total footprint, Scopes 1-3</p>
+            <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mk-text-3">Total footprint, Scopes 1-3</p>
             <p className="mt-1 text-[34px] font-semibold leading-none tracking-[-0.03em] text-mk-text tabular-nums sm:text-[40px]">
               <CountUp to={TOTAL_KG / 1000} run={seen} reduce={reduce} /> <span className="text-[20px] font-medium text-mk-text-2">tCO₂e</span>
             </p>

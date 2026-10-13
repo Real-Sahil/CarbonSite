@@ -80,7 +80,7 @@ export default async function CarbonIntelligencePage({ params }: Props) {
       <div className="bg-white border-b border-[#E3E8EE]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex items-center gap-2 mb-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF6FF]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F9FAFC]">
               <Zap className="h-4 w-4 text-[#131d29]" />
             </div>
             <span className="text-xs font-medium tracking-wide text-[#131d29] uppercase">Carbon Intelligence</span>
@@ -92,21 +92,21 @@ export default async function CarbonIntelligencePage({ params }: Props) {
 
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className="text-2xl font-bold tabular-nums text-[#131d29]">{openAlerts.length}</span>
+              <span className="text-2xl font-semibold tabular-nums tabular-nums text-[#131d29]">{openAlerts.length}</span>
               <span className="text-xs text-[#5B6A78]">open alerts</span>
             </div>
             <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className={`text-2xl font-bold tabular-nums ${criticalCount > 0 ? "text-red-600" : "text-[#131d29]"}`}>
+              <span className={`text-2xl font-semibold tabular-nums tabular-nums ${criticalCount > 0 ? "text-red-600" : "text-[#131d29]"}`}>
                 {criticalCount}
               </span>
               <span className="text-xs text-[#5B6A78]">critical severity</span>
             </div>
             <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className="text-2xl font-bold tabular-nums text-[#131d29]">{recentSignals.length ? "Active" : "None"}</span>
+              <span className="text-2xl font-semibold tabular-nums tabular-nums text-[#131d29]">{recentSignals.length ? "Active" : "None"}</span>
               <span className="text-xs text-[#5B6A78]">recent signals</span>
             </div>
             <div className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1">
-              <span className="text-2xl font-bold tabular-nums text-[#131d29]">{activeCreds}</span>
+              <span className="text-2xl font-semibold tabular-nums tabular-nums text-[#131d29]">{activeCreds}</span>
               <span className="text-xs text-[#5B6A78]">active integrations</span>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default async function CarbonIntelligencePage({ params }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-[#c2410c]" />
+                  <AlertTriangle className="h-4 w-4 text-[#c2400c]" />
                   Open Alerts
                   {(criticalCount + highCount) > 0 && (
                     <Badge variant="destructive" className="text-xs ml-1">
@@ -172,7 +172,7 @@ export default async function CarbonIntelligencePage({ params }: Props) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-sm font-semibold text-[#131d29] flex items-center gap-2">
-                  <Radio className="h-4 w-4 text-[#6366f1]" />
+                  <Radio className="h-4 w-4 text-[#c2400c]" />
                   Carbon Signals
                 </CardTitle>
                 <CardDescription className="text-xs text-[#5B6A78] mt-0.5">

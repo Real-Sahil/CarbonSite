@@ -59,10 +59,10 @@ export default function QualityReportPage({
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 bg-gray-200 rounded w-48 animate-pulse" />
+        <div className="h-8 bg-[#E3E8EE] rounded w-48 animate-pulse" />
         <div className="grid gap-4 md:grid-cols-2">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded animate-pulse" />
+            <div key={i} className="h-32 bg-[#F9FAFC] rounded animate-pulse" />
           ))}
         </div>
       </div>
@@ -100,30 +100,30 @@ export default function QualityReportPage({
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-[#41505F]">Total Records</div>
-            <div className="text-3xl font-bold mt-1">{report.totalRows.toLocaleString()}</div>
+            <div className="text-3xl font-semibold tabular-nums mt-1">{report.totalRows.toLocaleString()}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-[#41505F]">Successful</div>
-            <div className="text-3xl font-bold mt-1 text-green-600">{report.successfulRows.toLocaleString()}</div>
+            <div className="text-3xl font-semibold tabular-nums mt-1 text-green-600">{report.successfulRows.toLocaleString()}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-[#41505F]">Success Rate</div>
-            <div className="text-3xl font-bold mt-1 text-blue-600">{successRate}%</div>
+            <div className="text-3xl font-semibold tabular-nums mt-1 text-[#c2400c]">{successRate}%</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-[#41505F]">Quality Score</div>
-            <div className={`text-3xl font-bold mt-1 ${
+            <div className={`text-3xl font-semibold tabular-nums mt-1 ${
               report.qualityScore.status === 'excellent' ? 'text-green-600' :
-              report.qualityScore.status === 'good' ? 'text-blue-600' :
+              report.qualityScore.status === 'good' ? 'text-emerald-700' :
               report.qualityScore.status === 'fair' ? 'text-yellow-600' :
               'text-red-600'
             }`}>{report.qualityScore.overallScore}%</div>
@@ -162,9 +162,9 @@ export default function QualityReportPage({
                   <div key={group.type} className="flex items-center justify-between text-sm">
                     <span className="capitalize text-[#41505F]">{group.type}</span>
                     <div className="flex items-center gap-2">
-                      <div className="w-32 bg-gray-200 rounded-full h-2">
+                      <div className="w-32 bg-[#E3E8EE] rounded-full h-2">
                         <div
-                          className="bg-blue-500 h-2 rounded-full"
+                          className="bg-[#c2400c] h-2 rounded-full"
                           style={{ width: `${(group.passed / group.total) * 100}%` }}
                         />
                       </div>
@@ -220,7 +220,7 @@ export default function QualityReportPage({
                   <th className="text-right py-2 px-4 font-medium text-[#131d29]">Failures</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-[#E3E8EE]">
                 {report.checks.map((check) => (
                   <tr key={check.id} className="hover:bg-[#F9FAFC]">
                     <td className="py-2 px-4 text-[#131d29]">{check.name}</td>

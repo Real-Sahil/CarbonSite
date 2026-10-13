@@ -43,17 +43,17 @@ interface PaginatedResponse {
 }
 
 const actionColorMap: Record<string, string> = {
-  "org.created": "bg-blue-100 text-blue-800",
+  "org.created": "bg-[#F9FAFC] text-[#131d29]",
   "org.updated": "bg-yellow-100 text-yellow-800",
   "record.created": "bg-green-100 text-green-800",
   "record.updated": "bg-yellow-100 text-yellow-800",
   "record.deleted": "bg-red-100 text-red-800",
-  "calculation.run": "bg-purple-100 text-purple-800",
+  "calculation.run": "bg-[#F9FAFC] text-[#131d29]",
   "snapshot.published": "bg-green-100 text-green-800",
-  "report.generated": "bg-blue-100 text-blue-800",
-  "field_submission.reviewed": "bg-indigo-100 text-indigo-800",
-  "auth.login": "bg-gray-100 text-[#131d29]",
-  "auth.logout": "bg-gray-100 text-[#131d29]",
+  "report.generated": "bg-[#F9FAFC] text-[#131d29]",
+  "field_submission.reviewed": "bg-[#F9FAFC] text-[#131d29]",
+  "auth.login": "bg-[#F9FAFC] text-[#131d29]",
+  "auth.logout": "bg-[#F9FAFC] text-[#131d29]",
   "user.created": "bg-green-100 text-green-800",
   "user.role_changed": "bg-orange-100 text-orange-800",
 };
@@ -189,7 +189,7 @@ export default function AuditTrailPage() {
                         {format(new Date(log.timestamp), "MMM d, yyyy HH:mm:ss")}
                       </TableCell>
                       <TableCell>
-                        <Badge className={actionColorMap[log.action] || "bg-gray-100 text-[#131d29]"}>
+                        <Badge className={actionColorMap[log.action] || "bg-[#F9FAFC] text-[#131d29]"}>
                           {log.action}
                         </Badge>
                       </TableCell>

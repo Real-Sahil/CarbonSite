@@ -38,7 +38,7 @@ export default async function TcfdPage({ params }: { params: Promise<{ orgId: st
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">TCFD Scenarios</h1>
+          <h1 className="text-2xl tracking-tight">TCFD Scenarios</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Model physical and transition climate risks under the TCFD framework.
           </p>
@@ -51,19 +51,19 @@ export default async function TcfdPage({ params }: { params: Promise<{ orgId: st
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Physical Scenarios</CardTitle>
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{physicalCount}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums">{physicalCount}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Transition Scenarios</CardTitle>
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{transitionCount}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums">{transitionCount}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Risks Assessed</CardTitle>
           </CardHeader>
-          <CardContent><div className="text-2xl font-bold">{totalRisks}</div></CardContent>
+          <CardContent><div className="text-2xl font-semibold tabular-nums">{totalRisks}</div></CardContent>
         </Card>
       </div>
 

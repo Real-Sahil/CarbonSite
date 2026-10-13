@@ -68,7 +68,7 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
     <div className="p-8 max-w-5xl mx-auto">
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#131d29] tracking-tight">Water</h1>
+          <h1 className="text-2xl text-[#131d29] tracking-tight">Water</h1>
           <p className="text-sm text-[#5B6A78] mt-1">Track withdrawal, discharge and consumption for CSRD ESRS E3.</p>
         </div>
         {canEdit && <WaterAddButtons orgId={orgId} facilities={facilities} periods={rawPeriods} />}
@@ -100,14 +100,14 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Metric", "Facility", "Source", "Volume (m3)", "Water-stressed", "Date", ""].map((h) => (
                   <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6 last:pr-6">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#E3E8EE]">
               {records.map((r) => (
                 <tr key={r.id} className="hover:bg-[#F9FAFC] transition-colors">
                   <td className="py-3 pl-6 pr-4 font-medium text-[#131d29]">{METRIC_LABELS[r.metricType] ?? r.metricType}</td>

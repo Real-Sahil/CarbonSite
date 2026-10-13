@@ -25,9 +25,9 @@ export default async function InvitePage({ params, searchParams }: InvitePagePro
   const demoToken = process.env.DEMO_REVIEWER_TOKEN;
   if (demoToken && demoToken.length >= 24 && token === demoToken) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-10">
+      <main className="min-h-screen bg-[#F9FAFC] px-4 py-10">
         <div className="mx-auto flex max-w-md flex-col gap-6">
-          <h1 className="text-2xl font-bold text-slate-950">MetricOra demo</h1>
+          <h1 className="text-2xl text-[#131d29]">MetricOra demo</h1>
           <MobileAppInvite token={token} orgName="MetricOra Demo" appOnly />
         </div>
       </main>
@@ -52,16 +52,16 @@ export default async function InvitePage({ params, searchParams }: InvitePagePro
   const showMobileFirst = isFieldWorkerRole && isMobileUserAgent(ua) && !forceWebForm;
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
+    <main className="min-h-screen bg-[#F9FAFC] px-4 py-10">
       <div className="mx-auto flex max-w-md flex-col gap-6">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#0F766E]">
+          <p className="text-sm font-semibold uppercase tracking-wide text-[#c2400c]">
             MetricOra invite
           </p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-950">
+          <h1 className="mt-2 text-2xl text-[#131d29]">
             Join {invite.organization.name}
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-[#41505F]">
             {isFieldWorkerRole
               ? "You've been invited to submit field records for this organisation."
               : "Accept this one-time invite to access the organisation workspace."}

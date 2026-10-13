@@ -30,7 +30,7 @@ interface Props {
 function statusBadge(status: ReviewTaskStatus) {
   switch (status) {
     case "open":
-      return <Badge className="bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100">Open</Badge>;
+      return <Badge className="bg-[#F9FAFC] text-[#131d29] border-[#E3E8EE] hover:bg-[#FFF2EC]">Open</Badge>;
     case "completed":
       return <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100">Completed</Badge>;
     case "blocked":
@@ -202,7 +202,7 @@ export default async function TasksPage({ params }: Props) {
                         </TableHeader>
                         <TableBody>
                           {bucket.map((task) => (
-                            <TableRow key={task.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                            <TableRow key={task.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                               <TableCell className="text-sm text-[#41505F] py-3.5 pl-6">
                                 {typeLabel(task.type)}
                               </TableCell>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, AlertTriangle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface EmissionAnomaly {
   recordId: string;
@@ -40,9 +41,9 @@ function getSeverityColor(severity: string) {
     case 'medium':
       return 'bg-yellow-100 text-yellow-800';
     case 'low':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-[#F9FAFC] text-[#131d29]';
     default:
-      return 'bg-gray-100 text-[#131d29]';
+      return 'bg-[#F9FAFC] text-[#131d29]';
   }
 }
 
@@ -51,9 +52,9 @@ function getAnomalyIcon(anomalyType: string) {
     case 'outlier':
       return <AlertTriangle className="h-4 w-4 text-orange-600" />;
     case 'trend_change':
-      return <TrendingUp className="h-4 w-4 text-purple-600" />;
+      return <TrendingUp className="h-4 w-4 text-[#c2400c]" />;
     case 'unusual_pattern':
-      return <TrendingDown className="h-4 w-4 text-blue-600" />;
+      return <TrendingDown className="h-4 w-4 text-[#c2400c]" />;
     default:
       return <Minus className="h-4 w-4 text-[#5B6A78]" />;
   }
@@ -132,7 +133,7 @@ export default function AnomaliesPage() {
             <CardTitle className="text-sm font-medium text-[#41505F]">High Severity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-600">{highCount}</div>
+            <div className="text-3xl font-semibold tabular-nums text-red-600">{highCount}</div>
             <p className="mt-1 text-xs text-[#5B6A78]">Requires immediate attention</p>
           </CardContent>
         </Card>
@@ -142,7 +143,7 @@ export default function AnomaliesPage() {
             <CardTitle className="text-sm font-medium text-[#41505F]">Medium Severity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-600">{mediumCount}</div>
+            <div className="text-3xl font-semibold tabular-nums text-yellow-600">{mediumCount}</div>
             <p className="mt-1 text-xs text-[#5B6A78]">Review recommended</p>
           </CardContent>
         </Card>
@@ -152,7 +153,7 @@ export default function AnomaliesPage() {
             <CardTitle className="text-sm font-medium text-[#41505F]">Low Severity</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{lowCount}</div>
+            <div className="text-3xl font-semibold tabular-nums text-[#c2400c]">{lowCount}</div>
             <p className="mt-1 text-xs text-[#5B6A78]">Monitor for trends</p>
           </CardContent>
         </Card>
@@ -180,7 +181,7 @@ export default function AnomaliesPage() {
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#c2400c]" />
         </div>
       )}
 
@@ -264,13 +265,12 @@ export default function AnomaliesPage() {
               >
                 Previous
               </button>
-              <button
+              <Button
                 onClick={() => setOffset(offset + limit)}
                 disabled={!hasMore}
-                className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -62,7 +62,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
       </div>
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="border-b border-[#F3F4F6] px-5 py-4">
+        <div className="border-b border-[#E3E8EE] px-5 py-4">
           <h2 className="text-base font-semibold text-[#131d29]">Pathway</h2>
           <p className="mt-1 max-w-[70ch] text-xs text-[#5B6A78]">
             {base
@@ -81,7 +81,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
           </p>
         )}
         {nearTermGap && (
-          <div className="grid grid-cols-1 gap-4 border-t border-[#F3F4F6] px-5 py-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 border-t border-[#E3E8EE] px-5 py-4 sm:grid-cols-3">
             <div>
               <p className="text-xs text-[#5B6A78]">{nearTermGap.against === "target" ? "Target" : "1.5°C benchmark"} for {nearTermGap.year}</p>
               <p className="mt-1 text-lg font-semibold tabular-nums text-[#131d29]">{t(nearTermGap.goal)} tCO₂e</p>
@@ -99,20 +99,20 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
           </div>
         )}
         {unscheduled.length > 0 && (
-          <p className="border-t border-[#F3F4F6] bg-amber-50 px-5 py-3 text-sm text-amber-800">
+          <p className="border-t border-[#E3E8EE] bg-amber-50 px-5 py-3 text-sm text-amber-800">
             Not on the planned line because they have no start date: {unscheduled.map((l) => l.name).join(", ")}.{" "}
             <Link href={`/orgs/${orgId}/targets`} className="underline underline-offset-2">Schedule them</Link>
           </p>
         )}
         {target && (
-          <p className="border-t border-[#F3F4F6] px-5 py-3 text-xs text-[#5B6A78]">
+          <p className="border-t border-[#E3E8EE] px-5 py-3 text-xs text-[#5B6A78]">
             Target: {target.nearTermReductionPct}% by {target.nearTermYear}, {target.netZeroReductionPct}% by {target.netZeroYear} ({target.pathway}).
           </p>
         )}
       </section>
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="border-b border-[#F3F4F6] px-5 py-4">
+        <div className="border-b border-[#E3E8EE] px-5 py-4">
           <h2 className="text-base font-semibold text-[#131d29]">ESRS E1-1 checklist</h2>
           <p className="mt-1 text-xs text-[#5B6A78]">{done} of {checklist.length} done.</p>
         </div>
@@ -126,7 +126,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
                 </p>
                 <p className="mt-0.5 text-sm text-[#41505F]">{c.detail}</p>
                 {c.link ? (
-                  <Link href={`/orgs/${orgId}/${c.link.path}`} className="mt-1 inline-block text-xs font-medium text-[#c2410c] underline underline-offset-2">
+                  <Link href={`/orgs/${orgId}/${c.link.path}`} className="mt-1 inline-block text-xs font-medium text-[#c2400c] underline underline-offset-2">
                     {c.link.label}
                   </Link>
                 ) : null}
@@ -137,7 +137,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
       </section>
 
       <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-        <div className="border-b border-[#F3F4F6] px-5 py-4">
+        <div className="border-b border-[#E3E8EE] px-5 py-4">
           <h2 className="text-base font-semibold text-[#131d29]">The plan</h2>
           <p className="mt-1 text-xs text-[#5B6A78]">
             {plan?.status === "approved" ? "Saving changes returns the plan to draft until it is approved again." : "Save as you go; approval comes last."}
@@ -148,7 +148,7 @@ export default async function TransitionPlanPage({ params }: { params: Promise<{
 
       {canApprove && plan && (
         <section className="rounded-[10px] border border-[#E3E8EE] bg-white">
-          <div className="border-b border-[#F3F4F6] px-5 py-4">
+          <div className="border-b border-[#E3E8EE] px-5 py-4">
             <h2 className="text-base font-semibold text-[#131d29]">Record approval</h2>
             <p className="mt-1 max-w-[65ch] text-xs text-[#5B6A78]">
               Once the board (or the equivalent body) has approved this version, record who approved it and when.

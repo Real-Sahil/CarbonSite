@@ -163,7 +163,7 @@ export default function HomePage() {
 
       <div className="border-y border-mk-line bg-mk-paper">
         <div className="mx-auto flex max-w-[1200px] flex-col gap-3 px-5 py-6 sm:px-8 lg:flex-row lg:items-center lg:gap-10">
-          <p className="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-mk-text-2">Built on</p>
+          <p className="shrink-0 font-sans text-[11px] uppercase tracking-[0.12em] text-mk-text-2">Built on</p>
           <ul className="flex flex-col gap-2.5 text-[14px] text-mk-text-3 sm:flex-row sm:flex-wrap sm:gap-x-6">
             {STANDARDS.map((s) => (
               <li key={s} className="flex items-center gap-2 whitespace-nowrap">

@@ -56,7 +56,7 @@ function Plot({ points, width, height, locale }: { points: PathwayPoint[]; width
         aria-roledescription="line chart"
         aria-label="Emissions pathway. Use the left and right arrow keys to move between years."
         tabIndex={0}
-        className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60"
+        className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40"
         onMouseMove={(e) => setActive(nearest(e.clientX, e.currentTarget))}
         onMouseLeave={() => setActive(null)}
         onFocus={() => setActive((a) => a ?? 0)}

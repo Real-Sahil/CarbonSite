@@ -5,10 +5,10 @@ import { PLAN_ORDER, type Plan } from "@/lib/billing/limits";
 
 const PLAN_CLASSES: Record<Plan, string> = {
   trial: "bg-amber-100 text-amber-800 border border-amber-300",
-  essentials: "bg-slate-100 text-[#131d29] border border-slate-300",
-  starter: "bg-blue-100 text-blue-800 border border-blue-300",
+  essentials: "bg-[#F9FAFC] text-[#131d29] border border-[#E3E8EE]",
+  starter: "bg-[#F9FAFC] text-[#131d29] border border-[#E3E8EE]",
   growth: "bg-emerald-100 text-emerald-800 border border-emerald-300",
-  enterprise: "bg-purple-100 text-purple-800 border border-purple-300",
+  enterprise: "bg-[#F9FAFC] text-[#131d29] border border-[#E3E8EE]",
 };
 
 function isPlan(value: string): value is Plan {
@@ -29,7 +29,7 @@ export function PlanSelector({
 
   const planClass = isPlan(plan)
     ? PLAN_CLASSES[plan]
-    : "bg-zinc-100 text-[#131d29] border border-zinc-300";
+    : "bg-[#F9FAFC] text-[#131d29] border border-[#E3E8EE]";
 
   async function handleChange(newPlan: string) {
     setPlan(newPlan);
@@ -70,7 +70,7 @@ export function PlanSelector({
           value={plan}
           onChange={(e) => handleChange(e.target.value)}
           disabled={isPending}
-          className="rounded-full border border-[#131d29]/[0.12] bg-white px-4 py-1.5 text-sm text-[#131d29] tracking-[-0.42px] focus:outline-none focus:ring-2 focus:ring-[#c2410c] disabled:opacity-50"
+          className="rounded-full border border-[#131d29]/[0.12] bg-white px-4 py-1.5 text-sm text-[#131d29] tracking-[-0.42px] focus:outline-none focus:ring-2 focus:ring-[#c2400c] disabled:opacity-50"
         >
           {PLAN_ORDER.map((p) => (
             <option key={p} value={p} className="capitalize">

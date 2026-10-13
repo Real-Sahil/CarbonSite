@@ -114,7 +114,7 @@ export function CreateBaseYearForm({
             id="by-period"
             value={reportingPeriodId}
             onChange={(e) => setReportingPeriodId(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             {periods.map((p) => (
               <option key={p.id} value={p.id}>
@@ -174,7 +174,7 @@ export function CreateBaseYearForm({
           type="checkbox"
           checked={activateNow}
           onChange={(e) => setActivateNow(e.target.checked)}
-          className="h-4 w-4 accent-zinc-900"
+          className="h-4 w-4 accent-[#c2400c]"
         />
         Make this the active baseline, superseding any current one
       </label>

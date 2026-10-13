@@ -37,7 +37,7 @@ export default function EnvironmentLayout({ children }: { children: React.ReactN
                 className={cn(
                   "-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm font-normal tracking-tight transition-colors sm:px-4",
                   isActive
-                    ? "border-zinc-900 text-[#131d29]"
+                    ? "border-[#c2400c] text-[#131d29]"
                     : "border-transparent text-[#5B6A78] hover:text-[#41505F]",
                 )}
               >

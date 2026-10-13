@@ -43,7 +43,7 @@ export function CheckGroup({
   return (
     <div>
       <p className={labelCls}>
-        {label} <span className="font-normal text-gray-400">(Select all that apply)</span>
+        {label} <span className="font-normal text-[#5B6A78]">(Select all that apply)</span>
       </p>
       <div className="grid grid-cols-2 gap-1 mt-1">
         {options.map((opt) => (
@@ -53,7 +53,7 @@ export function CheckGroup({
           >
             <input
               type="checkbox"
-              className="h-3.5 w-3.5 accent-gray-800"
+              className="h-3.5 w-3.5 accent-[#c2400c]"
               checked={selected.includes(opt)}
               disabled={disabled}
               onChange={(e) => {
@@ -73,7 +73,7 @@ export function CheckGroup({
 export function CheckRow({ id, label, checked, onChange, disabled }: { id: string; label: string; checked: boolean; onChange: (v: boolean) => void; disabled: boolean }) {
   return (
     <label htmlFor={id} className={`flex items-start gap-2 text-sm rounded px-2 py-1.5 hover:bg-[#F9FAFC] ${disabled ? "opacity-60" : "cursor-pointer"}`}>
-      <input id={id} type="checkbox" className="mt-0.5 h-3.5 w-3.5 accent-gray-800" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+      <input id={id} type="checkbox" className="mt-0.5 h-3.5 w-3.5 accent-[#c2400c]" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span>{label}</span>
     </label>
   );
@@ -98,11 +98,11 @@ export function SectionNav<K extends string>({
   footer?: ReactNode;
 }) {
   return (
-    <aside className={`${open ? "flex" : "hidden md:flex"} flex-col w-56 border-r border-gray-100 bg-white flex-shrink-0`}>
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+    <aside className={`${open ? "flex" : "hidden md:flex"} flex-col w-56 border-r border-[#E3E8EE] bg-white flex-shrink-0`}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#E3E8EE]">
         <span className="text-xs font-semibold text-[#5B6A78] uppercase tracking-wide">Sections</span>
         <button className="md:hidden" onClick={onClose} aria-label="Close sections">
-          <X className="h-4 w-4 text-gray-400" />
+          <X className="h-4 w-4 text-[#5B6A78]" />
         </button>
       </div>
       <div className="flex-1 overflow-y-auto py-2">
@@ -125,14 +125,14 @@ export function SectionNav<K extends string>({
                 <StepperTrigger
                   aria-current={active === s.key ? "step" : undefined}
                   aria-controls={undefined}
-                  className={`w-full justify-start rounded-md px-2 py-2 text-left text-sm transition-colors ${active === s.key ? "bg-gray-100 font-medium text-[#131d29]" : "text-[#41505F] hover:bg-[#F9FAFC]"}`}
+                  className={`w-full justify-start rounded-md px-2 py-2 text-left text-sm transition-colors ${active === s.key ? "bg-[#F9FAFC] font-medium text-[#131d29]" : "text-[#41505F] hover:bg-[#F9FAFC]"}`}
                 >
                   <StepperIndicator
                     className={`size-5 text-[10px] font-semibold ${
                       s.state === "done"
                         ? "bg-emerald-100 text-emerald-800 data-[state=completed]:bg-emerald-100 data-[state=completed]:text-emerald-800 data-[state=active]:bg-emerald-100 data-[state=active]:text-emerald-800"
                         : s.state === "optional"
-                          ? "bg-gray-100 text-[#5B6A78] data-[state=active]:bg-gray-200 data-[state=active]:text-gray-700 data-[state=completed]:bg-gray-100 data-[state=completed]:text-gray-500"
+                          ? "bg-[#F9FAFC] text-[#5B6A78] data-[state=active]:bg-[#E3E8EE] data-[state=active]:text-[#41505F] data-[state=completed]:bg-[#F9FAFC] data-[state=completed]:text-[#5B6A78]"
                           : "bg-amber-100 text-amber-800 data-[state=active]:bg-amber-100 data-[state=active]:text-amber-800 data-[state=completed]:bg-amber-100 data-[state=completed]:text-amber-800"
                     }`}
                   >
@@ -146,7 +146,7 @@ export function SectionNav<K extends string>({
           </StepperNav>
         </Stepper>
       </div>
-      {footer ? <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">{footer}</div> : null}
+      {footer ? <div className="px-4 py-3 border-t border-[#E3E8EE] text-xs text-[#5B6A78]">{footer}</div> : null}
     </aside>
   );
 }
@@ -165,7 +165,7 @@ export function SectionPager<K extends string>({
 }) {
   const idx = sections.findIndex((s) => s.key === active);
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 bg-white flex-shrink-0">
+    <div className="flex items-center justify-between px-4 py-2.5 border-t border-[#E3E8EE] bg-white flex-shrink-0">
       <button
         disabled={idx <= 0}
         onClick={() => onSelect(sections[idx - 1]!.key)}

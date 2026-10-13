@@ -40,7 +40,7 @@ export function QuickBooksConnectButton({ orgId, connected = false }: QuickBooks
       <Button
         onClick={handleConnect}
         disabled={isLoading}
-        className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold"
+        className="w-full font-semibold"
       >
         {isLoading ? (
           <>

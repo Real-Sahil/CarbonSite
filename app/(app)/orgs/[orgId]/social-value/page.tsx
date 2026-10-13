@@ -224,7 +224,7 @@ export default async function SocialValuePage({ params }: Props) {
             <div className="mt-6 flex flex-col gap-4">
               <div className="inline-flex items-baseline gap-2">
                 <span className="text-xs text-[#5B6A78] uppercase tracking-wide font-medium">Total social value delivered</span>
-                <span className="text-2xl font-bold text-[#131d29] tabular-nums">{formatGbp(totalPounds)}</span>
+                <span className="text-2xl font-semibold tabular-nums text-[#131d29] tabular-nums">{formatGbp(totalPounds)}</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                 {themes.map((theme) => {
@@ -234,7 +234,7 @@ export default async function SocialValuePage({ params }: Props) {
                       key={theme.code}
                       className="rounded-lg border border-[#E3E8EE] bg-white px-4 py-4 flex flex-col gap-1"
                     >
-                      <span className="text-xs font-semibold text-[#c2410c]">
+                      <span className="text-xs font-semibold text-[#c2400c]">
                         {theme.code}
                       </span>
                       <span className="text-xs text-[#5B6A78] leading-[1.4]">
@@ -262,22 +262,22 @@ export default async function SocialValuePage({ params }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="flex flex-col gap-0.5">
-                <span className="text-2xl font-bold text-[#131d29] tabular-nums">{svActiveCommitments}</span>
+                <span className="text-2xl font-semibold tabular-nums text-[#131d29] tabular-nums">{svActiveCommitments}</span>
                 <span className="text-xs text-[#5B6A78]">active commitments</span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-2xl font-bold text-[#131d29] tabular-nums">{svApprovedCount}</span>
+                <span className="text-2xl font-semibold tabular-nums text-[#131d29] tabular-nums">{svApprovedCount}</span>
                 <span className="text-xs text-[#5B6A78]">approved activities</span>
               </div>
               {svApprovedMonetised > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-2xl font-bold text-[#131d29] tabular-nums">{formatGbp(svApprovedMonetised)}</span>
+                  <span className="text-2xl font-semibold tabular-nums text-[#131d29] tabular-nums">{formatGbp(svApprovedMonetised)}</span>
                   <span className="text-xs text-[#5B6A78]">approved value delivered</span>
                 </div>
               )}
               {(svPendingCount as number) > 0 && (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-2xl font-bold text-[#c2410c] tabular-nums">{svPendingCount as number}</span>
+                  <span className="text-2xl font-semibold tabular-nums text-[#c2400c] tabular-nums">{svPendingCount as number}</span>
                   <span className="text-xs text-[#5B6A78]">activities pending review</span>
                 </div>
               )}
@@ -371,7 +371,7 @@ export default async function SocialValuePage({ params }: Props) {
                   </TableHeader>
                   <TableBody>
                     {records.map((record) => (
-                      <TableRow key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors">
+                      <TableRow key={record.id} className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors">
                         <TableCell className="text-sm text-[#5B6A78] tabular-nums py-3.5 pl-6">
                           {record.createdAt.toLocaleDateString("en-GB", {
                             day: "2-digit",
@@ -429,8 +429,8 @@ function DbErrorState() {
         <p className="font-medium text-[#131d29] tracking-[-0.42px]">Could not load Social Value data</p>
         <p className="text-sm text-[#41505F] tracking-[-0.42px] mt-2">
           There was a problem reading from the database. This may mean the social value tables need to be set up.
-          Run <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-xs">pnpm prisma migrate deploy</code> then{" "}
-          <code className="bg-[#F3F4F6] px-1.5 py-0.5 rounded text-xs">pnpm prisma db seed</code> to initialise TOMS data,
+          Run <code className="bg-[#F9FAFC] px-1.5 py-0.5 rounded text-xs">pnpm prisma migrate deploy</code> then{" "}
+          <code className="bg-[#F9FAFC] px-1.5 py-0.5 rounded text-xs">pnpm prisma db seed</code> to initialise TOMS data,
           then refresh the page.
         </p>
       </div>

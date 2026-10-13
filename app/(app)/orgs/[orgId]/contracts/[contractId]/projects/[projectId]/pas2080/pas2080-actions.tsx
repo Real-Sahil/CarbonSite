@@ -234,7 +234,7 @@ export function OpportunityLog({
             </thead>
             <tbody>
               {opportunities.map((o) => (
-                <tr key={o.id} className="border-b border-[#F3F4F6] align-top">
+                <tr key={o.id} className="border-b border-[#E3E8EE] align-top">
                   <td className="py-2.5 pr-3">
                     <p className="font-medium text-[#131d29]">{o.title}</p>
                     {o.description && <p className="text-xs text-[#5B6A78]">{o.description}</p>}

@@ -85,7 +85,7 @@ export default function MethodologyPage() {
         <div className="mt-10 overflow-x-auto rounded-[12px] border border-mk-line">
           <table className="w-full min-w-[640px] text-left text-[15px]">
             <thead>
-              <tr className="border-b border-mk-line bg-mk-paper font-mono text-[12px] uppercase tracking-[0.1em] text-mk-text-3">
+              <tr className="border-b border-mk-line bg-mk-paper font-sans text-[12px] uppercase tracking-[0.1em] text-mk-text-3">
                 <th className="px-5 py-3 font-medium">Library</th>
                 <th className="px-5 py-3 font-medium">Covers</th>
                 <th className="px-5 py-3 font-medium">Licence</th>
@@ -148,7 +148,7 @@ export default function MethodologyPage() {
                   <TimelineDate dateTime={String(m.effective).slice(0, 10)} className="text-[13px] text-mk-text-3">
                     Effective {new Date(m.effective).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · GWP {m.gwp}
                   </TimelineDate>
-                  <TimelineTitle className="font-mono text-[15px] font-medium text-mk-text">{m.name}</TimelineTitle>
+                  <TimelineTitle className="font-sans text-[15px] font-medium text-mk-text">{m.name}</TimelineTitle>
                 </TimelineHeader>
                 <TimelineContent className="mt-3">
                   <p className="text-[15px] leading-relaxed text-mk-text-2">{m.summary}</p>

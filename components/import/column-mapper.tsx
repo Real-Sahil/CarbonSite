@@ -144,7 +144,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
                   </div>
 
                   {/* Arrow — hidden on mobile */}
-                  <ChevronRight className="hidden sm:block h-3.5 w-3.5 text-[#D1D5DB] shrink-0" />
+                  <ChevronRight className="hidden sm:block h-3.5 w-3.5 text-[#5B6A78] shrink-0" />
 
                   {/* Target field dropdown */}
                   <div className="min-w-0">
@@ -156,7 +156,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
                             ? "border-[#E3E8EE] text-[#5B6A78]"
                             : isRequired
                             ? "border-emerald-400 text-[#131d29]"
-                            : "border-[#D1D5DB] text-[#131d29]",
+                            : "border-[#E3E8EE] text-[#131d29]",
                         ].join(" ")}
                       >
                         <SelectValue placeholder="Skip this column" />
@@ -217,7 +217,7 @@ export function ColumnMapper({ headers, previewRows, initialMapping, fields, onC
           <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Auto-detected
         </span>
         <span className="flex items-center gap-1">
-          <HelpCircle className="h-3 w-3 text-[#D1D5DB]" /> Manual override
+          <HelpCircle className="h-3 w-3 text-[#5B6A78]" /> Manual override
         </span>
       </div>
 

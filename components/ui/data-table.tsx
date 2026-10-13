@@ -169,10 +169,10 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={i} className="border-b border-[#F3F4F6]">
+                <TableRow key={i} className="border-b border-[#E3E8EE]">
                   {columns.map((_, j) => (
                     <TableCell key={j} className="py-3.5 first:pl-6 last:pr-6">
-                      <div className="h-4 bg-[#F3F4F6] rounded animate-pulse" />
+                      <div className="h-4 bg-[#F9FAFC] rounded animate-pulse" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -190,7 +190,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="border-b border-[#F3F4F6] hover:bg-[#F9FAFC] transition-colors"
+                  className="border-b border-[#E3E8EE] hover:bg-[#F9FAFC] transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell

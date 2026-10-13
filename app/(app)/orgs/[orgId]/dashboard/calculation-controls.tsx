@@ -324,7 +324,7 @@ export function CalculationControls({
 
       {/* In-flight indicator */}
       {isInFlight && (
-        <div className="w-full flex items-center gap-2 rounded-lg border border-[#BAE6FD] bg-[#F0F9FF]/20 px-3 py-2.5">
+        <div className="w-full flex items-center gap-2 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC]/20 px-3 py-2.5">
           <Loader2 className="h-4 w-4 text-[#131d29] animate-spin shrink-0" />
           <div className="text-xs text-[#131d29] leading-relaxed">
             <span className="font-medium">Calculating emissions…</span>{" "}

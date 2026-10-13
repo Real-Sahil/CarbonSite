@@ -171,7 +171,7 @@ export function CreateAspectForm({
             id="a-facility"
             value={facilityId}
             onChange={(e) => setFacilityId(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="">Organisation wide</option>
             {facilities.map((f) => (
@@ -189,7 +189,7 @@ export function CreateAspectForm({
             id="a-cond"
             value={operatingCondition}
             onChange={(e) => setOperatingCondition(e.target.value)}
-            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-zinc-400"
+            className="h-9 w-full rounded-md border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40"
           >
             <option value="normal">Normal</option>
             <option value="abnormal">Abnormal</option>
@@ -229,7 +229,7 @@ export function CreateAspectForm({
             className={
               needsControl
                 ? "rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold capitalize text-amber-900"
-                : "rounded-md bg-zinc-100 px-2 py-1 text-xs font-semibold capitalize text-[#41505F]"
+                : "rounded-md bg-[#F9FAFC] px-2 py-1 text-xs font-semibold capitalize text-[#41505F]"
             }
           >
             {rating}
@@ -337,7 +337,7 @@ function ScoreSlider({
           step={1}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full accent-zinc-900"
+          className="w-full accent-[#c2400c]"
         />
         <span className="w-4 shrink-0 text-right font-mono text-sm font-semibold tabular-nums text-[#131d29]">
           {value}

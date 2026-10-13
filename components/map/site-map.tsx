@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { NEUTRAL_SERIES_COLOR, SCOPE_COLORS } from "@/components/charts/palette";
 import { fitProjection, hasPosition, radiusFor, type SiteTotal, type SnapshotRef } from "@/lib/map/site-map";
+import { buttonVariants } from "@/components/ui/button";
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
 const MARKER = SCOPE_COLORS[1]; // offices and depots
@@ -148,7 +149,7 @@ function Schematic({ sites, locale, selectedId, onSelect }: { sites: SiteTotal[]
   // Keep the map frame when nothing is placed yet, so the page still reads as a map and says where to add a pin.
   if (placed.length === 0)
     return (
-      <div role="img" aria-label="Site map with no positioned sites yet" className="flex aspect-[2/1] w-full items-center justify-center rounded-[12px] border border-dashed border-[#D1D5DB] bg-[#F9FAFC] bg-[linear-gradient(#E5E7EB_1px,transparent_1px),linear-gradient(90deg,#E5E7EB_1px,transparent_1px)] bg-[length:40px_40px] p-6 text-center">
+      <div role="img" aria-label="Site map with no positioned sites yet" className="flex aspect-[2/1] w-full items-center justify-center rounded-[12px] border border-dashed border-[#E3E8EE] bg-[#F9FAFC] bg-[linear-gradient(#E5E7EB_1px,transparent_1px),linear-gradient(90deg,#E5E7EB_1px,transparent_1px)] bg-[length:40px_40px] p-6 text-center">
         <p className="max-w-md rounded-[10px] bg-white/90 px-4 py-3 text-sm text-[#41505F] shadow-sm">No site has a position yet. Add an address in Settings, Operations, and choose a suggestion to place it.</p>
       </div>
     );
@@ -301,7 +302,7 @@ export function SiteMap({
       <div ref={mapSection} className="scroll-mt-6 space-y-2">
         {styleUrl ? (
           <div className="flex flex-wrap items-center gap-3">
-            <button type="button" onClick={locateMe} disabled={locating} className="rounded-lg border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">
+            <button type="button" onClick={locateMe} disabled={locating} className="rounded-lg border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm font-medium text-[#131d29] hover:bg-[#F9FAFC] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2400c]">
               {locating ? "Finding you..." : "Locate me"}
             </button>
             {me ? <span className="text-xs text-[#5B6A78]">Blue dot: your position when you pressed Locate me.</span> : null}
@@ -333,7 +334,7 @@ export function SiteMap({
             <div><dt className="text-xs text-[#5B6A78]">Position</dt><dd className="text-[#131d29]">{hasPosition(selected) ? `${selected.latitude.toFixed(4)}, ${selected.longitude.toFixed(4)}` : "Not placed"}</dd></div>
           </dl>
           <div className="mt-3 flex flex-wrap gap-2 text-sm">
-            <Link href={selected.kind === "site" ? `/orgs/${orgId}/dashboard?projectId=${selected.projectId ?? ""}` : `/orgs/${orgId}/dashboard?facilityId=${selected.id}`} className="rounded-lg bg-[#c2410c] px-3 py-1.5 font-medium text-white hover:bg-[#9a3412]">Open on the dashboard</Link>
+            <Link href={selected.kind === "site" ? `/orgs/${orgId}/dashboard?projectId=${selected.projectId ?? ""}` : `/orgs/${orgId}/dashboard?facilityId=${selected.id}`} className={buttonVariants({ size: "sm" })}>Open on the dashboard</Link>
             {selected.kind !== "site" ? <Link href={`/orgs/${orgId}/records?facilityId=${selected.id}`} className="rounded-lg border border-[#E3E8EE] px-3 py-1.5 font-medium text-[#41505F] hover:bg-[#F9FAFC]">See its records</Link> : null}
             {!hasPosition(selected) ? <Link href={selected.kind === "site" ? `/orgs/${orgId}/contracts` : `/orgs/${orgId}/settings/operations`} className="rounded-lg border border-[#E3E8EE] px-3 py-1.5 font-medium text-[#41505F] hover:bg-[#F9FAFC]">Add its location</Link> : null}
           </div>
@@ -355,9 +356,9 @@ export function SiteMap({
             </thead>
             <tbody>
               {g.rows.map((s) => (
-                <tr key={s.id} className={`border-b border-[#F3F4F6] ${s.id === selectedId ? "bg-orange-50/60" : ""}`}>
+                <tr key={s.id} className={`border-b border-[#E3E8EE] ${s.id === selectedId ? "bg-orange-50/60" : ""}`}>
                   <td className="px-4 py-2 text-[#131d29]">
-                    <button type="button" onClick={() => setSelectedId(s.id)} aria-pressed={s.id === selectedId} className="text-left font-medium underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">{s.name}</button>
+                    <button type="button" onClick={() => setSelectedId(s.id)} aria-pressed={s.id === selectedId} className="text-left font-medium underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2400c]">{s.name}</button>
                     {s.detail ? <span className="block text-xs text-[#5B6A78]">{s.detail}</span> : null}
                   </td>
                   <td className="px-4 py-2 text-right tabular-nums">{(s.kg / 1000).toLocaleString(locale, { maximumFractionDigits: 2 })}</td>
@@ -367,7 +368,7 @@ export function SiteMap({
                     {hasPosition(s) ? (
                       <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                         <span className="tabular-nums">{`${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}`}</span>
-                        <button type="button" onClick={() => locate(s.id)} aria-label={`Locate ${s.name} on the map`} className="rounded-md border border-[#E3E8EE] px-2 py-0.5 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2410c]">Locate</button>
+                        <button type="button" onClick={() => locate(s.id)} aria-label={`Locate ${s.name} on the map`} className="rounded-md border border-[#E3E8EE] px-2 py-0.5 text-xs font-medium text-[#41505F] hover:bg-[#F9FAFC] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#c2400c]">Locate</button>
                       </span>
                     ) : "Not placed"}
                   </td>

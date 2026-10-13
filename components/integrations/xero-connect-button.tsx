@@ -40,7 +40,7 @@ export function XeroConnectButton({ orgId, connected = false }: XeroConnectButto
       <Button
         onClick={handleConnect}
         disabled={isLoading}
-        className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold"
+        className="w-full font-semibold"
       >
         {isLoading ? (
           <>

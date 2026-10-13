@@ -65,7 +65,7 @@ interface SupplierListEntry {
 
 function getQualityBadge(score: number) {
   if (score >= 85) return { label: 'Excellent', color: 'bg-green-100 text-green-800' };
-  if (score >= 70) return { label: 'Good', color: 'bg-blue-100 text-blue-800' };
+  if (score >= 70) return { label: 'Good', color: 'bg-[#F9FAFC] text-[#131d29]' };
   if (score >= 50) return { label: 'Fair', color: 'bg-yellow-100 text-yellow-800' };
   return { label: 'Poor', color: 'bg-red-100 text-red-800' };
 }
@@ -187,7 +187,7 @@ export default function SupplierPerformancePage() {
           {selector}
         </div>
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-[#c2400c]" />
         </div>
       </div>
     );
@@ -257,7 +257,7 @@ export default function SupplierPerformancePage() {
           <CardContent>
             <div className="flex items-end justify-between">
               <div>
-                <div className="text-2xl font-bold text-[#131d29]">
+                <div className="text-2xl font-semibold tabular-nums text-[#131d29]">
                   {Math.round(performance.dataQualityScore * 10) / 10}%
                 </div>
                 <Badge className={`mt-2 ${qualityBadge.color}`}>
@@ -276,7 +276,7 @@ export default function SupplierPerformancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#131d29]">
+            <div className="text-2xl font-semibold tabular-nums text-[#131d29]">
               {Math.round(performance.acceptanceRate * 10) / 10}%
             </div>
             <p className="mt-2 text-sm text-[#41505F]">
@@ -292,7 +292,7 @@ export default function SupplierPerformancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#131d29]">
+            <div className="text-2xl font-semibold tabular-nums text-[#131d29]">
               {Math.round(performance.onTimeRate * 10) / 10}%
             </div>
             <p className="mt-2 text-sm text-[#41505F]">
@@ -308,7 +308,7 @@ export default function SupplierPerformancePage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#131d29]">
+            <div className="text-2xl font-semibold tabular-nums text-[#131d29]">
               {Math.round(performance.completenessScore * 10) / 10}%
             </div>
             <p className="mt-2 text-sm text-[#41505F]">
@@ -390,8 +390,8 @@ export default function SupplierPerformancePage() {
         <CardContent>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-blue-100 p-3">
-                <CheckCircle className="h-5 w-5 text-blue-600" />
+              <div className="rounded-lg bg-[#F9FAFC] p-3">
+                <CheckCircle className="h-5 w-5 text-[#c2400c]" />
               </div>
               <div>
                 <p className="text-sm font-medium text-[#41505F]">Total</p>
@@ -423,8 +423,8 @@ export default function SupplierPerformancePage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-purple-100 p-3">
-                <TrendingUp className="h-5 w-5 text-purple-600" />
+              <div className="rounded-lg bg-[#F9FAFC] p-3">
+                <TrendingUp className="h-5 w-5 text-[#c2400c]" />
               </div>
               <div>
                 <p className="text-sm font-medium text-[#41505F]">On Time</p>

@@ -28,7 +28,7 @@ export function KpiPicker({ chosen, periodId, periods }: { chosen: string[]; per
             <label key={k.id} className="flex items-center gap-2 text-sm text-[#131d29]">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-gray-300"
+                className="h-4 w-4 rounded border-[#E3E8EE]"
                 checked={chosen.includes(k.id)}
                 onChange={(e) => go({ k: e.target.checked ? [...chosen, k.id] : chosen.filter((x) => x !== k.id) })}
               />
@@ -39,7 +39,7 @@ export function KpiPicker({ chosen, periodId, periods }: { chosen: string[]; per
         {periods.length > 0 && (
           <div className="space-y-1">
             <label htmlFor="kpi-period" className="block text-xs text-[#5B6A78]">Period</label>
-            <select id="kpi-period" value={periodId ?? ""} onChange={(e) => go({ periodId: e.target.value || null })} className="h-9 rounded-md border border-gray-300 bg-white px-2 text-sm">
+            <select id="kpi-period" value={periodId ?? ""} onChange={(e) => go({ periodId: e.target.value || null })} className="h-9 rounded-md border border-[#E3E8EE] bg-white px-2 text-sm">
               {periods.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
           </div>

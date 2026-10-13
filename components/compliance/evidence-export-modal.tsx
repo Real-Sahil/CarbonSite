@@ -179,7 +179,7 @@ export function EvidenceExportModal({
               <button
                 onClick={handleSelectAll}
                 disabled={isExporting}
-                className="text-xs text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                className="text-xs text-[#c2400c] hover:text-[#a33409] disabled:opacity-50"
               >
                 {selectedFrameworks.size === FRAMEWORKS.length
                   ? "Deselect all"
@@ -214,10 +214,10 @@ export function EvidenceExportModal({
           </div>
 
           {/* What's Included */}
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-[#F9FAFC] border-[#E3E8EE]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-blue-600" />
+                <CheckCircle2 className="w-4 h-4 text-[#c2400c]" />
                 What's Included
               </CardTitle>
             </CardHeader>
@@ -239,7 +239,7 @@ export function EvidenceExportModal({
                   ? "bg-green-50 border border-green-200"
                   : exportStatus === "error"
                     ? "bg-red-50 border border-red-200"
-                    : "bg-blue-50 border border-blue-200"
+                    : "bg-[#F9FAFC] border border-[#E3E8EE]"
               }`}
             >
               {exportStatus === "success" ? (
@@ -247,7 +247,7 @@ export function EvidenceExportModal({
               ) : exportStatus === "error" ? (
                 <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
               ) : (
-                <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent flex-shrink-0" />
+                <div className="w-4 h-4 animate-spin rounded-full border-2 border-[#c2400c] border-t-transparent flex-shrink-0" />
               )}
               <p
                 className={`text-sm ${
@@ -255,7 +255,7 @@ export function EvidenceExportModal({
                     ? "text-green-700"
                     : exportStatus === "error"
                       ? "text-red-700"
-                      : "text-blue-700"
+                      : "text-[#c2400c]"
                 }`}
               >
                 {statusMessage}
