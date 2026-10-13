@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { isValidStorageKey, dbWrite } from "@/lib/storage";
+import { isValidStorageKey, putObject } from "@/lib/storage";
 import { verifyStorageSignature } from "@/lib/storage/signing";
 import {
   isAllowedEvidenceMimeType,
@@ -10,7 +10,7 @@ import {
 } from "@/lib/evidence/upload-policy";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
-// Signed upload endpoint for the Postgres-backed storage driver. The URL is
+// Signed upload proxy for the db and Supabase storage drivers. The URL is
 // produced by presignUpload() and carries an HMAC + expiry — the client
 // (web or mobile) PUTs raw bytes without any session, exactly like an
 // S3 presigned URL. Photos from the mobile app are ~0.3–1.5 MB; note the
@@ -46,7 +46,7 @@ export async function PUT(req: NextRequest) {
       return apiError("FILE_TOO_LARGE", "Evidence file size exceeds the upload limit.", 413);
     }
 
-    await dbWrite(key, body, contentType);
+    await putObject(key, body, contentType);
     return NextResponse.json({ ok: true });
   } catch (err) {
     return handleRouteError(err);

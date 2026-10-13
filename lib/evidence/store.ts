@@ -29,7 +29,13 @@ export async function storeEvidenceFile(orgId: string, userId: string, file: { n
     },
   });
   const storageKey = keys.evidence(orgId, evidence.id, file.name);
-  await putObject(storageKey, file.buffer, file.type);
+  try {
+    await putObject(storageKey, file.buffer, file.type);
+  } catch (err) {
+    // A row left at "pending" points at no bytes, so remove it before the error surfaces.
+    await prisma.evidenceFile.delete({ where: { id: evidence.id } }).catch(() => undefined);
+    throw err;
+  }
   await prisma.evidenceFile.update({ where: { id: evidence.id }, data: { storageKey } });
   return { id: evidence.id, duplicate: false };
 }

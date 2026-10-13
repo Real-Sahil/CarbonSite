@@ -18,6 +18,7 @@ import { mkdir, readFile, writeFile, unlink } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/db";
 import { signStorageUrl } from "./signing";
+import { storableContentType } from "./content-type";
 
 function resolveDriver(): "supabase" | "r2" | "db" | "local" {
   const configured = process.env.STORAGE_DRIVER;
@@ -58,7 +59,7 @@ const DRIVER = resolveDriver();
 export function isExternalStorageDriver(): boolean {
   return DRIVER === "supabase" || DRIVER === "r2";
 }
-const PRESIGN_TTL = 60 * 60; // 1 hour (increased from 15 minutes for slow/interrupted downloads)
+export const PRESIGN_TTL = 60 * 60; // 1 hour (increased from 15 minutes for slow/interrupted downloads)
 
 // Absolute origin for db-driver URLs — mobile clients and redirects need a
 // full URL, never a bare path.
@@ -128,7 +129,7 @@ async function supabaseDownload(key: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer());
 }
 
-async function supabaseSignedUrl(key: string, expiresIn: number): Promise<string> {
+async function supabaseSignedUrl(key: string, expiresIn: number, downloadAs?: string): Promise<string> {
   const base = supabaseStorageBase();
   const res = await fetch(`${base}/object/sign/${BUCKET}/${key}`, {
     method: "POST",
@@ -140,10 +141,10 @@ async function supabaseSignedUrl(key: string, expiresIn: number): Promise<string
     throw new Error(`Supabase sign failed (${res.status}): ${text}`);
   }
   const json = await res.json() as { signedURL: string };
-  const supabaseUrl = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
-  // Supabase returns a relative path; resolve to absolute URL.
-  const signed = json.signedURL.startsWith("http") ? json.signedURL : `${supabaseUrl}${json.signedURL}`;
-  return signed;
+  // Supabase returns a path relative to its /storage/v1 base (already starts with /object/...).
+  const signed = json.signedURL.startsWith("http") ? json.signedURL : `${base}${json.signedURL}`;
+  // download= makes Supabase send Content-Disposition: attachment with this filename.
+  return downloadAs ? `${signed}&download=${encodeURIComponent(downloadAs)}` : signed;
 }
 
 async function supabaseDelete(key: string): Promise<void> {
@@ -240,23 +241,25 @@ export function assertStorageKey(key: string) {
 // ── Upload ────────────────────────────────────────────────────────────────────
 export async function presignUpload(key: string, contentType: string): Promise<string> {
   assertStorageKey(key);
+  // The type putObject stores. The R2 PUT signs it, so the client must send this exact value.
+  const type = storableContentType(contentType);
   if (DRIVER === "local") {
     // Local dev: return a special internal upload route
-    return `/api/dev/storage/upload?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(contentType)}`;
+    return `/api/dev/storage/upload?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(type)}`;
   }
   if (DRIVER === "db") {
     const exp = Date.now() + PRESIGN_TTL * 1000;
     const sig = signStorageUrl(key, exp);
-    return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(contentType)}`;
+    return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(type)}`;
   }
   if (DRIVER === "supabase") {
     // Supabase Storage doesn't support client-side presigned uploads via the REST API
     // in the same way S3 does — route through our internal upload proxy instead.
     const exp = Date.now() + PRESIGN_TTL * 1000;
     const sig = signStorageUrl(key, exp);
-    return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(contentType)}`;
+    return `${appOrigin()}/api/storage/upload?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}&contentType=${encodeURIComponent(type)}`;
   }
-  const cmd = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType });
+  const cmd = new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: type });
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
 
@@ -273,10 +276,16 @@ export async function presignDownload(key: string): Promise<string> {
     const sig = signStorageUrl(key, exp);
     return `${appOrigin()}/api/storage/serve?key=${encodeURIComponent(key)}&exp=${exp}&sig=${encodeURIComponent(sig)}`;
   }
+  // Downloads attach rather than render: a direct-to-bucket upload is never checked against its bytes.
+  const filename = path.posix.basename(key);
   if (DRIVER === "supabase") {
-    return supabaseSignedUrl(key, PRESIGN_TTL);
+    return supabaseSignedUrl(key, PRESIGN_TTL, filename);
   }
-  const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+  const cmd = new GetObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    ResponseContentDisposition: `attachment; filename="${filename}"`,
+  });
   return getSignedUrl(s3!, cmd, { expiresIn: PRESIGN_TTL });
 }
 
@@ -309,8 +318,9 @@ export async function getObject(key: string): Promise<Buffer> {
 // ── Direct write (used by workers, not by HTTP clients) ───────────────────────
 export async function putObject(key: string, body: Buffer, contentType: string): Promise<void> {
   assertStorageKey(key);
+  const type = storableContentType(contentType);
   if (DRIVER === "db") {
-    await dbWrite(key, body, contentType);
+    await dbWrite(key, body, type);
     return;
   }
   if (DRIVER === "local") {
@@ -320,11 +330,11 @@ export async function putObject(key: string, body: Buffer, contentType: string):
     return;
   }
   if (DRIVER === "supabase") {
-    await supabaseUpload(key, body, contentType);
+    await supabaseUpload(key, body, type);
     return;
   }
   await s3!.send(
-    new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: contentType }),
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: body, ContentType: type }),
   );
 }
 
@@ -385,7 +395,7 @@ export async function deleteObject(key: string): Promise<void> {
 }
 
 // ── Postgres-backed driver primitives ────────────────────────────────────────
-export async function dbWrite(key: string, body: Buffer, contentType: string): Promise<void> {
+async function dbWrite(key: string, body: Buffer, contentType: string): Promise<void> {
   const bytes = new Uint8Array(body.buffer.slice(body.byteOffset, body.byteOffset + body.byteLength)) as Uint8Array<ArrayBuffer>;
   await prisma.storageObject.upsert({
     where: { key },
