@@ -39,6 +39,8 @@ export async function GET(
     return new NextResponse(body, {
       headers: {
         "Content-Type": contentType,
+        // Embedded <img> tags ignore this; a direct visit downloads instead of rendering.
+        "Content-Disposition": "attachment",
         "X-Content-Type-Options": "nosniff",
         "Content-Security-Policy": "default-src 'none'; sandbox",
         // 1-hour browser/CDN cache; email clients will re-fetch if expired.

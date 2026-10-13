@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { isValidStorageKey, dbReadWithType } from "@/lib/storage";
 import { verifyStorageSignature } from "@/lib/storage/signing";
+import { serveDisposition } from "@/lib/storage/serve-disposition";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 
 // Signed download endpoint for the Postgres-backed storage driver — the
@@ -30,7 +31,8 @@ export async function GET(req: NextRequest) {
       headers: {
         "Content-Type": object.contentType,
         "Content-Length": String(object.bytes.byteLength),
-        "Content-Disposition": `inline; filename="${filename.replaceAll('"', "")}"`,
+        "Content-Disposition": serveDisposition(object.contentType, filename),
+        "X-Content-Type-Options": "nosniff",
         "Cache-Control": "private, max-age=300",
       },
     });
