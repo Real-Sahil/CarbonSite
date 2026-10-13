@@ -44,11 +44,11 @@ const scenarios: { id: string; body: unknown; refused?: boolean }[] = [
   { id: "C01", refused: true, body: receipt([item()], { registrationNumber: null }) },
   { id: "C02", body: receipt([item()], { registrationNumber: null, reasonForNoRegistrationNumber: "ONE_OFF" }) },
   { id: "B01", body: receipt([item()], {}, { brokerOrDealer: { organisationName: "Dealer Waste Ltd", registrationNumber: "CBDL54321", address: { fullAddress: "2 Dealer Road", postcode: "RG2 2BB" } } }) },
-  { id: "P01", body: receipt([item({ containsPops: true, pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PFHXS", concentration: 0.5, concentrationOperator: "<" }, { code: "PFOA", concentration: 2 }] } })]) },
-  { id: "H01", body: receipt([haz(["HP_5", "HP_10"], [{ name: "Lead", concentration: 2.1, concentrationOperator: ">" }, { name: "Chromium", concentration: 40, concentrationOperator: ">" }])], {}, { hazardousWasteConsignmentCode: CJ }) },
+  { id: "P01", body: receipt([item({ containsPops: true, pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PFHXS", concentration: 0.5 }, { code: "PFOA", concentration: 2 }] } })]) },
+  { id: "H01", body: receipt([haz(["HP_5", "HP_10"], [{ name: "Lead", concentration: 2.1 }, { name: "Chromium", concentration: 40 }])], {}, { hazardousWasteConsignmentCode: CJ }) },
   { id: "H02", refused: true, body: receipt([haz(["HP_3"], [{ name: "Lead" }])]) },
   { id: "H03", body: receipt([haz(["HP_3"], [{ name: "Lead" }])], {}, { reasonForNoConsignmentCode: "NO_DOC_WITH_WASTE" }) },
-  { id: "X01", body: receipt([item({ ewcCodes: ["170503"], containsHazardous: true, hazardous: { sourceOfComponents: "OWN_TESTING", hazCodes: ["HP_5"], components: [{ name: "Lead", concentration: 2.1, concentrationOperator: ">" }] }, containsPops: true, pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PFOA", concentration: 2 }] } })], {}, { hazardousWasteConsignmentCode: CJ }) },
+  { id: "X01", body: receipt([item({ ewcCodes: ["170503"], containsHazardous: true, hazardous: { sourceOfComponents: "OWN_TESTING", hazCodes: ["HP_5"], components: [{ name: "Lead", concentration: 2.1 }] }, containsPops: true, pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PFOA", concentration: 2 }] } })], {}, { hazardousWasteConsignmentCode: CJ }) },
 ];
 
 const parse = (text: string) => {
@@ -66,7 +66,8 @@ export async function GET(req: Request) {
   }
   const created: { id: string; wtid: string }[] = [];
   const creates: unknown[] = [];
-  for (const s of scenarios) {
+  const only = new URL(req.url).searchParams.get("only")?.split(",");
+  for (const s of scenarios.filter((x) => !only || only.includes(x.id))) {
     try {
       const res = await defraFetch("/movements/receive", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(s.body) });
       const body = parse(await res.text());
