@@ -147,7 +147,7 @@ export function LiveDashboard({
         <button
           type="button"
           onClick={() => setLive(true)}
-          className="self-start rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-[#131d29] hover:bg-gray-100 sm:self-auto"
+          className="self-start rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC] sm:self-auto"
         >
           Turn on live updates
         </button>

@@ -60,7 +60,7 @@ export function DataQualityScorecard({
               <div key={key} className="bg-white p-3 rounded border border-[#E3E8EE]">
                 <p className="text-xs font-medium text-[#41505F] capitalize mb-1">{key}</p>
                 <p className="text-lg font-semibold">{value}%</p>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                <div className="w-full bg-[#E3E8EE] rounded-full h-1.5 mt-2">
                   <div
                     className={`h-1.5 rounded-full transition-all ${
                       value >= 80 ? 'bg-green-500' : value >= 60 ? 'bg-yellow-500' : 'bg-red-500'

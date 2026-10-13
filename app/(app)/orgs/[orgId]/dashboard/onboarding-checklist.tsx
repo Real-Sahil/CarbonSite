@@ -65,7 +65,7 @@ export function OnboardingChecklist({ steps }: OnboardingChecklistProps) {
                 <span
                   className={cn(
                     "mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-                    step.done ? "bg-emerald-100 text-emerald-700" : isNext ? "bg-[#c2410c] text-white" : "bg-slate-100 text-[#5B6A78]",
+                    step.done ? "bg-emerald-100 text-emerald-700" : isNext ? "bg-[#c2410c] text-white" : "bg-[#E3E8EE] text-[#5B6A78]",
                   )}
                 >
                   {step.done ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : i + 1}

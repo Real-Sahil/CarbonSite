@@ -2026,7 +2026,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
                     doc.downloadUrl
                       ? "border-[#E3E8EE] hover:border-[#3B82F6] hover:bg-blue-50 cursor-pointer"
-                      : "border-gray-100 bg-[#F9FAFC] cursor-not-allowed opacity-50"
+                      : "border-[#E3E8EE] bg-[#F9FAFC] cursor-not-allowed opacity-50"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -2448,7 +2448,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-start gap-2.5 rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2.5 hover:bg-gray-100 hover:border-[#D1D5DB] transition-colors"
+                className="flex items-start gap-2.5 rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2.5 hover:bg-orange-50 hover:border-[#FED7AA] transition-colors"
               >
                 <ArrowRight className="h-3.5 w-3.5 text-[#5B6A78] mt-0.5 shrink-0" aria-hidden="true" />
                 <div>
@@ -2487,7 +2487,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
 
-      <Suspense fallback={<div aria-hidden="true" className="mb-6 h-72 animate-pulse rounded-[14px] bg-slate-100" />}>
+      <Suspense fallback={<div aria-hidden="true" className="mb-6 h-72 animate-pulse rounded-[14px] bg-[#E3E8EE]" />}>
         <SiteHeroSection
           orgId={orgId}
           periodId={currentPeriod?.id ?? null}
