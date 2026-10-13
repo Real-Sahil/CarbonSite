@@ -191,7 +191,7 @@ export default function SignUpPage() {
               <span>{error}</span>
             </div>
           )}
-          <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+          <button type="submit" disabled={loading} className="mt-1 w-full rounded-full bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
             {loading ? "Creating your workspace…" : "Create organisation"}
           </button>
           <button type="button" onClick={() => { setStep("account"); setError(""); }} className="text-sm text-white/60 hover:text-white/60 transition-colors text-center" disabled={loading}>
@@ -241,7 +241,7 @@ export default function SignUpPage() {
             I accept the <Link href="/terms" target="_blank" className="text-[#fb8a4b] underline underline-offset-2">Terms of Service</Link> and the <Link href="/privacy" target="_blank" className="text-[#fb8a4b] underline underline-offset-2">Privacy Policy</Link>.
           </label>
         </div>
-        <button type="submit" disabled={loading} className="mt-1 w-full rounded-xl bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
+        <button type="submit" disabled={loading} className="mt-1 w-full rounded-full bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2">
           Continue
           <ArrowRight className="h-4 w-4" />
         </button>

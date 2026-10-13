@@ -130,7 +130,7 @@ export default async function ManagementSystemsPage({ params }: { params: Promis
         <h2 id="ms-registers" className="text-sm font-semibold text-[#131d29]">Registers shared by every framework</h2>
         {REGISTER_GROUPS.map((g) => (
           <div key={g.label} className="flex flex-col gap-2">
-            <h3 className="text-xs font-medium uppercase tracking-wide text-[#5B6A78]">{g.label}</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{g.label}</h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {g.keys.map((k) => (
                 <Link key={k} href={`/orgs/${orgId}/management-systems/registers/${k}`} className="rounded-[12px] border border-[#E3E8EE] bg-white p-4 transition-colors hover:border-[#FED7AA]">

@@ -2428,7 +2428,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         <div className="mb-8 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-medium text-[#131d29] tracking-[-0.42px]">Quick setup</h2>
+              <h2 className="text-sm font-semibold text-[#131d29] tracking-[-0.42px]">Quick setup</h2>
               <p className="text-xs text-[#5B6A78] tracking-[-0.36px] mt-0.5">
                 Jump to any area to configure your organisation. This panel disappears once you run your first calculation.
               </p>

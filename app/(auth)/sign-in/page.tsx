@@ -187,7 +187,7 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-1 w-full rounded-xl bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="mt-1 w-full rounded-full bg-[#c2400c] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(194,64,12,0.35)] hover:shadow-[0_0_28px_rgba(194,64,12,0.5)] hover:bg-[#a33409] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {loading ? t("submitting") : t("submit")}
         </button>

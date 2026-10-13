@@ -92,7 +92,7 @@ export function LaunchFilm() {
           <button
             type="button"
             onClick={playWithSound}
-            className="absolute bottom-3 right-3 inline-flex items-center gap-2 rounded-full bg-mk-ink/80 px-3.5 py-2 text-[13px] font-medium text-mk-on-dark ring-1 ring-white/15 backdrop-blur transition-colors hover:bg-mk-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mk-accent-lit"
+            className="absolute bottom-3 right-3 inline-flex items-center gap-2 rounded-full bg-mk-ink/80 px-3.5 py-2 text-[13px] font-medium text-white ring-1 ring-white/15 backdrop-blur transition-colors hover:bg-mk-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mk-accent-lit"
           >
             {still ? <Play aria-hidden className="h-3.5 w-3.5" /> : <Volume2 aria-hidden className="h-3.5 w-3.5" />}
             Play with sound

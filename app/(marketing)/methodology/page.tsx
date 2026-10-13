@@ -148,7 +148,7 @@ export default function MethodologyPage() {
                   <TimelineDate dateTime={String(m.effective).slice(0, 10)} className="text-[13px] text-mk-text-3">
                     Effective {new Date(m.effective).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · GWP {m.gwp}
                   </TimelineDate>
-                  <TimelineTitle className="font-sans text-[15px] font-medium text-mk-text">{m.name}</TimelineTitle>
+                  <TimelineTitle className="font-sans text-[15px] font-semibold text-mk-text">{m.name}</TimelineTitle>
                 </TimelineHeader>
                 <TimelineContent className="mt-3">
                   <p className="text-[15px] leading-relaxed text-mk-text-2">{m.summary}</p>

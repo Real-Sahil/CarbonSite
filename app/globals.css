@@ -542,7 +542,7 @@
 /* Long-form marketing articles (blog posts, legal pages). */
 .mk-prose { color: var(--color-mk-text-2); font-size: 17px; line-height: 1.75; }
 .mk-prose > * + * { margin-top: 1.1em; }
-.mk-prose h2 { color: var(--color-mk-text); font-size: 26px; line-height: 1.25; letter-spacing: -0.02em; font-weight: 600; margin-top: 2em; text-wrap: balance; }
+.mk-prose h2 { color: var(--color-mk-text); font-size: 26px; line-height: 1.25; letter-spacing: -0.02em; font-family: var(--font-display); font-weight: 300; margin-top: 2em; text-wrap: balance; }
 .mk-prose h3 { color: var(--color-mk-text); font-size: 19px; line-height: 1.35; font-weight: 600; margin-top: 1.6em; }
 .mk-prose a { color: var(--color-mk-accent); text-decoration: underline; text-underline-offset: 3px; }
 .mk-prose strong { color: var(--color-mk-text); font-weight: 600; }

@@ -56,7 +56,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           </div>
 
           {/* Desktop: tab strip */}
-          <nav className="hidden sm:flex gap-1 mt-6 overflow-x-auto" aria-label="Settings sections">
+          <nav className="hidden sm:flex flex-wrap gap-x-1 gap-y-1 mt-6" aria-label="Settings sections">
             {TABS.map((tab) => {
               const href = `/orgs/${orgId}/settings/${tab.segment}`;
               const isActive = pathname.includes(`/settings/${tab.segment}`);

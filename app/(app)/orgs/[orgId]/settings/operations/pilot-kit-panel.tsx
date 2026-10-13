@@ -201,7 +201,7 @@ export function PilotKitPanel({
       <div className="border-t border-[#E3E8EE] p-4 space-y-6">
         {/* Organization & Facility Info */}
         <div className="space-y-3">
-          <h3 className="font-medium text-[#131d29]">Organization & Facilities</h3>
+          <h3 className="font-semibold text-[#131d29]">Organization & Facilities</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Number of facilities">
               <Input
