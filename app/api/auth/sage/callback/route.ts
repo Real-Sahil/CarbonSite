@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/db/audit";
 import { decryptCredential } from "@/lib/integrations/encryption";
+import { oauthCallbackOrgId } from "@/lib/integrations/oauth-state";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -27,14 +28,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${appUrl}?sage_error=missing_params`);
   }
 
-  let orgId: string;
-  try {
-    const parsed = JSON.parse(Buffer.from(stateParam, "base64url").toString("utf-8"));
-    orgId = parsed.orgId;
-    if (!orgId) throw new Error("missing orgId");
-  } catch {
-    return NextResponse.redirect(`${appUrl}?sage_error=invalid_state`);
-  }
+  // Signed state from our connect route, for an admin still in that org (oauth-state.ts)
+  const orgId = await oauthCallbackOrgId(stateParam);
+  if (!orgId) return NextResponse.redirect(`${appUrl}?sage_error=invalid_state`);
 
   const settingsUrl = `${appUrl}/orgs/${orgId}/settings/integrations`;
 

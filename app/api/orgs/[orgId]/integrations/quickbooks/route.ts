@@ -18,6 +18,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
+import { signOAuthState } from "@/lib/integrations/oauth-state";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { requireFeature } from "@/lib/billing/limits";
@@ -66,7 +67,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const gate = await requireFeature(orgId, "accountingIntegrations");
     if (gate) return gate;
@@ -93,7 +94,8 @@ export async function POST(
       );
     }
 
-    const state = Buffer.from(JSON.stringify({ orgId })).toString("base64url");
+    // Signed and bound to this admin; the callback checks both (oauth-state.ts)
+    const state = signOAuthState(orgId, session.user.id);
     const scopes = ["com.intuit.quickbooks.accounting"].join(" ");
 
     const authUrl = new URL("https://appcenter.intuit.com/connect/oauth2");
