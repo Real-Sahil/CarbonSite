@@ -52,13 +52,16 @@ export const auth = betterAuth({
       }
     }),
     // Keep when and which version was accepted, on the account itself. A failure here is logged, not thrown: the
-    // account already exists and the gate above has passed.
+    // account already exists and the gate above has passed. Stamp by the id returned, never by email: a duplicate
+    // sign-up gets an APIError or a generated user with no row behind it, so the existing account is left alone.
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-up/email") return;
-      const email = String((ctx.body as Record<string, unknown> | undefined)?.email ?? "").trim().toLowerCase();
-      if (!email) return;
+      const returned = ctx.context.returned;
+      if (returned instanceof APIError) return;
+      const id = (returned as { user?: { id?: unknown } } | undefined)?.user?.id;
+      if (typeof id !== "string") return;
       try {
-        await prisma.user.updateMany({ where: { email }, data: { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION } });
+        await prisma.user.updateMany({ where: { id }, data: { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION } });
       } catch (err) {
         log.error("could not record terms acceptance", { error: err instanceof Error ? err.message : String(err) });
       }
