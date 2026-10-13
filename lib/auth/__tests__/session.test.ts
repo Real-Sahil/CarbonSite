@@ -113,6 +113,21 @@ describe("requireOrgMember", () => {
     } satisfies Partial<AuthError>);
   });
 
+  test("refuses a terminated membership, even though its row is kept", async () => {
+    mocks.membershipFindUnique.mockResolvedValue({
+      id: "membership-4",
+      organizationId: "org-1",
+      role: "admin",
+      terminatedAt: new Date("2026-06-01T00:00:00.000Z"),
+      userId: "user-1",
+    });
+
+    await expect(requireOrgMember("org-1", "viewer")).rejects.toMatchObject({
+      code: "NOT_MEMBER",
+      status: 403,
+    } satisfies Partial<AuthError>);
+  });
+
   test("rejects members without an allowed role", async () => {
     mocks.membershipFindUnique.mockResolvedValue({
       id: "membership-2",

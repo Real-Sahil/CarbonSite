@@ -186,7 +186,8 @@ export async function requireSession() {
 export async function requireOrgMember(orgId: string, ...allowedRoles: OrgRole[]) {
   const session = await requireSession();
   const membership = await findMembership(orgId, session.user.id);
-  if (!membership) throw new AuthError("NOT_MEMBER", 403);
+  // Removal keeps the row (terminatedAt), so the row alone does not prove membership.
+  if (!membership || membership.terminatedAt) throw new AuthError("NOT_MEMBER", 403);
   if (allowedRoles.length && !allowedRoles.includes(membership.role)) {
     throw new AuthError("INSUFFICIENT_ROLE", 403);
   }
@@ -260,7 +261,7 @@ export async function requireProjectAccess(
       organizationId_userId: { organizationId: orgId, userId: session.user.id },
     },
   });
-  if (!membership) throw new AuthError("NOT_MEMBER", 403);
+  if (!membership || membership.terminatedAt) throw new AuthError("NOT_MEMBER", 403);
 
   // If user is admin, grant access to all projects
   if (membership.role === "admin") {
