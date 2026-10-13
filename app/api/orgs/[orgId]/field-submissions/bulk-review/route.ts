@@ -12,6 +12,7 @@ import { SocialValueApprovalError } from "@/lib/social-value/field-capture";
 import {
   approvalBlocker,
   approveSubmissionInTx,
+  SubmissionAlreadyDecidedError,
 } from "@/lib/field-submissions/approve";
 import { scheduleCalculationForPeriod } from "@/lib/field-submissions/trigger-calculation";
 import { orgRefsError } from "@/lib/security/org-refs";
@@ -64,14 +65,34 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         where: {
           organizationId_userId: { organizationId: orgId, userId: body.assigneeUserId },
         },
-        select: { userId: true },
+        select: { role: true },
       });
       if (!assignee) {
         return apiError("INVALID_ASSIGNEE", "Assignee is not a member of this organisation.", 422);
       }
+      // A review task only means something to a role that can review; anyone else would hold it unseen.
+      if (!ROLE_GROUPS.reviewersAndEditors.includes(assignee.role)) {
+        return apiError("INVALID_ASSIGNEE", "Assignee must be a member who can review submissions.", 422);
+      }
+
+      // A submission with an open review task keeps it; moving it to someone else is a separate decision.
+      const open = await prisma.reviewTask.findMany({
+        where: {
+          organizationId: orgId,
+          type: "field_submission",
+          status: "open",
+          targetId: { in: submissions.map((s) => s.id) },
+        },
+        select: { targetId: true },
+      });
+      const alreadyOpen = new Set(open.map((task) => task.targetId));
+      const toAssign = submissions.filter((s) => !alreadyOpen.has(s.id));
+      const skipped = submissions
+        .filter((s) => alreadyOpen.has(s.id))
+        .map((s) => ({ id: s.id, reason: "Already has an open review task." }));
 
       await prisma.$transaction(async (tx) => {
-        for (const submission of submissions) {
+        for (const submission of toAssign) {
           await tx.reviewTask.create({
             data: {
               organizationId: orgId,
@@ -85,7 +106,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         }
       });
 
-      for (const submission of submissions) {
+      for (const submission of toAssign) {
         await writeAuditLog({
           organizationId: orgId,
           actorUserId: session.user.id,
@@ -97,8 +118,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }
 
       return NextResponse.json({
-        updated: submissions.length,
-        ids: submissions.map((s) => s.id),
+        updated: toAssign.length,
+        ids: toAssign.map((s) => s.id),
+        skipped,
       });
     }
 
@@ -111,18 +133,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       const notifiable: { submissionId: string; recipientUserId: string; activityRecordId: string | null }[] = [];
 
       for (const submission of submissions) {
-        const changedFile = await firstEvidenceMismatch(orgId, submission.files.map((f) => f.evidenceFileId));
-        if (changedFile) {
-          skipped.push({ id: submission.id, reason: "An evidence file no longer matches its recorded SHA-256." });
-          continue;
-        }
-        const blocker = approvalBlocker(submission, submission.emissionCategoryId, submission.facilityId);
-        if (blocker) {
-          skipped.push({ id: submission.id, reason: blocker.message });
-          continue;
-        }
+        // Each row commits on its own: a row that fails is skipped and the others still go through.
         let result;
         try {
+          const changedFile = await firstEvidenceMismatch(orgId, submission.files.map((f) => f.evidenceFileId));
+          if (changedFile) {
+            skipped.push({ id: submission.id, reason: "An evidence file no longer matches its recorded SHA-256." });
+            continue;
+          }
+          const blocker = approvalBlocker(submission, submission.emissionCategoryId, submission.facilityId);
+          if (blocker) {
+            skipped.push({ id: submission.id, reason: blocker.message });
+            continue;
+          }
           result = await prisma.$transaction((tx) =>
             approveSubmissionInTx(tx, {
               orgId,
@@ -134,42 +157,51 @@ export async function PATCH(req: NextRequest, { params }: Params) {
             }),
           );
         } catch (err) {
-          if (!(err instanceof SocialValueApprovalError)) throw err;
-          skipped.push({ id: submission.id, reason: err.message });
+          if (err instanceof SocialValueApprovalError || err instanceof SubmissionAlreadyDecidedError) {
+            skipped.push({ id: submission.id, reason: err.message });
+          } else {
+            console.error("[field-submissions] bulk approve failed for", submission.id, err);
+            skipped.push({ id: submission.id, reason: "Could not be approved. Try again." });
+          }
           continue;
         }
         approved.push(submission.id);
-        await sealAfterApproval(orgId, result.activityRecordId, submission.id, session.user.id);
         notifiable.push({
           submissionId: submission.id,
           recipientUserId: submission.submittedByUserId,
           activityRecordId: result.activityRecordId,
         });
-        await writeAuditLog({
-          organizationId: orgId,
-          actorUserId: session.user.id,
-          action: "field_submission.reviewed",
-          resourceType: "field_submission",
-          resourceId: submission.id,
-          metadata: {
-            action: "approved",
-            activityRecordId: result.activityRecordId,
-            bulk: true,
-            ...(result.embodied
-              ? result.embodied.recordId
-                ? { embodiedCarbonRecordId: result.embodied.recordId }
-                : { embodiedNotRecorded: "reason" in result.embodied ? result.embodied.reason : null }
-              : {}),
-          },
-        });
-        await writeAuditLog({
-          organizationId: orgId,
-          actorUserId: session.user.id,
-          action: result.fuel ? "fuel.entry_added" : result.svActivityId ? "sv_activity.create" : "record.created",
-          resourceType: result.fuel ? `fuel_${result.fuel.kind}` : result.svActivityId ? "sv_activity" : result.activityRecordId ? "activity_record" : "water_record",
-          resourceId: result.fuel?.fuelEntryId ?? result.svActivityId ?? result.activityRecordId ?? submission.id,
-          metadata: { fromFieldSubmission: submission.id, bulk: true },
-        });
+        // The row is committed, so it stays in the approved list even if its seal or audit entry fails.
+        try {
+          await sealAfterApproval(orgId, result.activityRecordId, submission.id, session.user.id);
+          await writeAuditLog({
+            organizationId: orgId,
+            actorUserId: session.user.id,
+            action: "field_submission.reviewed",
+            resourceType: "field_submission",
+            resourceId: submission.id,
+            metadata: {
+              action: "approved",
+              activityRecordId: result.activityRecordId,
+              bulk: true,
+              ...(result.embodied
+                ? result.embodied.recordId
+                  ? { embodiedCarbonRecordId: result.embodied.recordId }
+                  : { embodiedNotRecorded: "reason" in result.embodied ? result.embodied.reason : null }
+                : {}),
+            },
+          });
+          await writeAuditLog({
+            organizationId: orgId,
+            actorUserId: session.user.id,
+            action: result.fuel ? "fuel.entry_added" : result.svActivityId ? "sv_activity.create" : "record.created",
+            resourceType: result.fuel ? `fuel_${result.fuel.kind}` : result.svActivityId ? "sv_activity" : result.activityRecordId ? "activity_record" : "water_record",
+            resourceId: result.fuel?.fuelEntryId ?? result.svActivityId ?? result.activityRecordId ?? submission.id,
+            metadata: { fromFieldSubmission: submission.id, bulk: true },
+          });
+        } catch (err) {
+          console.error("[field-submissions] bulk approve seal or audit failed for", submission.id, err);
+        }
       }
 
       for (const entry of notifiable) {
@@ -210,10 +242,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     // reject
     const now = new Date();
-    await prisma.$transaction(
+    // Guarded like the approval claim: a row another review decided first is reported as skipped, not overwritten.
+    const outcomes = await prisma.$transaction(
       submissions.map((submission) =>
-        prisma.fieldSubmission.update({
-          where: { id: submission.id },
+        prisma.fieldSubmission.updateMany({
+          where: { id: submission.id, organizationId: orgId, status: { notIn: ["approved", "rejected"] } },
           data: {
             status: "rejected",
             reviewedByUserId: session.user.id,
@@ -223,16 +256,22 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         }),
       ),
     );
+    const rejected = submissions.filter((_, i) => outcomes[i].count === 1);
+    const resolved = submissions.filter((_, i) => outcomes[i].count === 0);
 
-    for (const submission of submissions) {
-      await writeAuditLog({
-        organizationId: orgId,
-        actorUserId: session.user.id,
-        action: "field_submission.reviewed",
-        resourceType: "field_submission",
-        resourceId: submission.id,
-        metadata: { action: "rejected", bulk: true },
-      });
+    for (const submission of rejected) {
+      try {
+        await writeAuditLog({
+          organizationId: orgId,
+          actorUserId: session.user.id,
+          action: "field_submission.reviewed",
+          resourceType: "field_submission",
+          resourceId: submission.id,
+          metadata: { action: "rejected", bulk: true },
+        });
+      } catch (err) {
+        console.error("[field-submissions] bulk reject audit failed for", submission.id, err);
+      }
       dispatchNotification({
         type: "submission_reviewed",
         recipientUserId: submission.submittedByUserId,
@@ -245,8 +284,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     return NextResponse.json({
-      updated: submissions.length,
-      ids: submissions.map((s) => s.id),
+      updated: rejected.length,
+      ids: rejected.map((s) => s.id),
+      skipped: resolved.map((s) => ({ id: s.id, reason: "Submission is already resolved." })),
     });
   } catch (err) {
     return handleRouteError(err);

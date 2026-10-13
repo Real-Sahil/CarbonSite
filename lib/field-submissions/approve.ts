@@ -90,6 +90,9 @@ export function fuelTypeOf(formData: Record<string, unknown>, ocrData: Record<st
 
 export type ApprovalIssue = { code: string; message: string };
 
+// Another review decided this submission first; its transaction rolls back, so nothing it wrote is kept.
+export class SubmissionAlreadyDecidedError extends Error {}
+
 // Validates a submission can be approved. Returns null when OK.
 export function approvalBlocker(
   submission: ApprovableSubmission,
@@ -130,6 +133,13 @@ export function approvalBlocker(
     return {
       code: "MISSING_FACILITY",
       message: "Assign a facility before approving this waste ticket.",
+    };
+  }
+  // Without a facility the approval would throw a plain error instead of this message.
+  if (submission.documentType === "water_meter_reading" && !facilityId) {
+    return {
+      code: "MISSING_FACILITY",
+      message: "Assign a facility before approving this water meter reading.",
     };
   }
   const formData = (submission.formData ?? {}) as Record<string, unknown>;
@@ -177,6 +187,12 @@ export async function approveSubmissionInTx(
   submission: Prisma.FieldSubmissionGetPayload<Record<string, never>>;
 }> {
   const { orgId, submission, reviewerUserId } = opts;
+  // Claim first: if another approval or reject decided it, the throw rolls this transaction back with nothing written.
+  const claimed = await tx.fieldSubmission.updateMany({
+    where: { id: submission.id, organizationId: orgId, status: { notIn: ["approved", "rejected"] } },
+    data: { status: "approved" },
+  });
+  if (claimed.count === 0) throw new SubmissionAlreadyDecidedError("Submission is already resolved.");
   const formData = (submission.formData ?? {}) as Record<string, unknown>;
   const ocrData = typeof submission.ocrExtractedData === "object" && !Array.isArray(submission.ocrExtractedData)
     ? (submission.ocrExtractedData as Record<string, unknown>)

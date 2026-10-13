@@ -10,6 +10,9 @@ import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { z } from "zod";
 import { socialValueSubmissionError } from "@/lib/social-value/field-capture";
+import { requireActiveBilling, requireFeature, requireWithinUsageLimit } from "@/lib/billing/limits";
+import { recordUsage } from "@/lib/billing/usage";
+import { workerEvidenceWhere } from "@/lib/field-submissions/evidence-access";
 
 type Params = { params: Promise<{ orgId: string; submissionId: string }> };
 
@@ -58,6 +61,26 @@ export async function POST(req: NextRequest, { params }: Params) {
     ) {
       return apiError("NOT_FOUND", "Submission not found.", 404);
     }
+    // Same site rule as a new submission, applied to the site being resubmitted.
+    if (membership.role === "field_worker" && original.siteId) {
+      const assignment = await prisma.fieldWorkerSiteAssignment.findUnique({
+        where: {
+          organizationId_userId_siteId: {
+            organizationId: orgId,
+            userId: session.user.id,
+            siteId: original.siteId,
+          },
+        },
+        select: { id: true },
+      });
+      if (!assignment) {
+        return apiError(
+          "SITE_NOT_ASSIGNED",
+          "You are not assigned to this site. Ask your administrator for access.",
+          403,
+        );
+      }
+    }
     if (original.status !== "rejected" && original.status !== "needs_info") {
       return apiError(
         "CONFLICT",
@@ -89,12 +112,19 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
-    // Cross-tenant guard: evidence files must belong to this org.
+    // Cross-tenant guard: evidence files must belong to this org. A field worker may
+    // only attach files they uploaded or already hold on their own submissions.
+    const isFieldWorker = membership.role === "field_worker";
     if (body.evidenceFileIds && body.evidenceFileIds.length > 0) {
       const ownedCount = await prisma.evidenceFile.count({
-        where: { id: { in: body.evidenceFileIds }, organizationId: orgId },
+        where: {
+          id: { in: body.evidenceFileIds },
+          organizationId: orgId,
+          ...(isFieldWorker ? workerEvidenceWhere(session.user.id) : {}),
+        },
       });
       if (ownedCount !== body.evidenceFileIds.length) {
+        if (isFieldWorker) return apiError("NOT_FOUND", "Evidence file not found.", 404);
         return apiError(
           "INVALID_EVIDENCE",
           "One or more evidence files do not belong to this organisation.",
@@ -104,6 +134,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     if ((body.documentType ?? original.documentType) === "social_value") {
+      const planGate = await requireFeature(orgId, "socialValue");
+      if (planGate) return planGate;
       const svError = await socialValueSubmissionError(orgId, original.contractId, body.formData);
       if (svError) return apiError("INVALID_SOCIAL_VALUE", svError, 422);
     }
@@ -113,6 +145,12 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
     const safetyError = await safetySubmissionError(orgId, body.documentType ?? original.documentType, body.formData as Record<string, unknown>);
     if (safetyError) return apiError("INVALID_FORM_DATA", safetyError, 422);
+
+    // Gated after the idempotency check above, as on the create route: a retry is not new usage.
+    const billingBlock = await requireActiveBilling(orgId);
+    if (billingBlock) return billingBlock;
+    const usageBlock = await requireWithinUsageLimit(orgId, "field_submission.submitted");
+    if (usageBlock) return usageBlock;
 
     const newSubmission = await prisma.fieldSubmission.create({
       data: {
@@ -151,6 +189,8 @@ export async function POST(req: NextRequest, { params }: Params) {
       resourceId: newSubmission.id,
       metadata: { originalSubmissionId: submissionId },
     });
+
+    await recordUsage({ organizationId: orgId, eventType: "field_submission.submitted" });
 
     return NextResponse.json(newSubmission, { status: 201 });
   } catch (err) {

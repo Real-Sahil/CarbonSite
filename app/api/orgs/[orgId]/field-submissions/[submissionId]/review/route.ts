@@ -13,6 +13,7 @@ import { dispatchSupplierPerformanceUpdate } from "@/lib/jobs/dispatch";
 import {
   approvalBlocker,
   approveSubmissionInTx,
+  SubmissionAlreadyDecidedError,
 } from "@/lib/field-submissions/approve";
 import { SocialValueApprovalError } from "@/lib/social-value/field-capture";
 import { scheduleCalculationForPeriod } from "@/lib/field-submissions/trigger-calculation";
@@ -56,7 +57,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       if (changedFile) return apiError("EVIDENCE_CHECKSUM_MISMATCH", "An evidence file no longer matches its recorded SHA-256, so it was changed after upload. Do not approve it.", 422, { evidenceId: changedFile });
       const emissionCategoryId = body.emissionCategoryId ?? submission.emissionCategoryId;
       const resolvedFacilityId = body.facilityId ?? submission.facilityId;
-      const blocker = approvalBlocker(submission, emissionCategoryId, resolvedFacilityId);
+      // Checked as it will be approved, so a reviewer edit in this request cannot get past the blocker.
+      const submissionWithEdits = {
+        ...submission,
+        ...(body.ocrExtractedData ? { ocrExtractedData: body.ocrExtractedData } : {}),
+        ...(body.formData ? { formData: body.formData } : {}),
+      };
+      const blocker = approvalBlocker(submissionWithEdits, emissionCategoryId, resolvedFacilityId);
       if (blocker) {
         return apiError(blocker.code, blocker.message, 422);
       }
@@ -72,12 +79,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           return apiError("INVALID_EMISSION_CATEGORY", "Emission category does not exist.", 422);
         }
       }
-
-      const submissionWithEdits = {
-        ...submission,
-        ...(body.ocrExtractedData ? { ocrExtractedData: body.ocrExtractedData } : {}),
-        ...(body.formData ? { formData: body.formData } : {}),
-      };
 
       let result;
       try {
@@ -104,6 +105,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       });
       } catch (err) {
         if (err instanceof SocialValueApprovalError) return apiError("INVALID_FORM_DATA", err.message, 422);
+        if (err instanceof SubmissionAlreadyDecidedError) return apiError("CONFLICT", err.message, 409);
         throw err;
       }
       activityRecordId = result.activityRecordId;
@@ -180,8 +182,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         console.error("[field-submissions] Auto-calc schedule failed:", err),
       );
     } else {
-      updated = await prisma.fieldSubmission.update({
-        where: { id: submissionId },
+      // Guarded like the approval claim: a concurrent approval must not be overwritten by this reject.
+      const decided = await prisma.fieldSubmission.updateMany({
+        where: { id: submissionId, organizationId: orgId, status: { notIn: ["approved", "rejected"] } },
         data: {
           status: body.action,
           reviewedByUserId: session.user.id,
@@ -193,6 +196,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           ...(body.formData ? { formData: body.formData } : {}),
         },
       });
+      if (decided.count === 0) return apiError("CONFLICT", "Submission is already resolved.", 409);
+      updated = await prisma.fieldSubmission.findUniqueOrThrow({ where: { id: submissionId } });
     }
 
     await writeAuditLog({

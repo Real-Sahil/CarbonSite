@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { firstEvidenceMismatch } from "@/lib/evidence/seal";
 import { fuelSubmissionError } from "@/lib/field-submissions/fuel-capture";
+import { workerEvidenceWhere } from "@/lib/field-submissions/evidence-access";
 import { SAFETY_TYPES, safetySubmissionError } from "@/lib/field-submissions/safety-capture";
 import { NextRequest } from "next/server";
 import { Prisma } from "@prisma/client";
@@ -296,11 +297,18 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     // Cross-tenant guards: evidence files and facility must belong to this org.
+    // A field worker may attach only files they uploaded or already hold on their own submissions.
+    const isFieldWorker = membership.role === "field_worker";
     if (body.evidenceIds && body.evidenceIds.length > 0) {
       const ownedCount = await prisma.evidenceFile.count({
-        where: { id: { in: body.evidenceIds }, organizationId: orgId },
+        where: {
+          id: { in: body.evidenceIds },
+          organizationId: orgId,
+          ...(isFieldWorker ? workerEvidenceWhere(session.user.id) : {}),
+        },
       });
       if (ownedCount !== body.evidenceIds.length) {
+        if (isFieldWorker) return apiError("NOT_FOUND", "Evidence file not found.", 404);
         return apiError(
           "INVALID_EVIDENCE",
           "One or more evidence files do not belong to this organisation.",
@@ -313,6 +321,10 @@ export async function POST(req: NextRequest, { params }: Params) {
     if (body.evidenceIds && body.evidenceIds.length > 0) {
       const bad = await firstEvidenceMismatch(orgId, body.evidenceIds);
       if (bad) return apiError("EVIDENCE_CHECKSUM_MISMATCH", "An uploaded file does not match the checksum the device recorded for it. Take the photo again.", 422, { evidenceId: bad });
+    }
+    // Facilities have no link to sites, so a worker cannot be limited to the ones they may use; they submit against the site.
+    if (isFieldWorker && body.facilityId) {
+      return apiError("FACILITY_NOT_ALLOWED", "Field workers cannot choose a facility. Submit against the site instead.", 403);
     }
     if (body.facilityId) {
       const facility = await prisma.facility.findFirst({
@@ -327,7 +339,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     // Resolve the reporting period: explicit id wins, otherwise pick the period
     // whose date range contains the submission date (falling back to the most
     // recent period). Field workers never choose a period themselves.
-    let reportingPeriodId = body.reportingPeriodId;
+    let reportingPeriodId = isFieldWorker ? undefined : body.reportingPeriodId;
     if (reportingPeriodId) {
       const period = await prisma.reportingPeriod.findUnique({
         where: { id: reportingPeriodId },

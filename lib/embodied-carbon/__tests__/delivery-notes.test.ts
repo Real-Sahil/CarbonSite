@@ -125,7 +125,7 @@ function fakeTx() {
     site: { findFirst: vi.fn().mockResolvedValue({ projectId: "proj-a" }) },
     activityRecord: { create: vi.fn().mockResolvedValue({ id: "ar1" }) },
     activityRecordEvidence: { createMany: vi.fn() },
-    fieldSubmission: { update: vi.fn().mockResolvedValue({ id: "fs1" }) },
+    fieldSubmission: { update: vi.fn().mockResolvedValue({ id: "fs1" }), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
   };
   return tx;
 }

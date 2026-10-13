@@ -50,13 +50,41 @@ describe("fuelSubmissionError", () => {
 describe("approveFuelInTx", () => {
   it("is idempotent: a second approval returns the first entry", async () => {
     const tx = {
-      fuelStore: { findFirst: vi.fn().mockResolvedValue({ id: "s1" }) },
+      fuelStore: { findFirst: vi.fn().mockResolvedValue({ id: "s1", siteId: "site1" }) },
       plantAsset: { findFirst: vi.fn().mockResolvedValue({ id: "a1" }) },
       fuelIssue: { findFirst: vi.fn().mockResolvedValue({ id: "existing" }), create: vi.fn() },
     };
-    const r = await approveFuelInTx(tx as never, { orgId: "o", submission: { id: "sub1", formData: issue, submittedByUserId: "u" } });
+    const r = await approveFuelInTx(tx as never, { orgId: "o", submission: { id: "sub1", formData: issue, submittedByUserId: "u", siteId: "site1" } });
     expect(r).toMatchObject({ fuelEntryId: "existing", kind: "issue", litres: 120.5 });
     expect(tx.fuelIssue.create).not.toHaveBeenCalled();
+  });
+  it("refuses a store moved to another site after the worker submitted", async () => {
+    const tx = {
+      fuelStore: { findFirst: vi.fn().mockResolvedValue({ id: "s1", siteId: "other" }) },
+      plantAsset: { findFirst: vi.fn().mockResolvedValue({ id: "a1" }) },
+      fuelIssue: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
+    };
+    await expect(approveFuelInTx(tx as never, { orgId: "o", submission: { id: "sub1", formData: issue, submittedByUserId: "u", siteId: "site1" } }))
+      .rejects.toThrow("That fuel store is not on this site.");
+    expect(tx.fuelIssue.create).not.toHaveBeenCalled();
+  });
+  it("refuses when the store or the submission has no site", async () => {
+    const storeWithoutSite = {
+      fuelStore: { findFirst: vi.fn().mockResolvedValue({ id: "s1", siteId: null }) },
+      plantAsset: { findFirst: vi.fn().mockResolvedValue({ id: "a1" }) },
+      fuelIssue: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
+    };
+    await expect(approveFuelInTx(storeWithoutSite as never, { orgId: "o", submission: { id: "sub1", formData: issue, submittedByUserId: "u", siteId: null } }))
+      .rejects.toThrow("That fuel store is not on this site.");
+    const siteless = {
+      fuelStore: { findFirst: vi.fn().mockResolvedValue({ id: "s1", siteId: "site1" }) },
+      plantAsset: { findFirst: vi.fn().mockResolvedValue({ id: "a1" }) },
+      fuelIssue: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
+    };
+    await expect(approveFuelInTx(siteless as never, { orgId: "o", submission: { id: "sub1", formData: issue, submittedByUserId: "u", siteId: null } }))
+      .rejects.toThrow("That fuel store is not on this site.");
+    expect(storeWithoutSite.fuelIssue.create).not.toHaveBeenCalled();
+    expect(siteless.fuelIssue.create).not.toHaveBeenCalled();
   });
 });
 

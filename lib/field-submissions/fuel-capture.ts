@@ -74,7 +74,7 @@ export async function fuelSubmissionError(orgId: string, siteId: string | undefi
 
 export class FuelApprovalError extends SocialValueApprovalError {}
 
-type Submission = { id: string; formData: Prisma.JsonValue; submittedByUserId: string };
+type Submission = { id: string; formData: Prisma.JsonValue; submittedByUserId: string; siteId: string | null };
 
 /** Approving a fuel log creates the entry once; a second approval returns the first. */
 export async function approveFuelInTx(tx: TxClient, opts: { orgId: string; submission: Submission; evidenceFileId?: string | null }): Promise<{ fuelEntryId: string; kind: FuelAction; storeId: string; litres: number }> {
@@ -82,8 +82,10 @@ export async function approveFuelInTx(tx: TxClient, opts: { orgId: string; submi
   if ("error" in parsed) throw new FuelApprovalError(parsed.error);
   const { entry } = parsed;
   const { orgId, submission } = opts;
-  const store = await tx.fuelStore.findFirst({ where: { id: entry.storeId, organizationId: orgId }, select: { id: true } });
+  const store = await tx.fuelStore.findFirst({ where: { id: entry.storeId, organizationId: orgId }, select: { id: true, siteId: true } });
   if (!store) throw new FuelApprovalError("That fuel store no longer exists.");
+  // Re-checked at approval: the store may have moved since the worker submitted it.
+  if (!submission.siteId || store.siteId !== submission.siteId) throw new FuelApprovalError("That fuel store is not on this site.");
   if (entry.plantAssetId && !(await tx.plantAsset.findFirst({ where: { id: entry.plantAssetId, organizationId: orgId }, select: { id: true } }))) {
     throw new FuelApprovalError("That machine no longer exists.");
   }
