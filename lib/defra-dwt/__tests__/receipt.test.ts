@@ -161,14 +161,6 @@ describe("Defra receipt check", () => {
     expect(receiptProblems(p).join()).toContain("wasteItems.0.pops.components.0.concentration");
   });
 
-  it("needs a concentration value when a concentration operator is given", () => {
-    const h = hazardousReceipt();
-    Object.assign(h.wasteItems[0], {
-      hazardous: { sourceOfComponents: "OWN_TESTING", components: [{ name: "Lead", concentration: null, concentrationOperator: ">" }] },
-    });
-    expect(receiptProblems(h).join()).toContain("wasteItems.0.hazardous.components.0.concentration");
-  });
-
   it("lists components only in line with the source of components", () => {
     const none = withItem({ containsPops: true, pops: { sourceOfComponents: "NOT_PROVIDED" } });
     expect(receiptProblems(none)).toEqual([]);

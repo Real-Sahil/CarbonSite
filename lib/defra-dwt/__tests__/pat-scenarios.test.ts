@@ -96,7 +96,7 @@ describe("PAT scenario shapes (offline, not Defra's Pass)", () => {
           pops: {
             sourceOfComponents: "GUIDANCE",
             components: [
-              { code: "PFHXS", concentration: 0.5, concentrationOperator: "<" },
+              { code: "PFHXS", concentration: 0.5 },
               { code: "PFOA", concentration: 2 },
             ],
           },
@@ -109,8 +109,8 @@ describe("PAT scenario shapes (offline, not Defra's Pass)", () => {
     expectAccepted({
       ...receiptWith([
         hazardousItem(["HP_5", "HP_10"], [
-          { name: "Lead", concentration: 2.1, concentrationOperator: ">" },
-          { name: "Chromium", concentration: 40, concentrationOperator: ">" },
+          { name: "Lead", concentration: 2.1 },
+          { name: "Chromium", concentration: 40 },
         ]),
       ]),
       hazardousWasteConsignmentCode: CONSIGNMENT,
@@ -139,7 +139,7 @@ describe("PAT scenario shapes (offline, not Defra's Pass)", () => {
       hazardous: {
         sourceOfComponents: "OWN_TESTING",
         hazCodes: ["HP_5"],
-        components: [{ name: "Lead", concentration: 2.1, concentrationOperator: ">" }],
+        components: [{ name: "Lead", concentration: 2.1 }],
       },
       containsPops: true,
       pops: { sourceOfComponents: "GUIDANCE", components: [{ code: "PFOA", concentration: 2 }] },
