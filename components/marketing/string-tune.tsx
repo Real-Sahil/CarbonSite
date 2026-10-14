@@ -14,14 +14,23 @@ import { useEffect } from "react";
 export function StringTuneEffects() {
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduce.matches) return;
+    // Bumped on every halt, so an import or frame still in flight from an earlier start does nothing.
+    let token = 0;
+    let starting = false;
+    let running: (() => void) | undefined;
 
-    let stop: (() => void) | undefined;
-    let cancelled = false;
+    const halt = () => {
+      token++;
+      starting = false;
+      running?.();
+      running = undefined;
+    };
 
-    (async () => {
+    const start = async () => {
+      const mine = ++token;
+      starting = true;
       const lib = await import("@fiddle-digital/string-tune");
-      if (cancelled) return;
+      if (mine !== token) return;
       const st = lib.StringTune.getInstance();
       st.scrollDesktopMode = "default";
       st.scrollMobileMode = "default";
@@ -33,12 +42,6 @@ export function StringTuneEffects() {
         st.use(lib.StringTilt);
       }
       st.start(60);
-      // Wait for the first frame so elements already on screen are marked in view before anything hides.
-      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
-      if (cancelled) {
-        st.destroy();
-        return;
-      }
       // An element scrolled past without ever being on screen (a fast jump, an anchor, a reload
       // part-way down) would stay hidden when the visitor scrolls back, so mark it seen.
       let queued = false;
@@ -54,25 +57,31 @@ export function StringTuneEffects() {
           requestAnimationFrame(sweep);
         }
       };
-      sweep();
-      window.addEventListener("scroll", onScroll, { passive: true });
-      document.documentElement.classList.add("st-on");
-      stop = () => {
+      // Set before the wait so a halt during it tears the library down.
+      running = () => {
         window.removeEventListener("scroll", onScroll);
         document.documentElement.classList.remove("st-on");
         st.destroy();
       };
-    })();
-
-    // Turning reduced motion on mid-visit switches the effects off.
-    const onChange = () => {
-      if (reduce.matches) stop?.();
+      // Wait for the first frame so elements already on screen are marked in view before anything hides.
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      if (mine !== token) return;
+      sweep();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      document.documentElement.classList.add("st-on");
+      starting = false;
     };
-    reduce.addEventListener("change", onChange);
+
+    // Reduced motion on at mount or switched on mid-visit halts the effects; switched off starts them again.
+    const sync = () => {
+      if (reduce.matches) halt();
+      else if (!starting && !running) void start();
+    };
+    sync();
+    reduce.addEventListener("change", sync);
     return () => {
-      cancelled = true;
-      reduce.removeEventListener("change", onChange);
-      stop?.();
+      reduce.removeEventListener("change", sync);
+      halt();
     };
   }, []);
 
