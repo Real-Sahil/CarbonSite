@@ -26,7 +26,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     const { limit, offset } = offsetPage(_req.nextUrl.searchParams);
     const where = { organizationId: orgId };

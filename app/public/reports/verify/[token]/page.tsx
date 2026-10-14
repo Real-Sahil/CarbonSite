@@ -239,8 +239,8 @@ export default function ReportVerificationPage({ params }: { params: Promise<{ t
 
               {expanded && (
                 <div className="space-y-3">
-                  {auditTrail.map((event, idx) => (
-                    <div key={idx} className="border border-[#E3E8EE] rounded-lg p-4">
+                  {auditTrail.map((event) => (
+                    <div key={`${event.timestamp}:${event.action}:${event.actor}`} className="border border-[#E3E8EE] rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <p className="font-semibold text-[#131d29]">{event.action}</p>
                         <p className="text-xs text-[#5B6A78]">{new Date(event.timestamp).toLocaleString()}</p>

@@ -16,6 +16,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import {
+  API_VERSIONS,
   negotiateApiVersion,
   addVersionHeaders,
   getVersionInfo,
@@ -78,6 +79,5 @@ export function checkDeprecationWarning(version: ApiVersion): string | null {
  * Get supported versions for error messages.
  */
 export function getSupportedVersionsList(): string {
-  const { API_VERSIONS } = require("./versioning");
   return Object.keys(API_VERSIONS).join(", ");
 }

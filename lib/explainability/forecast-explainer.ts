@@ -191,7 +191,7 @@ export function explainForecast(
 export function explainAnomaly(
   value: number,
   historicalValues: number[],
-  anomalyType: "zscore" | "isolation_forest" | "combination"
+  _anomalyType: "zscore" | "isolation_forest" | "combination"
 ): AnomalyExplanation {
   const baseline = historicalValues.reduce((a, b) => a + b, 0) / historicalValues.length;
   const stdDev = Math.sqrt(historicalValues.reduce((sum, v) => sum + Math.pow(v - baseline, 2), 0) / historicalValues.length);

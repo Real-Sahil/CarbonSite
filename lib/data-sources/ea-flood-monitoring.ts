@@ -56,9 +56,6 @@ export async function getFloodRiskAtPoint(
   lat: number,
   lng: number,
 ): Promise<DataSourceResult<FloodRiskSummary>> {
-  // 0.005° ≈ 500 m at UK latitudes
-  const delta = 0.005;
-  const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
   const url = `${BASE}/id/floodAreas?lat=${lat}&long=${lng}&dist=1`;
 
   const resp = await govFetch(url);

@@ -24,7 +24,7 @@ export interface ExcelStyleConfig {
  */
 export function generateExcelWorkbook(
   sheets: ExcelWorksheetConfig[],
-  fileName: string = "export"
+  _fileName: string = "export"
 ): Buffer {
   const workbook = XLSX.utils.book_new();
 

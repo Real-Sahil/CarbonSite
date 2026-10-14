@@ -244,7 +244,6 @@ export async function scanSpecies(
   radiusKm = 1,
 ): Promise<NbnScanResult> {
   const seen = new Map<string, { record: NbnSpeciesRecord; count: number }>();
-  let totalRecords = 0;
 
   for (let page = 0; page < MAX_SPECIES_PAGES; page++) {
     const start = page * PAGE_SIZE;
@@ -258,8 +257,6 @@ export async function scanSpecies(
     const res = await fetchWithTimeout(url);
     if (!res.ok) throw new DataSourceError("nbn-atlas", res.status, await res.text().catch(() => ""));
     const data = await res.json() as NbnSearchResponse;
-
-    if (page === 0) totalRecords = data.totalRecords;
 
     const occurrences = data.occurrences ?? [];
     if (occurrences.length === 0) break;

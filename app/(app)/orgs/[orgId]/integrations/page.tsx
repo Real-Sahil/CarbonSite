@@ -23,8 +23,7 @@ interface IntegrationsPageProps {
   params: Promise<{ orgId: string }>;
 }
 
-export async function generateMetadata({ params }: IntegrationsPageProps) {
-  const { orgId } = await params;
+export async function generateMetadata() {
   return {
     title: "Integrations | MetricOra",
     description: "Connect your accounting software and invite suppliers to collaborate on emissions data",

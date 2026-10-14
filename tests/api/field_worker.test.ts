@@ -217,9 +217,6 @@ describe("GET /api/orgs/[orgId]/field-submissions", () => {
     expect(res.status).toBe(200);
     const body = await json(res);
     const submissions = body.data;
-    const foreignSubmissions = submissions.filter(
-      (s: { submittedByUserId?: string }) => s.submittedByUserId && s.submittedByUserId !== undefined,
-    );
     // All submissions returned should be the field worker's own
     // (submittedByUserId is not exposed in the list — trust the WHERE clause)
     expect(Array.isArray(submissions)).toBe(true);

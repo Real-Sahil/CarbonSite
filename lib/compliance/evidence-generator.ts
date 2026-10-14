@@ -126,7 +126,7 @@ export async function generateComplianceEvidence(
     },
   ];
 
-  const complianceStatus: Record<string, any> = {};
+  const complianceStatus: ComplianceEvidence["complianceStatus"] = {};
   options.frameworks.forEach((framework) => {
     complianceStatus[framework] = {
       framework,

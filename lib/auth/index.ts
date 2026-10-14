@@ -33,10 +33,8 @@ const trustedOrigins = Array.from(
 // For now, OIDC config remains empty; credentials can be managed via integration settings
 const oidcConfig = {};
 
-// Parse optional role mapping
-const roleMapping = process.env.OIDC_ROLE_MAPPING
-  ? JSON.parse(process.env.OIDC_ROLE_MAPPING)
-  : {};
+// Optional role mapping: not used yet, but a malformed value still fails at startup.
+if (process.env.OIDC_ROLE_MAPPING) JSON.parse(process.env.OIDC_ROLE_MAPPING);
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),

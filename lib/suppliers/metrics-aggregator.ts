@@ -32,7 +32,6 @@ export async function getSupplierMetrics(
   period: number = 30,
 ): Promise<AggregatedMetrics> {
   const now = new Date();
-  const periodStart = subDays(now, period);
   const thirtyDaysAgo = subDays(now, 30);
   const ninetyDaysAgo = subDays(now, 90);
 
@@ -94,9 +93,6 @@ export async function getSupplierMetrics(
     const supplierRequests = requestsBySupplier.get(user.email) || [];
 
     // Login counts
-    const sessionsInPeriod = user.sessions.filter(
-      (s) => s.createdAt >= periodStart,
-    );
     const sessions7d = user.sessions.filter((s) => s.createdAt >= subDays(now, 7));
     const sessions30d = user.sessions.filter((s) => s.createdAt >= thirtyDaysAgo);
     const sessions90d = user.sessions.filter((s) => s.createdAt >= ninetyDaysAgo);

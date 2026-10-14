@@ -28,7 +28,6 @@ interface SupplierInvitesListProps {
 }
 
 export function SupplierInvitesList({
-  orgId,
   invites,
 }: SupplierInvitesListProps) {
   const getStatus = (

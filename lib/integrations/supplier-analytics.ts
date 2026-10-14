@@ -201,7 +201,7 @@ export async function forecastSupplierEmissions(
   // Convert quarterly spend to monthly estimates for forecasting
   const monthlySpend: number[] = [];
 
-  scope3Data.forEach((quarter, index) => {
+  scope3Data.forEach((quarter) => {
     // Average spend per month in the quarter
     const monthlyValue = (quarter.totalSpendGbp || 0) / 3;
 

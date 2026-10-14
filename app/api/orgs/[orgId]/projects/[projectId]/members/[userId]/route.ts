@@ -11,7 +11,7 @@ export async function DELETE(
 ) {
   try {
     const { orgId, projectId, userId } = await params;
-    const { session, membership } = await requireOrgMember(
+    const { session } = await requireOrgMember(
       orgId,
       ...ROLE_GROUPS.contractManagers
     );

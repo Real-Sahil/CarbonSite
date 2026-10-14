@@ -58,7 +58,7 @@ export function negotiateApiVersion(request: NextRequest): ApiVersion {
 export function addVersionHeaders(
   response: NextResponse,
   version: ApiVersion,
-  endpoint?: string
+  _endpoint?: string
 ): NextResponse {
   const versionInfo = API_VERSIONS[version];
 

@@ -88,7 +88,7 @@ export async function DELETE(
 ) {
   try {
     const { orgId, recordId } = await params;
-    const { version, json } = await withApiVersion(req);
+    const { version } = await withApiVersion(req);
 
     const deprecationWarning = checkDeprecationWarning(version);
     if (deprecationWarning) {

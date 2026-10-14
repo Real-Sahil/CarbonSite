@@ -15,7 +15,7 @@ mkdirSync(TMP, { recursive: true });
 const OUT = "public/marketing/loops/";
 const SHOTS = "public/marketing/screens/";
 const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
-const glide = (page, to, ms) => page.evaluate(({ to, ms }) => new Promise((res) => { const from = window.scrollY, t0 = performance.now(); const step = (t) => { const k = Math.min(1, (t - t0) / ms); const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; window.scrollTo(0, from + (to - from) * e); k < 1 ? requestAnimationFrame(step) : res(); }; requestAnimationFrame(step); }), { to, ms });
+const glide = (page, to, ms) => page.evaluate(({ to, ms }) => new Promise((res) => { const from = window.scrollY, t0 = performance.now(); const step = (t) => { const k = Math.min(1, (t - t0) / ms); const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; window.scrollTo(0, from + (to - from) * e); if (k < 1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); }), { to, ms });
 const loops = {
   prove: { url: "/dashboard", act: async (p) => { await p.waitForTimeout(1500); await glide(p, 700, 6000); await p.waitForTimeout(1200); await glide(p, 0, 4000); await p.waitForTimeout(800); } },
   review: { url: `/submissions/${process.env.SUBMISSION_ID}`, act: async (p) => { await p.waitForTimeout(1500); await glide(p, 900, 7000); await p.waitForTimeout(1500); await glide(p, 0, 4000); } },

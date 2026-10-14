@@ -20,7 +20,7 @@ import { handleSupabaseError } from "@/lib/utils/supabase-error-handler";
  *   if (result.success) router.refresh();
  * };
  */
-export function useSafeMutation<T = any>() {
+export function useSafeMutation<T = unknown>() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);

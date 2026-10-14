@@ -79,7 +79,7 @@ export default function ResourcesPage() {
                 <h2 className="font-display text-[26px] font-light tracking-[-0.02em]">{g.title}</h2>
                 <ol className="mt-5 grid gap-4">
                   {g.body.map((p, i) => (
-                    <li key={i} className="flex gap-4">
+                    <li key={p} className="flex gap-4">
                       <span className="text-[13px] leading-[1.8] tabular-nums text-mk-accent">{String(i + 1).padStart(2, "0")}</span>
                       <Body className="text-[16px]">{p}</Body>
                     </li>

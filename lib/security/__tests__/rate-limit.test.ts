@@ -159,7 +159,6 @@ describe("rateLimitRequest Postgres fallback", () => {
 
   test("respects window reset when checking Postgres", async () => {
     const now = Date.now();
-    const expiredResetAt = new Date(now - 1000); // Expired window
     const futureResetAt = new Date(now + 60_000); // New reset time after reset
 
     (prisma.$queryRaw as ReturnType<typeof vi.fn>).mockResolvedValue([

@@ -9,7 +9,6 @@ import { putObject, keys } from "@/lib/storage";
 import { enqueueNotification } from "@/lib/jobs/queues/index";
 import { reportLogger } from "@/lib/logger";
 import { triggerReportReadyNotification } from "@/lib/automation/n8n-client";
-import type { ReportData } from "./template";
 import { scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { fetchCalculations, aggregate, buildBasePdfData, loadLogoDataUri } from "./aggregation";
 import { evidenceTier, type TierInput } from "@/lib/data-quality/evidence-tier";

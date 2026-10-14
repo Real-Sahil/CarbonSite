@@ -198,7 +198,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
 
                 {pathway.alerts.length > 0 && (
                   <div className="space-y-1.5">
-                    {pathway.alerts.slice(0, 2).map((alert, i) => {
+                    {pathway.alerts.slice(0, 2).map((alert) => {
                       const cls =
                         alert.severity === "critical"
                           ? "border-red-200 bg-red-50 text-red-800"
@@ -206,7 +206,7 @@ export default async function PathwayPage({ params }: PathwayPageProps) {
                             ? "border-amber-200 bg-amber-50 text-amber-800"
                             : "border-[#E3E8EE] bg-[#F9FAFC] text-[#131d29]";
                       return (
-                        <div key={i} className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${cls}`}>
+                        <div key={alert.year} className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${cls}`}>
                           <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                           <span>{alert.message}</span>
                         </div>

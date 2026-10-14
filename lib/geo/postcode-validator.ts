@@ -177,7 +177,6 @@ export function identifyDeliveryPostcode(
 
   // Step 2: label-context scan on raw OCR text if available.
   if (rawOcrText) {
-    const lower = rawOcrText.toLowerCase();
     const lines = rawOcrText.split(/[\r\n]+/);
 
     // For each line, check if it contains a delivery label followed by a postcode.

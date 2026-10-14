@@ -38,7 +38,7 @@ const CreateSchema = z.object({
 export async function GET(req: NextRequest, { params }: { params: Promise<{ orgId: string }> }) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const { searchParams } = new URL(req.url);
     const cursor = searchParams.get("cursor") ?? undefined;

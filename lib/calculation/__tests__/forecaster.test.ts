@@ -76,7 +76,7 @@ describe('Forecaster', () => {
     });
 
     it('handles short seasonality', () => {
-      const data = Array.from({ length: 12 }, (_, i) => 100 + Math.random() * 20);
+      const data = Array.from({ length: 12 }, () => 100 + Math.random() * 20);
       const result = seasonalDecomposition(data, 4);
 
       expect(result.trend).toHaveLength(12);

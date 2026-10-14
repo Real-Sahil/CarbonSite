@@ -37,8 +37,8 @@ export function PageSkeleton() {
             <Bar className="h-4 w-24" />
           </div>
           <div className="p-0">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-6 px-6 py-3.5 border-b border-[#E3E8EE]">
+            {[0, 1, 2, 3, 4].map((n) => (
+              <div key={n} className="flex items-center gap-6 px-6 py-3.5 border-b border-[#E3E8EE]">
                 <Bar className="h-3.5 w-24 shrink-0" />
                 <Bar className="h-3.5 flex-1" />
                 <Bar className="h-3.5 w-20 shrink-0" />

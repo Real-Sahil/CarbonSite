@@ -23,7 +23,7 @@ describe("GET /api/orgs/[orgId]/dashboard/stream", () => {
     vi.mocked(auth.requireOrgMember).mockResolvedValue({
       user: { id: "user-123", email: "test@example.com" },
       session: { id: "session-123" },
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof auth.requireOrgMember>>);
 
     vi.mocked(live.loadLiveTotals).mockResolvedValue({
       aggregates: { totalCo2e: 4710050, scope1: 909490, scope2: 154640, scope3: 3645920, byCategory: { "s1-mobile": 690420 } },

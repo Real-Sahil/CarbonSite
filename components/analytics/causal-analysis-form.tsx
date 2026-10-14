@@ -28,7 +28,8 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [confounders, setConfounders] = useState<string[]>([]);
+  // Each row carries a client-only key: the value is edited in place, so it cannot be the key.
+  const [confounders, setConfounders] = useState<{ key: string; value: string }[]>([]);
   const [formData, setFormData] = useState({
     question: "",
     treatmentVariable: "",
@@ -44,7 +45,7 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
     try {
       const values: FormValues = {
         ...formData,
-        confounders,
+        confounders: confounders.map((c) => c.value),
       };
 
       // Validate
@@ -137,13 +138,13 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
         {confounders.length > 0 && (
           <div className="space-y-2">
             {confounders.map((confounder, index) => (
-              <div key={index} className="flex gap-2">
+              <div key={confounder.key} className="flex gap-2">
                 <Input
                   placeholder="e.g., facility_size_sqm"
-                  value={confounder}
+                  value={confounder.value}
                   onChange={(e) => {
                     const newConfounders = [...confounders];
-                    newConfounders[index] = e.target.value;
+                    newConfounders[index] = { ...confounder, value: e.target.value };
                     setConfounders(newConfounders);
                   }}
                   className="flex-1"
@@ -166,7 +167,7 @@ export function CausalAnalysisForm({ orgId, onAnalysisCreated }: CausalAnalysisF
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setConfounders([...confounders, ""])}
+            onClick={() => setConfounders([...confounders, { key: crypto.randomUUID(), value: "" }])}
           >
             Add Confounder
           </Button>

@@ -1,14 +1,9 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
-
-const querySchema = z.object({
-  reportingPeriodId: z.string().optional(),
-});
 
 export async function GET(
   req: NextRequest,

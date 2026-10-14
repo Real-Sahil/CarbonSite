@@ -124,14 +124,14 @@ export function totalsFromParcels(
   };
 
   for (const parcel of parcels) {
-    const module = parcel.module as BiodiversityModule;
+    const moduleKey = parcel.module as BiodiversityModule;
     const units = Number(parcel.units);
     if (!Number.isFinite(units)) continue;
 
     if (parcel.stage === "baseline") {
-      totals[module].baseline += units;
+      totals[moduleKey].baseline += units;
     } else if (POST_INTERVENTION_STAGES.has(parcel.stage)) {
-      totals[module].postIntervention += units;
+      totals[moduleKey].postIntervention += units;
     }
   }
 

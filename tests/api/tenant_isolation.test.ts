@@ -30,7 +30,6 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 const ORG_A_ADMIN = process.env.ORG_A_ADMIN_TOKEN ?? "";
 const ORG_A_ID = process.env.ORG_A_ID ?? "";
 const ORG_A_FW = process.env.ORG_A_FW_TOKEN ?? "";
-const ORG_B_ADMIN = process.env.ORG_B_ADMIN_TOKEN ?? "";
 const ORG_B_ID = process.env.ORG_B_ID ?? "";
 const ORG_B_SUBMISSION_ID = process.env.ORG_B_SUBMISSION_ID ?? "clb000000000000000000000000";
 const ORG_B_RECORD_ID = process.env.ORG_B_RECORD_ID ?? "clb000000000000000000000001";

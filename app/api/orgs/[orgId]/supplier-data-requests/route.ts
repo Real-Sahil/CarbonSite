@@ -124,7 +124,7 @@ export async function POST(
     for (const supplier of body.suppliers) {
       try {
         const linkToken = newToken();
-        const request = await prisma.supplierDataRequest.create({
+        await prisma.supplierDataRequest.create({
           data: {
             organizationId: orgId,
             reportingPeriodId: period.id,

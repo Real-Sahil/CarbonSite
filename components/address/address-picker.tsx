@@ -82,9 +82,9 @@ export function AddressPicker({
       />
       {open && items.length > 0 && (
         <ul id={listId} role="listbox" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-md border bg-white text-sm shadow-lg">
-          {items.map((s, i) => (
+          {items.map((s) => (
             <li
-              key={`${s.label}-${i}`}
+              key={`${s.label}-${s.latitude}-${s.longitude}`}
               role="option"
               aria-selected={false}
               className="cursor-pointer px-3 py-2 hover:bg-[#F9FAFC]"

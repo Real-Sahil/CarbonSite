@@ -193,7 +193,6 @@ export function generateCSRDCompliance(req: {
   scope3?: number;
 }): CSRDComplianceMapping {
   const mandatory = CSRD_ARTICLE_8_REQUIREMENTS.filter((r) => r.mandatory);
-  const optional = CSRD_ARTICLE_8_REQUIREMENTS.filter((r) => !r.mandatory);
 
   const missingData: string[] = [];
   if (!req.scope1) missingData.push("Scope 1 emissions data not provided");

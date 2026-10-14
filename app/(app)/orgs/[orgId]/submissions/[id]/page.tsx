@@ -453,8 +453,8 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                 <>
                   <DetailRow label="Where" value={safetyParsed.entry.location} />
                   {safetyParsed.entry.inspectedOn && <DetailRow label="Inspected on" value={safetyParsed.entry.inspectedOn} />}
-                  {safetyParsed.entry.results.map((r, i) => (
-                    <DetailRow key={i} label={r.item} value={`${r.result === "pass" ? "Pass" : r.result === "fail" ? "Fail" : "N/A"}${r.note ? `: ${r.note}` : ""}`} />
+                  {safetyParsed.entry.results.map((r) => (
+                    <DetailRow key={r.item} label={r.item} value={`${r.result === "pass" ? "Pass" : r.result === "fail" ? "Fail" : "N/A"}${r.note ? `: ${r.note}` : ""}`} />
                   ))}
                   <DetailRow label="On approval" value={safetyParsed.entry.results.some((r) => r.result === "fail") ? "The inspection is recorded and one corrective action lists the failed items." : "The inspection is recorded."} />
                 </>

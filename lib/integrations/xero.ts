@@ -213,7 +213,7 @@ export async function syncXeroInvoices(
       }));
 
       // Create or update invoice record
-      const result = await prisma.invoiceRecord.upsert({
+      await prisma.invoiceRecord.upsert({
         where: {
           organizationId_sourceSystem_externalInvoiceId: {
             organizationId,

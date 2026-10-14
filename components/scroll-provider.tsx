@@ -44,5 +44,5 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  return <>{children}</>;
+  return children;
 }

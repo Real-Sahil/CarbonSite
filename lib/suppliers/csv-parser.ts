@@ -48,7 +48,7 @@ export function parseSupplierCsv(buffer: Buffer): ParsedSupplierRow[] {
 
 export function validateSupplierRows(
   rows: ParsedSupplierRow[],
-  orgId: string,
+  _orgId: string,
 ): BulkImportResult {
   const result: BulkImportResult = {
     success: [],

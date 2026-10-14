@@ -370,8 +370,8 @@ export default function SupplierPerformancePage() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {metricsChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  {metricsChartData.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                   ))}
                 </Pie>
                 <Tooltip />

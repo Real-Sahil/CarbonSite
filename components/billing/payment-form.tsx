@@ -21,7 +21,6 @@ interface PaymentFormProps {
 }
 
 export function PaymentForm({
-  setupIntentId,
   clientSecret,
   orgId,
   onSuccess,

@@ -12,7 +12,12 @@ export interface BulkOperation {
   startedAt?: Date;
   completedAt?: Date;
   recordIds: string[];
-  parameters: Record<string, any>;
+  parameters: {
+    action?: "approve" | "reject" | "request_info";
+    reason?: string;
+    categoryId?: string;
+    categoryName?: string;
+  };
   errors?: Array<{ recordId: string; error: string }>;
 }
 

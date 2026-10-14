@@ -146,7 +146,7 @@ export class CorporateCardsConnector implements IConnector {
       sourceDescription,
       supplierName,
       country: "UK", // Default; would need geocoding for international cards
-      region: this.inferRegionFromMerchant(row.merchant, row.category),
+      region: this.inferRegionFromMerchant(row.merchant),
 
       // Transport mode if travel-related
       transportMode: this.inferTransportMode(row.category),
@@ -204,7 +204,7 @@ export class CorporateCardsConnector implements IConnector {
     return mapping[category];
   }
 
-  private inferRegionFromMerchant(merchant: string, category: string): string | undefined {
+  private inferRegionFromMerchant(merchant: string): string | undefined {
     // Try to detect if transaction is overseas (would need geocoding service for production)
     const overseasKeywords = /\b(US|USA|US\$|USD|\$|Europe|France|Germany|Spain|Italy|Asia|Australia|Canada|Dubai|Singapore|Japan)\b/i;
 

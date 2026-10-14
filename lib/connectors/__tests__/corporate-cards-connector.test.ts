@@ -47,7 +47,7 @@ describe("CorporateCardsConnector", () => {
             transactionId: `TXN-${test.category}`,
             transactionDate: "2026-08-01",
             merchant: "Test Merchant",
-            category: test.category as any,
+            category: test.category,
             amount: "100.00",
           },
         ],

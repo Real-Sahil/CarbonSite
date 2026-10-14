@@ -51,7 +51,7 @@ export class PACTPCFConnector implements IConnector {
           throw new Error("PCF value must be > 0");
         }
 
-        const record = this.parsePACTFootprint(footprint, parsed.companyName, idx + 1);
+        const record = this.parsePACTFootprint(footprint, parsed.companyName);
         records.push(record);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -76,8 +76,7 @@ export class PACTPCFConnector implements IConnector {
 
   private parsePACTFootprint(
     footprint: PACTProductFootprint,
-    companyName: string,
-    rowNumber: number
+    companyName: string
   ): ConnectorActivityRecord {
     const activityDate = footprint.dUProductionDate
       ? new Date(footprint.dUProductionDate)

@@ -50,9 +50,6 @@ export async function POST(
       whereClause.reviewStatus = body.reviewStatusFilter;
     }
 
-    // Count how many records will be updated
-    const countBefore = await prisma.activityRecord.count({ where: whereClause });
-
     // Update the records
     const result = await prisma.activityRecord.updateMany({
       where: whereClause,

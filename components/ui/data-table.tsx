@@ -69,8 +69,6 @@ export function DataTable<TData, TValue>({
   onRowSelectionChange,
   getRowId,
 }: DataTableProps<TData, TValue>) {
-  // useReactTable returns functions the React Compiler cannot memoize; it already skips this component.
-  "use no memo";
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
   const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});

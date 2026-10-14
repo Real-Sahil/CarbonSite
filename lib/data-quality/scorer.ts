@@ -86,7 +86,6 @@ export async function calculateDataQualityScore(
   // 1. Completeness: required fields present
   let completeCount = 0;
   let missingDescriptionCount = 0;
-  let missingUnitCount = 0;
 
   for (const record of records) {
     const isComplete =
@@ -97,7 +96,6 @@ export async function calculateDataQualityScore(
 
     if (isComplete) completeCount++;
     if (!record.sourceDescription || record.sourceDescription.trim().length === 0) missingDescriptionCount++;
-    if (!record.unit) missingUnitCount++;
   }
 
   const completeness = Math.round((completeCount / records.length) * 100);

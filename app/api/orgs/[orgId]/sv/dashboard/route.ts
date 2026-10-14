@@ -17,12 +17,6 @@ export async function GET(
     const reportingPeriodId = searchParams.get("reportingPeriodId") ?? undefined;
     const contractId = searchParams.get("contractId") ?? undefined;
 
-    const baseWhere = {
-      organizationId: orgId,
-      ...(reportingPeriodId && { reportingPeriodId }),
-      ...(contractId && { commitment: { contractId } }),
-    };
-
     const [
       commitmentCounts,
       activityCounts,

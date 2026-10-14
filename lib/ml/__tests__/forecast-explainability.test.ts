@@ -110,7 +110,7 @@ describe("forecast-explainability", () => {
     });
 
     it("should return percentages", () => {
-      const values = Array.from({ length: 24 }, (_, i) => 1000);
+      const values = Array.from({ length: 24 }, () => 1000);
       const components = decomposeTimeSeries(values, 12);
 
       // With constant values, components should be near 0

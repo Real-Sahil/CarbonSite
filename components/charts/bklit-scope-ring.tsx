@@ -60,8 +60,8 @@ function BklitScopeRingBody({ data, height }: BklitScopeRingProps) {
           defaultLabel="tCO₂e"
           formatOptions={{ notation: "compact", maximumFractionDigits: 1 }}
         />
-        {ringData.map((_item, i) => (
-          <Ring key={i} index={i} />
+        {rows.map((d, i) => (
+          <Ring key={d.scope} index={i} />
         ))}
       </RingChart>
       <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">

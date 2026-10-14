@@ -213,12 +213,6 @@ function renderScanSection(scan: EcologyScanRecord, idx: number): string {
       return r !== "unknown" && r !== "least_concern";
     },
   ).length;
-  const displayedHighlightedCount = speciesForTable.filter(
-    (s) => {
-      const r = conservationRisk(s.conservationStatus);
-      return r !== "unknown" && r !== "least_concern";
-    },
-  ).length;
 
   return `
   ${idx > 0 ? '<div class="page-break"></div>' : ""}

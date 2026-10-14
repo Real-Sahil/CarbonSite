@@ -52,12 +52,12 @@ function Diagram({ flows, width, height, locale, onSelect, selected }: { flows: 
   return (
     <svg width={width} height={height} role="group" aria-label="Emissions flow from scope to category to site">
       <g fill="none">
-        {layout.links.map((l, i) => {
+        {layout.links.map((l) => {
           const { s, t } = nodeOf(l);
           const dim = rel && !(rel.has(s.id!) && rel.has(t.id!));
           return (
             <path
-              key={i}
+              key={`${s.id}|${t.id}`}
               d={sankeyLinkHorizontal()(l as never) ?? ""}
               stroke={colour((s as unknown as { scope?: number }).scope)}
               strokeOpacity={dim ? 0.08 : 0.35}

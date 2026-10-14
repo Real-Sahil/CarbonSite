@@ -13,7 +13,7 @@ export async function POST(
     await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
 
     const body = await req.json();
-    const { emissionCategoryId, facilityId } = body;
+    const { emissionCategoryId } = body;
 
     const category = await prisma.emissionCategory.findUnique({
       where: { id: emissionCategoryId },

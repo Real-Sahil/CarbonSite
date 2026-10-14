@@ -19,7 +19,7 @@ export async function POST(
   { params }: { params: Promise<{ requestId: string }> },
 ) {
   try {
-    const { user, session } = await requireSession();
+    const { user } = await requireSession();
     const { requestId } = await params;
     const body = submitSchema.parse(await req.json());
 

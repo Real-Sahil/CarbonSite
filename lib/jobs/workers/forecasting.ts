@@ -102,7 +102,7 @@ export async function processForecastingJob(
   );
 
   try {
-    const org = await prisma.organization.findUniqueOrThrow({
+    await prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
     });
 

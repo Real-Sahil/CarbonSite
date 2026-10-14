@@ -53,24 +53,6 @@ function fmtN(n: number, dp = 3) {
   return n.toLocaleString(loc(), { minimumFractionDigits: dp, maximumFractionDigits: dp });
 }
 
-const SCOPE3_CATEGORY_LABELS: Record<number, string> = {
-  1:  "Cat. 1 — Purchased goods and services",
-  2:  "Cat. 2 — Capital goods",
-  3:  "Cat. 3 — Fuel and energy-related activities",
-  4:  "Cat. 4 — Upstream transportation and distribution",
-  5:  "Cat. 5 — Waste generated in operations",
-  6:  "Cat. 6 — Business travel",
-  7:  "Cat. 7 — Employee commuting",
-  8:  "Cat. 8 — Upstream leased assets",
-  9:  "Cat. 9 — Downstream transportation and distribution",
-  10: "Cat. 10 — Processing of sold products",
-  11: "Cat. 11 — Use of sold products",
-  12: "Cat. 12 — End-of-life treatment of sold products",
-  13: "Cat. 13 — Downstream leased assets",
-  14: "Cat. 14 — Franchises",
-  15: "Cat. 15 — Investments",
-};
-
 export function renderCdpHtml(data: CdpData): string {
   const s3Cats = data.categories.filter((c) => c.scope === 3);
   const s1Cats = data.categories.filter((c) => c.scope === 1);

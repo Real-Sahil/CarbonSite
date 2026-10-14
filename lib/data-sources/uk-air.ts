@@ -20,7 +20,6 @@
 import { DataSourceResult, OGL_V3, govFetch } from "./types";
 
 const SOS_BASE = "https://uk-air.defra.gov.uk/sos-kuk-service";
-const SITES_API = "https://uk-air.defra.gov.uk/data/API";
 
 /** An AURN monitoring station */
 export interface AurnStation {

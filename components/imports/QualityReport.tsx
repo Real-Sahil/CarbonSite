@@ -183,8 +183,8 @@ export function QualityReport({ orgId, importId, onDataReady }: QualityReportPro
                         {check.failuresCount} row(s) affected. Sample failures:
                       </p>
                       <div className="bg-[#F9FAFC] p-2 rounded text-xs font-mono">
-                        {check.failureSamples.slice(0, 3).map((sample, idx) => (
-                          <div key={idx} className="text-[#41505F]">
+                        {check.failureSamples.slice(0, 3).map((sample) => (
+                          <div key={`${sample.rowNumber}|${sample.field}`} className="text-[#41505F]">
                             Row {sample.rowNumber} ({sample.field}): &quot;{String(sample.value)}&quot; (expected: {sample.expected})
                           </div>
                         ))}
