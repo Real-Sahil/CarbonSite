@@ -523,6 +523,45 @@
   will-change: transform;
 }
 
+/* Hero H1 typewriter (H1 in components/marketing/kit.tsx). Plain CSS outside .st-on, so it runs
+   without a script and the text stays complete with reduced motion or in print. Each character
+   shows at its delay with its caret for one step; the last caret blinks three times and goes. */
+.mk-type-char {
+  position: relative;
+  visibility: hidden;
+  animation: mk-type-in 1ms linear var(--mk-type-delay) forwards;
+}
+.mk-type-char::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 0.25em;
+  width: 0.05em;
+  height: 0.71em;
+  background: currentColor;
+  visibility: hidden;
+  animation: mk-type-caret var(--mk-type-step) steps(1, end) var(--mk-type-delay);
+}
+.mk-type-last::after {
+  animation:
+    mk-type-caret var(--mk-type-step) steps(1, end) var(--mk-type-delay),
+    mk-type-blink 0.8s steps(1, end) calc(var(--mk-type-delay) + var(--mk-type-step)) 3;
+}
+@keyframes mk-type-in {
+  from, to { visibility: visible; }
+}
+@keyframes mk-type-caret {
+  from, to { visibility: visible; }
+}
+@keyframes mk-type-blink {
+  0% { visibility: visible; }
+  50% { visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce), print {
+  .mk-type-char { visibility: visible; animation: none; }
+  .mk-type-char::after { display: none; }
+}
+
 /* ── Dark appearance (org app only) ───────────────────────────────────────────
    Set on <html data-theme="dark"> by lib/theme/preference.ts. Unlayered, so it
    beats the @theme variables and the base layer. Tailwind palette shades and

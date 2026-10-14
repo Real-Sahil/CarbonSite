@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { formatTonnesValue, scopeColor } from "@/components/charts/palette";
 import { ProductFrame } from "@/components/marketing/kit";
@@ -58,11 +58,13 @@ function useSeen<T extends Element>() {
 
 function CountUp({ to, run, reduce }: { to: number; run: boolean; reduce: boolean }) {
   const [value, setValue] = useState(to);
-  useEffect(() => {
+  // Layout effect: the count resets to 0 before paint, so the full total does not flash.
+  useLayoutEffect(() => {
     if (!run || reduce) {
       setValue(to);
       return;
     }
+    setValue(0);
     const start = performance.now();
     const duration = 1400;
     let frame = 0;
@@ -79,6 +81,45 @@ function CountUp({ to, run, reduce }: { to: number; run: boolean; reduce: boolea
 
 const MAX_CATEGORY = Math.max(...CATEGORIES.map((c) => c.value));
 const GROW = "transition-[width] duration-[900ms] ease-out motion-reduce:transition-none";
+
+const SCOPE_SHARES = SCOPES.map((s) => (s.value / TOTAL_KG) * 100);
+const SCOPE_STARTS = SCOPE_SHARES.map((_, i) => SCOPE_SHARES.slice(0, i).reduce((sum, share) => sum + share, 0));
+/** Gap between arcs, in percent of the ring, so the joins read as separate segments. */
+const RING_GAP = 0.6;
+
+/** The scope split as a ring. Each arc draws in after the one before it; the table beside it carries the figures. */
+function Doughnut({ seen }: { seen: boolean }) {
+  return (
+    <div aria-hidden="true" className="relative size-20 shrink-0">
+      <svg viewBox="0 0 120 120" className="-rotate-90">
+        {SCOPES.map((s, i) => (
+          <circle
+            key={s.scope}
+            cx="60"
+            cy="60"
+            r="48"
+            pathLength={100}
+            fill="none"
+            strokeWidth="14"
+            stroke={scopeColor(s.scope)}
+            className="transition-[stroke-dasharray] duration-[900ms] ease-out motion-reduce:transition-none"
+            style={{
+              strokeDasharray: seen ? `${SCOPE_SHARES[i] - RING_GAP} ${100 - SCOPE_SHARES[i] + RING_GAP}` : "0 100",
+              strokeDashoffset: `${-(SCOPE_STARTS[i] + RING_GAP / 2)}`,
+              transitionDelay: `${i * 250}ms`,
+            }}
+          />
+        ))}
+      </svg>
+      <div className="absolute inset-0 grid place-items-center text-center">
+        <div>
+          <p className="text-[14px] font-semibold leading-none text-mk-text tabular-nums">{SCOPE_SHARES[2].toFixed(1)}%</p>
+          <p className="mt-1 text-[11px] text-mk-text-3">{SCOPES[2].label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function DemoAnalytics() {
   const reduce = useReducedMotion() ?? false;
@@ -108,38 +149,24 @@ export function DemoAnalytics() {
 
         <div className="border-t border-mk-line pt-5">
           <p className="text-[13px] font-medium text-mk-text">By scope</p>
-          <div
-            role="img"
-            aria-label={SCOPES.map((s) => `${s.label} ${((s.value / TOTAL_KG) * 100).toFixed(1)}%`).join(", ")}
-            className="mt-3 flex h-3 gap-[2px] overflow-hidden rounded-[4px]"
-          >
-            {SCOPES.map((s, i) => (
-              <div
-                key={s.scope}
-                className={GROW}
-                style={{
-                  width: seen ? `${(s.value / TOTAL_KG) * 100}%` : "0%",
-                  background: scopeColor(s.scope),
-                  transitionDelay: `${i * 250}ms`,
-                }}
-              />
-            ))}
+          <div className="mt-3 flex items-center gap-4">
+            <Doughnut seen={seen} />
+            <table className="w-full text-[13px]">
+              <caption className="sr-only">Emissions by scope, tonnes CO2e</caption>
+              <tbody>
+                {SCOPES.map((s) => (
+                  <tr key={s.scope}>
+                    <th scope="row" className="py-1 text-left font-normal text-mk-text-2">
+                      <span className="mr-2 inline-block h-2 w-2 rounded-full align-middle" style={{ background: scopeColor(s.scope) }} />
+                      {s.label}
+                    </th>
+                    <td className="py-1 text-right text-mk-text tabular-nums">{formatTonnesValue(s.value / 1000)} t</td>
+                    <td className="w-16 py-1 text-right text-mk-text-3 tabular-nums">{((s.value / TOTAL_KG) * 100).toFixed(1)}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <table className="mt-3 w-full text-[13px]">
-            <caption className="sr-only">Emissions by scope, tonnes CO2e</caption>
-            <tbody>
-              {SCOPES.map((s) => (
-                <tr key={s.scope}>
-                  <th scope="row" className="py-1 text-left font-normal text-mk-text-2">
-                    <span className="mr-2 inline-block h-2 w-2 rounded-full align-middle" style={{ background: scopeColor(s.scope) }} />
-                    {s.label}
-                  </th>
-                  <td className="py-1 text-right text-mk-text tabular-nums">{formatTonnesValue(s.value / 1000)} t</td>
-                  <td className="w-16 py-1 text-right text-mk-text-3 tabular-nums">{((s.value / TOTAL_KG) * 100).toFixed(1)}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
 
         <div className="border-t border-mk-line pt-5">

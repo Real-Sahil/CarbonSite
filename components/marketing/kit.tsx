@@ -106,10 +106,36 @@ export function Eyebrow({ children, tone = "light" }: { children: ReactNode; ton
   );
 }
 
+/** Typewriter pace: a line takes about 1.6 s whatever its length, 18 to 45 ms a character. */
+export function typeStepMs(length: number) {
+  return Math.round(Math.min(45, Math.max(18, 1600 / Math.max(length, 1))));
+}
+
+const TYPE_START_MS = 200;
+
+/**
+ * A string title types itself. Each character is an aria-hidden span timed in CSS (`.mk-type-char`,
+ * globals.css), so the full text is in the HTML from the first paint. A visually hidden copy leads
+ * the heading, so screen readers announce the whole title once.
+ */
 export function H1({ children, className }: { children: ReactNode; className?: string }) {
+  const cls = cn("font-display text-[44px] font-light leading-[1.02] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[76px]", className);
+  if (typeof children !== "string") return <h1 className={cls}>{children}</h1>;
+  const chars = Array.from(children);
+  const step = typeStepMs(chars.length);
   return (
-    <h1 className={cn("font-display text-[44px] font-light leading-[1.02] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[76px]", className)}>
-      {children}
+    <h1 className={cls} style={{ "--mk-type-step": `${step}ms` } as React.CSSProperties}>
+      <span className="sr-only">{children}</span>
+      {chars.map((ch, i) => (
+        <span
+          key={i}
+          aria-hidden="true"
+          className={cn("mk-type-char", i === chars.length - 1 && "mk-type-last")}
+          style={{ "--mk-type-delay": `${TYPE_START_MS + i * step}ms` } as React.CSSProperties}
+        >
+          {ch}
+        </span>
+      ))}
     </h1>
   );
 }
