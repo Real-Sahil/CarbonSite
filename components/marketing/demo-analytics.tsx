@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { formatTonnesValue, scopeColor } from "@/components/charts/palette";
 import { ProductFrame } from "@/components/marketing/kit";
@@ -69,7 +69,8 @@ function CountUp({ to, run, reduce }: { to: number; run: boolean; reduce: boolea
     const duration = 1400;
     let frame = 0;
     const tick = (now: number) => {
-      const p = Math.min(1, (now - start) / duration);
+      // rAF timestamps can predate the performance.now() taken above; clamp so the first frame is 0, not negative.
+      const p = Math.max(0, Math.min(1, (now - start) / duration));
       setValue(to * (1 - Math.pow(1 - p, 3)));
       if (p < 1) frame = requestAnimationFrame(tick);
     };
@@ -80,13 +81,16 @@ function CountUp({ to, run, reduce }: { to: number; run: boolean; reduce: boolea
 }
 
 const MAX_CATEGORY = Math.max(...CATEGORIES.map((c) => c.value));
-// transform, not width: scaleX moves the bar without relayout.
-const GROW = "transition-transform duration-[900ms] ease-out motion-reduce:transition-none";
+// width, not scaleX: scaleX squashes the corner radius, so a short bar would lose its rounded right end.
+const GROW = "transition-[width] duration-[900ms] ease-out motion-reduce:transition-none";
+/** Bar lengths as a percentage of the track; the floor keeps a near-zero bar visible. */
+const BAR_WIDTHS = CATEGORIES.map((c) => `${Math.max(0.6, (c.value / MAX_CATEGORY) * 100)}%`);
 
 const SCOPE_SHARES = SCOPES.map((s) => (s.value / TOTAL_KG) * 100);
 const SCOPE_STARTS = SCOPE_SHARES.map((_, i) => SCOPE_SHARES.slice(0, i).reduce((sum, share) => sum + share, 0));
 /** Gap between arcs, in percent of the ring, so the joins read as separate segments. */
 const RING_GAP = 0.6;
+const ARCS = SCOPE_SHARES.map((share) => `${share - RING_GAP} ${100 - share + RING_GAP}`);
 
 /** The scope split as a ring. Each arc draws in after the one before it; the table beside it carries the figures. */
 function Doughnut({ seen }: { seen: boolean }) {
@@ -103,12 +107,15 @@ function Doughnut({ seen }: { seen: boolean }) {
             fill="none"
             strokeWidth="14"
             stroke={scopeColor(s.scope)}
-            className="transition-[stroke-dasharray] duration-[900ms] ease-out motion-reduce:transition-none"
-            style={{
-              strokeDasharray: seen ? `${SCOPE_SHARES[i] - RING_GAP} ${100 - SCOPE_SHARES[i] + RING_GAP}` : "0 100",
-              strokeDashoffset: `${-(SCOPE_STARTS[i] + RING_GAP / 2)}`,
-              transitionDelay: `${i * 250}ms`,
-            }}
+            className="demo-arc transition-[stroke-dasharray] duration-[900ms] ease-out motion-reduce:transition-none"
+            style={
+              {
+                strokeDasharray: seen ? ARCS[i] : "0 100",
+                strokeDashoffset: `${-(SCOPE_STARTS[i] + RING_GAP / 2)}`,
+                transitionDelay: `${i * 250}ms`,
+                "--arc": ARCS[i],
+              } as CSSProperties
+            }
           />
         ))}
       </svg>
@@ -128,6 +135,10 @@ export function DemoAnalytics() {
 
   return (
     <ProductFrame>
+      {/* No JS: the figures are already in text below; this shows the ring and bars at their final size. */}
+      <noscript>
+        <style>{".demo-arc{stroke-dasharray:var(--arc)!important}.demo-bar{width:var(--w)!important}"}</style>
+      </noscript>
       <div ref={ref} className="grid gap-6 p-5 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -179,14 +190,17 @@ export function DemoAnalytics() {
                   <span className="truncate text-mk-text-2">{c.name}</span>
                   <span className="shrink-0 text-mk-text tabular-nums">{formatTonnesValue(c.value / 1000)}</span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-[4px] bg-mk-line/60">
+                <div className="h-2 overflow-hidden rounded-r-[4px] bg-mk-line/60">
                   <div
-                    className={`h-full w-full origin-left ${GROW}`}
-                    style={{
-                      transform: `scaleX(${seen ? Math.max(0.006, c.value / MAX_CATEGORY) : 0})`,
-                      background: scopeColor(c.scope),
-                      transitionDelay: `${600 + i * 90}ms`,
-                    }}
+                    className={`demo-bar h-full rounded-r-[4px] ${GROW}`}
+                    style={
+                      {
+                        width: seen ? BAR_WIDTHS[i] : "0%",
+                        background: scopeColor(c.scope),
+                        transitionDelay: `${600 + i * 90}ms`,
+                        "--w": BAR_WIDTHS[i],
+                      } as CSSProperties
+                    }
                   />
                 </div>
               </li>
