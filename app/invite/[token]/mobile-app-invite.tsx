@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Smartphone, ArrowRight, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { APP_STORE_URL } from "@/components/marketing/brand-marks";
 
 interface MobileAppInviteProps {
   token: string;
@@ -15,6 +16,7 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
   const [opening, setOpening] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
   const [android, setAndroid] = useState(false);
+  const [ios, setIos] = useState(false);
 
   // Auto-attempt to open the app on mount for a true magic-link experience.
   // The page stays visible as a fallback while the OS tries to hand off.
@@ -27,6 +29,7 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
       return;
     }
     setAndroid(/android/i.test(ua));
+    setIos(/iPhone|iPad|iPod/.test(ua));
     const url = `metricora://app/invite/${token}?server=${encodeURIComponent(window.location.origin)}`;
     setOpening(true);
     window.location.href = url;
@@ -104,6 +107,17 @@ export function MobileAppInvite({ token, orgName, appOnly = false }: MobileAppIn
               className="inline-flex items-center gap-1.5 text-sm text-[#c2400c] hover:text-[#a33409] font-medium"
             >
               Get the MetricOra app on Google Play
+              <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+          {ios && (
+            <a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-[#c2400c] hover:text-[#a33409] font-medium"
+            >
+              Get the MetricOra app on the App Store
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           )}

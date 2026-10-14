@@ -2,7 +2,7 @@ import { GuideLinks } from "@/components/marketing/guide-links";
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
 import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, reveal } from "@/components/marketing/kit";
-import { GooglePlayBadge } from "@/components/marketing/brand-marks";
+import { AppStoreBadge, GooglePlayBadge } from "@/components/marketing/brand-marks";
 
 export const metadata: Metadata = withSocial({
   title: "Site carbon data app for tickets and fuel",
@@ -44,9 +44,12 @@ export default function FieldAppPage() {
               Main contractors
             </ButtonLink>
           </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <GooglePlayBadge />
-            <p className="text-[14px] text-mk-on-dark-2">Android now. The iPhone app is in App Store review.</p>
+          <div className="flex flex-col items-start gap-3">
+            <div className="flex flex-wrap gap-3">
+              <GooglePlayBadge />
+              <AppStoreBadge />
+            </div>
+            <p className="text-[14px] text-mk-on-dark-2">Available on Google Play and the App Store.</p>
           </div>
         </div>
       </Section>

@@ -47,6 +47,7 @@ Each row becomes a dependency or copied component only at its first use (knip fa
 | Tremor (github.com/tremorlabs/tremor) | Apache 2.0. The repository says some Tremor Raw subcomponents are MIT, so check each file copied. | Candidate KPI and chart cards. Not adopted. |
 | Magic UI (magicui.design; repo github.com/magicuidesign/magicui) | Repository `LICENSE.md` is MIT. It does not say whether the MIT covers the components or only the library. magicui.design was unreachable from the sandbox. | Candidate: Number Ticker. Adopt only after the component scope is confirmed on the site. |
 | Lucide (lucide.dev; github.com/lucide-icons/lucide) | ISC for the library; some icons are MIT, derived from Feather. | Already used for icons. Keep the notice. |
+| Simple Icons (github.com/simple-icons/simple-icons) | CC0 1.0 for the icon files. The marks themselves are trademarks of their owners. | Apple, Google Play and Stripe glyphs in `components/marketing/brand-marks.tsx` (`apple.svg` from v13.21.0). Used only to name the store or processor. |
 | Radix UI (github.com/radix-ui/primitives) | MIT. | Already used through the shadcn components. |
 | Tailwind CSS (github.com/tailwindlabs/tailwindcss) | MIT. | Already the styling base. |
 | shadcn/ui (github.com/shadcn-ui/ui) | MIT. | Already used; components are copied in. |

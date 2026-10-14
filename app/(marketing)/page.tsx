@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PLAY_URL } from "@/components/marketing/brand-marks";
+import { APP_STORE_URL, PLAY_URL } from "@/components/marketing/brand-marks";
 import { LaunchFilm } from "@/components/marketing/launch-film";
 import { DemoAnalytics } from "@/components/marketing/demo-analytics";
 import { PLAN_ANNUAL_TOTAL, PLAN_PRICES } from "@/lib/billing/limits";
@@ -67,7 +67,7 @@ const jsonLd = {
       url: "https://www.metricora.co.uk",
       logo: "https://www.metricora.co.uk/icon-512.png",
       email: "hello@metricora.co.uk",
-      sameAs: [PLAY_URL],
+      sameAs: [PLAY_URL, APP_STORE_URL],
     },
     {
       "@type": "WebSite",

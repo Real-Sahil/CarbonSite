@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GooglePlayBadge, StripeNote } from "@/components/marketing/brand-marks";
+import { AppStoreBadge, GooglePlayBadge, StripeNote } from "@/components/marketing/brand-marks";
 import { LogoMark } from "@/components/ui/logo";
 
 const COLS = [
@@ -62,7 +62,10 @@ export function SiteFooter() {
               </a>
             </p>
             <div className="mt-6 flex flex-col items-start gap-3">
-              <GooglePlayBadge />
+              <div className="flex flex-wrap gap-3">
+                <GooglePlayBadge />
+                <AppStoreBadge />
+              </div>
               <StripeNote tone="dark" />
             </div>
           </div>
