@@ -483,9 +483,10 @@
   content: "";
   position: absolute;
   left: 100%;
-  top: 0.25em;
+  /* Newsreader's H: cap top 0.053em below the content-box top, cap height 0.684em */
+  top: 0.053em;
   width: 0.05em;
-  height: 0.71em;
+  height: 0.684em;
   background: currentColor;
   visibility: hidden;
   animation: mk-type-caret var(--mk-type-step) steps(1, end) var(--mk-type-delay);
