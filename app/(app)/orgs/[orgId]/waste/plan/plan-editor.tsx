@@ -10,10 +10,15 @@ import { Button } from "@/components/ui/button";
 import { PLAN_ROUTES, ROUTE_LABEL, type PlanLine } from "@/lib/waste/swmp";
 
 type Plan = { responsiblePerson: string | null; principalContractor: string | null; clientName: string | null; targetDiversionPct: number | null; actions: string | null; nextReviewOn: string | null; lines: PlanLine[] };
+// Client-only row key so React does not key rows by position; stripped before save.
+type Line = PlanLine & { rowKey: number };
+let lineKeySeq = 0;
+const keyLine = (l: PlanLine): Line => ({ ...l, rowKey: ++lineKeySeq });
+const BLANK_LINE: PlanLine = { wasteType: "", ewcCode: "", forecastTonnes: 0, plannedRoute: "recycle" };
 
 export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove }: { orgId: string; projectId: string; plan: Plan; status: string; canEdit: boolean; canApprove: boolean }) {
   const router = useRouter();
-  const [lines, setLines] = useState<PlanLine[]>(plan.lines.length ? plan.lines : [{ wasteType: "", ewcCode: "", forecastTonnes: 0, plannedRoute: "recycle" }]);
+  const [lines, setLines] = useState<Line[]>(() => (plan.lines.length ? plan.lines : [BLANK_LINE]).map(keyLine));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -32,7 +37,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
       body: JSON.stringify({
         responsiblePerson: str("responsiblePerson"), principalContractor: str("principalContractor"), clientName: str("clientName"),
         targetDiversionPct: target == null ? null : Number(target), actions: str("actions"), nextReviewOn: str("nextReviewOn"),
-        lines: lines.filter((l) => l.wasteType.trim()).map((l) => ({ ...l, wasteType: l.wasteType.trim(), ewcCode: l.ewcCode?.trim() || null })),
+        lines: lines.filter((l) => l.wasteType.trim()).map(({ rowKey, ...l }) => ({ ...l, wasteType: l.wasteType.trim(), ewcCode: l.ewcCode?.trim() || null })),
       }),
     }).catch(() => null);
     const d = await res?.json().catch(() => null);
@@ -69,7 +74,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
             <thead><tr className="text-left text-xs text-[#5B6A78]"><th className="pb-1 pr-2">Waste type</th><th className="pb-1 pr-2">EWC code</th><th className="pb-1 pr-2">Forecast (t)</th><th className="pb-1 pr-2">Planned route</th><th /></tr></thead>
             <tbody>
               {lines.map((l, i) => (
-                <tr key={i}>
+                <tr key={l.rowKey}>
                   <td className="pr-2 pb-2"><Input aria-label={`Waste type ${i + 1}`} value={l.wasteType} onChange={(e) => setLine(i, { wasteType: e.target.value })} maxLength={100} disabled={dis} /></td>
                   <td className="pr-2 pb-2"><Input aria-label={`EWC code ${i + 1}`} value={l.ewcCode ?? ""} onChange={(e) => setLine(i, { ewcCode: e.target.value })} placeholder="17 09 04" maxLength={20} disabled={dis} /></td>
                   <td className="pr-2 pb-2"><Input aria-label={`Forecast tonnes ${i + 1}`} type="number" min={0} step="any" value={l.forecastTonnes} onChange={(e) => setLine(i, { forecastTonnes: Number(e.target.value) })} disabled={dis} /></td>
@@ -84,7 +89,7 @@ export function PlanEditor({ orgId, projectId, plan, status, canEdit, canApprove
             </tbody>
           </Table>
         </div>
-        {!dis && <button type="button" className="text-sm font-medium text-[#c2400c] underline underline-offset-2 print:hidden" onClick={() => setLines((ls) => [...ls, { wasteType: "", ewcCode: "", forecastTonnes: 0, plannedRoute: "recycle" }])}>Add a waste type</button>}
+        {!dis && <button type="button" className="text-sm font-medium text-[#c2400c] underline underline-offset-2 print:hidden" onClick={() => setLines((ls) => [...ls, keyLine(BLANK_LINE)])}>Add a waste type</button>}
       </section>
 
       <FormSection title="Targets and actions" cols={2}>

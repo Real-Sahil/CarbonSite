@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { ReactNode } from "react";
+import { Children, type ReactNode } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LoopVideo } from "@/components/marketing/loop-video";
@@ -219,8 +219,9 @@ export function TextLink({ href, children, tone = "light", className }: { href: 
 export function CheckList({ items, tone = "light" }: { items: ReactNode[]; tone?: Tone }) {
   return (
     <ul className="grid gap-2.5">
-      {items.map((item, i) => (
-        <li key={i} className={cn("flex gap-3 text-[15px] leading-relaxed", tone === "dark" ? "text-mk-on-dark-2" : "text-mk-text-2")}>
+      {/* Children.map keys each item by position, so no index key is written here */}
+      {Children.map(items, (item) => (
+        <li className={cn("flex gap-3 text-[15px] leading-relaxed", tone === "dark" ? "text-mk-on-dark-2" : "text-mk-text-2")}>
           <Check aria-hidden="true" className={cn("mt-1 h-4 w-4 shrink-0", tone === "dark" ? "text-mk-accent-lit" : "text-mk-accent")} />
           <span>{item}</span>
         </li>

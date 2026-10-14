@@ -14,11 +14,17 @@ type Study = {
   id: string; contractId: string | null; title: string; problem: string; solution: string; baseline: string;
   results: string; kpis: Kpi[]; assumptions: string; photoEvidenceFileId: string | null; published: boolean;
 };
+// Client-only row key for each figure (Kpi has no id); stripped before save.
+type KpiRow = Kpi & { rowKey: number };
+type Draft = Omit<Study, "kpis"> & { kpis: KpiRow[] };
+let kpiKeySeq = 0;
+const keyKpis = (kpis: Kpi[]): KpiRow[] => kpis.map((k) => ({ ...k, rowKey: ++kpiKeySeq }));
+const blankKpi = (): KpiRow => ({ label: "", value: "", note: "", rowKey: ++kpiKeySeq });
 const blank: Study = { id: "", contractId: null, title: "", problem: "", solution: "", baseline: "", results: "", kpis: [], assumptions: "", photoEvidenceFileId: null, published: false };
 
 export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: string; canEdit: boolean; contracts: { id: string; name: string }[]; studies: Study[] }) {
   const router = useRouter();
-  const [editing, setEditing] = useState<Study | null>(null);
+  const [editing, setEditing] = useState<Draft | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const contractName = (id: string | null) => contracts.find((c) => c.id === id)?.name ?? "Company-wide";
@@ -27,7 +33,8 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
     event.preventDefault();
     if (!editing) return;
     setMsg(null);
-    const { id, ...body } = editing;
+    const { id, kpis, ...rest } = editing;
+    const body = { ...rest, kpis: kpis.map(({ rowKey, ...k }) => k) };
     start(async () => {
       try {
         const res = await fetch(id ? `/api/orgs/${orgId}/case-studies/${id}` : `/api/orgs/${orgId}/case-studies`, {
@@ -77,13 +84,13 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
     });
   }
 
-  const set = (patch: Partial<Study>) => setEditing((e) => (e ? { ...e, ...patch } : e));
+  const set = (patch: Partial<Draft>) => setEditing((e) => (e ? { ...e, ...patch } : e));
   const checks = editing ? caseStudyChecks(editing) : [];
 
   return (
     <div className="flex flex-col gap-4">
       {canEdit && !editing && (
-        <div><Button type="button" size="sm" onClick={() => { setMsg(null); setEditing({ ...blank }); }}>Add a case study</Button></div>
+        <div><Button type="button" size="sm" onClick={() => { setMsg(null); setEditing({ ...blank, kpis: [] }); }}>Add a case study</Button></div>
       )}
 
       {editing && canEdit && (
@@ -119,7 +126,7 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
   <p className="text-xs text-[#5B6A78]">Up to {MAX_KPIS}. These are your own statements, so say what they are measured against.</p>
   <div className="flex flex-col gap-2">
     {editing.kpis.map((k, i) => (
-      <div key={i} className="grid grid-cols-[1fr_120px_1fr_auto] gap-2">
+      <div key={k.rowKey} className="grid grid-cols-[1fr_120px_1fr_auto] gap-2">
         <Input aria-label="Figure label" placeholder="Fuel saved" maxLength={60} value={k.label} onChange={(e) => set({ kpis: editing.kpis.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)) })} />
         <Input aria-label="Figure value" placeholder="74%" maxLength={30} value={k.value} onChange={(e) => set({ kpis: editing.kpis.map((x, j) => (j === i ? { ...x, value: e.target.value } : x)) })} />
         <Input aria-label="Figure note" placeholder="Note (optional)" maxLength={120} value={k.note} onChange={(e) => set({ kpis: editing.kpis.map((x, j) => (j === i ? { ...x, note: e.target.value } : x)) })} />
@@ -127,7 +134,7 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
       </div>
     ))}
     {editing.kpis.length < MAX_KPIS && (
-      <div><Button type="button" variant="outline" size="sm" onClick={() => set({ kpis: [...editing.kpis, { label: "", value: "", note: "" }] })}>Add a figure</Button></div>
+      <div><Button type="button" variant="outline" size="sm" onClick={() => set({ kpis: [...editing.kpis, blankKpi()] })}>Add a figure</Button></div>
     )}
   </div>
 </fieldset>
@@ -175,7 +182,7 @@ export function CaseStudies({ orgId, canEdit, contracts, studies }: { orgId: str
                 </div>
                 {canEdit && (
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => { setMsg(null); setEditing(s); }}>Edit</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => { setMsg(null); setEditing({ ...s, kpis: keyKpis(s.kpis) }); }}>Edit</Button>
                     <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => remove(s.id)}>Delete</Button>
                   </div>
                 )}

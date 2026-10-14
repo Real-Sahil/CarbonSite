@@ -464,6 +464,7 @@ const ChartCore = memo(function ChartCore({
       setIsLoaded(true);
     }, animationDuration + staggerMs);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- replay is driven by revealSignature; data.length only sets the stagger, and listing it would replay on every row-count change
   }, [animationDuration, revealSignature, status]);
 
   useEffect(() => {

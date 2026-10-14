@@ -76,6 +76,7 @@ export function DataTable<TData, TValue>({
   const sorting = externalSorting ?? internalSorting;
   const selection = rowSelection ?? internalRowSelection;
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack returns functions the React Compiler cannot memoise; it skips this component, which behaves the same without it
   const table = useReactTable({
     data,
     columns,

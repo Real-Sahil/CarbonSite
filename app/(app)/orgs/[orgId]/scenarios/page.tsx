@@ -153,6 +153,10 @@ function ScopeCard({
   );
 }
 
+// Client-only row key so React does not key rows by position; the payload picks its fields, so it never leaves the browser.
+let adjustmentKeySeq = 0;
+const newAdjustment = (): Adjustment & { rowKey: number } => ({ scope: "", categoryId: "", facilityId: "", reductionPercent: 20, rowKey: ++adjustmentKeySeq });
+
 function AdjustmentRow({
   adj,
   index,
@@ -389,9 +393,7 @@ export default function ScenariosPage() {
   const [loadingRuns, setLoadingRuns] = useState(true);
   const [selectedRunId, setSelectedRunId] = useState("");
   const [label, setLabel] = useState("");
-  const [adjustments, setAdjustments] = useState<Adjustment[]>([
-    { scope: "", categoryId: "", facilityId: "", reductionPercent: 20 },
-  ]);
+  const [adjustments, setAdjustments] = useState(() => [newAdjustment()]);
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -431,10 +433,7 @@ export default function ScenariosPage() {
   }, [fetchPastRuns]);
 
   function addAdjustment() {
-    setAdjustments((prev) => [
-      ...prev,
-      { scope: "", categoryId: "", facilityId: "", reductionPercent: 20 },
-    ]);
+    setAdjustments((prev) => [...prev, newAdjustment()]);
   }
 
   function removeAdjustment(index: number) {
@@ -604,7 +603,7 @@ export default function ScenariosPage() {
             <div className="space-y-2">
               {adjustments.map((adj, i) => (
                 <AdjustmentRow
-                  key={i}
+                  key={adj.rowKey}
                   adj={adj}
                   index={i}
                   onChange={updateAdjustment}
