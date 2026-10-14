@@ -280,7 +280,6 @@
 [data-theme="dark"] [class~="bg-[#F8F9FA]"] { background-color: #171b20; }
 [data-theme="dark"] [class~="bg-[#F9FAFC]"] { background-color: #131926; }
 [data-theme="dark"] [class~="bg-[#F9FAFC]/20"] { background-color: color-mix(in srgb, #131926 20%, transparent); }
-[data-theme="dark"] [class~="bg-[#F9FAFC]/85"] { background-color: color-mix(in srgb, #131926 85%, transparent); }
 [data-theme="dark"] [class~="bg-[#F9FAFC]/90"] { background-color: color-mix(in srgb, #131926 90%, transparent); }
 [data-theme="dark"] [class~="bg-[#FDECEC]/60"] { background-color: color-mix(in srgb, #290404 60%, transparent); }
 [data-theme="dark"] [class~="bg-[#FED7AA]"] { background-color: #552e01; }
