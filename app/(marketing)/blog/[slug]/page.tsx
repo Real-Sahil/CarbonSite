@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: Props) {
           }}
         />
       ) : null}
-      <Section tone="dark" className="pt-36 sm:pt-40">
+      <Section tone="dark" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-5">
           <Eyebrow tone="dark">{post.tags[0] ?? "Article"}</Eyebrow>
           <h1 className="text-[36px] leading-[1.1] tracking-[-0.03em] text-balance sm:text-[48px]">{post.title}</h1>

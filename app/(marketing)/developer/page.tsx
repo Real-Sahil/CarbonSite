@@ -51,7 +51,7 @@ function Code({ children }: { children: string }) {
 export default function DeveloperPage() {
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/reports.mp4" poster="/marketing/loops/reports.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/reports.mp4" poster="/marketing/loops/reports.jpg" className="pt-24 sm:pt-24">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <Eyebrow tone="dark">Developers</Eyebrow>

@@ -38,7 +38,7 @@ const STEPS = [
 export default function MethodologyPage() {
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Methodology</Eyebrow>
           <H1>How a figure is calculated.</H1>

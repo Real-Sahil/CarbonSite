@@ -5,6 +5,8 @@ import Lenis from 'lenis';
 
 export function ScrollProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    // Reduced motion keeps native scrolling; read once at mount, so a change needs a reload.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

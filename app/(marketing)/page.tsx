@@ -141,7 +141,7 @@ export default function HomePage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-24 sm:pt-24">
         <div className="grid items-center gap-14 lg:grid-cols-[1fr_1.15fr]">
           <div className="flex flex-col gap-6">
             <Eyebrow tone="dark">Carbon evidence and reporting</Eyebrow>

@@ -14,7 +14,7 @@ export default function BlogPage() {
   const posts = getPosts().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Blog</Eyebrow>
           <H1>How the numbers are made.</H1>

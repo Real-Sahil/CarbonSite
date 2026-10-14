@@ -52,7 +52,7 @@ const LINKS = [
 export default function ResourcesPage() {
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Guides</Eyebrow>
           <H1>Getting a first year right.</H1>

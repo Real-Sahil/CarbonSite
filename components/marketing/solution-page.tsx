@@ -30,7 +30,7 @@ function MediaBlock({ media, tone }: { media: Media; tone?: "dark" }) {
 export function SolutionPage({ c }: { c: SolutionContent }) {
   return (
     <>
-      <Section tone="dark" size="lg" video={c.heroVideo} poster={c.heroVideo.replace(".mp4", ".jpg")} className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video={c.heroVideo} poster={c.heroVideo.replace(".mp4", ".jpg")} className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">{c.eyebrow}</Eyebrow>
           <H1>{c.title}</H1>

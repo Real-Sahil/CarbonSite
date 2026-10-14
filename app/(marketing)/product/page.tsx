@@ -76,7 +76,7 @@ const MANAGEMENT_SYSTEMS = [
 export default function ProductPage() {
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Platform</Eyebrow>
           <H1>One dataset from site evidence to board report.</H1>

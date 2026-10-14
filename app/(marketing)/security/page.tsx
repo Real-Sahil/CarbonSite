@@ -46,7 +46,7 @@ const CONTROLS = [
 export default function SecurityPage() {
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Security</Eyebrow>
           <H1>Built to be audited, including by your IT team.</H1>

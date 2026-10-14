@@ -65,8 +65,8 @@ export function Section({
   poster?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  // shortcut: a hero is found by its pt-36 offset under the fixed nav; give Section an explicit prop if another page type needs one.
-  const hero = tone === "dark" && /\bpt-36\b/.test(className ?? "");
+  // shortcut: a hero is found by its pt-24 offset under the fixed nav; give Section an explicit prop if another page type needs one.
+  const hero = tone === "dark" && /\bpt-24\b/.test(className ?? "");
   const pad = size === "lg" ? "py-24 sm:py-32" : size === "sm" ? "py-14 sm:py-16" : "py-20 sm:py-24";
   return (
     <section id={id} className={cn("relative isolate scroll-mt-20 overflow-hidden", hero ? "mk-sky" : TONE_BG[tone], pad, className)}>
@@ -115,8 +115,8 @@ const TYPE_START_MS = 200;
 
 /**
  * A string title types itself. Each character is an aria-hidden span timed in CSS (`.mk-type-char`,
- * globals.css), so the full text is in the HTML from the first paint. A visually hidden copy leads
- * the heading, so screen readers announce the whole title once.
+ * globals.css) that draws its glyph from `data-char`, so the title is in the DOM once: the visually
+ * hidden copy that leads the heading, which is also what screen readers announce.
  */
 export function H1({ children, className }: { children: ReactNode; className?: string }) {
   const cls = cn("font-display text-[44px] font-light leading-[1.02] tracking-[-0.02em] text-balance sm:text-[64px] lg:text-[76px]", className);
@@ -131,11 +131,10 @@ export function H1({ children, className }: { children: ReactNode; className?: s
           // eslint-disable-next-line react/no-array-index-key -- fixed text, never reordered
           key={i}
           aria-hidden="true"
+          data-char={ch}
           className={cn("mk-type-char", i === chars.length - 1 && "mk-type-last")}
           style={{ "--mk-type-delay": `${TYPE_START_MS + i * step}ms` } as React.CSSProperties}
-        >
-          {ch}
-        </span>
+        />
       ))}
     </h1>
   );

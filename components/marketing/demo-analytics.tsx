@@ -80,7 +80,8 @@ function CountUp({ to, run, reduce }: { to: number; run: boolean; reduce: boolea
 }
 
 const MAX_CATEGORY = Math.max(...CATEGORIES.map((c) => c.value));
-const GROW = "transition-[width] duration-[900ms] ease-out motion-reduce:transition-none";
+// transform, not width: scaleX moves the bar without relayout.
+const GROW = "transition-transform duration-[900ms] ease-out motion-reduce:transition-none";
 
 const SCOPE_SHARES = SCOPES.map((s) => (s.value / TOTAL_KG) * 100);
 const SCOPE_STARTS = SCOPE_SHARES.map((_, i) => SCOPE_SHARES.slice(0, i).reduce((sum, share) => sum + share, 0));
@@ -178,11 +179,11 @@ export function DemoAnalytics() {
                   <span className="truncate text-mk-text-2">{c.name}</span>
                   <span className="shrink-0 text-mk-text tabular-nums">{formatTonnesValue(c.value / 1000)}</span>
                 </div>
-                <div className="h-2 rounded-[4px] bg-mk-line/60">
+                <div className="h-2 overflow-hidden rounded-[4px] bg-mk-line/60">
                   <div
-                    className={`h-full rounded-[4px] ${GROW}`}
+                    className={`h-full w-full origin-left ${GROW}`}
                     style={{
-                      width: seen ? `${Math.max(0.6, (c.value / MAX_CATEGORY) * 100)}%` : "0%",
+                      transform: `scaleX(${seen ? Math.max(0.006, c.value / MAX_CATEGORY) : 0})`,
                       background: scopeColor(c.scope),
                       transitionDelay: `${600 + i * 90}ms`,
                     }}

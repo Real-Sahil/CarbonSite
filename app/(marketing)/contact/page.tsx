@@ -18,7 +18,7 @@ const PREPARE = [
 export default function ContactPage() {
   return (
     <>
-      <Section tone="dark" size="lg" video="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" className="pt-36 sm:pt-40">
+      <Section tone="dark" size="lg" video="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Book a pilot</Eyebrow>
           <H1>Test MetricOra on a real project.</H1>
