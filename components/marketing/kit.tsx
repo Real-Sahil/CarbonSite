@@ -128,6 +128,7 @@ export function H1({ children, className }: { children: ReactNode; className?: s
       <span className="sr-only">{children}</span>
       {chars.map((ch, i) => (
         <span
+          // eslint-disable-next-line react/no-array-index-key -- fixed text, never reordered
           key={i}
           aria-hidden="true"
           className={cn("mk-type-char", i === chars.length - 1 && "mk-type-last")}
