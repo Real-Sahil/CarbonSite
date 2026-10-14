@@ -114,7 +114,11 @@ export type EmailPayload = {
 
 export async function sendEmail(payload: EmailPayload): Promise<void> {
   if (DRIVER === "console") {
-    notificationLogger.debug("Email sent via console driver", { to: payload.to, subject: payload.subject });
+    if (process.env.NODE_ENV === "production") {
+      notificationLogger.warn("Email sending skipped — RESEND_API_KEY not configured", { to: payload.to, subject: payload.subject });
+    } else {
+      notificationLogger.debug("Email sent via console driver", { to: payload.to, subject: payload.subject });
+    }
     return;
   }
 

@@ -104,9 +104,6 @@ export async function POST(
       prisma.tenantBranding.findUnique({ where: { organizationId: orgId }, select: { logoPublicUrl: true, reportHeaderLogoKey: true, logoStorageKey: true } }),
     ]);
 
-    let userId: string | undefined;
-    let temporaryPassword: string | undefined;
-
     // Someone who already has a MetricOra account keeps their own password:
     // setting one here would lock them out of every other org they use. They
     // get an invite link instead and accept it with their existing sign-in.
@@ -116,10 +113,39 @@ export async function POST(
     });
     const inviteMethod = body.inviteMethod === "credentials" && existingUser ? "magic-link" : body.inviteMethod;
 
+    const token = randomBytes(32).toString("base64url");
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk";
+    const loginUrl = `${appUrl}/sign-in`;
+    const inviteUrl = `${appUrl}/supplier-invite/${token}`;
+    const invitedByName = session.user.name || session.user.email;
+    const organizationName = org?.name || "MetricOra";
+    const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
+
+    // The password email goes first: if it fails, no account is written and the admin can simply retry.
+    let passwordHash: string | undefined;
     if (inviteMethod === "credentials") {
-      temporaryPassword = generateTemporaryPassword();
-      const password = await hashTemporaryPassword(temporaryPassword);
-      const user = await prisma.$transaction(async (tx) => {
+      const temporaryPassword = generateTemporaryPassword();
+      passwordHash = await hashTemporaryPassword(temporaryPassword);
+      try {
+        const { sendSupplierCredentialsEmail } = await import("@/workers/supplier-invite-email");
+        await sendSupplierCredentialsEmail({
+          supplierEmail: body.email,
+          temporaryPassword,
+          loginUrl,
+          invitedByName,
+          organizationName,
+          companyName: body.companyName,
+          orgLogoUrl,
+        });
+      } catch (emailError) {
+        console.error("[SupplierInvite] Credentials email failed; nothing saved:", emailError);
+        return apiError("EMAIL_NOT_SENT", "The invite email did not send, so nothing was saved. Try again.", 502);
+      }
+    }
+
+    const invite = await prisma.$transaction(async (tx) => {
+      let userId: string | undefined;
+      if (passwordHash) {
         const created = await tx.user.create({
           data: {
             email: body.email,
@@ -127,28 +153,26 @@ export async function POST(
           },
         });
         await tx.account.create({
-          data: { userId: created.id, accountId: created.id, providerId: "credential", password },
+          data: { userId: created.id, accountId: created.id, providerId: "credential", password: passwordHash },
         });
         await tx.organizationMembership.create({
           data: { organizationId: orgId, userId: created.id, role: "supplier" },
         });
-        return created;
+        userId = created.id;
+      }
+      return tx.supplierInvite.create({
+        data: {
+          organizationId: orgId,
+          email: body.email,
+          companyName: body.companyName ?? null,
+          token,
+          expiresAt,
+          createdByUserId: session.user.id,
+          inviteMethod,
+          usedByUserId: userId, // Mark as used if credentials method
+          usedAt: userId ? new Date() : undefined,
+        },
       });
-      userId = user.id;
-    }
-
-    const invite = await prisma.supplierInvite.create({
-      data: {
-        organizationId: orgId,
-        email: body.email,
-        companyName: body.companyName ?? null,
-        token: randomBytes(32).toString("base64url"),
-        expiresAt,
-        createdByUserId: session.user.id,
-        inviteMethod,
-        usedByUserId: userId, // Mark as used if credentials method
-        usedAt: userId ? new Date() : undefined,
-      },
     });
 
     await writeAuditLog({
@@ -164,38 +188,23 @@ export async function POST(
       },
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.metricora.co.uk";
-    const loginUrl = `${appUrl}/sign-in`;
-    const inviteUrl = `${appUrl}/supplier-invite/${invite.token}`;
-
+    // A magic-link invite is saved first and stays resendable if its email fails.
     let emailDelivery = "email";
-    try {
-      const orgLogoUrl = branding ? await resolveEmailLogoUrl(branding) : null;
-      if (inviteMethod === "credentials" && temporaryPassword) {
-        const { sendSupplierCredentialsEmail } = await import("@/workers/supplier-invite-email");
-        await sendSupplierCredentialsEmail({
-          supplierEmail: body.email,
-          temporaryPassword,
-          loginUrl,
-          invitedByName: session.user.name || session.user.email,
-          organizationName: org?.name || "MetricOra",
-          companyName: body.companyName,
-          orgLogoUrl,
-        });
-      } else {
+    if (inviteMethod === "magic-link") {
+      try {
         const { sendSupplierInviteEmail } = await import("@/workers/supplier-invite-email");
         await sendSupplierInviteEmail({
           supplierEmail: body.email,
           inviteUrl,
-          invitedByName: session.user.name || session.user.email,
-          organizationName: org?.name || "MetricOra",
+          invitedByName,
+          organizationName,
           companyName: body.companyName,
           orgLogoUrl,
         });
+      } catch (emailError) {
+        emailDelivery = "email_failed";
+        console.error("[SupplierInvite] Email dispatch failed:", emailError);
       }
-    } catch (emailError) {
-      emailDelivery = "email_failed";
-      console.error("[SupplierInvite] Email dispatch failed:", emailError);
     }
 
     dispatchNotification({
