@@ -255,7 +255,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                       <ul className="grid gap-1">
                         {col.items.map((item) => (
                           <li key={item.href}>
-                            <Link href={item.href} className="block py-2.5 text-[15px] text-mk-text hover:text-mk-accent">
+                            <Link href={item.href} onClick={() => setOpen(false)} className="block py-2.5 text-[15px] text-mk-text hover:text-mk-accent">
                               {item.label}
                             </Link>
                           </li>
@@ -266,7 +266,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
                 </div>
               ) : (
                 <div key={entry.href}>
-                  <Link href={entry.href} className="block py-2.5 text-[15px] font-medium text-mk-text hover:text-mk-accent">
+                  <Link href={entry.href} onClick={() => setOpen(false)} className="block py-2.5 text-[15px] font-medium text-mk-text hover:text-mk-accent">
                     {entry.label}
                   </Link>
                 </div>
@@ -274,10 +274,10 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
             )}
           </nav>
           <div className="mx-auto flex w-full max-w-[1200px] flex-wrap gap-3 border-t border-mk-text/10 px-5 py-5 sm:px-8">
-            <Link href="/sign-up" className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-mk-accent px-5 text-[15px] font-semibold text-white">
+            <Link href="/sign-up" onClick={() => setOpen(false)} className="inline-flex h-11 flex-1 items-center justify-center rounded-full bg-mk-accent px-5 text-[15px] font-semibold text-white">
               Start a 30-day trial
             </Link>
-            <Link href="/sign-in" className="inline-flex h-11 w-full items-center justify-center text-[15px] text-mk-text-2">
+            <Link href="/sign-in" onClick={() => setOpen(false)} className="inline-flex h-11 w-full items-center justify-center text-[15px] text-mk-text-2">
               Sign in
             </Link>
           </div>
