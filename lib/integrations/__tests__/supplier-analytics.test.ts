@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import type { FieldSubmission, SupplierAnalytic } from '@prisma/client';
 import {
   calculateSupplierScore,
   forecastSupplierEmissions,
@@ -67,7 +68,7 @@ describe('Supplier Analytics', () => {
         },
       ];
 
-      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
+      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as unknown as FieldSubmission[]);
       vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(null); // Previous score lookup
 
       const score = await calculateSupplierScore(testOrgId, testSupplierId);
@@ -97,9 +98,9 @@ describe('Supplier Analytics', () => {
       ];
 
       // Mock previous analytic with lower score to show improvement
-      const mockAnalytic = { overallScore: 30 } as any;
+      const mockAnalytic = { overallScore: 30 } as unknown as SupplierAnalytic;
 
-      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
+      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as unknown as FieldSubmission[]);
       vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(mockAnalytic);
 
       const score = await calculateSupplierScore(testOrgId, testSupplierId);
@@ -173,7 +174,7 @@ describe('Supplier Analytics', () => {
         { id: 'sub-6', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(baseDate.getTime() - 3500000), formData: { normalizedAmount: 1000 }, ocrExtractedData: {} }, // Outlier
       ];
 
-      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
+      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as unknown as FieldSubmission[]);
 
       const anomalies = await detectSupplierAnomalies(testOrgId, testSupplierId, 2);
 
@@ -193,7 +194,7 @@ describe('Supplier Analytics', () => {
         { id: 'sub-4', organizationId: testOrgId, supplierId: testSupplierId, createdAt: new Date(now.getTime() - 203 * dayMs), formData: { normalizedAmount: 100 }, ocrExtractedData: {} }, // 203 days ago (200 day interval - anomaly)
       ];
 
-      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as any);
+      vi.spyOn(prisma.fieldSubmission, 'findMany').mockResolvedValueOnce(mockSubmissions as unknown as FieldSubmission[]);
 
       const anomalies = await detectSupplierAnomalies(testOrgId, testSupplierId, 2);
 
@@ -214,7 +215,7 @@ describe('Supplier Analytics', () => {
         },
       ];
 
-      vi.spyOn(prisma.supplierAnalytic, 'findMany').mockResolvedValueOnce(mockAnalytics as any);
+      vi.spyOn(prisma.supplierAnalytic, 'findMany').mockResolvedValueOnce(mockAnalytics as unknown as SupplierAnalytic[]);
 
       const analytics = await getSupplierAnalytics(testOrgId, { minScore: 80, trend: 'improving' });
 
@@ -237,7 +238,7 @@ describe('Supplier Analytics', () => {
           submittedAt: new Date(),
           requestedByDeadline: new Date(),
         },
-      ] as any);
+      ] as unknown as FieldSubmission[]);
 
       vi.spyOn(prisma.supplierAnalytic, 'findUnique').mockResolvedValueOnce(null);
       vi.spyOn(prisma, '$queryRaw').mockResolvedValueOnce([]);
@@ -248,7 +249,7 @@ describe('Supplier Analytics', () => {
         supplierId: testSupplierId,
         overallScore: 100,
         forecastedEmissions: 0.5,
-      } as any);
+      } as unknown as SupplierAnalytic);
 
       await updateSupplierAnalytics(testOrgId, testSupplierId);
 

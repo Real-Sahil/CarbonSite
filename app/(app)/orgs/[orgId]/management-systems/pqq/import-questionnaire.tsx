@@ -9,7 +9,7 @@ import { SECTIONS, type SectionKey } from "@/lib/pqq/topics";
 import { FormField, FormSection } from "@/components/forms/form-kit";
 
 type Topic = { key: string; title: string; section: SectionKey };
-type Q = { ref: string; text: string; topicKey: string; suggested?: boolean; own?: string };
+type Q = { uid: number; ref: string; text: string; topicKey: string; suggested?: boolean; own?: string };
 
 export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: Topic[] }) {
   const router = useRouter();
@@ -27,7 +27,7 @@ export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: 
       const res = await fetch(`/api/orgs/${orgId}/pqq/sets`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ preview: true, text }) });
       const json = await res.json().catch(() => null);
       if (!res.ok) return setError(json?.message ?? "Could not read the questions.");
-      setQuestions(json.questions.map((q: Q) => ({ ...q, own: q.suggested ? undefined : q.topicKey })));
+      setQuestions(json.questions.map((q: Omit<Q, "uid">, uid: number) => ({ ...q, uid, own: q.suggested ? undefined : q.topicKey })));
     });
   }
 
@@ -74,7 +74,7 @@ export function ImportQuestionnaire({ orgId, topics }: { orgId: string; topics: 
         <div className="flex flex-col gap-3">
           <ol className="flex flex-col divide-y divide-[#F3F4F6] rounded-md border border-[#E3E8EE]">
             {questions.map((q, i) => (
-              <li key={`${q.ref}-${i}`} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
+              <li key={q.uid} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
                 <span className="w-14 shrink-0 font-mono text-xs text-[#5B6A78]">{q.ref}</span>
                 <span className="flex-1 text-sm text-[#131d29]">{q.text}</span>
                 <select

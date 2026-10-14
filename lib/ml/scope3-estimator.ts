@@ -161,7 +161,7 @@ export async function estimateScope3Waste(
   features?: Scope3Features
 ): Promise<Scope3Estimate | null> {
   try {
-    const facility = await prisma.facility.findUniqueOrThrow({
+    await prisma.facility.findUniqueOrThrow({
       where: { id: facilityId, organizationId: orgId },
     });
 
@@ -210,7 +210,7 @@ export async function estimateScope3Water(
   features?: Scope3Features
 ): Promise<Scope3Estimate | null> {
   try {
-    const facility = await prisma.facility.findUniqueOrThrow({
+    await prisma.facility.findUniqueOrThrow({
       where: { id: facilityId, organizationId: orgId },
     });
 

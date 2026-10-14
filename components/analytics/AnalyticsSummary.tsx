@@ -69,8 +69,8 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
   if (scopeLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <Skeleton key={i} className="h-32 w-full" />
+        {metrics.map((metric) => (
+          <Skeleton key={metric.label} className="h-32 w-full" />
         ))}
       </div>
     );
@@ -78,9 +78,9 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {metrics.map((metric, index) => (
+      {metrics.map((metric) => (
         <div
-          key={index}
+          key={metric.label}
           className="bg-white rounded-lg border border-[#E3E8EE] p-6 shadow-sm hover:shadow-md transition-shadow"
         >
           <p className="text-sm font-medium text-[#41505F]">{metric.label}</p>

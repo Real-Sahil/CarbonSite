@@ -91,7 +91,7 @@ export async function GET(
               })}\n\n`
             )
           );
-        } catch (error) {
+        } catch {
           clearInterval(heartbeatInterval);
         }
       }, 30000);

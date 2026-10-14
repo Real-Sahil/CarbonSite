@@ -24,7 +24,7 @@ export interface EmissionMetric {
 export function generateESRSXBRL(
   context: XBRLContext,
   emissions: EmissionMetric[],
-  options?: { includeUncertainty?: boolean; dataQualityScore?: number }
+  _options?: { includeUncertainty?: boolean; dataQualityScore?: number }
 ): string {
   const startDate = context.reportingPeriodStart.toISOString().split("T")[0];
   const endDate = context.reportingPeriodEnd.toISOString().split("T")[0];
@@ -180,7 +180,7 @@ export function dashboardToXBRLFacts(
   periodEnd: Date,
   methodology: string = "GHG Protocol"
 ): EmissionMetric[] {
-  return aggregates.map((agg, idx) => ({
+  return aggregates.map((agg) => ({
     scope: agg.scope,
     category: `scope_${agg.scope}`,
     amount: agg.value, // Assume already in tonnes CO2e

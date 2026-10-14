@@ -238,17 +238,6 @@ export function ensembleForecast(
   );
 
   // Confidence intervals from all methods
-  const allLowerBounds = [
-    ...(es.lowerBound || []),
-    ...(arima.lowerBound || []),
-    ...trendForecast.map((f) => Math.max(0, f * 0.8)),
-  ];
-  const allUpperBounds = [
-    ...(es.upperBound || []),
-    ...(arima.upperBound || []),
-    ...trendForecast.map((f) => f * 1.2),
-  ];
-
   const lowerCI = Array.from({ length: periods }, (_, i) => {
     const esLower = es.lowerBound?.[i] ?? Math.max(0, ensemble[i] * 0.8);
     const arimaLower = arima.lowerBound?.[i] ?? Math.max(0, ensemble[i] * 0.8);

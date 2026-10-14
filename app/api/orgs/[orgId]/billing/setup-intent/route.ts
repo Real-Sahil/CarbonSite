@@ -11,7 +11,7 @@ export async function POST(
 ) {
   try {
     const { orgId } = await params;
-    const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.admins);
 
     // Get or create billing subscription
     let billing = await prisma.billingSubscription.findUnique({

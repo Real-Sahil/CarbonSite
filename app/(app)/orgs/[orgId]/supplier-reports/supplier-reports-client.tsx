@@ -81,7 +81,7 @@ function formatAmount(amount: string, unit: string) {
 
 export function SupplierReportsClient({ orgId, reports, nextCursor, status, role, reportingPeriods }: Props) {
   const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [acceptDialog, setAcceptDialog] = useState<Report | null>(null);
@@ -326,8 +326,8 @@ export function SupplierReportsClient({ orgId, reports, nextCursor, status, role
                     {flags.length > 0 && (
                       <div className="mt-3 space-y-1.5">
                         <p className="text-[11px] text-[#5B6A78]">Quality flags</p>
-                        {flags.map((flag, i) => (
-                          <div key={i} className={[
+                        {flags.map((flag) => (
+                          <div key={JSON.stringify(flag)} className={[
                             "flex items-start gap-2 text-xs rounded-lg px-3 py-2",
                             flag.severity === "error" ? "bg-red-50 text-red-700" :
                             flag.severity === "warning" ? "bg-amber-50 text-amber-700" :

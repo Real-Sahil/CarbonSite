@@ -126,7 +126,7 @@ export default async function KitReadyPage({ params }: KitReadyPageProps) {
           {documentConfig.map((doc, index) => {
             const IconComponent = doc.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow">
+              <Card key={doc.title} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <IconComponent className="h-6 w-6 text-[#41505F]" />

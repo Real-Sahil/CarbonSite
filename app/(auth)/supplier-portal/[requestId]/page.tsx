@@ -195,8 +195,8 @@ export default function RequestDetailPage({ params }: { params: Promise<{ reques
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {request.qualityFlags.map((flag, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
+                {request.qualityFlags.map((flag) => (
+                  <li key={`${flag.field}|${flag.message}`}className="flex items-start gap-2">
                     <Badge variant={flag.severity === "critical" ? "destructive" : "secondary"} className="mt-0.5">
                       {flag.severity}
                     </Badge>

@@ -45,20 +45,24 @@ class Logger {
   }
 
   debug(message: string, context?: LogContext): void {
-    context ? this.child.debug(context, message) : this.child.debug(message);
+    if (context) this.child.debug(context, message);
+    else this.child.debug(message);
   }
 
   info(message: string, context?: LogContext): void {
-    context ? this.child.info(context, message) : this.child.info(message);
+    if (context) this.child.info(context, message);
+    else this.child.info(message);
   }
 
   warn(message: string, context?: LogContext): void {
-    context ? this.child.warn(context, message) : this.child.warn(message);
+    if (context) this.child.warn(context, message);
+    else this.child.warn(message);
     this.sentryCapture("warn", message, context);
   }
 
   error(message: string, context?: LogContext): void {
-    context ? this.child.error(context, message) : this.child.error(message);
+    if (context) this.child.error(context, message);
+    else this.child.error(message);
     this.sentryCapture("error", message, context);
   }
 

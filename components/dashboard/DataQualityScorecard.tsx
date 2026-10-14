@@ -80,8 +80,8 @@ export function DataQualityScorecard({
                 Warnings
               </h4>
               <div className="space-y-2">
-                {score.warnings.map((warning, idx) => (
-                  <Alert key={idx} className="bg-yellow-50 border-yellow-200">
+                {score.warnings.map((warning) => (
+                  <Alert key={warning}className="bg-yellow-50 border-yellow-200">
                     <AlertDescription className="text-yellow-800 text-sm">{warning}</AlertDescription>
                   </Alert>
                 ))}
@@ -97,8 +97,8 @@ export function DataQualityScorecard({
                 Recommendations
               </h4>
               <ul className="space-y-1 text-sm text-[#41505F]">
-                {score.recommendations.map((rec, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
+                {score.recommendations.map((rec) => (
+                  <li key={rec}className="flex items-start gap-2">
                     <span className="text-[#c2400c] font-bold">•</span>
                     <span>{rec}</span>
                   </li>

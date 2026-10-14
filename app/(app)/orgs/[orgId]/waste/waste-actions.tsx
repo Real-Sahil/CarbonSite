@@ -254,8 +254,8 @@ function BulkUploadModal({ orgId, onClose, onDone }: { orgId: string; onClose: (
           {result && (
             <div className="rounded-lg bg-[#F9FAFC] p-3 text-xs text-[#41505F]">
               <p>{(result as { created: number; failed: number }).created} created, {(result as { created: number; failed: number }).failed} failed.</p>
-              {(result as { errors: { row: number; message: string }[] }).errors.slice(0, 8).map((e, i) => (
-                <p key={i} className="text-red-600 mt-1">Row {e.row}: {e.message}</p>
+              {(result as { errors: { row: number; message: string }[] }).errors.slice(0, 8).map((e) => (
+                <p key={e.row} className="text-red-600 mt-1">Row {e.row}: {e.message}</p>
               ))}
             </div>
           )}

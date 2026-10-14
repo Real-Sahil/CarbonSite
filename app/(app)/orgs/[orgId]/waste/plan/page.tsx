@@ -100,8 +100,8 @@ export default async function WastePlanPage({ params, searchParams }: { params: 
                 <caption className="sr-only">Forecast and recorded waste by type</caption>
                 <thead><tr className="text-left text-xs text-[#5B6A78]"><th className="py-1 pr-3">Waste type</th><th className="py-1 pr-3 text-right">Forecast (t)</th><th className="py-1 pr-3 text-right">Recorded (t)</th><th className="py-1 pr-3 text-right">Difference (t)</th><th className="py-1">Planned route</th></tr></thead>
                 <tbody className="divide-y divide-[#E3E8EE]">
-                  {c.rows.map((r, i) => (
-                    <tr key={i}><td className="py-2 pr-3">{r.wasteType}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.forecastTonnes)}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.actualTonnes)}</td><td className={`py-2 pr-3 text-right tabular-nums ${r.varianceTonnes > 0 ? "text-amber-800" : ""}`}>{r.varianceTonnes > 0 ? "+" : ""}{n(r.varianceTonnes)}</td><td className="py-2">{ROUTE_LABEL[r.plannedRoute]}</td></tr>
+                  {c.rows.map((r) => (
+                    <tr key={`${r.wasteType}|${r.ewcCode ?? ""}|${r.plannedRoute}`}><td className="py-2 pr-3">{r.wasteType}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.forecastTonnes)}</td><td className="py-2 pr-3 text-right tabular-nums">{n(r.actualTonnes)}</td><td className={`py-2 pr-3 text-right tabular-nums ${r.varianceTonnes > 0 ? "text-amber-800" : ""}`}>{r.varianceTonnes > 0 ? "+" : ""}{n(r.varianceTonnes)}</td><td className="py-2">{ROUTE_LABEL[r.plannedRoute]}</td></tr>
                   ))}
                   {c.unplannedTonnes > 0 && <tr><td className="py-2 pr-3 italic">Not in the forecast</td><td className="py-2 pr-3 text-right">-</td><td className="py-2 pr-3 text-right tabular-nums">{n(c.unplannedTonnes)}</td><td className="py-2 pr-3 text-right tabular-nums text-amber-800">+{n(c.unplannedTonnes)}</td><td /></tr>}
                 </tbody>

@@ -60,8 +60,8 @@ export default function SupplierAnalyticsPage() {
     return (
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-lg" />
+          {['submissions', 'approval', 'on-time', 'quality'].map((card) => (
+            <Skeleton key={card} className="h-32 rounded-lg" />
           ))}
         </div>
         <Skeleton className="h-96 rounded-lg" />

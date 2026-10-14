@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 type SigningMeta = {
   requestId: string;
@@ -15,7 +15,6 @@ type Phase = "loading" | "ready" | "submitting" | "done" | "error";
 
 export default function SignPage() {
   const { token } = useParams<{ token: string }>();
-  const router = useRouter();
 
   const [meta, setMeta] = useState<SigningMeta | null>(null);
   const [phase, setPhase] = useState<Phase>("loading");

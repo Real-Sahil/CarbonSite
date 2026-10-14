@@ -28,8 +28,7 @@ interface AccountingPageProps {
   params: Promise<{ orgId: string }>;
 }
 
-export async function generateMetadata({ params }: AccountingPageProps) {
-  const { orgId } = await params;
+export async function generateMetadata() {
   return {
     title: "Accounting Integrations | MetricOra",
     description: "Connect Xero, QuickBooks, or Sage to automatically sync invoices and calculate Scope 3 emissions",

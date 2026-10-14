@@ -40,8 +40,6 @@ const DrillDownRequestSchema = z.object({
   offset: z.number().min(0).default(0),
 });
 
-type DrillDownRequest = z.infer<typeof DrillDownRequestSchema>;
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ orgId: string }> }

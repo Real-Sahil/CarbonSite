@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "../quality";
-import type { ActivityRecord } from "@prisma/client";
+import type { ActivityRecord, EmissionFactor } from "@prisma/client";
 
 describe("calculateDataQualityScore", () => {
   const baseRecord = {
@@ -18,14 +18,14 @@ describe("calculateDataQualityScore", () => {
   it("scores complete evidence higher than partial", () => {
     const complete = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "unit compatible" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "unit compatible" },
       unitConverted: false,
       unitConversionComplex: false,
     });
 
     const partial = calculateDataQualityScore({
       record: { ...baseRecord, evidenceStatus: "partial" },
-      factorSelection: { factor: {} as any, selectionReason: "unit compatible" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "unit compatible" },
       unitConverted: false,
       unitConversionComplex: false,
     });
@@ -36,14 +36,14 @@ describe("calculateDataQualityScore", () => {
   it("scores field submissions higher than batch imports", () => {
     const fieldSubmission = calculateDataQualityScore({
       record: { ...baseRecord, fieldSubmissionId: "fs-1", importBatchId: null },
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
 
     const batchImport = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
@@ -54,21 +54,21 @@ describe("calculateDataQualityScore", () => {
   it("penalizes unit conversions", () => {
     const noConversion = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
 
     const simpleConversion = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: true,
       unitConversionComplex: false,
     });
 
     const complexConversion = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: true,
       unitConversionComplex: true,
     });
@@ -80,7 +80,7 @@ describe("calculateDataQualityScore", () => {
   it("heavily penalizes missing factors", () => {
     const withFactor = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
@@ -98,7 +98,7 @@ describe("calculateDataQualityScore", () => {
   it("clamps score to 0-100 range", () => {
     const score = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched matched matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched matched matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
@@ -110,7 +110,7 @@ describe("calculateDataQualityScore", () => {
   it("returns pedigree scores and a geometric standard deviation >= 1", () => {
     const result = calculateDataQualityScore({
       record: baseRecord,
-      factorSelection: { factor: {} as any, selectionReason: "matched" },
+      factorSelection: { factor: {} as EmissionFactor, selectionReason: "matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });

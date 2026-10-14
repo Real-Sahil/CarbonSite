@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -189,7 +189,7 @@ export default function TcfdScenarioPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Risk | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/orgs/${orgId}/tcfd/scenarios/${scenarioId}`);
@@ -202,9 +202,9 @@ export default function TcfdScenarioPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId, scenarioId]);
 
-  useEffect(() => { load(); }, [orgId, scenarioId]);
+  useEffect(() => { load(); }, [load]);
 
   async function handleAddRisk(data: Record<string, unknown>) {
     const res = await fetch(`/api/orgs/${orgId}/tcfd/scenarios/${scenarioId}/risks`, {

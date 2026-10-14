@@ -1193,8 +1193,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     </>
   );
   widgetNodes["industry"] = (
-    <>
-      {industryData && (
+      industryData && (
         <section aria-label="Industry insights" className="mt-8">
           <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">
             {industryData.type === "construction" && "Embodied carbon"}
@@ -1306,14 +1305,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             )}
           </div>
         </section>
-      )}
-
-    </>
+      )
   );
   widgetNodes["waste-kpis"] = <WasteKpisWidget orgId={orgId} />;
   widgetNodes["environment"] = (
-    <>
-      {hasEnvironmentalData && (
+      hasEnvironmentalData && (
         <section aria-label="Water and waste" className="mt-8">
           <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">
             Water &amp; waste (ESRS E3 / E5)
@@ -1350,9 +1346,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             />
           </div>
         </section>
-      )}
-
-    </>
+      )
   );
   widgetNodes["operations"] = (
     <>
@@ -1390,8 +1384,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     </>
   );
   widgetNodes["scope-breakdown"] = (
-    <>
-      {hasAggregates ? (
+      hasAggregates ? (
         <div
           className={`mt-6 grid gap-6 lg:grid-cols-2 ${showTrend ? "xl:grid-cols-3" : ""}`}
         >
@@ -1443,13 +1436,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             action="Run calculation"
           />
         </div>
-      )}
-
-    </>
+      )
   );
   widgetNodes["facilities"] = (
-    <>
-      {facilityRows.length > 0 && (
+      facilityRows.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1556,12 +1546,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </CardContent>
         </Card>
-      )}
-
-    </>
+      )
   );
   widgetNodes["scope-detail"] = (
-    <>
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
         <Card>
           <CardHeader>
@@ -1656,8 +1643,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         )}
 
       </div>
-
-    </>
   );
   widgetNodes["readiness"] = (
     <Card className="mt-6">
@@ -1696,7 +1681,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     </Card>
   );
   widgetNodes["data-quality"] = (
-    <>
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
@@ -1862,11 +1846,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </div>
         </CardContent>
       </Card>
-
-    </>
   );
   widgetNodes["analytics-reporting"] = (
-    <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
           <CardHeader className="border-b border-[#E3E8EE] bg-[#c2400c] text-white">
@@ -2049,12 +2030,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </Card>
         )}
       </div>
-
-    </>
   );
   widgetNodes["carbon-intelligence"] = <CarbonIntelligenceWidget orgId={orgId} role={role} />;
   widgetNodes["social-evidence"] = (
-    <>
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <Card>
           <CardHeader>
@@ -2210,11 +2188,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           </CardContent>
         </Card>
       </div>
-
-    </>
   );
   widgetNodes["ops-health"] = (
-    <>
       <Card className="mt-6">
         <CardHeader>
           <CardTitle className="text-base">Operations health</CardTitle>
@@ -2240,8 +2215,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           />
         </CardContent>
       </Card>
-
-    </>
   );
   widgetNodes["recent-decisions"] = (
     <RecentDecisions
@@ -2252,7 +2225,6 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     />
   );
   widgetNodes["review-queue"] = (
-    <>
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
@@ -2280,12 +2252,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           />
         </CardContent>
       </Card>
-
-    </>
   );
   widgetNodes["run-calculation"] = (
-    <>
-      {["admin", "editor", "sustainability_director", "sustainability_manager", "operations_manager"].includes(role) && <Card id="run-calculation" className="mt-6 scroll-mt-6">
+      ["admin", "editor", "sustainability_director", "sustainability_manager", "operations_manager"].includes(role) && <Card id="run-calculation" className="mt-6 scroll-mt-6">
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -2316,19 +2285,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           />
           <CalculationRunsLive orgId={orgId} initialRuns={calculationRuns} />
         </CardContent>
-      </Card>}
-
-    </>
+      </Card>
   );
   widgetNodes["quick-links"] = (
-    <>
       <div className="grid gap-6 mt-6 md:grid-cols-2 xl:grid-cols-4">
         <ActionCard title="Records" description="Review committed activity data and evidence status." href={`/orgs/${orgId}/records`} />
         <ActionCard title="Imports" description="Upload, validate, and commit activity data batches." href={`/orgs/${orgId}/imports`} />
         <ActionCard title="Reports" description="Track report requests and signed output artefacts." href={`/orgs/${orgId}/reports`} />
         <ActionCard title="Targets" description="Manage reduction targets and operational initiatives." href={`/orgs/${orgId}/targets`} />
       </div>
-    </>
   );
   widgetNodes["flow"] = sliceView && sliceView.flows.totalKg > 0 ? <LinkedSankey flows={sliceView.flows} locale={L} period={currentPeriod?.label} /> : null;
   widgetNodes["waterfall"] = changeSteps.length > 1 && currentPeriod && priorPeriod ? <LinkedWaterfall steps={changeSteps} locale={L} explain={{ orgId, currentPeriodId: currentPeriod.id, previousPeriodId: priorPeriod.id, aiAvailable: waterfallAi }} /> : null;

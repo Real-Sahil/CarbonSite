@@ -217,8 +217,8 @@ export default function CompliancePage() {
           <table className="w-full text-sm">
             <thead className="border-b border-[#E3E8EE]">
               <tr>
-                {["Framework", "Year", "Status", "Owner", "Due date", "Submitted", ""].map((h, i) => (
-                  <th key={i} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6">{h}</th>
+                {["Framework", "Year", "Status", "Owner", "Due date", "Submitted", ""].map((h) => (
+                  <th key={h} className="py-3 px-4 text-left text-xs font-semibold text-[#5B6A78] uppercase tracking-wide first:pl-6">{h}</th>
                 ))}
               </tr>
             </thead>

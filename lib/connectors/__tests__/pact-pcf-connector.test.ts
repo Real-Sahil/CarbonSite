@@ -40,7 +40,7 @@ describe("PACTPCFConnector", () => {
         productFootprints: [
           {
             id: `SKU-${unit}`,
-            declaredUnit: unit as any,
+            declaredUnit: unit,
             pcfExcludingBiogenic: 1.5,
           },
         ],
@@ -174,10 +174,10 @@ describe("PACTPCFConnector", () => {
 
     // Should have a warning about version mismatch
     expect(result.records).toBeDefined();
-    const records = result.records as any[];
+    const records = result.records;
     expect(records.length).toBeGreaterThan(0);
-    expect(records[0].validationWarnings.length).toBeGreaterThan(0);
-    const versionWarning = records[0].validationWarnings.find((w: any) =>
+    expect(records[0].validationWarnings?.length).toBeGreaterThan(0);
+    const versionWarning = records[0].validationWarnings?.find((w) =>
       w.includes("spec version")
     );
     expect(versionWarning).toBeDefined();

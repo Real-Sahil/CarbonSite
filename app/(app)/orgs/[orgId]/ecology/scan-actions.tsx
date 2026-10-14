@@ -172,11 +172,11 @@ export function SpeciesTable({ species }: { species: SpeciesRecord[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visible.map((s, i) => {
+            {visible.map((s) => {
               const risk = riskLevel(s.conservationStatus);
               const badge = RISK_BADGE[risk];
               return (
-                <TableRow key={i}>
+                <TableRow key={s.name}>
                   <TableCell className="italic font-medium">{s.name}</TableCell>
                   <TableCell className="text-muted-foreground">{s.commonName ?? "—"}</TableCell>
                   <TableCell>{s.group}</TableCell>

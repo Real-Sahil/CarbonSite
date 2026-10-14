@@ -118,7 +118,7 @@ function Card({ orgId, card, canEdit, files, addFile }: { orgId: string; card: A
         </div>
         {(card.answer || card.response) && <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs text-emerald-800">Answered</span>}
       </div>
-      {card.texts.length > 0 && <ul className="list-disc pl-5 text-sm text-[#41505F]">{card.texts.map((t, i) => <li key={i}>{t}</li>)}</ul>}
+      {card.texts.length > 0 && <ul className="list-disc pl-5 text-sm text-[#41505F]">{card.texts.map((t) => <li key={t}>{t}</li>)}</ul>}
       {card.guidance && <p className="text-xs text-[#5B6A78]">{card.guidance}</p>}
       {card.draft && canEdit && !answer && (
         <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-3 text-sm text-[#41505F]">

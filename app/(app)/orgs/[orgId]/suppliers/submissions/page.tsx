@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import {
   Table,
@@ -81,12 +81,7 @@ export default function SupplierSubmissionsPage() {
   const [processingIds, setProcessingIds] = useState(new Set<string>());
   const [reportingPeriodId, setReportingPeriodId] = useState("");
 
-  useEffect(() => {
-    fetchReports();
-    fetchReportingPeriods();
-  }, [orgId, statusFilter]);
-
-  async function fetchReportingPeriods() {
+  const fetchReportingPeriods = useCallback(async () => {
     try {
       const response = await fetch(`/api/orgs/${orgId}/reporting-periods`);
       if (response.ok) {
@@ -96,9 +91,9 @@ export default function SupplierSubmissionsPage() {
     } catch (error) {
       console.error("Failed to fetch reporting periods", error);
     }
-  }
+  }, [orgId]);
 
-  async function fetchReports() {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -112,7 +107,12 @@ export default function SupplierSubmissionsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [orgId, statusFilter]);
+
+  useEffect(() => {
+    fetchReports();
+    fetchReportingPeriods();
+  }, [fetchReports, fetchReportingPeriods]);
 
   async function handleApprove(reportId: string) {
     if (!reportingPeriodId) {
@@ -322,20 +322,18 @@ export default function SupplierSubmissionsPage() {
                         Review
                       </Button>
                       {report.status === "submitted" && (
-                        <>
-                          <Button
-                            size="sm"
-                            onClick={() => handleUnderReview(report.id)}
-                            disabled={processingIds.has(report.id)}
-                            variant="secondary"
-                          >
-                            {processingIds.has(report.id) ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              "Mark Reviewing"
-                            )}
-                          </Button>
-                        </>
+                        <Button
+                          size="sm"
+                          onClick={() => handleUnderReview(report.id)}
+                          disabled={processingIds.has(report.id)}
+                          variant="secondary"
+                        >
+                          {processingIds.has(report.id) ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "Mark Reviewing"
+                          )}
+                        </Button>
                       )}
                     </div>
                   </TableCell>

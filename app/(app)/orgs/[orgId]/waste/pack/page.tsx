@@ -108,7 +108,7 @@ export default async function ProjectPackPage({ params, searchParams }: { params
             <section aria-labelledby="pk-reg">
               <h3 id="pk-reg" className="mb-2 text-sm font-semibold text-[#131d29]">Carrier register checks</h3>
               <ul className="space-y-1 text-sm">
-                {pack.registerChecks.map((c, i) => <li key={i}>{c.title}: {c.check.status === "registered" ? `on the England register${c.check.expiryDate ? `, expires ${c.check.expiryDate}` : ""}` : c.check.status === "expired" ? "registration expired" : c.check.status === "not_found" ? "not found on the England register" : "check unavailable"}{c.check.checkedAt ? ` (checked ${c.check.checkedAt.slice(0, 10)})` : ""}</li>)}
+                {pack.registerChecks.map((c) => <li key={`${c.title}:${c.check.registration ?? ""}:${c.check.checkedAt ?? ""}`}>{c.title}: {c.check.status === "registered" ? `on the England register${c.check.expiryDate ? `, expires ${c.check.expiryDate}` : ""}` : c.check.status === "expired" ? "registration expired" : c.check.status === "not_found" ? "not found on the England register" : "check unavailable"}{c.check.checkedAt ? ` (checked ${c.check.checkedAt.slice(0, 10)})` : ""}</li>)}
               </ul>
               <p className="mt-1 text-xs text-[#5B6A78]">{REGISTER_ATTRIBUTION}.</p>
             </section>

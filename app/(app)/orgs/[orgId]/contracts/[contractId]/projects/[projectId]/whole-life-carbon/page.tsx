@@ -250,8 +250,8 @@ export default function WholeLifeCarbonPage() {
                 <span className="text-sm font-medium text-amber-800">Assumptions and gaps</span>
               </div>
               <ul className="space-y-1.5">
-                {result.warnings.map((w, i) => (
-                  <li key={i} className="text-xs text-amber-700 leading-relaxed">{w}</li>
+                {result.warnings.map((w) => (
+                  <li key={w} className="text-xs text-amber-700 leading-relaxed">{w}</li>
                 ))}
               </ul>
             </div>

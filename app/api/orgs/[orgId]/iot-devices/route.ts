@@ -27,7 +27,7 @@ export async function GET(
 ) {
   try {
     const { orgId } = await params;
-    const user = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
+    await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
 
     const searchParams = req.nextUrl.searchParams;
     const cursor = searchParams.get("cursor") || undefined;

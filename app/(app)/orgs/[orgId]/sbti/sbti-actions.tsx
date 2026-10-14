@@ -204,7 +204,7 @@ function SetTargetModal({ orgId, existing, onClose, onSaved }: {
                 </p>
                 {suggestion.recommendations.length > 0 && (
                   <ul className="mt-1.5 list-inside list-disc space-y-0.5 text-xs text-[#5B6A78]">
-                    {suggestion.recommendations.slice(0, 2).map((rec, i) => <li key={i}>{rec}</li>)}
+                    {suggestion.recommendations.slice(0, 2).map((rec) => <li key={rec}>{rec}</li>)}
                   </ul>
                 )}
                 <button type="button"

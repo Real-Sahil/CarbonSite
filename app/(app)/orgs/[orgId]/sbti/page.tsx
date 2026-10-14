@@ -144,7 +144,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
 
           {alerts.length > 0 && (
             <div className="space-y-2">
-              {alerts.map((alert, i) => {
+              {alerts.map((alert) => {
                 const cls =
                   alert.severity === "critical"
                     ? "border-red-200 bg-red-50 text-red-800"
@@ -152,7 +152,7 @@ export default async function SbtiPage({ params }: { params: Promise<{ orgId: st
                       ? "border-amber-200 bg-amber-50 text-amber-800"
                       : "border-[#E3E8EE] bg-[#F9FAFC] text-[#131d29]";
                 return (
-                  <div key={i} className={`flex items-start gap-2 rounded-lg border px-4 py-2.5 text-xs ${cls}`}>
+                  <div key={alert.year} className={`flex items-start gap-2 rounded-lg border px-4 py-2.5 text-xs ${cls}`}>
                     <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                     <span>{alert.message}</span>
                   </div>

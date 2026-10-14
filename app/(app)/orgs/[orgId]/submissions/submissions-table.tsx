@@ -218,29 +218,25 @@ export function SubmissionsTable({ orgId, members, initialSubmissions }: Submiss
     {
       id: "checkbox",
       header: ({ table: _table }) => (
-        <>
-          {eligible.length > 0 && (
-            <Checkbox
-              checked={allEligibleSelected}
-              onCheckedChange={toggleAll}
-              aria-label="Select all eligible submissions"
-            />
-          )}
-        </>
+        eligible.length > 0 && (
+          <Checkbox
+            checked={allEligibleSelected}
+            onCheckedChange={toggleAll}
+            aria-label="Select all eligible submissions"
+          />
+        )
       ),
       cell: ({ row }) => {
         const isEligible = BULK_ELIGIBLE.has(row.original.status);
         return (
-          <>
-            {isEligible && (
-              <Checkbox
-                checked={selected.has(row.original.id)}
-                onCheckedChange={() => toggleOne(row.original.id)}
-                aria-label={`Select submission ${row.original.id}`}
-                onClick={(e: React.MouseEvent<HTMLInputElement>) => e.stopPropagation()}
-              />
-            )}
-          </>
+          isEligible && (
+            <Checkbox
+              checked={selected.has(row.original.id)}
+              onCheckedChange={() => toggleOne(row.original.id)}
+              aria-label={`Select submission ${row.original.id}`}
+              onClick={(e: React.MouseEvent<HTMLInputElement>) => e.stopPropagation()}
+            />
+          )
         );
       },
     },

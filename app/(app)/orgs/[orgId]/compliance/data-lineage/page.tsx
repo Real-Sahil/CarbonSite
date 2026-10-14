@@ -116,7 +116,7 @@ export default function DataLineagePage() {
 
       <div className="grid gap-4">
         {steps.map((step, idx) => (
-          <Card key={idx}>
+          <Card key={step.stage}>
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
@@ -131,8 +131,8 @@ export default function DataLineagePage() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {step.details.map((detail, i) => (
-                  <li key={i} className="text-sm text-[#41505F] flex gap-2">
+                {step.details.map((detail) => (
+                  <li key={detail} className="text-sm text-[#41505F] flex gap-2">
                     <span className="text-[#c2400c] font-semibold">•</span>
                     {detail}
                   </li>

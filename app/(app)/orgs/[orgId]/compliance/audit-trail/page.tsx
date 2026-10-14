@@ -175,8 +175,8 @@ export default function AuditTrailPage() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
+                  Array.from({ length: 5 }, (_, i) => i).map((row) => (
+                    <TableRow key={row}>
                       <TableCell colSpan={5}>
                         <Skeleton className="h-4 w-full" />
                       </TableCell>

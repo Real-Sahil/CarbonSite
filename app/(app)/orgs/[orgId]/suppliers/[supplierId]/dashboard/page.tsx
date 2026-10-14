@@ -227,7 +227,7 @@ export default function SupplierDashboardPage() {
                   dataKey="value"
                 >
                   {submissionDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                    <Cell key={entry.name} fill={COLORS[index]} />
                   ))}
                 </Pie>
               </PieChart>

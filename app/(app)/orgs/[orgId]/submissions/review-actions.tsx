@@ -47,7 +47,7 @@ export function SubmissionReviewActions({
   categoryRequired = true,
   embodied,
 }: SubmissionReviewActionsProps) {
-  const { execute, error, isPending, setError } = useSafeMutation();
+  const { execute, error, setError } = useSafeMutation();
   const [emissionCategoryId, setEmissionCategoryId] = useState(currentEmissionCategoryId ?? "");
   const [facilityId, setFacilityId] = useState(currentFacilityId ?? "");
   const [reviewNote, setReviewNote] = useState("");

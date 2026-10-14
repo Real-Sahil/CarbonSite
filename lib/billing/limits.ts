@@ -159,7 +159,7 @@ export function minimumPlanFor(feature: PlanFeature): Plan {
 }
 
 export async function requireFeature(orgId: string, feature: PlanFeature): Promise<NextResponse | null> {
-  let org: any;
+  let org: { plan: string; isPilot?: boolean } | null;
   try {
     org = await prisma.organization.findUnique({ where: { id: orgId }, select: { plan: true, isPilot: true } });
   } catch {
@@ -211,7 +211,11 @@ export function usagePercent(used: number, limit: number): number {
  * product indefinitely.
  */
 export async function requireActiveBilling(orgId: string): Promise<NextResponse | null> {
-  let org: any;
+  let org: {
+    plan: string;
+    isPilot?: boolean;
+    billingSubscription: { status: string; trialEndsAt: Date | null; paymentFailedAt?: Date | null } | null;
+  } | null;
   try {
     org = await prisma.organization.findUnique({
       where: { id: orgId },
@@ -305,7 +309,11 @@ export async function requireWithinUsageLimit(orgId: string, eventType: UsageEve
   const limitKey = USAGE_EVENT_LIMIT_KEY[eventType];
   if (!limitKey) return null; // not a metered/enforced event type
 
-  let org: any;
+  let org: {
+    plan: string;
+    isPilot?: boolean;
+    billingSubscription: { currentPeriodStart: Date; currentPeriodEnd: Date } | null;
+  } | null;
   try {
     org = await prisma.organization.findUnique({
       where: { id: orgId },

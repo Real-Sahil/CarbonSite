@@ -31,7 +31,7 @@ export default function SupplierPortalPage() {
   const params = useParams<{ token: string }>();
   const token = params.token as string;
 
-  const [requests, setRequests] = useState<SupplierRequest[]>([]);
+  const [, setRequests] = useState<SupplierRequest[]>([]);
   const [displayRequests, setDisplayRequests] = useState<RequestDisplayInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -182,118 +182,116 @@ function RequestCard({ request, token }: { request: RequestDisplayInfo; token: s
   };
 
   return (
-    <>
-      <Card className="overflow-hidden hover:shadow-md transition-shadow">
-        <div className="p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-4 flex-1">
-              <div className="flex-shrink-0 mt-1">{statusIcons[request.status] || statusIcons.sent}</div>
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4 flex-1">
+            <div className="flex-shrink-0 mt-1">{statusIcons[request.status] || statusIcons.sent}</div>
 
-              <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-semibold text-[#131d29] mb-1">{request.categoryName}</h3>
-                <p className="text-sm text-[#41505F] mb-3">Period: {request.periodLabel}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-[#131d29] mb-1">{request.categoryName}</h3>
+              <p className="text-sm text-[#41505F] mb-3">Period: {request.periodLabel}</p>
 
-                <div className="flex flex-wrap gap-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${request.statusColor}`}>
-                    {request.statusLabel}
+              <div className="flex flex-wrap gap-2">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${request.statusColor}`}>
+                  {request.statusLabel}
+                </span>
+
+                {request.isExpired && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Expired</span>}
+
+                {!request.isExpired && request.daysUntilExpiry <= 7 && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                    Expires in {request.daysUntilExpiry} day{request.daysUntilExpiry !== 1 ? "s" : ""}
                   </span>
-
-                  {request.isExpired && <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">Expired</span>}
-
-                  {!request.isExpired && request.daysUntilExpiry <= 7 && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
-                      Expires in {request.daysUntilExpiry} day{request.daysUntilExpiry !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-
-                {/* Quality Flags Alert */}
-                {request.hasQualityFlags && (
-                  <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
-                    <div className="flex gap-2">
-                      <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium">Data Quality Issues Found</p>
-                        <p className="text-xs opacity-90 mt-1">Please review the flags and resubmit your data.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Rejection Reason Alert */}
-                {request.hasRejectionReason && request.status === "rejected" && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
-                    <p className="font-medium mb-1">Reason for Rejection:</p>
-                    <p className="text-xs">{request.rejectionReason}</p>
-                  </div>
                 )}
               </div>
-            </div>
 
-            <Button
-              onClick={() => setIsOpen(!isOpen)}
-              variant="outline"
-              className="flex-shrink-0"
-              size="sm"
-            >
-              {isOpen ? "Hide" : "View"}
-            </Button>
+              {/* Quality Flags Alert */}
+              {request.hasQualityFlags && (
+                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded text-sm text-orange-800">
+                  <div className="flex gap-2">
+                    <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">Data Quality Issues Found</p>
+                      <p className="text-xs opacity-90 mt-1">Please review the flags and resubmit your data.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Rejection Reason Alert */}
+              {request.hasRejectionReason && request.status === "rejected" && (
+                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-800">
+                  <p className="font-medium mb-1">Reason for Rejection:</p>
+                  <p className="text-xs">{request.rejectionReason}</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Details Section */}
-          {isOpen && (
-            <div className="mt-6 pt-6 border-t border-[#E3E8EE] space-y-4">
-              {request.submittedAt && (
-                <div>
-                  <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium">Submitted</p>
-                  <p className="text-sm text-[#131d29] mt-1">{new Date(request.submittedAt).toLocaleDateString()}</p>
-                </div>
-              )}
-
-              {request.reviewedAt && (
-                <div>
-                  <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium">Reviewed</p>
-                  <p className="text-sm text-[#131d29] mt-1">{new Date(request.reviewedAt).toLocaleDateString()}</p>
-                </div>
-              )}
-
-              {request.qualityFlags && request.qualityFlags.length > 0 && (
-                <div>
-                  <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium mb-3">Quality Flags</p>
-                  <ul className="space-y-2">
-                    {request.qualityFlags.map((flag, i) => (
-                      <li key={i} className="p-3 bg-[#F9FAFC] rounded text-sm">
-                        <div className="flex items-start gap-2">
-                          <span className={`text-xs font-semibold px-2 py-1 rounded ${flag.severity === "critical" ? "bg-red-200 text-red-700" : "bg-amber-200 text-amber-700"}`}>
-                            {flag.severity === "critical" ? "CRITICAL" : "WARNING"}
-                          </span>
-                          <div className="flex-1">
-                            <p className="font-medium text-[#131d29]">{flag.field}</p>
-                            <p className="text-xs text-[#41505F] mt-0.5">{flag.message}</p>
-                            {flag.suggestedRange && (
-                              <p className="text-xs text-[#5B6A78] mt-1">Expected: {flag.suggestedRange.min} – {flag.suggestedRange.max}</p>
-                            )}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {request.canSubmit && (
-                <div className="pt-2">
-                  <Link href={`/supplier-data/${token}?requestId=${request.id}`}>
-                    <Button className="w-full">
-                      {request.status === "flagged" || request.status === "rejected" ? "Resubmit Data" : "Submit Data"}
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-          )}
+          <Button
+            onClick={() => setIsOpen(!isOpen)}
+            variant="outline"
+            className="flex-shrink-0"
+            size="sm"
+          >
+            {isOpen ? "Hide" : "View"}
+          </Button>
         </div>
-      </Card>
-    </>
+
+        {/* Details Section */}
+        {isOpen && (
+          <div className="mt-6 pt-6 border-t border-[#E3E8EE] space-y-4">
+            {request.submittedAt && (
+              <div>
+                <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium">Submitted</p>
+                <p className="text-sm text-[#131d29] mt-1">{new Date(request.submittedAt).toLocaleDateString()}</p>
+              </div>
+            )}
+
+            {request.reviewedAt && (
+              <div>
+                <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium">Reviewed</p>
+                <p className="text-sm text-[#131d29] mt-1">{new Date(request.reviewedAt).toLocaleDateString()}</p>
+              </div>
+            )}
+
+            {request.qualityFlags && request.qualityFlags.length > 0 && (
+              <div>
+                <p className="text-xs text-[#41505F] uppercase tracking-wide font-medium mb-3">Quality Flags</p>
+                <ul className="space-y-2">
+                  {request.qualityFlags.map((flag) => (
+                    <li key={`${flag.severity}:${flag.field}:${flag.message}`} className="p-3 bg-[#F9FAFC] rounded text-sm">
+                      <div className="flex items-start gap-2">
+                        <span className={`text-xs font-semibold px-2 py-1 rounded ${flag.severity === "critical" ? "bg-red-200 text-red-700" : "bg-amber-200 text-amber-700"}`}>
+                          {flag.severity === "critical" ? "CRITICAL" : "WARNING"}
+                        </span>
+                        <div className="flex-1">
+                          <p className="font-medium text-[#131d29]">{flag.field}</p>
+                          <p className="text-xs text-[#41505F] mt-0.5">{flag.message}</p>
+                          {flag.suggestedRange && (
+                            <p className="text-xs text-[#5B6A78] mt-1">Expected: {flag.suggestedRange.min} – {flag.suggestedRange.max}</p>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {request.canSubmit && (
+              <div className="pt-2">
+                <Link href={`/supplier-data/${token}?requestId=${request.id}`}>
+                  <Button className="w-full">
+                    {request.status === "flagged" || request.status === "rejected" ? "Resubmit Data" : "Submit Data"}
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }

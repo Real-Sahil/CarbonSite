@@ -365,8 +365,8 @@ export default async function EcologyPage({ params }: Props) {
                                     </TableHeader>
                                     <TableBody>
                                       {(scan.designatedSites as unknown as DesignatedSite[]).map(
-                                        (s, i) => (
-                                          <TableRow key={i}>
+                                        (s) => (
+                                          <TableRow key={`${s.type}:${s.name}:${s.distanceKm}`}>
                                             <TableCell className="font-medium">{s.name}</TableCell>
                                             <TableCell>
                                               <Badge variant="outline">{s.type}</Badge>
@@ -422,8 +422,8 @@ export default async function EcologyPage({ params }: Props) {
                                       </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                      {(scan.woodlandData as unknown as WoodlandParcel[]).map((w, i) => (
-                                        <TableRow key={i}>
+                                      {(scan.woodlandData as unknown as WoodlandParcel[]).map((w) => (
+                                        <TableRow key={`${w.type}:${w.name}:${w.areaHa}`}>
                                           <TableCell className="font-medium">{w.name}</TableCell>
                                           <TableCell>
                                             <Badge variant="outline">{w.type}</Badge>

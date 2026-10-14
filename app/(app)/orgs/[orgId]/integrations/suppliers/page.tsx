@@ -23,7 +23,7 @@ interface SuppliersPageProps {
 }
 
 export async function generateMetadata({ params }: SuppliersPageProps) {
-  const { orgId } = await params;
+  await params;
   return {
     title: "Supplier Invitations | MetricOra",
     description: "Invite suppliers to submit emissions data and collaborate on Scope 3 calculations",

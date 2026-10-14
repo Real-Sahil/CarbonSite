@@ -61,9 +61,7 @@ export function createDigitalSignature(
   data: { totalEmissionsCo2e: number; reportingPeriodStart: string; reportingPeriodEnd: string },
   privateKeyPem: string // PEM-formatted private key (from secure storage)
 ): { signature: string; publicKeyThumbprint: string } {
-  // For demonstration: hash the JSON payload
   const payload = JSON.stringify(data);
-  const hash = crypto.createHash("sha256").update(payload).digest();
 
   // Sign with private key (in production, use HSM/cloud signing)
   const sign = crypto.createSign("sha256");

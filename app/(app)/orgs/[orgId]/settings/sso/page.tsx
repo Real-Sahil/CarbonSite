@@ -189,8 +189,8 @@ export default function SsoSettingsPage() {
             <CardTitle>Configuration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
+            {Array.from({ length: 5 }, (_, i) => i).map((row) => (
+              <Skeleton key={row} className="h-10 w-full" />
             ))}
           </CardContent>
         </Card>

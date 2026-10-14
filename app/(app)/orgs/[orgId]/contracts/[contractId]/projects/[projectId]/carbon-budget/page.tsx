@@ -59,6 +59,10 @@ function ProgressBar({ actual, budget }: { actual: number; budget: number }) {
   );
 }
 
+// Phase rows have no id until saved, and their name is editable, so each row carries a client-only key.
+let newPhaseSeq = 0;
+const newPhaseKey = () => `new-${newPhaseSeq++}`;
+
 function SetBudgetModal({
   orgId, contractId, projectId, existing, onClose, onSaved,
 }: {
@@ -69,12 +73,12 @@ function SetBudgetModal({
   const [floorArea, setFloorArea] = useState(existing?.floorAreaM2 ? Number(existing.floorAreaM2).toString() : "");
   const [contractValue, setContractValue] = useState(existing?.contractValueGbp ? Number(existing.contractValueGbp).toString() : "");
   const [notes, setNotes] = useState(existing?.notes ?? "");
-  const [phases, setPhases] = useState<Array<{ name: string; budgetTco2e: string; notes: string }>>(
-    existing?.phases.map((p) => ({ name: p.name, budgetTco2e: Number(p.budgetTco2e).toString(), notes: p.notes ?? "" })) ??
+  const [phases, setPhases] = useState<Array<{ key: string; name: string; budgetTco2e: string; notes: string }>>(
+    existing?.phases.map((p) => ({ key: p.id, name: p.name, budgetTco2e: Number(p.budgetTco2e).toString(), notes: p.notes ?? "" })) ??
     [
-      { name: "Pre-construction / Design", budgetTco2e: "", notes: "" },
-      { name: "Construction", budgetTco2e: "", notes: "" },
-      { name: "Fit-out / Handover", budgetTco2e: "", notes: "" },
+      { key: "default-design", name: "Pre-construction / Design", budgetTco2e: "", notes: "" },
+      { key: "default-construction", name: "Construction", budgetTco2e: "", notes: "" },
+      { key: "default-handover", name: "Fit-out / Handover", budgetTco2e: "", notes: "" },
     ]
   );
   const [loading, setLoading] = useState(false);
@@ -147,12 +151,12 @@ function SetBudgetModal({
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-medium text-[#41505F]">Budget by phase</p>
-              <button type="button" onClick={() => setPhases([...phases, { name: "", budgetTco2e: "", notes: "" }])}
+              <button type="button" onClick={() => setPhases([...phases, { key: newPhaseKey(), name: "", budgetTco2e: "", notes: "" }])}
                 className="text-xs text-[#c2400c] hover:text-[#c2400c] font-medium">+ Add phase</button>
             </div>
             <div className="space-y-2">
               {phases.map((phase, i) => (
-                <div key={i} className="flex gap-2 items-center">
+                <div key={phase.key} className="flex gap-2 items-center">
                   <input type="text" value={phase.name} placeholder="Phase name"
                     onChange={(e) => setPhases(phases.map((p, j) => j === i ? { ...p, name: e.target.value } : p))}
                     className={`${inputCls} flex-1`} />

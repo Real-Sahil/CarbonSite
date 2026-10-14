@@ -170,7 +170,7 @@ export function PilotKitPanel({
           throw new Error(errorMsg);
         }
 
-        const result = await res.json();
+        await res.json();
         setSuccess(`Pilot kit generated successfully at ${new Date().toLocaleTimeString()}`);
         setGeneratedAt(new Date().toISOString());
       } catch (err) {

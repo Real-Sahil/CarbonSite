@@ -170,7 +170,6 @@ const CARD_BG = "#ffffff";
 const TEXT_MUTED = "#64748b";
 const TEXT_SUBTLE = "#94a3b8";
 const BORDER = "#e2e8f0";
-const ROW_BG = "#f8fafc";
 
 export type OrgBranding = {
   orgName?: string;
@@ -186,15 +185,6 @@ function kv(label: string, value: string): string {
     <td style="padding:10px 24px 10px 0;font-size:13px;color:${TEXT_SUBTLE};font-weight:500;white-space:nowrap;vertical-align:top;border-bottom:1px solid ${BORDER};">${label}</td>
     <td style="padding:10px 0;font-size:13px;font-weight:600;color:${BRAND_DARK};vertical-align:top;border-bottom:1px solid ${BORDER};">${value}</td>
   </tr>`;
-}
-
-function orgInitialsAvatar(orgName: string): string {
-  const initials = orgName
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-  return `<div style="display:inline-block;width:40px;height:40px;background:#dbeafe;border-radius:10px;text-align:center;line-height:40px;font-size:16px;font-weight:700;color:#1d4ed8;vertical-align:middle;">${initials}</div>`;
 }
 
 function emailLayout(bodyHtml: string, branding?: OrgBranding): string {

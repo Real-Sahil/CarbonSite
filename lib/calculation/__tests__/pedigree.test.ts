@@ -6,7 +6,9 @@ import {
   pedigreeConfidenceInterval,
   type PedigreeScores,
 } from "../pedigree";
-import type { ActivityRecord } from "@prisma/client";
+import type { ActivityRecord, EmissionFactor } from "@prisma/client";
+
+const factor = (fields: Partial<EmissionFactor>) => fields as EmissionFactor;
 
 const record = (overrides: Partial<ActivityRecord> = {}) =>
   ({
@@ -46,7 +48,7 @@ describe("scorePedigree", () => {
     const scores = scorePedigree({
       record: record({ country: "GB" }),
       factorSelection: {
-        factor: { geographyCountry: "GB" } as any,
+        factor: factor({ geographyCountry: "GB" }),
         selectionReason: "matched",
       },
       unitConverted: false,
@@ -59,7 +61,7 @@ describe("scorePedigree", () => {
     const scores = scorePedigree({
       record: record({ country: "GB" }),
       factorSelection: {
-        factor: { geographyCountry: "US" } as any,
+        factor: factor({ geographyCountry: "US" }),
         selectionReason: "matched",
       },
       unitConverted: false,
@@ -72,7 +74,7 @@ describe("scorePedigree", () => {
     const near = scorePedigree({
       record: record({ activityDate: new Date("2026-06-01") }),
       factorSelection: {
-        factor: { effectiveStartDate: new Date("2026-01-01") } as any,
+        factor: factor({ effectiveStartDate: new Date("2026-01-01") }),
         selectionReason: "matched",
       },
       unitConverted: false,
@@ -81,7 +83,7 @@ describe("scorePedigree", () => {
     const far = scorePedigree({
       record: record({ activityDate: new Date("2026-06-01") }),
       factorSelection: {
-        factor: { effectiveStartDate: new Date("2015-01-01") } as any,
+        factor: factor({ effectiveStartDate: new Date("2015-01-01") }),
         selectionReason: "matched",
       },
       unitConverted: false,
@@ -93,13 +95,13 @@ describe("scorePedigree", () => {
   it("worsens technological correlation for a complex unit conversion even with a strong text match", () => {
     const noConversion = scorePedigree({
       record: record(),
-      factorSelection: { factor: {} as any, selectionReason: "matched matched matched" },
+      factorSelection: { factor: factor({}), selectionReason: "matched matched matched" },
       unitConverted: false,
       unitConversionComplex: false,
     });
     const complexConversion = scorePedigree({
       record: record(),
-      factorSelection: { factor: {} as any, selectionReason: "matched matched matched" },
+      factorSelection: { factor: factor({}), selectionReason: "matched matched matched" },
       unitConverted: true,
       unitConversionComplex: true,
     });

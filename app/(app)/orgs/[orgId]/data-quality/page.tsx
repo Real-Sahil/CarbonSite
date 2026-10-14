@@ -370,11 +370,11 @@ export default function DataQualityPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {metrics.issues.map((issue, idx) => {
+                  {metrics.issues.map((issue) => {
                     const config = SEVERITY_CONFIG[issue.severity];
                     const IconComponent = config.icon;
                     return (
-                      <div key={idx} className={`rounded-lg p-4 ${config.cls} border border-current/20`}>
+                      <div key={issue.code} className={`rounded-lg p-4 ${config.cls} border border-current/20`}>
                         <div className="flex gap-3">
                           <IconComponent className="h-5 w-5 flex-shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
@@ -409,8 +409,8 @@ export default function DataQualityPage() {
             <CardContent>
               {metrics.trend && metrics.trend.length > 0 ? (
                 <div className="space-y-3">
-                  {metrics.trend.map((point, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
+                  {metrics.trend.map((point) => (
+                    <div key={point.month} className="flex items-center gap-3">
                       <span className="text-xs font-medium text-[#41505F] w-12">{point.month}</span>
                       <div className="flex-1">
                         <div className="bg-[#E3E8EE] rounded-full h-6 relative">
@@ -454,8 +454,8 @@ export default function DataQualityPage() {
             <CardContent>
               {metrics.riskRecords && metrics.riskRecords.length > 0 ? (
                 <div className="space-y-3">
-                  {metrics.riskRecords.map((record, idx) => (
-                    <div key={idx} className="rounded-lg border border-[#E3E8EE] p-4 hover:bg-[#F9FAFC] transition-colors">
+                  {metrics.riskRecords.map((record) => (
+                    <div key={record.id} className="rounded-lg border border-[#E3E8EE] p-4 hover:bg-[#F9FAFC] transition-colors">
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-[#131d29] truncate">
@@ -469,9 +469,9 @@ export default function DataQualityPage() {
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-1">
-                        {record.risks.map((risk, riskIdx) => (
+                        {record.risks.map((risk) => (
                           <span
-                            key={riskIdx}
+                            key={risk}
                             className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded"
                           >
                             {risk}

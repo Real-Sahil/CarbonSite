@@ -49,6 +49,8 @@ export interface DataTableProps<TData, TValue> {
   getRowId?: (row: TData) => string;
 }
 
+const range = (n: number) => Array.from({ length: n }, (_, i) => i);
+
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -67,6 +69,8 @@ export function DataTable<TData, TValue>({
   onRowSelectionChange,
   getRowId,
 }: DataTableProps<TData, TValue>) {
+  // useReactTable returns functions the React Compiler cannot memoize; it already skips this component.
+  "use no memo";
   const [internalSorting, setInternalSorting] = React.useState<SortingState>([]);
   const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({});
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
@@ -168,10 +172,10 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({ length: 8 }).map((_, i) => (
-                <TableRow key={i} className="border-b border-[#E3E8EE]">
-                  {columns.map((_, j) => (
-                    <TableCell key={j} className="py-3.5 first:pl-6 last:pr-6">
+              range(8).map((row) => (
+                <TableRow key={row} className="border-b border-[#E3E8EE]">
+                  {range(columns.length).map((col) => (
+                    <TableCell key={col} className="py-3.5 first:pl-6 last:pr-6">
                       <div className="h-4 bg-[#F9FAFC] rounded animate-pulse" />
                     </TableCell>
                   ))}

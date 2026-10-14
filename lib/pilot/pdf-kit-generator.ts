@@ -37,7 +37,6 @@ export interface PilotClientContext {
 // Helper function to add header to each page
 function addHeader(doc: jsPDF, title: string, subtitle: string) {
   const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
 
   // Header background
   doc.setFillColor(249, 115, 22); // Orange accent
@@ -90,7 +89,6 @@ export async function generateExecutiveSummary(context: PilotClientContext): Pro
   addHeader(doc, "MetricOra", "Executive Summary");
 
   let yPos = 50;
-  const lineHeight = 5;
   const maxWidth = 180;
 
   doc.setFont("helvetica", "bold");
@@ -203,7 +201,6 @@ export async function generateSustainabilityManagerGuide(
   addHeader(doc, "Sustainability Manager", "Role Guide & Responsibilities");
 
   let yPos = 50;
-  const lineHeight = 5;
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);

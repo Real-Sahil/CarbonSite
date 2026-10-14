@@ -15,7 +15,7 @@ export async function GET(
 ) {
   try {
     const { orgId, projectId } = await params;
-    const { session, membership } = await requireOrgMember(
+    await requireOrgMember(
       orgId,
       ...ROLE_GROUPS.contractManagers
     );
@@ -66,7 +66,7 @@ export async function POST(
 ) {
   try {
     const { orgId, projectId } = await params;
-    const { session, membership } = await requireOrgMember(
+    const { session } = await requireOrgMember(
       orgId,
       ...ROLE_GROUPS.contractManagers
     );

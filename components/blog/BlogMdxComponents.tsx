@@ -50,10 +50,10 @@ export function ComparisonTable({ headers, rows }: ComparisonTableProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-[#E3E8EE] dark:divide-zinc-800">
-          {rows.map((row, i) => (
-            <tr key={i} className="hover:bg-[#F9FAFC] dark:hover:bg-zinc-900">
+          {rows.map((row) => (
+            <tr key={String(row[0])} className="hover:bg-[#F9FAFC] dark:hover:bg-zinc-900">
               {row.map((cell, j) => (
-                <td key={j} className="px-4 py-3 text-[#41505F] dark:text-zinc-300">
+                <td key={headers[j]} className="px-4 py-3 text-[#41505F] dark:text-zinc-300">
                   {cell}
                 </td>
               ))}
@@ -77,8 +77,8 @@ export function ProofPoint({ children }: { children: ReactNode }) {
 export function FeatureList({ items }: { items: string[] }) {
   return (
     <ul className="space-y-3">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-3">
+      {items.map((item) => (
+        <li key={item} className="flex gap-3">
           <span className="mt-1 text-green-600 dark:text-green-400">✓</span>
           <span className="text-[#41505F] dark:text-zinc-300">{item}</span>
         </li>

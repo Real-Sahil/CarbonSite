@@ -131,7 +131,7 @@ export const ZAPIER_ACTIONS = {
 export async function emitZapierEvent(
   organizationId: string,
   eventType: string,
-  payload: Record<string, any>,
+  _payload: Record<string, unknown>,
 ) {
   const integration = await getZapierIntegration(organizationId);
   if (!integration || !integration.enabled || !integration.triggerEventTypes.includes(eventType)) {
@@ -149,7 +149,7 @@ export async function emitZapierEvent(
 export async function handleZapierAction(
   organizationId: string,
   actionType: string,
-  payload: Record<string, any>,
+  _payload: Record<string, unknown>,
 ) {
   const integration = await getZapierIntegration(organizationId);
   if (!integration || !integration.enabled || !integration.actionTypes.includes(actionType)) {

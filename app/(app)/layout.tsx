@@ -48,5 +48,5 @@ export default async function AppLayout({
     return <div style={brandingStyle}>{children}</div>;
   }
 
-  return <>{children}</>;
+  return children;
 }

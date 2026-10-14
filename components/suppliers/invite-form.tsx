@@ -20,7 +20,7 @@ interface SupplierInviteFormProps {
 
 export function SupplierInviteForm({ orgId }: SupplierInviteFormProps) {
   const [inviteMethod, setInviteMethod] = useState<InviteMethod>("magic-link");
-  const [autoGenPassword, setAutoGenPassword] = useState(true);
+  const [, setAutoGenPassword] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

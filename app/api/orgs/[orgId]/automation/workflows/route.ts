@@ -96,7 +96,7 @@ const TriggerWorkflowSchema = z.object({
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId } = await params;
-    const { version, json } = await withApiVersion(req);
+    await withApiVersion(req);
 
     await requireOrgMember(orgId, "admin");
 
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const body = await req.json();
-    const validated = TriggerWorkflowSchema.parse(body);
+    TriggerWorkflowSchema.parse(body);
 
     // For now, return 501 — workflow triggering via this endpoint would require
     // additional validation and logging. Use workflow-specific trigger functions instead.

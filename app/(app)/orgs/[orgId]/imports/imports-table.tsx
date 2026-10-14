@@ -159,8 +159,8 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
             </div>
             {inlineErrors.length > 0 && (
               <ul className="mt-1.5 space-y-0.5">
-                {inlineErrors.map((err, i) => (
-                  <li key={i} className="text-xs text-[#5B6A78]">
+                {inlineErrors.map((err) => (
+                  <li key={`${err.row}:${err.msg}`} className="text-xs text-[#5B6A78]">
                     <span className="font-medium text-[#41505F]">Row {err.row}:</span> {err.msg}
                   </li>
                 ))}

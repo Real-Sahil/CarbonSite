@@ -7,12 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, ExternalLink } from 'lucide-react';
 
-export default function MonitoringSettingsPage({
-  params,
-}: {
-  params: Promise<{ orgId: string }>;
-}) {
-  const [alertsEnabled, setAlertsEnabled] = useState(true);
+export default function MonitoringSettingsPage() {
   const [showSetupGuide, setShowSetupGuide] = useState(false);
 
   return (

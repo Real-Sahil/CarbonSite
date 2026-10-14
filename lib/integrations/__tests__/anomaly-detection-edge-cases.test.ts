@@ -21,6 +21,8 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
+type FieldSubmissions = Awaited<ReturnType<typeof prisma.fieldSubmission.findMany>>;
+
 describe('detectSupplierAnomalies - Edge Cases', () => {
   const orgId = 'org-123';
   const supplierId = 'supp-456';
@@ -56,7 +58,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -112,7 +114,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -155,7 +157,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -189,7 +191,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -234,7 +236,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -276,7 +278,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -309,7 +311,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 
@@ -329,7 +331,7 @@ describe('detectSupplierAnomalies - Edge Cases', () => {
         },
       ];
 
-      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as any);
+      vi.mocked(prisma.fieldSubmission.findMany).mockResolvedValue(mockSubmissions as unknown as FieldSubmissions);
 
       const anomalies = await detectSupplierAnomalies(orgId, supplierId);
 

@@ -211,9 +211,9 @@ export default async function EnvironmentPage({ params }: PageProps) {
 
       {alerts.length > 0 && (
         <div className="space-y-2">
-          {alerts.map((alert, i) => (
+          {alerts.map((alert) => (
             <div
-              key={i}
+              key={alert.text}
               className={
                 alert.severity === "critical"
                   ? "flex items-start gap-3 rounded-md border border-red-200 bg-red-50 px-4 py-3"

@@ -10,11 +10,6 @@ const configSchema = z.object({
   dayOfMonth: z.number().min(1).max(31).optional(),
 });
 
-const sendManualSchema = z.object({
-  frequency: z.enum(["daily", "weekly", "monthly"]),
-  recipientEmail: z.string().email().optional(),
-});
-
 /**
  * GET /api/orgs/[orgId]/digests
  * Get digest preferences and history.

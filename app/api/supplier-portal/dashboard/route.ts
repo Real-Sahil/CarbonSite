@@ -4,9 +4,9 @@ import { requireSession } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
 
 // Get supplier's dashboard — assigned data requests
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
-    const { user, session } = await requireSession();
+    const { user } = await requireSession();
 
     // Verify user is a supplier
     const supplierMembership = await prisma.organizationMembership.findFirst({

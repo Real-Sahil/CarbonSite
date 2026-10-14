@@ -80,7 +80,7 @@ describe.skip("Invoice Anomaly Detector", () => {
       const baseDate = new Date();
 
       // Create two identical invoices within 7 days
-      const inv1 = await createTestInvoice(testOrgId, {
+      await createTestInvoice(testOrgId, {
         vendorId,
         vendorName: "ACME Corp",
         totalAmount: new Decimal(5000),
@@ -122,7 +122,7 @@ describe.skip("Invoice Anomaly Detector", () => {
         invoiceDate: new Date(baseDate.getTime() + 8 * 24 * 60 * 60 * 1000), // 8 days later
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const duplicateAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "duplicate",
@@ -146,7 +146,7 @@ describe.skip("Invoice Anomaly Detector", () => {
       ];
 
       await createTestInvoice(testOrgId, {
-        lineItems: lineItems as any,
+        lineItems,
       });
 
       const result = await detectInvoiceAnomalies(testOrgId);
@@ -171,10 +171,10 @@ describe.skip("Invoice Anomaly Detector", () => {
       ];
 
       await createTestInvoice(testOrgId, {
-        lineItems: lineItems as any,
+        lineItems,
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const qtyAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "qty_mismatch",
@@ -195,7 +195,7 @@ describe.skip("Invoice Anomaly Detector", () => {
         receivedDate,
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const dateAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "date_inconsistency",
@@ -246,7 +246,7 @@ describe.skip("Invoice Anomaly Detector", () => {
         invoiceDate: new Date(),
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const priceAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "price_spike",
@@ -263,7 +263,7 @@ describe.skip("Invoice Anomaly Detector", () => {
         receivedDate: null,
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const grnAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "missing_grn",
@@ -286,10 +286,10 @@ describe.skip("Invoice Anomaly Detector", () => {
       ];
 
       await createTestInvoice(testOrgId, {
-        lineItems: lineItems as any,
+        lineItems,
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const overBillingAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "over_billing",
@@ -307,7 +307,7 @@ describe.skip("Invoice Anomaly Detector", () => {
         scope3ReadyStatus: "pending",
       });
 
-      const result = await detectInvoiceAnomalies(testOrgId);
+      await detectInvoiceAnomalies(testOrgId);
       const unmatchedAnomalies = await prisma.invoiceAnomaly.findMany({
         where: {
           anomalyType: "unmatched_invoice",
@@ -393,7 +393,7 @@ describe.skip("Invoice Anomaly Detector", () => {
       await createTestInvoice(testOrgId, {
         invoiceDate: new Date("2024-01-20"),
         receivedDate: new Date("2024-01-15"),
-        lineItems: lineItems as any,
+        lineItems,
       });
 
       await detectInvoiceAnomalies(testOrgId);

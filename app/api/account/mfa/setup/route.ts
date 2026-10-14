@@ -1,15 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { requireSession } from "@/lib/auth/session";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import speakeasy from "speakeasy";
 import QRCode from "qrcode";
-
-const MFASetupSchema = z.object({
-  // Empty body — just user's session
-});
 
 /**
  * POST /api/account/mfa/setup
@@ -18,7 +13,7 @@ const MFASetupSchema = z.object({
  *
  * Accessible by: authenticated users
  */
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const { user } = await requireSession();
 

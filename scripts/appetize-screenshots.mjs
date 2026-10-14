@@ -152,7 +152,7 @@ async function uploadBuild(filePath, platform) {
  * returns a Buffer of the screenshot PNG.
  */
 async function captureScreen(publicKey, device, screen, outPath) {
-  const { label: deviceLabel, osVersion, os } = device;
+  const { osVersion } = device;
   const embedUrl =
     `https://appetize.io/embed/${publicKey}` +
     `?device=${device.id}` +

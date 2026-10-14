@@ -38,7 +38,7 @@ export async function GET(
     let authenticatedOrgId: string;
     try {
       authenticatedOrgId = await validateApiKey(req.headers.get("authorization"));
-    } catch (err) {
+    } catch {
       return apiError("UNAUTHORIZED", "Invalid API key", 401);
     }
 

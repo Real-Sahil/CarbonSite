@@ -24,8 +24,6 @@ const AnomalyQuerySchema = z.object({
   limit: z.number().min(1).max(100).default(50),
 });
 
-type AnomalyQuery = z.infer<typeof AnomalyQuerySchema>;
-
 function calculateZScore(value: number, mean: number, stdDev: number): number {
   if (stdDev === 0) return 0;
   return Math.abs((value - mean) / stdDev);
@@ -146,7 +144,7 @@ export async function GET(
     }
 
     // Calculate mean and std dev for each category
-    for (const [catId, stat] of categoryStats) {
+    for (const stat of categoryStats.values()) {
       const values = stat.values;
       stat.mean = values.reduce((a, b) => a + b, 0) / values.length;
       const variance = values.reduce((sum, val) => sum + Math.pow(val - stat.mean, 2), 0) / values.length;

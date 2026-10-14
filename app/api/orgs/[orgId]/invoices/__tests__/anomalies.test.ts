@@ -4,6 +4,8 @@ import { NextRequest } from "next/server";
 import * as auth from "@/lib/auth/session";
 import * as billing from "@/lib/billing/limits";
 
+type OrgMember = Awaited<ReturnType<typeof auth.requireOrgMember>>;
+
 vi.mock("@/lib/auth/session");
 vi.mock("@/lib/billing/limits", async (importOriginal) => ({
   ...(await importOriginal<typeof billing>()),
@@ -21,7 +23,7 @@ describe("GET /api/orgs/[orgId]/invoices/anomalies", () => {
     vi.mocked(auth.requireOrgMember).mockResolvedValue({
       user: { id: "user-123", email: "test@example.com" },
       session: { id: "session-123" },
-    } as any);
+    } as unknown as OrgMember);
 
     vi.mocked(billing.requireFeature).mockResolvedValue(null);
 
@@ -88,7 +90,7 @@ describe("PATCH /api/orgs/[orgId]/invoices/anomalies", () => {
     vi.mocked(auth.requireOrgMember).mockResolvedValue({
       user: { id: "user-123", email: "test@example.com" },
       session: { id: "session-123" },
-    } as any);
+    } as unknown as OrgMember);
 
     vi.mocked(billing.requireFeature).mockResolvedValue(null);
   });

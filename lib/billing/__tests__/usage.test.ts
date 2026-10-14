@@ -11,6 +11,7 @@ vi.mock("@/lib/db", () => ({
 }));
 
 import { prisma } from "@/lib/db";
+type UsageGroup = Awaited<ReturnType<typeof prisma.usageEvent.groupBy>>[number];
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -49,8 +50,8 @@ describe("getUsageSummary", () => {
 
   it("maps event types to summed quantities", async () => {
     vi.mocked(prisma.usageEvent.groupBy).mockResolvedValue([
-      { eventType: "report.generated", _sum: { quantity: 5 } } as any,
-      { eventType: "import.committed", _sum: { quantity: 12 } } as any,
+      { eventType: "report.generated", _sum: { quantity: 5 } } as unknown as UsageGroup,
+      { eventType: "import.committed", _sum: { quantity: 12 } } as unknown as UsageGroup,
     ]);
     const result = await getUsageSummary("org-1", new Date("2025-01-01"), new Date("2025-01-31"));
     expect(result["report.generated"]).toBe(5);
@@ -59,7 +60,7 @@ describe("getUsageSummary", () => {
 
   it("handles null _sum.quantity as 0", async () => {
     vi.mocked(prisma.usageEvent.groupBy).mockResolvedValue([
-      { eventType: "calculation.run", _sum: { quantity: null } } as any,
+      { eventType: "calculation.run", _sum: { quantity: null } } as unknown as UsageGroup,
     ]);
     const result = await getUsageSummary("org-1", new Date("2025-01-01"), new Date("2025-01-31"));
     expect(result["calculation.run"]).toBe(0);

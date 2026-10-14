@@ -12,8 +12,6 @@ import { prisma } from "@/lib/db";
 describe.skip("Scope 3 Estimation", () => {
   let orgId: string;
   let facilityId: string;
-  let categoryId: string;
-  let reportingPeriodId: string;
   let userId: string;
 
   beforeAll(async () => {
@@ -50,7 +48,6 @@ describe.skip("Scope 3 Estimation", () => {
         endDate: new Date("2024-12-31"),
       },
     });
-    reportingPeriodId = reportingPeriod.id;
 
     const category = await prisma.emissionCategory.create({
       data: {
@@ -59,7 +56,6 @@ describe.skip("Scope 3 Estimation", () => {
         scope: 3,
       },
     });
-    categoryId = category.id;
 
     // Create some historical data for estimation context
     for (let i = 0; i < 10; i++) {

@@ -183,7 +183,7 @@ export function ApiDataSourcesPanel({ orgId, sources }: Props) {
 }
 
 function AuthFieldsById() {
-  const [authMethod, setAuthMethod] = useState<AuthMethod>("none");
+  const [authMethod] = useState<AuthMethod>("none");
 
   if (authMethod === "none") return null;
 

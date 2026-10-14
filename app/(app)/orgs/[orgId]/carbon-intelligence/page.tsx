@@ -25,8 +25,6 @@ const SEVERITY_VARIANTS: Record<string, "default" | "secondary" | "outline" | "d
   critical: "destructive",
 };
 
-const SEVERITY_ORDER = ["critical", "high", "medium", "low"];
-
 export default async function CarbonIntelligencePage({ params }: Props) {
   const { orgId } = await params;
 
