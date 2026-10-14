@@ -309,9 +309,11 @@
 [data-theme="dark"] [class~="border-[#FEF9C3]"] { border-color: #3c3701; }
 [data-theme="dark"] [class~="border-[#c2400c]"] { border-color: #f3713d; }
 [data-theme="dark"] [class~="border-[#c2400c]/20"] { border-color: color-mix(in srgb, #f3713d 20%, transparent); }
+[data-theme="dark"] [class~="border-[#c2400c]/40"] { border-color: color-mix(in srgb, #f3713d 40%, transparent); }
 [data-theme="dark"] [class~="border-[#fed7aa]"] { border-color: #552e01; }
 [data-theme="dark"] [class~="border-l-[#131d29]"] { border-left-color: #d6e0ec; }
 [data-theme="dark"] [class~="decoration-[#5B6A78]"] { text-decoration-color: #8796a4; }
+[data-theme="dark"] [class~="divide-[#131d29]/10"] > :not(:last-child) { border-color: color-mix(in srgb, #d6e0ec 10%, transparent); }
 [data-theme="dark"] [class~="divide-[#E3E8EE]"] > :not(:last-child) { border-color: #11161c; }
 [data-theme="dark"] [class~="divide-[#E5E7EB]"] > :not(:last-child) { border-color: #14161a; }
 [data-theme="dark"] [class~="divide-[#F3F4F6]"] > :not(:last-child) { border-color: #13161a; }
