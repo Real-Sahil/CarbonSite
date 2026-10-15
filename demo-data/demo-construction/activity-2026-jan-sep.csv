@@ -1,0 +1,208 @@
+Amount,Unit,Category Code,Activity Date,Start Date,End Date,Source Description,Facility,Business Unit,Supplier,Country,Region,Fuel Type,Transport Mode,Refrigerant Type,Distance,Distance Unit,Spend Amount,Spend Currency,Scope 2 Method,Assumption Notes,Industry Code,Data Origin
+3372,litres,s1-mobile,2026-01-31,2026-01-01,2026-01-31,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+4713,litres,s1-mobile,2026-01-31,2026-01-01,2026-01-31,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+3292,litres,s1-mobile,2026-01-31,2026-01-01,2026-01-31,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+873,litres,s1-stationary,2026-01-31,2026-01-01,2026-01-31,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+612,litres,s1-stationary,2026-01-31,2026-01-01,2026-01-31,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+62115,kWh,s1-stationary,2026-01-31,2026-01-01,2026-01-31,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+70122,kWh,s1-stationary,2026-01-31,2026-01-01,2026-01-31,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+6316,kWh,s2-electricity-lb,2026-01-31,2026-01-01,2026-01-31,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+29649,kWh,s2-electricity-lb,2026-01-31,2026-01-01,2026-01-31,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4640,kWh,s2-electricity-lb,2026-01-31,2026-01-01,2026-01-31,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2006,kWh,s2-electricity-lb,2026-01-31,2026-01-01,2026-01-31,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+1528,kWh,s2-electricity-lb,2026-01-31,2026-01-01,2026-01-31,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+46.5,tonnes,s3-waste,2026-01-31,2026-01-01,2026-01-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+19.6,tonnes,s3-waste,2026-01-31,2026-01-01,2026-01-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+666,km,s3-business-travel,2026-01-31,2026-01-01,2026-01-31,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1185,km,s3-business-travel,2026-01-31,2026-01-01,2026-01-31,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4732,km,s3-commuting,2026-01-31,2026-01-01,2026-01-31,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+119522,GBP,s3-purchased-goods,2026-01-31,2026-01-01,2026-01-31,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,119522,GBP,,,327320,invoiced
+46701,GBP,s3-purchased-goods,2026-01-31,2026-01-01,2026-01-31,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,46701,GBP,,,327320,invoiced
+36377,GBP,s3-purchased-goods,2026-01-31,2026-01-01,2026-01-31,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,36377,GBP,,,331110,invoiced
+54675,GBP,s3-purchased-goods,2026-01-31,2026-01-01,2026-01-31,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,54675,GBP,,,212321,invoiced
+1166,litres,s1-mobile,2026-01-31,2026-01-01,2026-01-31,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+3481,litres,s1-mobile,2026-02-28,2026-02-01,2026-02-28,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+4836,litres,s1-mobile,2026-02-28,2026-02-01,2026-02-28,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+3428,litres,s1-mobile,2026-02-28,2026-02-01,2026-02-28,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+865,litres,s1-stationary,2026-02-28,2026-02-01,2026-02-28,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+640,litres,s1-stationary,2026-02-28,2026-02-01,2026-02-28,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+56120,kWh,s1-stationary,2026-02-28,2026-02-01,2026-02-28,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+68931,kWh,s1-stationary,2026-02-28,2026-02-01,2026-02-28,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+6118,kWh,s2-electricity-lb,2026-02-28,2026-02-01,2026-02-28,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+30585,kWh,s2-electricity-lb,2026-02-28,2026-02-01,2026-02-28,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4451,kWh,s2-electricity-lb,2026-02-28,2026-02-01,2026-02-28,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2059,kWh,s2-electricity-lb,2026-02-28,2026-02-01,2026-02-28,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+1689,kWh,s2-electricity-lb,2026-02-28,2026-02-01,2026-02-28,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+50.9,tonnes,s3-waste,2026-02-28,2026-02-01,2026-02-28,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+20.8,tonnes,s3-waste,2026-02-28,2026-02-01,2026-02-28,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+670,km,s3-business-travel,2026-02-28,2026-02-01,2026-02-28,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1171,km,s3-business-travel,2026-02-28,2026-02-01,2026-02-28,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4909,km,s3-commuting,2026-02-28,2026-02-01,2026-02-28,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+125567,GBP,s3-purchased-goods,2026-02-28,2026-02-01,2026-02-28,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,125567,GBP,,,327320,invoiced
+50932,GBP,s3-purchased-goods,2026-02-28,2026-02-01,2026-02-28,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,50932,GBP,,,327320,invoiced
+37993,GBP,s3-purchased-goods,2026-02-28,2026-02-01,2026-02-28,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,37993,GBP,,,331110,invoiced
+57249,GBP,s3-purchased-goods,2026-02-28,2026-02-01,2026-02-28,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,57249,GBP,,,212321,invoiced
+1268,litres,s1-mobile,2026-02-28,2026-02-01,2026-02-28,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+3370,litres,s1-mobile,2026-03-31,2026-03-01,2026-03-31,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+5566,litres,s1-mobile,2026-03-31,2026-03-01,2026-03-31,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+3906,litres,s1-mobile,2026-03-31,2026-03-01,2026-03-31,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+856,litres,s1-stationary,2026-03-31,2026-03-01,2026-03-31,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+615,litres,s1-stationary,2026-03-31,2026-03-01,2026-03-31,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+47626,kWh,s1-stationary,2026-03-31,2026-03-01,2026-03-31,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+68166,kWh,s1-stationary,2026-03-31,2026-03-01,2026-03-31,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5977,kWh,s2-electricity-lb,2026-03-31,2026-03-01,2026-03-31,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+35058,kWh,s2-electricity-lb,2026-03-31,2026-03-01,2026-03-31,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4471,kWh,s2-electricity-lb,2026-03-31,2026-03-01,2026-03-31,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2364,kWh,s2-electricity-lb,2026-03-31,2026-03-01,2026-03-31,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+1799,kWh,s2-electricity-lb,2026-03-31,2026-03-01,2026-03-31,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+55.6,tonnes,s3-waste,2026-03-31,2026-03-01,2026-03-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+23.1,tonnes,s3-waste,2026-03-31,2026-03-01,2026-03-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+655,km,s3-business-travel,2026-03-31,2026-03-01,2026-03-31,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1156,km,s3-business-travel,2026-03-31,2026-03-01,2026-03-31,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4926,km,s3-commuting,2026-03-31,2026-03-01,2026-03-31,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+139951,GBP,s3-purchased-goods,2026-03-31,2026-03-01,2026-03-31,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,139951,GBP,,,327320,invoiced
+55576,GBP,s3-purchased-goods,2026-03-31,2026-03-01,2026-03-31,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,55576,GBP,,,327320,invoiced
+40703,GBP,s3-purchased-goods,2026-03-31,2026-03-01,2026-03-31,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,40703,GBP,,,331110,invoiced
+65221,GBP,s3-purchased-goods,2026-03-31,2026-03-01,2026-03-31,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,65221,GBP,,,212321,invoiced
+1395,litres,s1-mobile,2026-03-31,2026-03-01,2026-03-31,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+1.2,kg,s1-fugitive,2026-03-31,2026-03-01,2026-03-31,"Air conditioning top-up, F-gas service log","Head office, Wakefield",Support services,Coldharbour Refrigeration Ltd,GB,,,,R410A,,,,,,,,invoiced
+3361,litres,s1-mobile,2026-04-30,2026-04-01,2026-04-30,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+5790,litres,s1-mobile,2026-04-30,2026-04-01,2026-04-30,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+4092,litres,s1-mobile,2026-04-30,2026-04-01,2026-04-30,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+847,litres,s1-stationary,2026-04-30,2026-04-01,2026-04-30,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+606,litres,s1-stationary,2026-04-30,2026-04-01,2026-04-30,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+33062,kWh,s1-stationary,2026-04-30,2026-04-01,2026-04-30,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+64771,kWh,s1-stationary,2026-04-30,2026-04-01,2026-04-30,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5808,kWh,s2-electricity-lb,2026-04-30,2026-04-01,2026-04-30,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+37750,kWh,s2-electricity-lb,2026-04-30,2026-04-01,2026-04-30,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4371,kWh,s2-electricity-lb,2026-04-30,2026-04-01,2026-04-30,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2447,kWh,s2-electricity-lb,2026-04-30,2026-04-01,2026-04-30,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+1979,kWh,s2-electricity-lb,2026-04-30,2026-04-01,2026-04-30,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+59.8,tonnes,s3-waste,2026-04-30,2026-04-01,2026-04-30,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+24.8,tonnes,s3-waste,2026-04-30,2026-04-01,2026-04-30,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+660,km,s3-business-travel,2026-04-30,2026-04-01,2026-04-30,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1148,km,s3-business-travel,2026-04-30,2026-04-01,2026-04-30,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4937,km,s3-commuting,2026-04-30,2026-04-01,2026-04-30,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+149982,GBP,s3-purchased-goods,2026-04-30,2026-04-01,2026-04-30,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,149982,GBP,,,327320,invoiced
+57159,GBP,s3-purchased-goods,2026-04-30,2026-04-01,2026-04-30,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,57159,GBP,,,327320,invoiced
+44538,GBP,s3-purchased-goods,2026-04-30,2026-04-01,2026-04-30,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,44538,GBP,,,331110,invoiced
+70485,GBP,s3-purchased-goods,2026-04-30,2026-04-01,2026-04-30,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,70485,GBP,,,212321,invoiced
+1450,litres,s1-mobile,2026-04-30,2026-04-01,2026-04-30,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+58944,GBP,s3-purchased-goods,2026-04-30,2026-04-01,2026-04-30,"Asphalt surfacing, supplier invoices",A61 corridor works,Civils,Hollin Asphalt Ltd,GB,,,,,,,58944,GBP,,,324121,invoiced
+3466,litres,s1-mobile,2026-05-31,2026-05-01,2026-05-31,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+6156,litres,s1-mobile,2026-05-31,2026-05-01,2026-05-31,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+4348,litres,s1-mobile,2026-05-31,2026-05-01,2026-05-31,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+887,litres,s1-stationary,2026-05-31,2026-05-01,2026-05-31,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+636,litres,s1-stationary,2026-05-31,2026-05-01,2026-05-31,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+17625,kWh,s1-stationary,2026-05-31,2026-05-01,2026-05-31,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+60871,kWh,s1-stationary,2026-05-31,2026-05-01,2026-05-31,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5494,kWh,s2-electricity-lb,2026-05-31,2026-05-01,2026-05-31,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+38091,kWh,s2-electricity-lb,2026-05-31,2026-05-01,2026-05-31,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4149,kWh,s2-electricity-lb,2026-05-31,2026-05-01,2026-05-31,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2501,kWh,s2-electricity-lb,2026-05-31,2026-05-01,2026-05-31,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2024,kWh,s2-electricity-lb,2026-05-31,2026-05-01,2026-05-31,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+59.4,tonnes,s3-waste,2026-05-31,2026-05-01,2026-05-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+26.0,tonnes,s3-waste,2026-05-31,2026-05-01,2026-05-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+655,km,s3-business-travel,2026-05-31,2026-05-01,2026-05-31,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1170,km,s3-business-travel,2026-05-31,2026-05-01,2026-05-31,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4908,km,s3-commuting,2026-05-31,2026-05-01,2026-05-31,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+149907,GBP,s3-purchased-goods,2026-05-31,2026-05-01,2026-05-31,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,149907,GBP,,,327320,invoiced
+59836,GBP,s3-purchased-goods,2026-05-31,2026-05-01,2026-05-31,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,59836,GBP,,,327320,invoiced
+45006,GBP,s3-purchased-goods,2026-05-31,2026-05-01,2026-05-31,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,45006,GBP,,,331110,invoiced
+69616,GBP,s3-purchased-goods,2026-05-31,2026-05-01,2026-05-31,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,69616,GBP,,,212321,invoiced
+1564,litres,s1-mobile,2026-05-31,2026-05-01,2026-05-31,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+59354,GBP,s3-purchased-goods,2026-05-31,2026-05-01,2026-05-31,"Asphalt surfacing, supplier invoices",A61 corridor works,Civils,Hollin Asphalt Ltd,GB,,,,,,,59354,GBP,,,324121,invoiced
+3469,litres,s1-mobile,2026-06-30,2026-06-01,2026-06-30,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+6525,litres,s1-mobile,2026-06-30,2026-06-01,2026-06-30,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+4561,litres,s1-mobile,2026-06-30,2026-06-01,2026-06-30,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+855,litres,s1-stationary,2026-06-30,2026-06-01,2026-06-30,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+626,litres,s1-stationary,2026-06-30,2026-06-01,2026-06-30,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+9961,kWh,s1-stationary,2026-06-30,2026-06-01,2026-06-30,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+57790,kWh,s1-stationary,2026-06-30,2026-06-01,2026-06-30,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5472,kWh,s2-electricity-lb,2026-06-30,2026-06-01,2026-06-30,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+41290,kWh,s2-electricity-lb,2026-06-30,2026-06-01,2026-06-30,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4189,kWh,s2-electricity-lb,2026-06-30,2026-06-01,2026-06-30,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2577,kWh,s2-electricity-lb,2026-06-30,2026-06-01,2026-06-30,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2065,kWh,s2-electricity-lb,2026-06-30,2026-06-01,2026-06-30,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+65.2,tonnes,s3-waste,2026-06-30,2026-06-01,2026-06-30,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+26.1,tonnes,s3-waste,2026-06-30,2026-06-01,2026-06-30,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+671,km,s3-business-travel,2026-06-30,2026-06-01,2026-06-30,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1158,km,s3-business-travel,2026-06-30,2026-06-01,2026-06-30,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4856,km,s3-commuting,2026-06-30,2026-06-01,2026-06-30,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+155073,GBP,s3-purchased-goods,2026-06-30,2026-06-01,2026-06-30,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,155073,GBP,,,327320,invoiced
+62182,GBP,s3-purchased-goods,2026-06-30,2026-06-01,2026-06-30,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,62182,GBP,,,327320,invoiced
+47899,GBP,s3-purchased-goods,2026-06-30,2026-06-01,2026-06-30,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,47899,GBP,,,331110,invoiced
+72167,GBP,s3-purchased-goods,2026-06-30,2026-06-01,2026-06-30,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,72167,GBP,,,212321,invoiced
+1607,litres,s1-mobile,2026-06-30,2026-06-01,2026-06-30,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+64020,GBP,s3-purchased-goods,2026-06-30,2026-06-01,2026-06-30,"Asphalt surfacing, supplier invoices",A61 corridor works,Civils,Hollin Asphalt Ltd,GB,,,,,,,64020,GBP,,,324121,invoiced
+1.2,kg,s1-fugitive,2026-06-30,2026-06-01,2026-06-30,"Air conditioning top-up, F-gas service log","Head office, Wakefield",Support services,Coldharbour Refrigeration Ltd,GB,,,,R410A,,,,,,,,invoiced
+3457,litres,s1-mobile,2026-07-31,2026-07-01,2026-07-31,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+6414,litres,s1-mobile,2026-07-31,2026-07-01,2026-07-31,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+4474,litres,s1-mobile,2026-07-31,2026-07-01,2026-07-31,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+871,litres,s1-stationary,2026-07-31,2026-07-01,2026-07-31,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+632,litres,s1-stationary,2026-07-31,2026-07-01,2026-07-31,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+8001,kWh,s1-stationary,2026-07-31,2026-07-01,2026-07-31,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+56544,kWh,s1-stationary,2026-07-31,2026-07-01,2026-07-31,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5508,kWh,s2-electricity-lb,2026-07-31,2026-07-01,2026-07-31,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+39829,kWh,s2-electricity-lb,2026-07-31,2026-07-01,2026-07-31,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4157,kWh,s2-electricity-lb,2026-07-31,2026-07-01,2026-07-31,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2696,kWh,s2-electricity-lb,2026-07-31,2026-07-01,2026-07-31,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2150,kWh,s2-electricity-lb,2026-07-31,2026-07-01,2026-07-31,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+64.2,tonnes,s3-waste,2026-07-31,2026-07-01,2026-07-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+26.9,tonnes,s3-waste,2026-07-31,2026-07-01,2026-07-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+691,km,s3-business-travel,2026-07-31,2026-07-01,2026-07-31,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1174,km,s3-business-travel,2026-07-31,2026-07-01,2026-07-31,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4863,km,s3-commuting,2026-07-31,2026-07-01,2026-07-31,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+165305,GBP,s3-purchased-goods,2026-07-31,2026-07-01,2026-07-31,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,165305,GBP,,,327320,invoiced
+64023,GBP,s3-purchased-goods,2026-07-31,2026-07-01,2026-07-31,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,64023,GBP,,,327320,invoiced
+48606,GBP,s3-purchased-goods,2026-07-31,2026-07-01,2026-07-31,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,48606,GBP,,,331110,invoiced
+75343,GBP,s3-purchased-goods,2026-07-31,2026-07-01,2026-07-31,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,75343,GBP,,,212321,invoiced
+1652,litres,s1-mobile,2026-07-31,2026-07-01,2026-07-31,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+65142,GBP,s3-purchased-goods,2026-07-31,2026-07-01,2026-07-31,"Asphalt surfacing, supplier invoices",A61 corridor works,Civils,Hollin Asphalt Ltd,GB,,,,,,,65142,GBP,,,324121,invoiced
+3409,litres,s1-mobile,2026-08-31,2026-08-01,2026-08-31,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+6374,litres,s1-mobile,2026-08-31,2026-08-01,2026-08-31,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+4360,litres,s1-mobile,2026-08-31,2026-08-01,2026-08-31,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+878,litres,s1-stationary,2026-08-31,2026-08-01,2026-08-31,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+638,litres,s1-stationary,2026-08-31,2026-08-01,2026-08-31,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+9119,kWh,s1-stationary,2026-08-31,2026-08-01,2026-08-31,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+57854,kWh,s1-stationary,2026-08-31,2026-08-01,2026-08-31,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5672,kWh,s2-electricity-lb,2026-08-31,2026-08-01,2026-08-31,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+41129,kWh,s2-electricity-lb,2026-08-31,2026-08-01,2026-08-31,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4127,kWh,s2-electricity-lb,2026-08-31,2026-08-01,2026-08-31,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2652,kWh,s2-electricity-lb,2026-08-31,2026-08-01,2026-08-31,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2064,kWh,s2-electricity-lb,2026-08-31,2026-08-01,2026-08-31,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+65.1,tonnes,s3-waste,2026-08-31,2026-08-01,2026-08-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+27.0,tonnes,s3-waste,2026-08-31,2026-08-01,2026-08-31,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+674,km,s3-business-travel,2026-08-31,2026-08-01,2026-08-31,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1175,km,s3-business-travel,2026-08-31,2026-08-01,2026-08-31,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4855,km,s3-commuting,2026-08-31,2026-08-01,2026-08-31,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+162141,GBP,s3-purchased-goods,2026-08-31,2026-08-01,2026-08-31,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,162141,GBP,,,327320,invoiced
+62801,GBP,s3-purchased-goods,2026-08-31,2026-08-01,2026-08-31,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,62801,GBP,,,327320,invoiced
+46618,GBP,s3-purchased-goods,2026-08-31,2026-08-01,2026-08-31,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,46618,GBP,,,331110,invoiced
+73395,GBP,s3-purchased-goods,2026-08-31,2026-08-01,2026-08-31,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,73395,GBP,,,212321,invoiced
+1546,litres,s1-mobile,2026-08-31,2026-08-01,2026-08-31,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+62947,GBP,s3-purchased-goods,2026-08-31,2026-08-01,2026-08-31,"Asphalt surfacing, supplier invoices",A61 corridor works,Civils,Hollin Asphalt Ltd,GB,,,,,,,62947,GBP,,,324121,invoiced
+3465,litres,s1-mobile,2026-09-30,2026-09-01,2026-09-30,"Fleet diesel, fuel card statement",Leeds depot,Plant hire,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+6127,litres,s1-mobile,2026-09-30,2026-09-01,2026-09-30,"Plant diesel, bowser meter reads",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+4278,litres,s1-mobile,2026-09-30,2026-09-01,2026-09-30,"Plant diesel, bowser meter reads",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,metered
+844,litres,s1-stationary,2026-09-30,2026-09-01,2026-09-30,"Site generators, fuel delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+632,litres,s1-stationary,2026-09-30,2026-09-01,2026-09-30,"Site generators, fuel delivery notes",York Road bridge,Civils,Ashcombe Fuels Ltd,GB,,diesel,,,,,,,,,,invoiced
+17220,kWh,s1-stationary,2026-09-30,2026-09-01,2026-09-30,"Office heating, gas meter","Head office, Wakefield",Support services,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+60243,kWh,s1-stationary,2026-09-30,2026-09-01,2026-09-30,"Aggregate drying, gas meter",Sheffield batching plant,Civils,Calder Gas Supply Ltd,GB,,natural gas,,,,,,,,,,metered
+5600,kWh,s2-electricity-lb,2026-09-30,2026-09-01,2026-09-30,Half-hourly meter,Leeds depot,Plant hire,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+38269,kWh,s2-electricity-lb,2026-09-30,2026-09-01,2026-09-30,Half-hourly meter,Sheffield batching plant,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+4159,kWh,s2-electricity-lb,2026-09-30,2026-09-01,2026-09-30,Half-hourly meter,"Head office, Wakefield",Support services,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2504,kWh,s2-electricity-lb,2026-09-30,2026-09-01,2026-09-30,"Half-hourly meter, site cabins",A61 corridor works,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+2007,kWh,s2-electricity-lb,2026-09-30,2026-09-01,2026-09-30,"Half-hourly meter, site cabins",York Road bridge,Civils,Brindle Energy Supply Ltd,GB,,,,,,,,,location_based,,,metered
+59.8,tonnes,s3-waste,2026-09-30,2026-09-01,2026-09-30,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",A61 corridor works,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+24.8,tonnes,s3-waste,2026-09-30,2026-09-01,2026-09-30,"Mixed C&D waste, EWC 17 09 04, weighbridge tickets",York Road bridge,Civils,Morvale Waste Carriers Ltd,GB,,,,,,,,,,,,invoiced
+661,km,s3-business-travel,2026-09-30,2026-09-01,2026-09-30,"Rail travel, travel desk invoices","Head office, Wakefield",Support services,Stanmere Rail Travel Ltd,GB,,,rail,,,,,,,,,invoiced
+1125,km,s3-business-travel,2026-09-30,2026-09-01,2026-09-30,Grey fleet mileage claims,"Head office, Wakefield",Support services,,GB,,,car,,,,,,,,,calculated
+4821,km,s3-commuting,2026-09-30,2026-09-01,2026-09-30,"Staff commuting survey, scaled to headcount","Head office, Wakefield",Support services,,GB,,,car,,,,,,,"Home-to-work distances from the staff survey, scaled up to headcount",,estimated
+153028,GBP,s3-purchased-goods,2026-09-30,2026-09-01,2026-09-30,"Ready-mix concrete, supplier invoices",A61 corridor works,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,153028,GBP,,,327320,invoiced
+59549,GBP,s3-purchased-goods,2026-09-30,2026-09-01,2026-09-30,"Ready-mix concrete, supplier invoices",York Road bridge,Civils,Tarnside Ready-Mix Ltd,GB,,,,,,,59549,GBP,,,327320,invoiced
+45817,GBP,s3-purchased-goods,2026-09-30,2026-09-01,2026-09-30,"Reinforcing steel, supplier invoices",York Road bridge,Civils,Keldholme Steel Supplies Ltd,GB,,,,,,,45817,GBP,,,331110,invoiced
+72758,GBP,s3-purchased-goods,2026-09-30,2026-09-01,2026-09-30,"Aggregates, supplier invoices",A61 corridor works,Civils,Farnley Aggregates Ltd,GB,,,,,,,72758,GBP,,,212321,invoiced
+1543,litres,s1-mobile,2026-09-30,2026-09-01,2026-09-30,"Plant HVO, delivery notes",A61 corridor works,Civils,Ashcombe Fuels Ltd,GB,,HVO,,,,,,,,,,invoiced
+60299,GBP,s3-purchased-goods,2026-09-30,2026-09-01,2026-09-30,"Asphalt surfacing, supplier invoices",A61 corridor works,Civils,Hollin Asphalt Ltd,GB,,,,,,,60299,GBP,,,324121,invoiced
+1.2,kg,s1-fugitive,2026-09-30,2026-09-01,2026-09-30,"Air conditioning top-up, F-gas service log","Head office, Wakefield",Support services,Coldharbour Refrigeration Ltd,GB,,,,R410A,,,,,,,,invoiced
