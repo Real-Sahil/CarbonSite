@@ -1,4 +1,6 @@
 export const dynamic = "force-dynamic";
+// Committing writes every staged row of the batch in one transaction (below).
+export const maxDuration = 60;
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
@@ -10,6 +12,11 @@ import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/lim
 import { recordUsage } from "@/lib/billing/usage";
 
 type Params = { params: Promise<{ orgId: string; importId: string }> };
+
+/** Rows per createMany inside the commit transaction (about 25 columns each, under Postgres's bind limit). */
+const COMMIT_INSERT_CHUNK = 500;
+/** Interactive transaction timeout. Prisma's default 5 s is far too short for a 25k-row import. */
+const COMMIT_TX_TIMEOUT_MS = 50_000;
 
 export async function POST(_req: NextRequest, { params }: Params) {
   try {
@@ -52,13 +59,23 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const usageBlock = await requireWithinUsageLimit(orgId, "import.committed");
     if (usageBlock) return usageBlock;
 
-    // Commit in a transaction — create ActivityRecords then mark batch committed
-    const committed = await prisma.$transaction(async (tx) => {
-      const records = await Promise.all(
-        stagedRecords.map((sr) => {
-          const d = sr.data as Record<string, unknown>;
-          return tx.activityRecord.create({
-            data: {
+    // All-or-nothing: the batch flips to committed and every record is written in
+    // one transaction, so any failure leaves the batch ready_to_commit with nothing
+    // written. The flip comes first and is conditional, so a second commit of the
+    // same batch (a double submit) finds no row to flip and writes nothing.
+    const committedCount = await prisma.$transaction(
+      async (tx) => {
+        const flipped = await tx.importBatch.updateMany({
+          where: { id: importId, organizationId: orgId, state: "ready_to_commit" },
+          data: { state: "committed" },
+        });
+        if (flipped.count !== 1) return null;
+
+        let count = 0;
+        for (let i = 0; i < stagedRecords.length; i += COMMIT_INSERT_CHUNK) {
+          const rows = stagedRecords.slice(i, i + COMMIT_INSERT_CHUNK).map((sr) => {
+            const d = sr.data as Record<string, unknown>;
+            return {
               organizationId: orgId,
               reportingPeriodId: batch.reportingPeriodId,
               emissionCategoryId: d.emissionCategoryId as string,
@@ -89,22 +106,22 @@ export async function POST(_req: NextRequest, { params }: Params) {
               // committed records enter calculations immediately, consistent
               // with reviewed field submissions. Individual records can still
               // be rejected afterwards on the records page.
-              reviewStatus: "approved",
-              evidenceStatus: "missing",
+              reviewStatus: "approved" as const,
+              evidenceStatus: "missing" as const,
               createdByUserId: session.user.id,
-            },
-            select: { id: true },
+            };
           });
-        }),
-      );
+          const result = await tx.activityRecord.createMany({ data: rows });
+          count += result.count;
+        }
+        return count;
+      },
+      { timeout: COMMIT_TX_TIMEOUT_MS, maxWait: 5_000 },
+    );
 
-      await tx.importBatch.update({
-        where: { id: importId },
-        data: { state: "committed" },
-      });
-
-      return records;
-    });
+    if (committedCount === null) {
+      return apiError("CONFLICT", "This batch is no longer ready to commit. Reload the import.", 409);
+    }
 
     await writeAuditLog({
       organizationId: orgId,
@@ -112,12 +129,12 @@ export async function POST(_req: NextRequest, { params }: Params) {
       action: "import.committed",
       resourceType: "import_batch",
       resourceId: importId,
-      metadata: { committedCount: committed.length },
+      metadata: { committedCount },
     });
 
     await recordUsage({ organizationId: orgId, eventType: "import.committed" });
 
-    return NextResponse.json({ committedCount: committed.length });
+    return NextResponse.json({ committedCount });
   } catch (err) {
     return handleRouteError(err);
   }

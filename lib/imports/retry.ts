@@ -10,10 +10,11 @@ export const MAX_IMPORT_ATTEMPTS = 3;
 
 /**
  * How long a parsing batch may go without a write before it counts as stalled.
- * updatedAt moves at the start of each attempt and after every 500-row chunk, so
- * a live parse is never this quiet. Set above the longest function duration.
+ * updatedAt moves at the start of each attempt and after every staged chunk, and
+ * one invocation stops staging well inside 60 s, so a live parse is never this
+ * quiet. A batch left part-staged resumes from its cursor once this has passed.
  */
-export const IMPORT_STALE_MS = 10 * 60_000;
+export const IMPORT_STALE_MS = 3 * 60_000;
 
 export type ImportSweepDecision = "skip" | "retry" | "fail";
 

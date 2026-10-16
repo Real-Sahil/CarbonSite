@@ -51,14 +51,18 @@ import { prisma } from "@/lib/db";
 
 const mode = process.env.JOB_PROCESSING_MODE ?? "inline";
 
+// Inline staging stops after this long and leaves the rest to the import-batches
+// sweep, so one request stays inside the 60 s route limit.
+const INLINE_IMPORT_BUDGET_MS = 40_000;
+
 export async function dispatchImport(data: ImportJobData) {
   if (mode === "worker") {
     await enqueueImport(data);
     return "queued" as const;
   }
 
-  await processImportBatch(data.importBatchId, data.orgId);
-  return "processed" as const;
+  const outcome = await processImportBatch(data.importBatchId, data.orgId, { budgetMs: INLINE_IMPORT_BUDGET_MS });
+  return outcome === "partial" ? ("partial" as const) : ("processed" as const);
 }
 
 export async function dispatchCalculation(data: CalculationJobData) {

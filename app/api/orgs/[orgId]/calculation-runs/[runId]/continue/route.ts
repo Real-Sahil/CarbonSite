@@ -16,8 +16,7 @@ type Params = { params: Promise<{ orgId: string; runId: string }> };
 // POST /api/orgs/[orgId]/calculation-runs/[runId]/continue
 //
 // A run large enough that its first invocation didn't finish within
-// REQUEST_TIME_BUDGET_MS stays "running" with processedRecordCount <
-// totalRecordCount — safe to resume from here. The calculations page polls
+// REQUEST_TIME_BUDGET_MS stays "running" — safe to resume from here. The calculations page polls
 // this while a run is in that state (see calculation-run-continuation.tsx);
 // the stalled-run sweep (app/api/admin/schedule/advance-calculation-runs)
 // is the fallback if nobody's tab is open to drive it.
@@ -34,7 +33,9 @@ export async function POST(_req: NextRequest, { params }: Params) {
       return apiError("NOT_FOUND", "Calculation run not found.", 404);
     }
 
-    if (run.status === "running" && (run.totalRecordCount == null || run.processedRecordCount < run.totalRecordCount)) {
+    // Also when every record is done but finalization was deferred (run-worker.ts):
+    // a held lock makes the claim fail, so nothing is repeated.
+    if (run.status === "running") {
       await dispatchCalculation({ calculationRunId: runId, orgId }).catch(async (err) => {
         console.error(`[calculations] continue of run ${runId} failed:`, err);
         await prisma.calculationRun.update({

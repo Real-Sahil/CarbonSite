@@ -19,6 +19,7 @@ import { handleRouteError } from "@/lib/validation/api";
 // Each retry parses a whole file inside this invocation, so take one per sweep.
 // A backlog drains one batch per tick.
 const MAX_BATCHES_PER_SWEEP = 1;
+export const maxDuration = 60;
 
 async function sweepStalledImports() {
   // In worker mode pg-boss owns the queue and its retries; a second parse here would duplicate it.

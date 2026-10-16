@@ -7,17 +7,28 @@ import { applyProfile, profileSpecSchema, PROFILED_COLUMN_MAP } from "./profiles
 import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/lib/data-quality/duplicates";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { attemptsExhausted } from "./retry";
+import { nextStageEnd, stageBudgetSpent } from "./staging-plan";
 
-export async function processImportBatch(importBatchId: string, orgId: string): Promise<void> {
-  // Mark as parsing and count this attempt. A retry starts again from row one,
-  // so it first clears what an earlier attempt staged; staged rows are only
-  // committed by a later step, never here, so clearing them loses nothing.
+export type ImportOutcome = "done" | "partial";
+
+/**
+ * Parses and stages an import in resumable chunks (see staging-plan.ts). With
+ * budgetMs (inline mode), returns "partial" once the budget is spent: the batch
+ * stays "parsing" and the import-batches sweep resumes it from lastProcessedRowIndex.
+ * Without budgetMs (worker mode) it always runs to completion.
+ */
+export async function processImportBatch(
+  importBatchId: string,
+  orgId: string,
+  options: { budgetMs?: number } = {},
+): Promise<ImportOutcome> {
+  const startedAt = Date.now();
+  // Count this attempt and take the batch. Only a batch not yet finished can be taken.
   const claimed = await prisma.importBatch.updateMany({
-    where: { id: importBatchId, organizationId: orgId },
-    data: { state: "parsing", processingAttempts: { increment: 1 }, lastProcessedRowIndex: null },
+    where: { id: importBatchId, organizationId: orgId, state: { in: ["uploaded", "parsing"] } },
+    data: { state: "parsing", processingAttempts: { increment: 1 } },
   });
-  if (claimed.count !== 1) throw new Error("Import batch not found for this organisation.");
-  await prisma.stagedActivityRecord.deleteMany({ where: { importBatchId, organizationId: orgId } });
+  if (claimed.count !== 1) throw new Error("Import batch not found for this organisation, or it has already finished.");
 
   try {
     const batch = await prisma.importBatch.findUniqueOrThrow({
@@ -29,8 +40,13 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
         organizationId: true,
         mapping: true,
         profileSnapshot: true,
+        lastProcessedRowIndex: true,
       },
     });
+    // No cursor: nothing was staged yet, so clear any leftovers from an earlier attempt.
+    if (batch.lastProcessedRowIndex == null) {
+      await prisma.stagedActivityRecord.deleteMany({ where: { importBatchId, organizationId: orgId } });
+    }
 
     if (batch.organizationId !== orgId) {
       throw new Error("Org mismatch on import batch.");
@@ -78,7 +94,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
           status: "staged",
         },
       });
-      return;
+      return "done";
     }
 
     // An ERP export profile turns ledger lines into canonical rows and leaves
@@ -211,13 +227,23 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
       rowsToInsert.push({ organizationId: orgId, importBatchId, rowNumber: 0, data: {}, validationErrors: [{ field: "file", message }], validationWarnings: [], status: "staged" as StagedRecordStatus });
     }
 
-    const BATCH = 500;
-    for (let i = 0; i < rowsToInsert.length; i += BATCH) {
-      await prisma.stagedActivityRecord.createMany({ data: rowsToInsert.slice(i, i + BATCH) });
-      await prisma.importBatch.update({
-        where: { id: importBatchId },
-        data: { lastProcessedRowIndex: i + Math.min(BATCH, rowsToInsert.length - i) },
-      });
+    // Stage from the cursor. Parsing and validation above cover the whole file on
+    // every attempt, so the rows after the cursor are the same as an uninterrupted
+    // run. shortcut: assumes reference data (categories, facilities) is unchanged
+    // between attempts, which holds for the minutes between them.
+    const resumedFrom = batch.lastProcessedRowIndex ?? 0;
+    let cursor = resumedFrom;
+    while (cursor < rowsToInsert.length) {
+      if (stageBudgetSpent({ startedAt, now: Date.now(), budgetMs: options.budgetMs, madeProgress: cursor > resumedFrom })) {
+        return "partial";
+      }
+      const end = nextStageEnd(cursor, rowsToInsert.length);
+      // One transaction: the chunk's rows and the cursor move together, or neither does.
+      await prisma.$transaction([
+        prisma.stagedActivityRecord.createMany({ data: rowsToInsert.slice(cursor, end) }),
+        prisma.importBatch.update({ where: { id: importBatchId }, data: { lastProcessedRowIndex: end } }),
+      ]);
+      cursor = end;
     }
 
     // Determine new batch state
@@ -263,6 +289,7 @@ export async function processImportBatch(importBatchId: string, orgId: string): 
         resourceId: importBatchId,
       }).catch((err) => console.error("[imports] Failed to send notification:", err));
     }
+    return "done";
   } catch (err) {
     console.error(`[imports] Error processing batch ${importBatchId}:`, err);
     // With attempts left the batch stays "parsing" and the import-batches sweep

@@ -25,11 +25,11 @@ import { handleRouteError } from "@/lib/validation/api";
 // chunk-holder hasn't heartbeated in at least this long, so this sweep
 // never races an invocation that's still actively working.
 const LOCK_STALE_MS = 90_000;
-// Bound total work per invocation: each dispatchCalculation() call is
-// itself bounded (~45s, see REQUEST_TIME_BUDGET_MS), so cap how many
-// stalled runs one sweep advances rather than risk this route's own
-// timeout — remaining runs are simply picked up by the next scheduled tick.
-const MAX_RUNS_PER_SWEEP = 3;
+// Bound total work per invocation: each dispatchCalculation() call can use
+// up to ~45s (REQUEST_TIME_BUDGET_MS) plus finalization, so one run per sweep
+// stays inside maxDuration. Remaining runs are picked up by the next tick.
+const MAX_RUNS_PER_SWEEP = 1;
+export const maxDuration = 60;
 
 async function advanceStalledRuns() {
   const staleBefore = new Date(Date.now() - LOCK_STALE_MS);

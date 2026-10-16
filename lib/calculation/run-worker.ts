@@ -16,6 +16,7 @@ import {
   GAS_VOLUME_CORRECTION,
   GAS_DEFAULT_CALORIFIC_VALUE_MJ_PER_M3,
 } from "./units";
+import { CHUNK_TIME_BUDGET_MS, REQUEST_TIME_BUDGET_MS, finalizeDeferred } from "./run-budget";
 import { selectFactor, selectHvoFactor, buildFactorCache, type FactorCache, type FactorSelection } from "./factor-selector";
 import { hvoShare } from "./fuels";
 import { loadOrgCustomFactors, pickCustomFactor, customFactorAsLibraryFactor } from "./custom-factors";
@@ -69,12 +70,11 @@ const industryCodeFor = (scheme: IndustryScheme, raw: string | null) =>
 //   mid-chunk doesn't leave the run permanently unclaimable.
 // - BATCH_LOAD_SIZE bounds how many not-yet-processed records are loaded
 //   into memory per DB round trip within a chunk.
-const CHUNK_TIME_BUDGET_MS = 8_000;
-const REQUEST_TIME_BUDGET_MS = 45_000;
 const LOCK_STALE_MS = 90_000;
 const BATCH_LOAD_SIZE = 500;
 
-type ChunkResult = { done: boolean };
+// finalizeDeferred: finalization was held back to a fresh invocation (see run-budget.ts).
+type ChunkResult = { done: boolean; finalizeDeferred?: boolean };
 
 // Atomically claims the right to process the next chunk of this run.
 // Fails (returns false) when the run is already terminal (succeeded/failed/
@@ -127,6 +127,7 @@ async function claimRun(calculationRunId: string): Promise<boolean> {
 // for an already-finished run, or one currently claimed elsewhere, is a
 // safe no-op.
 export async function processCalculationRun(calculationRunId: string, orgId: string): Promise<ChunkResult> {
+  const invocationStart = Date.now();
   if (!(await claimRun(calculationRunId))) {
     return { done: false };
   }
@@ -136,13 +137,13 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
   await refreshFxRates();
 
   try {
-    const overallDeadline = Date.now() + REQUEST_TIME_BUDGET_MS;
+    const overallDeadline = invocationStart + REQUEST_TIME_BUDGET_MS;
     let cachedFactors: import("./factor-selector").FactorCache | undefined;
     for (;;) {
-      const result = await processOneChunk(calculationRunId, orgId, cachedFactors);
+      const result = await processOneChunk(calculationRunId, orgId, cachedFactors, invocationStart);
       if (result.factorCache) cachedFactors = result.factorCache;
       if (result.done) return { done: true };
-      if (Date.now() >= overallDeadline) {
+      if (result.finalizeDeferred || Date.now() >= overallDeadline) {
         // More work remains but this invocation is out of budget. Release
         // the claim, so the next invocation takes it without counting as an
         // interruption, then return normally (not an error) — safe to resume later.
@@ -176,7 +177,12 @@ export async function processCalculationRun(calculationRunId: string, orgId: str
 // record already has an EmissionCalculation row for this run — from an
 // earlier chunk — is never reprocessed), persists progress, and runs the
 // once-only finalization steps when nothing remains.
-async function processOneChunk(calculationRunId: string, orgId: string, sharedFactorCache?: import("./factor-selector").FactorCache): Promise<ChunkResult & { factorCache?: import("./factor-selector").FactorCache }> {
+async function processOneChunk(
+  calculationRunId: string,
+  orgId: string,
+  sharedFactorCache: import("./factor-selector").FactorCache | undefined,
+  invocationStart: number,
+): Promise<ChunkResult & { factorCache?: import("./factor-selector").FactorCache }> {
   const run = await prisma.calculationRun.findUniqueOrThrow({
     where: { id: calculationRunId },
     include: {
@@ -273,7 +279,15 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
         .filter((d): d is Date => d != null),
     );
 
-    for (const record of records) {
+    // Checked per record: a page of ~500 round trips can outlast the chunk budget on its own.
+    // Records not reached keep no calculation, so the next chunk loads them again.
+    let handled = records.length;
+    for (let i = 0; i < records.length; i++) {
+      if (i > 0 && Date.now() >= chunkDeadline) {
+        handled = i;
+        break;
+      }
+      const record = records[i];
       const activityDate = record.activityDate ?? record.startDate ?? new Date();
 
       let normalized: ReturnType<typeof normalizeUnit>;
@@ -698,23 +712,26 @@ async function processOneChunk(calculationRunId: string, orgId: string, sharedFa
     await prisma.calculationRun.update({
       where: { id: calculationRunId },
       data: {
-        processedRecordCount: { increment: records.length },
+        processedRecordCount: { increment: handled },
         lastProgressAt: new Date(),
         processingLockedAt: new Date(),
       },
     });
 
-    if (Date.now() >= chunkDeadline) {
-      // Chunk budget spent but a full page was still available — more
-      // records remain. Yield; the caller decides whether to keep looping
-      // (still within its own overall budget) or return for now.
+    if (handled < records.length || Date.now() >= chunkDeadline) {
+      // Chunk budget spent with records still left. Yield; the caller decides
+      // whether to keep looping (still within its own overall budget) or return.
       return { done: false, factorCache };
     }
   }
 
   // The page loop above only exits here (never via the early return) once
   // a page comes back empty — every approved record now has a calculation
-  // for this run. Safe to run the once-only finalization steps.
+  // for this run. Safe to run the once-only finalization steps, if this
+  // invocation still has the budget; otherwise the next one does them.
+  if (finalizeDeferred(invocationStart, Date.now())) {
+    return { done: false, factorCache, finalizeDeferred: true };
+  }
 
   // Every calculation of the run, loaded once for the two writes below
   const calculations = await loadRunCalculations(calculationRunId);
