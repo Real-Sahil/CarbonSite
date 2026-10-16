@@ -11,7 +11,7 @@ import speakeasy from "speakeasy";
 
 const db = vi.hoisted(() => ({
   user: { findUnique: vi.fn(), update: vi.fn() },
-  session: { findUnique: vi.fn(), update: vi.fn(), deleteMany: vi.fn() },
+  session: { findUnique: vi.fn(), updateMany: vi.fn(), deleteMany: vi.fn() },
   account: { findFirst: vi.fn(), update: vi.fn() },
   organizationMembership: { findUnique: vi.fn(), count: vi.fn() },
   organization: { findUnique: vi.fn() },
@@ -162,6 +162,7 @@ describe("mobile session refresh", () => {
   it("refuses a session that expired a day ago, and does not rotate it", async () => {
     db.session.findUnique.mockResolvedValue({
       id: "sess-1",
+      createdAt: new Date(Date.now() - 2 * DAY),
       expiresAt: new Date(Date.now() - DAY),
       revokedAt: null,
       userId: "user-1",
@@ -171,12 +172,13 @@ describe("mobile session refresh", () => {
 
     expect(res.status).toBe(401);
     expect(await res.json()).toMatchObject({ code: "SESSION_EXPIRED" });
-    expect(db.session.update).not.toHaveBeenCalled();
+    expect(db.session.updateMany).not.toHaveBeenCalled();
   });
 
   it("refuses a revoked session that has not yet expired", async () => {
     db.session.findUnique.mockResolvedValue({
       id: "sess-1",
+      createdAt: new Date(Date.now() - DAY),
       expiresAt: new Date(Date.now() + DAY),
       revokedAt: new Date(),
       userId: "user-1",
@@ -185,24 +187,26 @@ describe("mobile session refresh", () => {
     const res = await refreshToken(tokenRequest());
 
     expect(res.status).toBe(401);
-    expect(db.session.update).not.toHaveBeenCalled();
+    expect(db.session.updateMany).not.toHaveBeenCalled();
   });
 
-  it("rotates the token of a live session", async () => {
+  it("rotates the token of a live session, conditional on the old token", async () => {
     db.session.findUnique.mockResolvedValue({
       id: "sess-1",
+      createdAt: new Date(Date.now() - DAY),
       expiresAt: new Date(Date.now() + DAY),
       revokedAt: null,
       userId: "user-1",
     });
+    db.session.updateMany.mockResolvedValue({ count: 1 });
 
     const res = await refreshToken(tokenRequest());
     const body = await res.json();
 
     expect(res.status).toBe(200);
     expect(body.token).not.toBe("old-token");
-    expect(db.session.update).toHaveBeenCalledWith({
-      where: { id: "sess-1" },
+    expect(db.session.updateMany).toHaveBeenCalledWith({
+      where: { id: "sess-1", token: "old-token", revokedAt: null },
       data: { token: body.token, expiresAt: expect.any(Date) },
     });
   });

@@ -4,8 +4,9 @@
  * unless that account already belongs to the org, and must refuse an
  * explicitly unverified email. First-time accounts keep working.
  */
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { SESSION_COOKIE, verifiedSessionToken } from "@/lib/auth/session-cookie";
 
 const db = vi.hoisted(() => ({
   ssoConfiguration: { findFirst: vi.fn() },
@@ -81,6 +82,7 @@ function setupOidc(idTokenClaims: Record<string, unknown>) {
 }
 
 beforeEach(() => {
+  vi.stubEnv("BETTER_AUTH_SECRET", "test-secret");
   vi.clearAllMocks();
   db.user.findUnique.mockResolvedValue(null);
   db.user.create.mockResolvedValue({ id: "user-new", email: "ada@org-a.test" });
@@ -91,6 +93,10 @@ beforeEach(() => {
   db.session.create.mockResolvedValue({ token: "session-token" });
   sso.recordSsoSession.mockResolvedValue(undefined);
   setupSaml();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("SAML sign-in and existing accounts", () => {
@@ -118,7 +124,8 @@ describe("SAML sign-in and existing accounts", () => {
     const res = await POST(samlPost());
 
     expect([302, 307]).toContain(res.status);
-    expect(res.cookies.get("better-auth.session_token")?.value).toBe("session-token");
+    // A bare token is refused by loadSession, so the cookie must verify, under the name Better Auth reads.
+    expect(verifiedSessionToken(res.cookies.get(SESSION_COOKIE)?.value ?? "")).toBe("session-token");
     expect(db.user.create).not.toHaveBeenCalled();
     expect(db.organizationMembership.create).not.toHaveBeenCalled();
   });

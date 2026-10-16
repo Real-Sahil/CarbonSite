@@ -1,8 +1,9 @@
 name: Apply DB migrations
 
-# Runs on every push to main AND can be triggered manually.
+# Runs after the CI workflow passes on a push to main, and can be triggered manually.
 # vercel-build only runs `prisma generate` — it does NOT run `prisma migrate deploy`.
 # This workflow is therefore the primary path that applies schema changes to production.
+# Gated on CI: a commit that fails lint, typecheck, tests or build never reaches the database.
 # REQUIRED secrets:
 #   MIGRATION_DATABASE_URL  — Supabase session-mode pooler URL (Settings -> Database ->
 #                             Connection Pooling -> Session mode, port 5432).
@@ -11,13 +12,22 @@ name: Apply DB migrations
 #   Prisma schema validation (which requires DIRECT_URL) succeeds without needing a
 #   separate direct-connection secret in GitHub Actions.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
+
+# One migration run at a time. A run that is already applying is never cancelled midway.
+concurrency:
+  group: migrate-main
+  cancel-in-progress: false
 
 jobs:
   migrate:
     name: prisma migrate deploy
+    # workflow_run fires for every finished CI run, so migrate only after a passing push to main.
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     env:
       # Use MIGRATION_DATABASE_URL (Supabase session-mode pooler, port 5432 on pooler.supabase.com)
@@ -43,6 +53,9 @@ jobs:
           echo "Connecting via host: $DB_HOST"
 
       - uses: actions/checkout@v4
+        with:
+          # Migrate the commit CI tested, not whatever main points at by the time this runs.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -59,29 +72,37 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
-      - name: Resolve any blocked failed migrations (P3009/P3018 recovery)
+      - name: Resolve blocked failed migrations (P3009/P3018 recovery)
+        # Only migrations Prisma reports as failed are touched; a resolve error fails the run.
         run: |
+          failed=$(node scripts/list-failed-migrations.mjs) || { echo "::error::Could not read _prisma_migrations."; exit 1; }
+          resolve() {
+            if grep -qx "$2" <<< "$failed"; then
+              pnpm prisma migrate resolve "$1" "$2"
+            fi
+          }
+
           # 20260920000003_stakeholder_phase2: failed due to FK ordering bug
           # (programme_id FK before CREATE TABLE programmes). Marked rolled-back;
           # 20260922000001_stakeholder_phase2_retry re-applies the corrected SQL.
-          pnpm prisma migrate resolve --rolled-back 20260920000003_stakeholder_phase2 2>&1 || true
+          resolve --rolled-back 20260920000003_stakeholder_phase2
 
           # 20260921000001_reusable_invite_link: adds "reusable" column to invite_links.
           # Column already existed in DB before this migration ran → 42701 duplicate.
           # Mark as applied (schema state already matches what this migration would do).
-          pnpm prisma migrate resolve --applied 20260921000001_reusable_invite_link 2>&1 || true
+          resolve --applied 20260921000001_reusable_invite_link
 
           # 20260922000001_stakeholder_phase2_retry: failed with 42601 syntax error —
           # ADD CONSTRAINT IF NOT EXISTS is invalid Postgres syntax. Fixed with DO block.
           # Mark as rolled-back so next deploy re-applies the corrected SQL.
-          pnpm prisma migrate resolve --rolled-back 20260922000001_stakeholder_phase2_retry 2>&1 || true
+          resolve --rolled-back 20260922000001_stakeholder_phase2_retry
 
           # 20260922000000_sv_foundation: failed mid-run (P3009/P3018). PostgreSQL applied
           # CREATE TYPE statements before the failure (42710 confirms types exist in DB).
           # Mark as applied so migrate deploy skips it; any missing objects (tables, FKs,
           # indexes) are covered by 20260922000002_sv_foundation_idempotent which is fully
           # idempotent and runs next.
-          pnpm prisma migrate resolve --applied 20260922000000_sv_foundation 2>&1 || true
+          resolve --applied 20260922000000_sv_foundation
 
       - name: Refuse destructive migrations that are not a separate contract step
         # This workflow applies migrations while the previous deploy still serves

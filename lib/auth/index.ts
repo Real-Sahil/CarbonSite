@@ -78,6 +78,8 @@ export const auth = betterAuth({
     // Guard against bcrypt DoS: reject passwords over 128 chars before hashing.
     minPasswordLength: 8,
     maxPasswordLength: 128,
+    // A reset must end every session on the account, including one an attacker opened with the old password.
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
       await sendTransactionalEmail({
         to: user.email,

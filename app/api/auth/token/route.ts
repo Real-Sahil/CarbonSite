@@ -15,6 +15,8 @@ import { POLICIES } from "@/lib/security/rate-limit";
 // unexpired and unrevoked; an expired session needs a new invite link.
 
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days, matches accept-invite
+// Absolute cap from sign-in. Refreshing slides the expiry, so without this a token copied off a lost device never ends.
+const SESSION_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
 function extractBearerToken(header: string | null): string | null {
   if (!header) return null;
@@ -35,23 +37,28 @@ export async function POST(req: NextRequest) {
 
     const session = await prisma.session.findUnique({
       where: { token },
-      select: { id: true, expiresAt: true, revokedAt: true, userId: true },
+      select: { id: true, createdAt: true, expiresAt: true, revokedAt: true, userId: true },
     });
     if (!session) {
       return apiError("UNAUTHENTICATED", "Session not found.", 401);
     }
 
     const now = Date.now();
-    if (session.revokedAt || session.expiresAt.getTime() <= now) {
+    const absoluteExpiry = session.createdAt.getTime() + SESSION_MAX_AGE_MS;
+    if (session.revokedAt || session.expiresAt.getTime() <= now || absoluteExpiry <= now) {
       return apiError("SESSION_EXPIRED", "Session expired. Ask your organisation for a new invite link.", 401);
     }
 
+    // Conditional on the old token and no revocation: two refreshes racing on one token cannot both rotate it.
     const newToken = randomBytes(32).toString("base64url");
-    const expiresAt = new Date(now + SESSION_TTL_MS);
-    await prisma.session.update({
-      where: { id: session.id },
+    const expiresAt = new Date(Math.min(now + SESSION_TTL_MS, absoluteExpiry));
+    const rotated = await prisma.session.updateMany({
+      where: { id: session.id, token, revokedAt: null },
       data: { token: newToken, expiresAt },
     });
+    if (rotated.count === 0) {
+      return apiError("UNAUTHENTICATED", "Session not found.", 401);
+    }
 
     return NextResponse.json({ token: newToken, expiresAt: expiresAt.toISOString() });
   } catch (err) {

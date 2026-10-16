@@ -15,6 +15,7 @@ import {
   extractSamlUserInfo,
   peekSamlIssuer,
 } from "@/lib/auth/sso-handler";
+import { SESSION_COOKIE, signedSessionToken } from "@/lib/auth/session-cookie";
 
 interface UserInfo {
   providerUserId: string;
@@ -253,8 +254,8 @@ async function createOrUpdateUserAndSession(
   const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/orgs/${orgIdFromCookie}/dashboard`;
   const response = NextResponse.redirect(dashboardUrl);
 
-  // Set session cookie
-  response.cookies.set("better-auth.session_token", session.token, {
+  // Signed as Better Auth signs its own cookie; loadSession refuses a bare token.
+  response.cookies.set(SESSION_COOKIE, signedSessionToken(session.token), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
