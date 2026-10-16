@@ -174,9 +174,9 @@ test("field worker submits; an admin approves and the run stays on DEFRA", async
     expect(res.status(), `field worker ${path}`).toBe(403);
   }
 
+  // No facilityId: the route refuses a field worker's facility choice (FACILITY_NOT_ALLOWED, 403).
   const submission = {
     reportingPeriodId: periodId,
-    facilityId,
     documentType: "fuel_receipt",
     formData: { volume: 250, volumeUnit: "litres", fuelType: "diesel", date: "2025-11-14", supplierName: "Certas Energy" },
     idempotencyKey: `pilot-fuel-${run}`,
