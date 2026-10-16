@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AppStoreBadge, GooglePlayBadge, StripeNote } from "@/components/marketing/brand-marks";
+import { AppStoreBadge, GooglePlayBadge, SmeClimateHubBadge, StripeNote } from "@/components/marketing/brand-marks";
 import { LogoMark } from "@/components/ui/logo";
 
 const COLS = [
@@ -66,6 +66,7 @@ export function SiteFooter() {
                 <GooglePlayBadge />
                 <AppStoreBadge />
               </div>
+              <SmeClimateHubBadge />
               <StripeNote tone="dark" />
             </div>
           </div>

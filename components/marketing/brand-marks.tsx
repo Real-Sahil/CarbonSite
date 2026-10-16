@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export const PLAY_URL = "https://play.google.com/store/apps/details?id=app.metricora.metricora_mobile";
@@ -74,6 +75,19 @@ export function AppStoreBadge({ className }: { className?: string }) {
       store="App Store"
       path={APPLE_PATH}
       className={className}
+    />
+  );
+}
+
+/// SME Climate Hub (PYMES Climate Hub) 2026 badge, as issued to registered members. Artwork only: no link until the Hub's page is confirmed.
+export function SmeClimateHubBadge({ className }: { className?: string }) {
+  return (
+    <Image
+      src="/marketing/badges/pymes-climate-hub-2026.png"
+      alt="PYMES Climate Hub badge: COMPROMETIDA 2026 (committed)"
+      width={480}
+      height={194}
+      className={cn("h-12 w-auto", className)}
     />
   );
 }
