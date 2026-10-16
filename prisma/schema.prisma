@@ -852,7 +852,9 @@ model ImportBatch {
   errorCsvStorageKey    String?     @map("error_csv_storage_key")
   idempotencyKey        String?     @unique @map("idempotency_key")
   lastProcessedRowIndex Int?        @map("last_processed_row_index")
-  /// Times the batch has started parsing. A stalled or failed parse is retried by the import-batches sweep up to MAX_IMPORT_ATTEMPTS (lib/imports/retry.ts).
+  /// Fingerprint of the reference data the staged rows were validated against (lib/imports/reference-fingerprint.ts). A resume against different reference data restarts staging.
+  referenceFingerprint  String?     @map("reference_fingerprint")
+  /// Counted starts of the parse: a stall, a failure, or a restart that discarded staged rows. An invocation that stages rows and yields is refunded (lib/imports/worker.ts). The import-batches sweep retries a stalled batch up to MAX_IMPORT_ATTEMPTS (lib/imports/retry.ts).
   processingAttempts    Int         @default(0) @map("processing_attempts")
   createdByUserId       String?     @map("created_by_user_id")
   /// ERP export profile the file was read with; the snapshot is what was applied.

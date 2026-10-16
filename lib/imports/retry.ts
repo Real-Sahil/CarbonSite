@@ -3,9 +3,11 @@
 // function timeout or a transient failure leaves the batch in "parsing" with no
 // worker to pick it up. The import-batches sweep finds such batches once they
 // have been quiet for IMPORT_STALE_MS and parses them again, up to
-// MAX_IMPORT_ATTEMPTS starts in total.
+// MAX_IMPORT_ATTEMPTS counted starts. A yield that kept its progress is refunded
+// by the worker (lib/imports/worker.ts), so only stalls, failures and restarts that
+// discarded staged rows count.
 
-/** Starts allowed per batch, the first one included (CLAUDE.md: 3 attempts). */
+/** Counted starts allowed per batch (CLAUDE.md: 3 attempts). */
 export const MAX_IMPORT_ATTEMPTS = 3;
 
 /**

@@ -24,7 +24,7 @@ describe("decideStalledImport", () => {
     }
   });
 
-  it("allows exactly MAX_IMPORT_ATTEMPTS starts in total", () => {
+  it("stops at MAX_IMPORT_ATTEMPTS counted starts", () => {
     expect(attemptsExhausted(MAX_IMPORT_ATTEMPTS - 1)).toBe(false);
     expect(attemptsExhausted(MAX_IMPORT_ATTEMPTS)).toBe(true);
     expect(MAX_IMPORT_ATTEMPTS).toBe(3);

@@ -7,7 +7,8 @@ import { applyProfile, profileSpecSchema, PROFILED_COLUMN_MAP } from "./profiles
 import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/lib/data-quality/duplicates";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { attemptsExhausted } from "./retry";
-import { nextStageEnd, stageBudgetSpent } from "./staging-plan";
+import { nextStageEnd, stageBudgetSpent, stagingStart } from "./staging-plan";
+import { referenceFingerprint } from "./reference-fingerprint";
 
 export type ImportOutcome = "done" | "partial";
 
@@ -23,7 +24,8 @@ export async function processImportBatch(
   options: { budgetMs?: number } = {},
 ): Promise<ImportOutcome> {
   const startedAt = Date.now();
-  // Count this attempt and take the batch. Only a batch not yet finished can be taken.
+  // Count this attempt (a yield that keeps its progress is refunded below) and take the batch.
+  // Only a batch not yet finished can be taken.
   const claimed = await prisma.importBatch.updateMany({
     where: { id: importBatchId, organizationId: orgId, state: { in: ["uploaded", "parsing"] } },
     data: { state: "parsing", processingAttempts: { increment: 1 } },
@@ -41,12 +43,9 @@ export async function processImportBatch(
         mapping: true,
         profileSnapshot: true,
         lastProcessedRowIndex: true,
+        referenceFingerprint: true,
       },
     });
-    // No cursor: nothing was staged yet, so clear any leftovers from an earlier attempt.
-    if (batch.lastProcessedRowIndex == null) {
-      await prisma.stagedActivityRecord.deleteMany({ where: { importBatchId, organizationId: orgId } });
-    }
 
     if (batch.organizationId !== orgId) {
       throw new Error("Org mismatch on import batch.");
@@ -228,13 +227,33 @@ export async function processImportBatch(
     }
 
     // Stage from the cursor. Parsing and validation above cover the whole file on
-    // every attempt, so the rows after the cursor are the same as an uninterrupted
-    // run. shortcut: assumes reference data (categories, facilities) is unchanged
-    // between attempts, which holds for the minutes between them.
-    const resumedFrom = batch.lastProcessedRowIndex ?? 0;
-    let cursor = resumedFrom;
+    // every attempt. A cursor is resumed only while the reference data is unchanged:
+    // rows staged after a change would be validated against other categories,
+    // facilities or business units.
+    const fingerprint = referenceFingerprint({ categories, facilities, businessUnits });
+    const start = stagingStart({ cursor: batch.lastProcessedRowIndex, storedFingerprint: batch.referenceFingerprint, fingerprint });
+    const discardedProgress = start === "restart" && batch.lastProcessedRowIndex != null;
+    let cursor = 0;
+    if (start === "restart") {
+      await prisma.$transaction([
+        prisma.stagedActivityRecord.deleteMany({ where: { importBatchId, organizationId: orgId } }),
+        prisma.importBatch.update({ where: { id: importBatchId }, data: { lastProcessedRowIndex: null, referenceFingerprint: fingerprint } }),
+      ]);
+    } else {
+      cursor = batch.lastProcessedRowIndex ?? 0;
+    }
+    const resumedFrom = cursor;
     while (cursor < rowsToInsert.length) {
       if (stageBudgetSpent({ startedAt, now: Date.now(), budgetMs: options.budgetMs, madeProgress: cursor > resumedFrom })) {
+        // Staged rows are kept, so this yield is progress rather than a failed attempt:
+        // refund the claim. A restart that discarded rows is not refunded, so reference
+        // data that keeps changing still reaches MAX_IMPORT_ATTEMPTS.
+        if (!discardedProgress) {
+          await prisma.importBatch.updateMany({
+            where: { id: importBatchId, organizationId: orgId },
+            data: { processingAttempts: { decrement: 1 } },
+          });
+        }
         return "partial";
       }
       const end = nextStageEnd(cursor, rowsToInsert.length);
