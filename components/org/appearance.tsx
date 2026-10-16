@@ -58,11 +58,15 @@ export function AppearanceSync({ saved }: { saved: ThemeChoice | null }) {
   return null;
 }
 
-/** Light, dark or system, saved to the signed-in person's account. Shown in each account menu. */
-export function AppearanceMenu({ saved }: { saved: ThemeChoice | null }) {
+/**
+ * Light, dark or system, saved to the signed-in person's account. Shown in each account menu.
+ * onChoose runs on any pick, including the current option, so a host drawer can close.
+ */
+export function AppearanceMenu({ saved, onChoose }: { saved: ThemeChoice | null; onChoose?: () => void }) {
   const [choice, setChoice] = useState<ThemeChoice>(saved ?? "light");
 
   async function choose(next: string) {
+    onChoose?.();
     const parsed = parseThemeChoice(next);
     if (!parsed || parsed === choice) return;
     const previous = choice;

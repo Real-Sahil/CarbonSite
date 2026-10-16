@@ -536,7 +536,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
                       Members and settings
                     </Link>
                   </DropdownMenuItem>
-                  <AppearanceMenu saved={themePreference} />
+                  <AppearanceMenu saved={themePreference} onChoose={() => setMobileOpen(false)} />
                   <DropdownMenuSeparator className="bg-[#E3E8EE]" />
                   <DropdownMenuItem className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer rounded-lg" onClick={handleSignOut}>
                     <LogOut aria-hidden="true" className="h-4 w-4 mr-2" />

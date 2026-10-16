@@ -48,4 +48,17 @@ describe("mobile menus close once a link is chosen", () => {
 
     expect(screen.queryByRole("button", { name: "Close menu" })).toBeNull();
   });
+
+  it("org app drawer closes when a theme is chosen from the account menu", () => {
+    nav.pathname = "/orgs/org_1/dashboard";
+    render(<OrgSidebar orgId="org_1" orgName="Acme Ltd" user={{ name: "Pat Example", email: "pat@example.test" }} role="admin" />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+    const drawer = screen.getByRole("button", { name: "Close menu" }).closest(".fixed") as HTMLElement;
+    fireEvent.pointerDown(within(drawer).getByRole("button", { name: /pat@example\.test/ }), { button: 0, ctrlKey: false });
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: /Appearance/ }), { key: "ArrowRight" });
+    fireEvent.click(screen.getByRole("menuitemradio", { name: /Dark/ }));
+
+    expect(screen.queryByRole("button", { name: "Close menu" })).toBeNull();
+  });
 });
