@@ -32,3 +32,12 @@ regexes = [
 [[allowlists]]
 description = "UUID API code used as a fixture in the Defra receipt tests"
 paths = ['''^lib/defra-dwt/__tests__/receipt-fixture\.ts$''']
+
+[[allowlists]]
+description = "Test-only TOTP and cookie-signing secrets in tests/security/sso-mfa-account and session-cookie tests, used by no code path outside the tests"
+regexTarget = "match"
+regexes = [
+  '''GEZDGNBVGY3TQOJQ''',
+  '''KRSXG5CTMVRXEZLU''',
+  '''test-secret-0123456789abcdef''',
+]
