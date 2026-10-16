@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
@@ -10,18 +11,23 @@ import { apiError, handleRouteError } from "@/lib/validation/api";
 import { parseDataOrigin } from "@/lib/inventory/provenance";
 import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
 import { recordUsage } from "@/lib/billing/usage";
+import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/lib/data-quality/duplicates";
 
 type Params = { params: Promise<{ orgId: string; importId: string }> };
+
+const commitBodySchema = z.object({ allowDuplicate: z.boolean().optional() });
 
 /** Rows per createMany inside the commit transaction (about 25 columns each, under Postgres's bind limit). */
 const COMMIT_INSERT_CHUNK = 500;
 /** Interactive transaction timeout. Prisma's default 5 s is far too short for a 25k-row import. */
 const COMMIT_TX_TIMEOUT_MS = 50_000;
 
-export async function POST(_req: NextRequest, { params }: Params) {
+export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { orgId, importId } = await params;
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
+    // The body is optional: a plain commit sends nothing, a confirmed one sends allowDuplicate.
+    const body = commitBodySchema.parse(await req.json().catch(() => ({})));
 
     const batch = await prisma.importBatch.findUnique({
       where: { id: importId },
@@ -58,6 +64,25 @@ export async function POST(_req: NextRequest, { params }: Params) {
     if (billingBlock) return billingBlock;
     const usageBlock = await requireWithinUsageLimit(orgId, "import.committed");
     if (usageBlock) return usageBlock;
+
+    // Staging warns about a row that matches a record, but a record added after the file
+    // was staged is only caught here. Ask before writing a second copy.
+    if (!body.allowDuplicate) {
+      const candidates = stagedRecords.map((sr) => sr.data as DuplicateKeyInput);
+      const existing = await findExistingDuplicates(orgId, candidates);
+      const matches = candidates.filter((c) => {
+        const key = duplicateKey(c);
+        return key !== null && existing.has(key);
+      }).length;
+      if (matches > 0) {
+        return apiError(
+          "POSSIBLE_DUPLICATE",
+          `${matches} row(s) match activity already in the inventory. Commit anyway only if they are separate activities.`,
+          409,
+          { count: matches },
+        );
+      }
+    }
 
     // All-or-nothing: the batch flips to committed and every record is written in
     // one transaction, so any failure leaves the batch ready_to_commit with nothing

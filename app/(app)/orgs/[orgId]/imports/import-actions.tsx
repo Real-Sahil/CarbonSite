@@ -29,13 +29,27 @@ export function ImportBatchActions({
   const [error, setError] = useState<string | null>(null);
   const [showQualityModal, setShowQualityModal] = useState(false);
 
+  function postCommit(allowDuplicate: boolean) {
+    return fetch(`/api/orgs/${orgId}/imports/${importId}/commit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ allowDuplicate }),
+    });
+  }
+
   async function handleCommit() {
     setLoading("commit");
     setError(null);
     try {
-      const res = await fetch(`/api/orgs/${orgId}/imports/${importId}/commit`, {
-        method: "POST",
-      });
+      let res = await postCommit(false);
+      if (res.status === 409) {
+        const conflict = await res.clone().json().catch(() => ({}));
+        // Matching rows are committed only once the person confirms they are separate activities.
+        if (conflict.code === "POSSIBLE_DUPLICATE") {
+          if (!window.confirm(conflict.message)) return;
+          res = await postCommit(true);
+        }
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.message ?? "Commit failed.");
