@@ -199,7 +199,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements.txt -r requirements-dev.txt
-      - run: pytest api/ -v
+      - run: pytest tests/python/ -v
 
   # Which optional suites this change needs. Mobile builds are not part of CI:
   # Android and iOS release builds run only from mobile-build.yml, on a
@@ -233,7 +233,7 @@ jobs:
           else
             echo "mobile=false" >> "$GITHUB_OUTPUT"
           fi
-          if grep -qE '^(api/|requirements(-dev)?\.txt$|\.github/workflows/ci\.yml$)' <<<"$changed"; then
+          if grep -qE '^(api/|tests/python/|requirements(-dev)?\.txt$|\.github/workflows/ci\.yml$)' <<<"$changed"; then
             echo "python=true" >> "$GITHUB_OUTPUT"
           else
             echo "python=false" >> "$GITHUB_OUTPUT"

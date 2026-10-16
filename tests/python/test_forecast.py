@@ -1,7 +1,10 @@
 """
 Regression tests for api/forecast.py.
 
-Run: pip install -r requirements.txt -r requirements-dev.txt && pytest api/
+Run: pip install -r requirements.txt -r requirements-dev.txt && pytest tests/python/
+
+Kept out of api/: every file in api/ deploys as a Vercel Python Function, and
+Hobby allows a limited number of functions per deployment.
 
 These exist to lock in the yearly_seasonality length-gating fix: Prophet's
 own documentation warns that enabling yearly seasonality with less than
@@ -21,7 +24,7 @@ import warnings
 warnings.filterwarnings("ignore")
 logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
 
-sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "api")))
 
 import pandas as pd
 import pytest
