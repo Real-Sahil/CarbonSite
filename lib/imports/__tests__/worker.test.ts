@@ -84,4 +84,13 @@ describe("processImportBatch staging", () => {
       expect.objectContaining({ data: { processingAttempts: { decrement: 1 } } }),
     );
   });
+
+  it("refunds a yield after a legacy batch restarts once (cursor set, no fingerprint stored yet)", async () => {
+    db.importBatch.findUniqueOrThrow.mockResolvedValue(batch({ lastProcessedRowIndex: 500, referenceFingerprint: null }));
+    await expect(processImportBatch("b1", "org1", { budgetMs: 0 })).resolves.toBe("partial");
+    expect(db.stagedActivityRecord.deleteMany).toHaveBeenCalledTimes(1);
+    expect(db.importBatch.updateMany).toHaveBeenLastCalledWith(
+      expect.objectContaining({ data: { processingAttempts: { decrement: 1 } } }),
+    );
+  });
 });

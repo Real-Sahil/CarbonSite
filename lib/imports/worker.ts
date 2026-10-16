@@ -9,6 +9,9 @@ import { dispatchNotification } from "@/lib/jobs/dispatch";
 import { attemptsExhausted } from "./retry";
 import { nextStageEnd, stageBudgetSpent, stagingStart } from "./staging-plan";
 import { referenceFingerprint } from "./reference-fingerprint";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("import-timing");
 
 export type ImportOutcome = "done" | "partial";
 
@@ -24,6 +27,13 @@ export async function processImportBatch(
   options: { budgetMs?: number } = {},
 ): Promise<ImportOutcome> {
   const startedAt = Date.now();
+  // Per-stage time for this attempt, so a slow parse or stage shows in the logs (no row data).
+  let lapAt = startedAt;
+  const lap = (stage: string, extra: { rows?: number; outcome?: ImportOutcome } = {}) => {
+    const now = Date.now();
+    log.info("import stage", { importBatchId, orgId, stage, ms: now - lapAt, ...extra });
+    lapAt = now;
+  };
   // Count this attempt (a yield that keeps its progress is refunded below) and take the batch.
   // Only a batch not yet finished can be taken.
   const claimed = await prisma.importBatch.updateMany({
@@ -70,7 +80,9 @@ export async function processImportBatch(
 
     // Download and parse the file
     const buffer = await getObject(batch.sourceStorageKey);
+    lap("load");
     const { headers, rows } = await parseSpreadsheet(buffer, batch.sourceFilename);
+    lap("parse", { rows: rows.length });
 
     if (rows.length === 0) {
       await prisma.importBatch.update({
@@ -150,6 +162,7 @@ export async function processImportBatch(
         v.warnings.push({ field: "row", message: `Matches an existing record (${existingId}). Committing it will count this activity twice.` });
       }
     });
+    lap("validate");
 
     const errorRows: { rowNumber: number; errors: (typeof validatedRows)[0]["errors"]; warnings: (typeof validatedRows)[0]["warnings"] }[] = [];
 
@@ -232,7 +245,9 @@ export async function processImportBatch(
     // facilities or business units.
     const fingerprint = referenceFingerprint({ categories, facilities, businessUnits });
     const start = stagingStart({ cursor: batch.lastProcessedRowIndex, storedFingerprint: batch.referenceFingerprint, fingerprint });
-    const discardedProgress = start === "restart" && batch.lastProcessedRowIndex != null;
+    // Only rows staged under changed reference data count as discarded progress. A legacy batch
+    // (cursor set, no stored fingerprint) restarts once after deploy and is refunded like any progress.
+    const discardedProgress = start === "restart" && batch.referenceFingerprint != null && batch.lastProcessedRowIndex != null;
     let cursor = 0;
     if (start === "restart") {
       await prisma.$transaction([
@@ -245,6 +260,7 @@ export async function processImportBatch(
     const resumedFrom = cursor;
     while (cursor < rowsToInsert.length) {
       if (stageBudgetSpent({ startedAt, now: Date.now(), budgetMs: options.budgetMs, madeProgress: cursor > resumedFrom })) {
+        lap("stage", { outcome: "partial" });
         // Staged rows are kept, so this yield is progress rather than a failed attempt:
         // refund the claim. A restart that discarded rows is not refunded, so reference
         // data that keeps changing still reaches MAX_IMPORT_ATTEMPTS.
@@ -264,6 +280,7 @@ export async function processImportBatch(
       ]);
       cursor = end;
     }
+    lap("stage", { outcome: "done" });
 
     // Determine new batch state
     let newState: "ready_to_commit" | "needs_attention" | "failed";
