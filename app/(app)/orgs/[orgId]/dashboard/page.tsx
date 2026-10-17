@@ -71,6 +71,7 @@ import { OnboardingChecklist } from "./onboarding-checklist";
 import { appraisalPrice, coveredCost, formatMoney, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
 import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
+import { getOrgBasics } from "@/lib/i18n/org-basics";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
 import { loadPeriodCategoryTotals, loadSliceScopes, loadSliceTrend, loadSliceView, parseSliceFilter, resolveSliceRefs, socialValueBeside, type SliceRefs } from "@/lib/dashboard/slice-filter";
 import { aiAssistEnabled } from "@/lib/llm/org-consent";
@@ -173,10 +174,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             select: { isComplete: true, completedSteps: true },
           }).catch(onLoadFailure(() => null))
         : Promise.resolve(null),
-      prisma.organization.findUnique({
-        where: { id: orgId },
-        select: { name: true, industry: true, hqCountry: true, reportingCurrency: true, plan: true, isPilot: true },
-      }).catch(onLoadFailure(() => null)),
+      // Already read by the org layout: React cache() makes this a memory read, not a query.
+      getOrgBasics(orgId).catch(onLoadFailure(() => null)),
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
         select: { id: true, label: true, status: true, endDate: true },
@@ -1307,7 +1306,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </section>
       )
   );
-  widgetNodes["waste-kpis"] = <WasteKpisWidget orgId={orgId} />;
+  widgetNodes["waste-kpis"] = (
+    <Suspense fallback={<div aria-hidden="true" className="mt-8 h-40 animate-pulse rounded-[14px] bg-[#E3E8EE]" />}>
+      <WasteKpisWidget orgId={orgId} />
+    </Suspense>
+  );
   widgetNodes["environment"] = (
       hasEnvironmentalData && (
         <section aria-label="Water and waste" className="mt-8">
@@ -2031,7 +2034,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         )}
       </div>
   );
-  widgetNodes["carbon-intelligence"] = <CarbonIntelligenceWidget orgId={orgId} role={role} />;
+  widgetNodes["carbon-intelligence"] = (
+    <Suspense fallback={<div aria-hidden="true" className="mt-6 h-40 animate-pulse rounded-[14px] bg-[#E3E8EE]" />}>
+      <CarbonIntelligenceWidget orgId={orgId} role={role} />
+    </Suspense>
+  );
   widgetNodes["social-evidence"] = (
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <Card>

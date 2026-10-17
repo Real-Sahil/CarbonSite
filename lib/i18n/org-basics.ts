@@ -3,14 +3,14 @@ import { prisma } from "@/lib/db";
 import { localeForCountry, orgFormat } from "./org-format";
 
 /**
- * The organisation's name, HQ country and reporting currency. React cache()
- * makes the layout and every page in one request share this single query, so
- * formatting a page in the organisation's locale costs no extra round trip.
+ * The organisation's name, industry, HQ country, reporting currency and plan.
+ * React cache() makes the layout and every page in one request share this single
+ * query, so formatting a page in the organisation's locale costs no extra round trip.
  */
 export const getOrgBasics = cache((orgId: string) =>
   prisma.organization.findUnique({
     where: { id: orgId },
-    select: { id: true, name: true, hqCountry: true, reportingCurrency: true },
+    select: { id: true, name: true, industry: true, hqCountry: true, reportingCurrency: true, plan: true, isPilot: true },
   }),
 );
 
