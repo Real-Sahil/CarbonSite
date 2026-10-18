@@ -24,6 +24,16 @@ Checked against the code on `main` (a7840b1d). The first pass overstated the gap
 6. Each phase merges on its own and can be reverted alone. No phase depends on a later one.
 7. CI gate before each merge: `pnpm lint && pnpm knip && pnpm typecheck && pnpm test && pnpm build`.
 
+## 2b. Findings when Phases 1, 2 and 5 were started (code check, 2026-10-18)
+
+These change the plan; nothing was built.
+
+- **Phase 1:** `PACTPCFConnector` has no caller outside its own test. It sits on no route, so tolerating a newer spec there changes nothing a user can reach. Its schema is also a flat simplification (`pcfExcludingBiogenic` at top level), not the nested `pcf` object of the PACT data model. The spec could not be fetched from this sandbox (`wbcsd.github.io` and `docs.carbon-transparency.org` do not resolve), so the current field shape stays unconfirmed. Do not code against memory.
+- **Phase 2:** the live route, `supplier-portal/pact-import`, takes a different, MetricOra-specific payload (`emissionFactors`) and stores it in `SupplierDataRequest.submittedData` with format label `pact-pathfinder-3.0`. There is no product-footprint import to extend. A `ProductCarbonFootprint` table needs a real PACT ingest route first, which is new surface, so it moves behind Phase 3.
+- **Phase 5:** `ActivityRecord` stores no GL account or cost code. Ledger codes exist only in ERP import profile rules (`lib/imports/profiles.ts`) and ledger-line suggestions, and are not kept on committed records. A carbon-by-account view needs a nullable `ActivityRecord.ledgerAccount` column plus capture in the import and accounting-sync paths. That is additive but touches the import pipeline, so it needs its own review and the golden and reconciliation tests.
+
+Revised order: confirm the spec (needs network or a pasted copy) > decide whether to wire the connector or retire it > Phase 5 with the new column, as its own reviewed change.
+
 ## 3. Phases
 
 ### Phase 0: baseline (no code)
