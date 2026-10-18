@@ -14,6 +14,8 @@ export const CHAIN_VERSION = 2;
 
 /** JSON with object keys sorted at every level, so the same data always gives the same text. */
 export function canonicalJson(value: unknown): string {
+  // A Date has no own keys, so it would hash as {}; hash it as the ISO string a stored row reads back as.
+  if (value instanceof Date) return JSON.stringify(value);
   if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "null";
   if (Array.isArray(value)) return `[${value.map((v) => canonicalJson(v === undefined ? null : v)).join(",")}]`;
   const entries = Object.entries(value as Record<string, unknown>)

@@ -5,7 +5,7 @@
 // value, assurance and model answers. Sections with no data are omitted.
 
 import { esc, brandStyles, brandLogoHtml, svgHBars } from "./shared";
-import { bidAnswers, change, contractAnswer, STANDARD_LABELS, type BidPackData, type ScopeTotals } from "@/lib/bids/carbon-pack";
+import { bidAnswers, bidPackReadiness, change, contractAnswer, STANDARD_LABELS, type BidPackData, type ScopeTotals } from "@/lib/bids/carbon-pack";
 
 const fmtDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 const fmtT = (n: number | null | undefined) =>
@@ -39,6 +39,10 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
   const baseS12 = d.baseYear?.s1 != null && d.baseYear?.s2 != null ? d.baseYear.s1 + d.baseYear.s2 : null;
   const vsBase = change(baseS12, s12);
   const answers = bidAnswers(d);
+  // Declarations are stated only for what the pack records; the same checks block generation.
+  const readiness = bidPackReadiness(d);
+  const passed = (id: string) => readiness.find((c) => c.id === id)?.passed === true;
+  const planComplete = readiness.filter((c) => c.required).every((c) => c.passed);
   const completed = d.initiatives.filter((i) => i.status === "complete");
   const upcoming = d.initiatives.filter((i) => i.status !== "complete");
 
@@ -104,10 +108,22 @@ export function renderBidCarbonPackHtml(d: BidPackData & { logoDataUri?: string 
   ${initiativeTable(upcoming)}
 
   <h3>Declaration and sign-off</h3>
-  <p>This Carbon Reduction Plan has been completed in accordance with PPN 006 and associated guidance and reporting standard for Carbon Reduction Plans.</p>
-  <p>Emissions have been reported and recorded in accordance with the published reporting standard for Carbon Reduction Plans and the GHG Reporting Protocol corporate standard, and use the appropriate government emission conversion factors for greenhouse gas company reporting (${esc(d.snapshot.factorLibrary)}).</p>
-  <p>Scope 1 and Scope 2 emissions have been reported in accordance with SECR requirements, and the required subset of Scope 3 emissions has been reported in accordance with the published reporting standard for Carbon Reduction Plans and the Corporate Value Chain (Scope 3) Standard.</p>
-  <p>This Carbon Reduction Plan has been reviewed and signed off by the board of directors (or equivalent management body).</p>
+  ${
+    planComplete
+      ? `<p>This Carbon Reduction Plan has been completed in accordance with PPN 006 and associated guidance and reporting standard for Carbon Reduction Plans.</p>`
+      : `<p class="muted">Not complete: a required item above is not recorded, so this plan does not yet state completion under PPN 006.</p>`
+  }
+  ${
+    passed("bid-emissions")
+      ? `<p>Emissions have been reported and recorded in accordance with the published reporting standard for Carbon Reduction Plans and the GHG Reporting Protocol corporate standard, and use the appropriate government emission conversion factors for greenhouse gas company reporting (${esc(d.snapshot.factorLibrary)}).</p>
+  <p>Scope 1 and Scope 2 emissions have been reported in accordance with SECR requirements, and the required subset of Scope 3 emissions has been reported in accordance with the published reporting standard for Carbon Reduction Plans and the Corporate Value Chain (Scope 3) Standard.</p>`
+      : `<p class="muted">No Scope 1 or Scope 2 emissions are recorded for the reporting period, so no reporting statement is made.</p>`
+  }
+  ${
+    passed("bid-signatory")
+      ? `<p>This Carbon Reduction Plan has been reviewed and signed off by the board of directors (or equivalent management body).</p>`
+      : `<p class="muted">Not yet signed off: no signatory name and position are recorded.</p>`
+  }
   <table class="sign">
     <tr><td>Signed on behalf of the supplier</td><td>${d.signatory.name ? esc(d.signatory.name) : "&nbsp;"}</td></tr>
     <tr><td>Position</td><td>${d.signatory.title ? esc(d.signatory.title) : "&nbsp;"}</td></tr>

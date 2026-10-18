@@ -20,6 +20,10 @@ describe("wasteKpi", () => {
     expect(k.basis).toContain("not entered");
     expect(k.divertedPct).toBe(80);
   });
+  it("does not count a route it does not recognise as diverted", () => {
+    const k = wasteKpi([{ tonnes: 10, route: "dump" }, { tonnes: 10, route: "recycling_mixed" }], null, "Contract value");
+    expect(k.divertedPct).toBe(50);
+  });
   it("handles no waste", () => expect(wasteKpi([], 1000, "x").divertedPct).toBeNull());
 });
 

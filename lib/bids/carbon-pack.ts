@@ -10,7 +10,7 @@ import { PPN026_SLUG, summarisePpn026, type KpiSummary } from "@/lib/social-valu
 import { prisma } from "@/lib/db";
 import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 import { CATEGORY_BREAKDOWN_DIMENSIONS } from "@/lib/calculation/aggregate-filters";
-import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
+import { isDiverted } from "@/lib/waste/hierarchy";
 
 export const MAX_FEATURED_CONTRACTS = 5;
 
@@ -102,7 +102,6 @@ export type ContractSocialValue = {
   measures: { code: string; name: string; quantity: number; unit: string; pounds: number }[];
 };
 
-const DIVERTED = new Set(["recycle", "recovery"]);
 const t = (kg: number) => kg / 1000;
 /** "FY2024 base year" stays as it is; "FY2024" becomes "FY2024 base year". */
 const baseYearName = (label: string) => (/base year/i.test(label) ? label : `${label} base year`);
@@ -387,7 +386,7 @@ async function loadContractEvidence(
     const s = wasteBy.get(id) ?? { tonnes: 0, diverted: 0 };
     const tonnes = Number(w.weightTonnes);
     s.tonnes += tonnes;
-    if (DIVERTED.has(wasteHierarchyOf(w.disposalRoute))) s.diverted += tonnes;
+    if (isDiverted(w.disposalRoute)) s.diverted += tonnes;
     wasteBy.set(id, s);
   }
 
@@ -583,6 +582,13 @@ export function bidPackReadiness(d: BidPackData): ReadinessCheck[] {
     },
   ];
   return checks.map((c) => (c.passed ? { ...c, message: undefined } : c));
+}
+
+/** Messages for the required checks a pack fails. Generation refuses while any remain. */
+export function bidPackBlockers(d: BidPackData): string[] {
+  return bidPackReadiness(d)
+    .filter((c) => c.required && !c.passed)
+    .map((c) => c.message ?? c.description);
 }
 
 /**

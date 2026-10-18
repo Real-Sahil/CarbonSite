@@ -7,7 +7,7 @@
 import { prisma } from "@/lib/db";
 import { loadBidPackData, type BidPackData } from "@/lib/bids/carbon-pack";
 import { parseSections } from "@/lib/crp/plan";
-import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
+import { isDiverted } from "@/lib/waste/hierarchy";
 import { formatters, orgFormat, type OrgFormat } from "@/lib/i18n/org-format";
 import { normalizeUnit } from "@/lib/calculation/units";
 import { materialByStandard } from "@/lib/materiality";
@@ -135,7 +135,7 @@ export async function loadSustainabilityReport(orgId: string, snapshotId: string
     rev.fteCount != null ? Number(rev.fteCount) : null,
   );
   const waste = wasteSummary(
-    wasteRows.map((w) => ({ tonnes: Number(w.weightTonnes), diverted: wasteHierarchyOf(w.disposalRoute) !== "landfill" })),
+    wasteRows.map((w) => ({ tonnes: Number(w.weightTonnes), diverted: isDiverted(w.disposalRoute) })),
   );
 
   const revenue = rev.revenueAmount != null ? { amount: Number(rev.revenueAmount) } : null;

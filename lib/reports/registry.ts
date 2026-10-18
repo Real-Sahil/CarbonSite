@@ -4,8 +4,8 @@ import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-m
 import type { ReportData } from "./template";
 import { renderReportHtml } from "./template";
 import type { Aggregation, CalculationRow } from "./aggregation";
-import { aggregate, fetchCalculations, hasMarketBasedScope2, splitScope2 } from "./aggregation";
-import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
+import { aggregate, co2eBreakdownKg, fetchCalculations, hasMarketBasedScope2, splitScope2 } from "./aggregation";
+import { isDiverted, wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { wasteRowsFromRecords } from "@/lib/waste/from-records";
 import { renderSecrHtml, type SecrData } from "./templates/secr";
 import { secrEnergyFromCalculations } from "./secr-energy";
@@ -28,7 +28,7 @@ import { llmClient } from "@/lib/llm/client";
 import { aiAssistEnabled } from "@/lib/llm/org-consent";
 import { ungroundedNumbers } from "@/lib/llm/grounding";
 import { renderBidCarbonPackHtml } from "./templates/bid-carbon-pack";
-import { loadBidPackData } from "@/lib/bids/carbon-pack";
+import { bidPackBlockers, loadBidPackData } from "@/lib/bids/carbon-pack";
 import { renderTransitionPlanHtml } from "./templates/transition-plan";
 import { withLocale } from "./templates/locale";
 import { loadTransitionPlan } from "@/lib/transition-plan/load";
@@ -502,7 +502,7 @@ const handlers: Record<string, ReportHandler> = {
     }
 
     const totalDivertedTonnes = [...byRoute.entries()]
-      .filter(([route]) => hierarchyOf(route) !== "landfill")
+      .filter(([route]) => isDiverted(route))
       .reduce((sum, [, tonnes]) => sum + tonnes, 0);
 
     const data: CsrdEsrsE5Data = {
@@ -589,9 +589,7 @@ const handlers: Record<string, ReportHandler> = {
       scope2MarketKg: s2mbKg,
       scope3Kg: agg.s3kg,
       totalKg: agg.grandKg,
-      co2Kg: agg.hasCo2 ? agg.totalCo2Kg : undefined,
-      ch4Kg: agg.hasCh4 ? agg.totalCh4Kg : undefined,
-      n2oKg: agg.hasN2o ? agg.totalN2oKg : undefined,
+      ...co2eBreakdownKg(agg),
       biogenicCo2Kg: agg.hasBiogenic ? agg.totalBiogenicKg : undefined,
       recordCount: calcs.length,
       evidenceTiers: headlineEvidenceTiers(calcs),
@@ -741,6 +739,9 @@ const handlers: Record<string, ReportHandler> = {
 
   bid_carbon_pack: async (ctx) => {
     const data = await withQueryTimeout(loadBidPackData(ctx.orgId, ctx.report.snapshot.id, ctx.opts), 60_000);
+    // Refuse rather than print declarations the pack's own records do not support.
+    const blockers = bidPackBlockers(data);
+    if (blockers.length > 0) throw new Error(`Bid carbon pack not generated. ${blockers.join(" ")}`);
     return { html: renderBidCarbonPackHtml({ ...data, logoDataUri: ctx.logoDataUri }) };
   },
 

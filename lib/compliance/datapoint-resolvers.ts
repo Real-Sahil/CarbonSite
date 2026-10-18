@@ -15,6 +15,7 @@ import type { PrismaClient } from "@prisma/client";
 import { summariseProvenance } from "@/lib/inventory/provenance";
 import { loadTransitionPlan } from "@/lib/transition-plan/load";
 import { e18Gaps, formatMoney, pricesInForce, PRICE_TYPES, type PriceType } from "@/lib/carbon-price";
+import { isDiverted } from "@/lib/waste/hierarchy";
 
 export interface ResolverResult {
   status: "satisfied" | "partial" | "gap" | "not_applicable";
@@ -166,9 +167,19 @@ async function assuranceStatementDisclosed(orgId: string, db: PrismaClient): Pro
 }
 
 async function primaryDataShareDisclosed(orgId: string, db: PrismaClient): Promise<ResolverResult> {
+  // Only the latest succeeded run: rows from earlier runs are superseded, not part of today's position.
+  const run = await db.calculationRun.findFirst({
+    where: { organizationId: orgId, status: "succeeded" },
+    orderBy: [{ finishedAt: "desc" }, { createdAt: "desc" }],
+    select: { id: true },
+  });
+  if (!run) {
+    return { status: "gap", evidenceSummary: "No succeeded calculation run to assess data provenance from." };
+  }
   const calculations = await db.emissionCalculation.findMany({
-    where: { organizationId: orgId },
+    where: { organizationId: orgId, calculationRunId: run.id },
     select: { totalCo2e: true, activityRecord: { select: { dataOrigin: true } } },
+    orderBy: { id: "asc" },
     take: 10_000,
   });
   if (calculations.length === 0) {
@@ -362,11 +373,10 @@ async function wasteDiversionDisclosed(orgId: string, db: PrismaClient): Promise
     distinct: ["disposalRoute"],
   });
   if (routes.length === 0) return { status: "gap", evidenceSummary: "No waste records recorded." };
-  const landfillOnly = routes.every((r) => r.disposalRoute.startsWith("landfill"));
-  if (landfillOnly) {
+  if (routes.every((r) => !isDiverted(r.disposalRoute))) {
     return {
       status: "partial",
-      evidenceSummary: "All recorded waste is landfilled; no diversion (recycling/recovery) route recorded.",
+      evidenceSummary: "No recorded disposal route is recycling or recovery (diversion).",
     };
   }
   return {

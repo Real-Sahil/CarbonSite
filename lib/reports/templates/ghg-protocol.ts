@@ -41,6 +41,8 @@ export interface GhgProtocolData {
   co2Kg?: number;
   ch4Kg?: number;
   n2oKg?: number;
+  // CO2e from factors that give only a total, so the rows still add to totalKg
+  unsplitKg?: number;
   biogenicCo2Kg?: number;
   // Category detail
   categories: GhgProtocolCategoryRow[];
@@ -140,6 +142,7 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
     { gas: "Carbon dioxide (CO₂)", gwp: 1, kg: data.co2Kg },
     { gas: "Methane (CH₄)", gwp: 27.9, kg: data.ch4Kg },
     { gas: "Nitrous oxide (N₂O)", gwp: 273, kg: data.n2oKg },
+    { gas: "Not split by gas (factor gives total CO₂e only)", gwp: undefined, kg: data.unsplitKg },
   ].filter((g) => g.kg != null);
 
   const gasTableHtml = gasRows.length === 0 ? `<p style="color:#6b7280;font-size:0.82rem;font-style:italic;">Per-gas breakdown not available for this dataset.</p>` : `
@@ -156,7 +159,7 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
       ${gasRows.map((g, i) => `
       <tr style="background:${i % 2 === 0 ? "#fff" : "#f8fafb"};">
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.82rem;">${g.gas}</td>
-        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.82rem;text-align:right;">${g.gwp}</td>
+        <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.82rem;text-align:right;">${g.gwp ?? "-"}</td>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.82rem;text-align:right;font-variant-numeric:tabular-nums;">${fmtT(g.kg!)}</td>
         <td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.82rem;text-align:right;">${pct(g.kg!, data.totalKg)}</td>
       </tr>`).join("")}

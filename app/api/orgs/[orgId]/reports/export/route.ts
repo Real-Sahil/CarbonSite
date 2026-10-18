@@ -5,6 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { validateApiKey } from "@/lib/auth/api-key";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { aggregatesToCsv } from "@/lib/reports/export-csv";
 
 const ExportQuerySchema = z.object({
   snapshotId: z.string().min(1).describe("PublishedSnapshot ID to export"),
@@ -213,7 +214,12 @@ export async function GET(
 
     // Return in requested format
     if (format === "csv") {
-      return exportAsCSV(data, aggregates);
+      return new NextResponse(aggregatesToCsv(aggregates), {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="report-export-${Date.now()}.csv"`,
+        },
+      });
     }
 
     return NextResponse.json(data);
@@ -222,65 +228,3 @@ export async function GET(
   }
 }
 
-/**
- * Convert aggregates to CSV format.
- */
-function exportAsCSV(
-  data: Record<string, unknown>,
-  aggregates: {
-    scope: number;
-    totalCo2e: { toString(): string } | null;
-    recordCount: number;
-    intensityPerRevenueUnit: { toString(): string } | null;
-    intensityPerFte: { toString(): string } | null;
-    intensityPerM2: { toString(): string } | null;
-    emissionCategory: { code: string; name: string } | null;
-    facility: { name: string } | null;
-    businessUnit: { name: string } | null;
-    scope2Method: string | null;
-  }[],
-): NextResponse {
-  const headers = [
-    "Scope",
-    "Category",
-    "Facility",
-    "Business Unit",
-    "Scope 2 Method",
-    "CO2e (tonnes)",
-    "Record Count",
-    "Intensity per Revenue",
-    "Intensity per FTE",
-    "Intensity per m²",
-  ];
-
-  const rows = aggregates.map((a) => [
-    a.scope,
-    a.emissionCategory?.code || "other",
-    a.facility?.name || "",
-    a.businessUnit?.name || "",
-    a.scope2Method || "",
-    Number(a.totalCo2e).toFixed(4),
-    a.recordCount,
-    a.intensityPerRevenueUnit ? Number(a.intensityPerRevenueUnit).toFixed(8) : "",
-    a.intensityPerFte ? Number(a.intensityPerFte).toFixed(4) : "",
-    a.intensityPerM2 ? Number(a.intensityPerM2).toFixed(4) : "",
-  ]);
-
-  const csv = [headers, ...rows].map((row) => row.map(escapeCsv).join(",")).join("\n");
-
-  return new NextResponse(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="report-export-${Date.now()}.csv"`,
-    },
-  });
-}
-
-function escapeCsv(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  const str = value.toString();
-  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}

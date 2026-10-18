@@ -30,6 +30,14 @@ describe("canonicalJson", () => {
   it("drops undefined object values like JSON does", () => {
     expect(canonicalJson({ a: undefined, b: null })).toBe('{"b":null}');
   });
+  it("writes a Date as its ISO string, the form it has after a JSON round trip", () => {
+    expect(canonicalJson({ d: t0 })).toBe(canonicalJson({ d: t0.toISOString() }));
+  });
+  it("keeps a row with a Date in its metadata verifiable after it is stored as JSON", () => {
+    const rows = chain(3, () => ({ startDate: t0, nested: [{ at: t0 }] }));
+    const stored = JSON.parse(JSON.stringify(rows)) as ChainRow[];
+    expect(run(stored)).toMatchObject({ status: "intact", verified: 3 });
+  });
 });
 
 describe("rowHash", () => {

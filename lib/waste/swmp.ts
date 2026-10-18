@@ -7,7 +7,7 @@
  */
 import { z } from "zod";
 import { formatEwc, normaliseEwc } from "./duty-of-care";
-import { wasteHierarchyOf } from "./hierarchy";
+import { isDiverted } from "./hierarchy";
 
 export const PLAN_ROUTES = ["reuse", "recycle", "recovery", "landfill"] as const;
 export type PlanRoute = (typeof PLAN_ROUTES)[number];
@@ -79,7 +79,7 @@ export function compareToForecast(lines: PlanLine[], actuals: Actual[]) {
   for (const r of rows) r.varianceTonnes = r.actualTonnes - r.forecastTonnes;
   const forecastTotal = lines.reduce((t, l) => t + l.forecastTonnes, 0);
   const actualTotal = actuals.reduce((t, a) => t + a.tonnes, 0);
-  const divertedActual = actuals.filter((a) => wasteHierarchyOf(a.route) !== "landfill").reduce((t, a) => t + a.tonnes, 0);
+  const divertedActual = actuals.filter((a) => isDiverted(a.route)).reduce((t, a) => t + a.tonnes, 0);
   const divertedPlanned = lines.filter((l) => l.plannedRoute !== "landfill").reduce((t, l) => t + l.forecastTonnes, 0);
   return {
     rows,

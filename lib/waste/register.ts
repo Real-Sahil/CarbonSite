@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/db";
 import { checkDutyOfCare, formatEwc, type DutyOfCareResult, type KnownCarrier } from "./duty-of-care";
-import { wasteHierarchyOf } from "./hierarchy";
+import { isDiverted } from "./hierarchy";
 
-const DIVERTED = new Set(["recycle", "recovery"]);
 
 export type RegisterFilters = { reportingPeriodId?: string; facilityId?: string; gapsOnly?: boolean };
 
@@ -80,7 +79,7 @@ export async function loadWasteRegister(orgId: string, filters: RegisterFilters,
   for (const row of all) {
     const s = bySite.get(row.facility) ?? { tonnes: 0, diverted: 0, transfers: 0, gaps: 0 };
     s.tonnes += row.tonnes;
-    if (DIVERTED.has(wasteHierarchyOf(row.disposalRoute))) s.diverted += row.tonnes;
+    if (isDiverted(row.disposalRoute)) s.diverted += row.tonnes;
     s.transfers += 1;
     if (!row.check.complete) s.gaps += 1;
     bySite.set(row.facility, s);

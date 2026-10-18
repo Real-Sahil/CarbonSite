@@ -5,6 +5,7 @@
 import { Prisma } from "@prisma/client";
 import { isValid as isValidUkPostcode } from "postcode";
 import { convertBetween } from "@/lib/calculation/units";
+import { wasteHierarchyOf } from "@/lib/waste/hierarchy";
 import { recordDeliveryEmbodiedCarbon, type EmbodiedOutcome } from "@/lib/embodied-carbon/delivery-notes";
 import { approveSocialValueInTx, socialValueEntry } from "@/lib/social-value/field-capture";
 import { approveFuelInTx, fuelLogEntry } from "./fuel-capture";
@@ -134,6 +135,27 @@ export function approvalBlocker(
       code: "MISSING_FACILITY",
       message: "Assign a facility before approving this waste ticket.",
     };
+  }
+  // The WasteRecord is in tonnes, so the weight must be a mass, and the route
+  // must be one the hierarchy knows: a volume or a guessed route is not booked.
+  if (submission.documentType === "waste_ticket") {
+    const form = (submission.formData ?? {}) as Record<string, unknown>;
+    const ocr = typeof submission.ocrExtractedData === "object" && !Array.isArray(submission.ocrExtractedData)
+      ? (submission.ocrExtractedData as Record<string, unknown>)
+      : null;
+    const { amount, unit } = extractAmountUnit(submission.documentType, form, ocr);
+    if (convertBetween(amount, unit, "kg") == null) {
+      return {
+        code: "INVALID_FORM_DATA",
+        message: `The weight is in "${unit}". Record a weight in kg or tonnes before approving this waste ticket.`,
+      };
+    }
+    if (wasteHierarchyOf(String(form["disposalRoute"] ?? "")) == null) {
+      return {
+        code: "INVALID_FORM_DATA",
+        message: "Choose a disposal route before approving this waste ticket.",
+      };
+    }
   }
   // Without a facility the approval would throw a plain error instead of this message.
   if (submission.documentType === "water_meter_reading" && !facilityId) {
@@ -311,7 +333,7 @@ export async function approveSubmissionInTx(
           facilityId,
           reportingPeriodId: submission.reportingPeriodId,
           wasteType: String(formData["wasteType"] ?? formData["description"] ?? "Field-submitted waste"),
-          disposalRoute: String(formData["disposalRoute"] ?? "recycling_mixed"),
+          disposalRoute: String(formData["disposalRoute"]),
           hazardous: Boolean(formData["hazardous"] ?? false),
           weightTonnes,
           ewcCode: formData["ewcCode"] ? String(formData["ewcCode"]) : undefined,

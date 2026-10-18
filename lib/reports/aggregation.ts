@@ -3,6 +3,7 @@ import { getObject } from "@/lib/storage";
 import { reportLogger } from "@/lib/logger";
 import type { ReportData } from "./template";
 import { countsTowardHeadline, inBothScope2Totals, scope2MethodOf } from "@/lib/calculation/scope2-method";
+import { GWP_AR6 } from "@/lib/calculation/gwp";
 
 function withQueryTimeout<T>(promise: Promise<T>, timeoutMs = 30000): Promise<T> {
   return Promise.race([
@@ -47,6 +48,8 @@ export type Aggregation = {
   totalCh4Kg: number;
   totalN2oKg: number;
   totalBiogenicKg: number;
+  /** Total of calculations whose factor gave only a CO2e figure, with no gas split. */
+  unsplitKg: number;
   hasCo2: boolean;
   hasCh4: boolean;
   hasN2o: boolean;
@@ -68,6 +71,7 @@ export function aggregate(calcs: CalculationRow[]): Aggregation {
   let totalCh4Kg = 0;
   let totalN2oKg = 0;
   let totalBiogenicKg = 0;
+  let unsplitKg = 0;
   let hasCo2 = false;
   let hasCh4 = false;
   let hasN2o = false;
@@ -92,6 +96,7 @@ export function aggregate(calcs: CalculationRow[]): Aggregation {
     if (calc.ch4 != null) { totalCh4Kg += Number(calc.ch4); hasCh4 = true; }
     if (calc.n2o != null) { totalN2oKg += Number(calc.n2o); hasN2o = true; }
     if (calc.biogenicCo2e != null) { totalBiogenicKg += Number(calc.biogenicCo2e); hasBiogenic = true; }
+    if (calc.co2 == null && calc.ch4 == null && calc.n2o == null) unsplitKg += kg;
   }
 
   return {
@@ -99,8 +104,22 @@ export function aggregate(calcs: CalculationRow[]): Aggregation {
     s1kg: scopeKg.get(1) ?? 0,
     s2kg: scopeKg.get(2) ?? 0,
     s3kg: scopeKg.get(3) ?? 0,
-    totalCo2Kg, totalCh4Kg, totalN2oKg, totalBiogenicKg,
+    totalCo2Kg, totalCh4Kg, totalN2oKg, totalBiogenicKg, unsplitKg,
     hasCo2, hasCh4, hasN2o, hasBiogenic,
+  };
+}
+
+/**
+ * Per-gas split of the headline total, in kg CO2e. Gas mass is weighted with
+ * AR6 GWP, as the per-gas factor path does. Calculations whose factor gave only
+ * a total CO2e sit in `unsplitKg`, so the parts always sum to `grandKg`.
+ */
+export function co2eBreakdownKg(agg: Aggregation) {
+  return {
+    co2Kg: agg.hasCo2 ? agg.totalCo2Kg : undefined,
+    ch4Kg: agg.hasCh4 ? agg.totalCh4Kg * GWP_AR6.CH4 : undefined,
+    n2oKg: agg.hasN2o ? agg.totalN2oKg * GWP_AR6.N2O : undefined,
+    unsplitKg: agg.unsplitKg > 0 ? agg.unsplitKg : undefined,
   };
 }
 

@@ -34,6 +34,7 @@ vi.mock("@/lib/reports/commitments", () => ({
 
 import {
   bidAnswers,
+  bidPackBlockers,
   bidPackReadiness,
   loadBidPackData,
   scopeTotalsFromRollup,
@@ -115,6 +116,14 @@ describe("readiness", () => {
       .filter((c) => !c.passed && c.required)
       .map((c) => c.id);
     expect(failed).toEqual(["bid-base-year", "bid-net-zero", "bid-signatory"]);
+  });
+
+  it("refuses generation while a required check fails, naming each one", () => {
+    expect(bidPackBlockers(pack())).toEqual([]);
+    expect(bidPackBlockers(pack({ baseYear: null, signatory: { name: null, title: null, date: null } }))).toEqual([
+      "A Carbon Reduction Plan must state baseline emissions. Set a base year under Targets.",
+      "The plan must be signed off by a director. Add the signatory's name and title.",
+    ]);
   });
 
   it("warns, without blocking, on missing PPN Scope 3 categories", () => {
@@ -203,6 +212,16 @@ describe("pack document", () => {
       expect(html).toContain(s);
     }
     expect(html).not.toMatch(/undefined|NaN|null/);
+  });
+
+  it("claims PPN 006, SECR and board sign-off only when the pack records them", () => {
+    const html = renderBidCarbonPackHtml(pack({
+      baseYear: null, netZeroYear: null, signatory: { name: null, title: null, date: null },
+      current: { s1: 0, s2: 0, s2Market: null, s3: 900, total: 900 },
+    }));
+    expect(html).not.toContain("has been completed in accordance with PPN 006");
+    expect(html).not.toContain("reported in accordance with SECR");
+    expect(html).not.toContain("signed off by the board");
   });
 
   it("escapes user text and drops empty sections", () => {

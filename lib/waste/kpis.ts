@@ -9,7 +9,7 @@
  * absent and the tonnes and diversion still show.
  */
 import { prisma } from "@/lib/db";
-import { wasteHierarchyOf } from "./hierarchy";
+import { isDiverted } from "./hierarchy";
 
 export type KpiRow = { tonnes: number; route: string };
 export type WasteKpi = {
@@ -22,7 +22,7 @@ export type WasteKpi = {
 
 export function wasteKpi(rows: KpiRow[], value: number | null, basis: string): WasteKpi {
   const tonnes = rows.reduce((t, r) => t + r.tonnes, 0);
-  const diverted = rows.filter((r) => wasteHierarchyOf(r.route) !== "landfill").reduce((t, r) => t + r.tonnes, 0);
+  const diverted = rows.filter((r) => isDiverted(r.route)).reduce((t, r) => t + r.tonnes, 0);
   return {
     tonnes,
     divertedPct: tonnes > 0 ? (diverted / tonnes) * 100 : null,
