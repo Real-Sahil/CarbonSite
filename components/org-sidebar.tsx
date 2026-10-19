@@ -354,6 +354,7 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
       { items: [
         { label: "Reports", href: `/orgs/${orgId}/reports`, icon: BarChart2, roles: CORE_ROLES },
         { label: "KPI report", href: `/orgs/${orgId}/kpis`, icon: BarChart3, roles: EXTENDED_VIEW_ROLES },
+        { label: "Carbon by account", href: `/orgs/${orgId}/carbon-by-account`, icon: BookOpen, roles: [...CORE_ROLES, "sustainability_director", "sustainability_manager"] },
         { label: "Carbon Reduction Plan", href: `/orgs/${orgId}/carbon-reduction-plan`, icon: ClipboardCheck, roles: CORE_ROLES },
       ]},
       { label: "Compliance", items: [
