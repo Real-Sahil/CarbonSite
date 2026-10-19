@@ -6,6 +6,16 @@ import { prisma } from "@/lib/db";
 import { validateApiKey } from "@/lib/auth/api-key";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { logger } from "@/lib/logger";
+import { mapPactCategoryToInternal } from "@/lib/suppliers/pact-category";
+
+// Unknown PACT categories are still stored (as purchased goods) until suppliers are told to send valid names.
+function mapPactForRoute(pactCategory: string, orgId: string): string {
+  const code = mapPactCategoryToInternal(pactCategory);
+  if (code) return code;
+  logger.warn("pact-import: unknown PACT category stored as s3-purchased-goods", { orgId, pactCategory });
+  return "s3-purchased-goods";
+}
 
 // PACT Scope 3 response schema - what suppliers send back
 const PactScope3DataSchema = z.object({
@@ -107,7 +117,7 @@ export async function POST(
           format: "pact-pathfinder-3.0",
           supplier: data.supplier,
           emissionFactors: data.emissionFactors.map((ef) => ({
-            category: mapPactCategoryToInternal(ef.category),
+            category: mapPactForRoute(ef.category, orgId),
             value: ef.value,
             unit: ef.unit,
             dataQuality: ef.dataQuality,
@@ -154,27 +164,3 @@ export async function POST(
   }
 }
 
-/**
- * Map PACT Scope 3 categories to MetricOra category codes.
- */
-function mapPactCategoryToInternal(pactCategory: string): string {
-  const mapping: Record<string, string> = {
-    "purchased-goods-services": "s3-purchased-goods",
-    "capital-goods": "s3-capital-goods",
-    "fuel-energy-not-included-in-scope": "s3-fuel-energy",
-    "upstream-transportation-distribution": "s3-upstream-transport",
-    "waste-generated-operations": "s3-waste",
-    "business-travel": "s3-business-travel",
-    "employee-commuting": "s3-commuting",
-    "upstream-leased-assets": "s3-upstream-leased",
-    "downstream-transportation-distribution": "s3-downstream-transport",
-    "processing-sold-products": "s3-processing",
-    "use-sold-products": "s3-use-sold",
-    "end-of-life-sold-products": "s3-end-of-life",
-    "downstream-leased-assets": "s3-downstream-leased",
-    "franchises": "s3-franchises",
-    "investments": "s3-investments",
-  };
-
-  return mapping[pactCategory] || "s3-purchased-goods";
-}
