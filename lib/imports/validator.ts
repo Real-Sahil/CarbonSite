@@ -114,6 +114,7 @@ export function validateRow(
     "transportMode",
     "refrigerantType",
     "industryCode",
+    "ledgerAccount",
     "assumptionNotes",
   ];
   for (const field of stringFields) {

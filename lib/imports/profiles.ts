@@ -251,6 +251,7 @@ export function applyProfile(rows: ParsedRow[], spec: ProfileSpec): ProfiledRow[
     if (facility) out.facilityName = facility;
     if (rule.industryCode) out.industryCode = rule.industryCode;
     if (rule.fuelType) out.fuelType = rule.fuelType;
+    if (account) out.ledgerAccount = account;
     out.assumptionNotes = `From ${where} by the import profile rule for ${[rule.account && `account ${rule.account}`, rule.costCode && `cost code ${rule.costCode}`].filter(Boolean).join(", ")}${rule.note ? ` (${rule.note})` : ""}.`;
 
     return { kind: "row", row: out, ruleIndex: index };
@@ -317,7 +318,7 @@ export function summariseProfile(rows: ParsedRow[], spec: ProfileSpec, profiled 
 export const PROFILED_COLUMN_MAP = new Map(
   [
     "emissionCategoryCode", "activityDate", "amount", "unit", "spendAmount", "spendCurrency", "sourceDescription",
-    "supplierName", "facilityName", "industryCode", "fuelType", "assumptionNotes", "dataOrigin",
+    "supplierName", "facilityName", "industryCode", "ledgerAccount", "fuelType", "assumptionNotes", "dataOrigin",
   ].map((k) => [k, k]),
 );
 

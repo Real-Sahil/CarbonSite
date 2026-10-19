@@ -113,6 +113,20 @@ describe("applyProfile", () => {
     expect(out.kind === "row" && out.row).toMatchObject({ amount: "500", unit: "litres", fuelType: "Diesel", spendAmount: "650" });
   });
 
+  it("keeps the ledger account the line was booked to, and leaves it empty for a cost-code-only line", () => {
+    const costCodeSpec = profileSpecSchema.parse({
+      sourceSystem: "sage",
+      columns: { date: "Date", account: "N/C", costCode: "Dept", netAmount: "Net" },
+      rules: [{ costCode: "D1", action: "include", categoryCode: "s3-purchased-goods" }],
+    });
+    const [booked] = applyProfile([line({ "N/C": "5010", Net: "100" })], spec);
+    const [byCostCode] = applyProfile([line({ Dept: "D1", Net: "100" })], costCodeSpec);
+    expect(booked.kind === "row" && booked.row.ledgerAccount).toBe("5010");
+    expect(byCostCode.kind === "row" && byCostCode.row.ledgerAccount).toBeUndefined();
+    const validated = booked.kind === "row" ? validateRow(booked.row, PROFILED_COLUMN_MAP, new Map([["s3-purchased-goods", "cat1"]]), new Map(), new Map()) : null;
+    expect(validated?.data.ledgerAccount).toBe("5010");
+  });
+
   it("leaves out unmatched, ignored, credit and zero lines with a reason", () => {
     const out = applyProfile(
       [line({ "N/C": "8100", Net: "10", Details: "Bank charges" }), line({ "N/C": "7005", Net: "900" }), line({ "N/C": "7200", Net: "(40.00)" }), line({ "N/C": "7200", Net: "0" }), line({})],

@@ -26,7 +26,8 @@ export const CANONICAL_FIELDS: CanonicalField[] = [
   { canonical: "transportMode",       label: "Transport Mode",      required: false, description: "Mode of transport (e.g. road, rail, air)" },
   { canonical: "refrigerantType",     label: "Refrigerant",         required: false, description: "Refrigerant or F-gas type" },
   { canonical: "industryCode",        label: "Industry code",       required: false, description: "Supplier's 6-digit NAICS (US) or SIC (UK) code, for spend-based factors" },
-  { canonical: "distanceAmount",      label: "Distance",            required: false, description: "Distance travelled" },
+  { canonical: "ledgerAccount",       label: "Ledger account",      required: false, description: "The ledger or nominal account the spend is booked to" },
+  { canonical: "distanceAmount",     label: "Distance",            required: false, description: "Distance travelled" },
   { canonical: "distanceUnit",        label: "Distance Unit",       required: false, description: "Unit of distance (km, miles)" },
   { canonical: "spendAmount",         label: "Spend Amount",        required: false, description: "Financial spend amount" },
   { canonical: "spendCurrency",       label: "Currency",            required: false, description: "Currency code (e.g. GBP, USD)" },
@@ -94,6 +95,10 @@ const ACTIVITY_SYNONYMS: Record<string, string[]> = {
   ],
   industryCode: [
     "industry_code", "naics", "naics_code", "naics6", "sic", "sic_code",
+  ],
+  // Plain "account" is left out on purpose: bank and payment files use it for other things.
+  ledgerAccount: [
+    "ledger_account", "ledger_code", "gl_account", "gl_code", "nominal_code", "nominal_account",
   ],
   distanceAmount: [
     "distance", "distance_amount", "distance_km", "km", "miles", "mileage",

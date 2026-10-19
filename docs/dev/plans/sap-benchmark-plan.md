@@ -65,6 +65,8 @@ Risk: this changes figures for records that opt in. Rules: no automatic switchin
 Change: report view joining stored calculations to the ledger-line mapping from `lib/ledger/`, showing tCO2e and carbon per unit of spend by account. No write to Xero or any ledger.
 Why safe: read-only query over existing tables, new page, `DashboardAggregate` untouched.
 
+Status: the column step is done. `ActivityRecord.ledgerAccount` (nullable text, migration `20261019000106_activity_record_ledger_account`) is filled by ERP profile imports (the `account` column of a matched line) and by a plain import column named `ledgerAccount` or a GL/nominal alias. QuickBooks and Sage sync and `lib/connectors/ingest.ts` do not set it yet. The report view above is not built.
+
 ### Phase 6: ESG KPI gap audit (no build)
 Compare targets and ESRS pages with SAP's Control Tower scope. Output a short list; build nothing until picked.
 
