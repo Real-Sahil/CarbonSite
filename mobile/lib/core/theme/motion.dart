@@ -19,7 +19,7 @@ class CountUp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fontFeatures = const [FontFeature.tabularFigures()];
+    const fontFeatures = [FontFeature.tabularFigures()];
     final base = (style ?? DefaultTextStyle.of(context).style)
         .copyWith(fontFeatures: fontFeatures);
     if (_reduced(context)) return Text(format(value), style: base);
