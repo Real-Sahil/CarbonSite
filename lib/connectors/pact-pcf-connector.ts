@@ -144,6 +144,9 @@ export class PACTPCFConnector implements IConnector {
 
     const warnings: string[] = [];
 
+    // ConnectorActivityRecord has no supplier-factor field, so the PCF is not used in calculation
+    warnings.push("PCF not used in calculation: connector cannot carry a supplier factor yet. Review before committing.");
+
     // Flag if using biogenic-inclusive PCF (needs clarification on scope)
     if (footprint.pcfIncludingBiogenic && footprint.pcfIncludingBiogenic !== co2ePerUnit) {
       warnings.push(
@@ -168,12 +171,8 @@ export class PACTPCFConnector implements IConnector {
       amount: 1, // Normalized to 1 unit; PCF already includes the per-unit value
       unit: footprint.declaredUnit,
 
-      // Financial/carbon quantity
-      spendAmount: co2ePerUnit, // Use PCF as a proxy for spend-based fallback
-      spendCurrency: "CO2e", // Not currency, but represents the carbon intensity
-
       // Context
-      sourceDescription: `PACT PCF ${footprint.id} from ${companyName}`,
+      sourceDescription: `PACT PCF ${footprint.id} from ${companyName}: ${co2ePerUnit} kg CO2e per ${footprint.declaredUnit}`,
       supplierName: companyName,
       facilityCode, // Indicates PACT XML is stored for traceability
 
@@ -183,35 +182,40 @@ export class PACTPCFConnector implements IConnector {
   }
 }
 
-// Helper: Export MetricOra activity record to PACT format for supplier portal
+// Helper: Export MetricOra activity record to PACT format for supplier portal.
+// co2ePerUnitKg is kg CO2e per one unit of record.unit, computed by the caller from the record's emissions.
 export function exportToPACT(record: {
   externalRecordId: string;
   emissionCategoryCode: string;
-  amount: number;
+  co2ePerUnitKg: number;
   unit: string;
   supplierName: string;
   sourceDescription: string;
 }): Partial<PACTProductFootprint> {
+  const { declaredUnit, declaredPerRecordUnit } = toPACTUnit(record.unit);
   return {
     id: record.externalRecordId,
     name: record.sourceDescription,
-    declaredUnit: normalizeUnitToPACT(record.unit),
-    pcfExcludingBiogenic: record.amount,
+    declaredUnit,
+    pcfExcludingBiogenic: record.co2ePerUnitKg / declaredPerRecordUnit,
     specVersion: "2.2.0",
   };
 }
 
-function normalizeUnitToPACT(
-  unit: string
-): "kg" | "litre" | "m3" | "kWh" | "MJ" | "unit" {
+// declaredPerRecordUnit: how many declared units make one record unit (one tonne is 1000 kg)
+function toPACTUnit(unit: string): {
+  declaredUnit: PACTProductFootprint["declaredUnit"];
+  declaredPerRecordUnit: number;
+} {
   const lower = unit.toLowerCase();
 
-  if (lower.includes("kg")) return "kg";
-  if (lower.includes("tonne") || lower.includes("ton")) return "kg"; // Convert to kg
-  if (lower.includes("litre") || lower.includes("liter")) return "litre";
-  if (lower.includes("m3") || lower.includes("m³")) return "m3";
-  if (lower.includes("kwh")) return "kWh";
-  if (lower.includes("mj")) return "MJ";
+  if (lower.includes("kg")) return { declaredUnit: "kg", declaredPerRecordUnit: 1 };
+  // Exact match: "ton" as a substring also matches "carton"
+  if (["t", "ton", "tons", "tonne", "tonnes"].includes(lower)) return { declaredUnit: "kg", declaredPerRecordUnit: 1000 };
+  if (lower.includes("litre") || lower.includes("liter")) return { declaredUnit: "litre", declaredPerRecordUnit: 1 };
+  if (lower.includes("m3") || lower.includes("m³")) return { declaredUnit: "m3", declaredPerRecordUnit: 1 };
+  if (lower.includes("kwh")) return { declaredUnit: "kWh", declaredPerRecordUnit: 1 };
+  if (lower.includes("mj")) return { declaredUnit: "MJ", declaredPerRecordUnit: 1 };
 
-  return "unit"; // Default fallback
+  return { declaredUnit: "unit", declaredPerRecordUnit: 1 }; // Default fallback
 }

@@ -26,7 +26,6 @@ describe("PACTPCFConnector", () => {
       emissionCategoryCode: "s3-purchased-goods",
       amount: 1,
       unit: "kg",
-      spendAmount: 2.45,
       supplierName: "Acme Materials Ltd",
     });
   });
@@ -196,7 +195,22 @@ describe("PACTPCFConnector", () => {
     const result = await connector.ingest(payload);
 
     expect(result.records).toHaveLength(3);
-    expect(result.records.map((r) => r.spendAmount)).toEqual([1.0, 2.0, 1.5]);
+    expect(result.records.map((r) => r.externalRecordId)).toEqual([
+      "Acme Corp-SKU-001",
+      "Acme Corp-SKU-002",
+      "Acme Corp-SKU-003",
+    ]);
+  });
+
+  it("should keep the PCF out of spend fields and in the description", async () => {
+    const result = await connector.ingest({
+      companyName: "Supplier Co",
+      productFootprints: [{ id: "SKU-SPEND", declaredUnit: "kg", pcfExcludingBiogenic: 2.5 }],
+    });
+
+    expect(result.records[0].spendAmount).toBeUndefined();
+    expect(result.records[0].spendCurrency).toBeUndefined();
+    expect(result.records[0].sourceDescription).toContain("2.5 kg CO2e per kg");
   });
 
   // TfS PCF Data Model 3.1 fixtures: nested productionStage, declared unit names, specVersion as URN array
@@ -222,8 +236,7 @@ describe("PACTPCFConnector", () => {
       externalRecordId: "Acme Materials Ltd-SKU-31-001",
       emissionCategoryCode: "s3-purchased-goods",
       unit: "kg",
-      spendAmount: 2.45,
-      validationWarnings: [],
+      validationWarnings: [expect.stringContaining("PCF not used in calculation")],
     });
     expect(result.records[0].activityDate?.toISOString()).toBe("2026-08-15T00:00:00.000Z");
   });
@@ -268,7 +281,7 @@ describe("PACTPCFConnector", () => {
       ],
     });
 
-    expect(result.records[0].validationWarnings).toEqual([]);
+    expect(result.records[0].validationWarnings?.some((w) => w.includes("spec version"))).toBe(false);
   });
 
   it("should flag a TfS 3.1 footprint whose biogenic-inclusive total differs", async () => {
@@ -290,7 +303,7 @@ describe("PACTPCFConnector", () => {
       ],
     });
 
-    expect(result.records[0].validationWarnings).toEqual([]);
+    expect(result.records[0].validationWarnings?.some((w) => w.includes("spec version"))).toBe(false);
   });
 
   it("should accept a batch mixing 2.2.0 and TfS 3.1 footprints", async () => {
@@ -314,7 +327,7 @@ describe("exportToPACT", () => {
     const record = {
       externalRecordId: "PROD-123",
       emissionCategoryCode: "s3-purchased-goods",
-      amount: 100,
+      co2ePerUnitKg: 100,
       unit: "kg",
       supplierName: "Supplier Co",
       sourceDescription: "Steel product",
@@ -340,13 +353,14 @@ describe("exportToPACT", () => {
       { input: "kWh", expected: "kWh" },
       { input: "MJ", expected: "MJ" },
       { input: "unknown", expected: "unit" },
+      { input: "carton", expected: "unit" },
     ];
 
     for (const test of testCases) {
       const record = {
         externalRecordId: "TEST",
         emissionCategoryCode: "s3-purchased-goods",
-        amount: 1,
+        co2ePerUnitKg: 1,
         unit: test.input,
         supplierName: "Test",
         sourceDescription: "Test",
@@ -355,5 +369,18 @@ describe("exportToPACT", () => {
       const pactRecord = exportToPACT(record);
       expect(pactRecord.declaredUnit).toBe(test.expected);
     }
+  });
+
+  it("should express a tonne figure per kg", () => {
+    const pactRecord = exportToPACT({
+      externalRecordId: "TONNE",
+      emissionCategoryCode: "s3-purchased-goods",
+      co2ePerUnitKg: 2500,
+      unit: "tonne",
+      supplierName: "Test",
+      sourceDescription: "Test",
+    });
+
+    expect(pactRecord).toMatchObject({ declaredUnit: "kg", pcfExcludingBiogenic: 2.5 });
   });
 });
