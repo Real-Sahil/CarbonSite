@@ -9,6 +9,7 @@ import '../../core/api/endpoints.dart';
 import '../../core/screenshot/screenshot_mode.dart';
 import '../../core/storage/app_database.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/motion.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../../core/widgets/status_chip.dart';
 
@@ -380,14 +381,25 @@ class _TotalCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.baseline,
             textBaseline: TextBaseline.alphabetic,
             children: [
-              Text(
-                stats.hasCo2eData ? NumberFormat('#,##0.00').format(tonnes) : '—',
-                style: textTheme.displaySmall?.copyWith(
-                  color: colorScheme.onPrimary,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -1,
+              if (stats.hasCo2eData)
+                CountUp(
+                  value: tonnes,
+                  format: NumberFormat('#,##0.00').format,
+                  style: textTheme.displaySmall?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1,
+                  ),
+                )
+              else
+                Text(
+                  '—',
+                  style: textTheme.displaySmall?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -1,
+                  ),
                 ),
-              ),
               const SizedBox(width: 8),
               Text(
                 'tCO2e',

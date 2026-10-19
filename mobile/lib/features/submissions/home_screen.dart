@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/client.dart';
 import '../../core/api/endpoints.dart';
 import '../../core/screenshot/screenshot_mode.dart';
+import '../../core/theme/motion.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../auth/pin_lock_screen.dart';
 
@@ -268,12 +269,15 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _ProjectCard(
-                    project: _projects[index],
-                    colorScheme: colorScheme,
-                    textTheme: textTheme,
+                (context, index) => StaggerIn(
+                  index: index,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _ProjectCard(
+                      project: _projects[index],
+                      colorScheme: colorScheme,
+                      textTheme: textTheme,
+                    ),
                   ),
                 ),
                 childCount: _projects.length,
