@@ -198,6 +198,115 @@ describe("PACTPCFConnector", () => {
     expect(result.records).toHaveLength(3);
     expect(result.records.map((r) => r.spendAmount)).toEqual([1.0, 2.0, 1.5]);
   });
+
+  // TfS PCF Data Model 3.1 fixtures: nested productionStage, declared unit names, specVersion as URN array
+  const v31Footprint = {
+    specVersion: ["urn:tfs-initiative.com:datamodel-version:3.1.0"],
+    productNameCompany: "Steel Beams Grade A",
+    productIds: ["SKU-31-001"],
+    declaredUnitOfMeasurement: "kilogram",
+    declaredUnitAmount: 1,
+    productionStage: { pcfExcludingBiogenic: 2.45 },
+    pcfIncludingBiogenicUptake: 2.45,
+    completedAt: "2026-08-15T00:00:00Z",
+  };
+
+  it("should parse a TfS 3.1 product footprint", async () => {
+    const result = await connector.ingest({
+      companyName: "Acme Materials Ltd",
+      productFootprints: [v31Footprint],
+    });
+
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0]).toMatchObject({
+      externalRecordId: "Acme Materials Ltd-SKU-31-001",
+      emissionCategoryCode: "s3-purchased-goods",
+      unit: "kg",
+      spendAmount: 2.45,
+      validationWarnings: [],
+    });
+    expect(result.records[0].activityDate?.toISOString()).toBe("2026-08-15T00:00:00.000Z");
+  });
+
+  it("should map TfS 3.1 declared unit names onto the declared units", async () => {
+    const cases = [
+      { declaredUnitOfMeasurement: "piece", unit: "unit" },
+      { declaredUnitOfMeasurement: "liter", unit: "litre" },
+      { declaredUnitOfMeasurement: "cubic meter", unit: "m3" },
+      { declaredUnitOfMeasurement: "kilowatt hour", unit: "kWh" },
+      { declaredUnitOfMeasurement: "megajoule", unit: "MJ" },
+    ];
+
+    for (const { declaredUnitOfMeasurement, unit } of cases) {
+      const result = await connector.ingest({
+        companyName: "Test Supplier",
+        productFootprints: [{ ...v31Footprint, declaredUnitOfMeasurement }],
+      });
+
+      expect(result.records[0].unit).toBe(unit);
+    }
+  });
+
+  it("should reject an unmapped TfS 3.1 unit for that product only", async () => {
+    const result = await connector.ingest({
+      companyName: "Supplier Co",
+      productFootprints: [
+        { ...v31Footprint, declaredUnitOfMeasurement: "ton" },
+        { ...v31Footprint, productIds: ["SKU-31-002"] },
+      ],
+    });
+
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0].externalRecordId).toBe("Supplier Co-SKU-31-002");
+  });
+
+  it("should not warn about spec version for a TfS 3.1 footprint given as a single string", async () => {
+    const result = await connector.ingest({
+      companyName: "Supplier Co",
+      productFootprints: [
+        { ...v31Footprint, specVersion: "urn:tfs-initiative.com:datamodel-version:3.1.0" },
+      ],
+    });
+
+    expect(result.records[0].validationWarnings).toEqual([]);
+  });
+
+  it("should flag a TfS 3.1 footprint whose biogenic-inclusive total differs", async () => {
+    const result = await connector.ingest({
+      companyName: "Supplier Co",
+      productFootprints: [{ ...v31Footprint, pcfIncludingBiogenicUptake: 1.9 }],
+    });
+
+    expect(result.records[0].validationWarnings).toContain(
+      "Using biogenic-excluding PCF. Biogenic-inclusive value available but not included."
+    );
+  });
+
+  it("should keep 2.2.0 footprints free of a spec version warning", async () => {
+    const result = await connector.ingest({
+      companyName: "Supplier Co",
+      productFootprints: [
+        { id: "SKU-220", declaredUnit: "kg", pcfExcludingBiogenic: 1.0, specVersion: "2.2.0" },
+      ],
+    });
+
+    expect(result.records[0].validationWarnings).toEqual([]);
+  });
+
+  it("should accept a batch mixing 2.2.0 and TfS 3.1 footprints", async () => {
+    const result = await connector.ingest({
+      companyName: "Supplier Co",
+      productFootprints: [
+        { id: "SKU-220", declaredUnit: "kg", pcfExcludingBiogenic: 1.0 },
+        v31Footprint,
+      ],
+    });
+
+    expect(result.records.map((r) => r.externalRecordId)).toEqual([
+      "Supplier Co-SKU-220",
+      "Supplier Co-SKU-31-001",
+    ]);
+  });
 });
 
 describe("exportToPACT", () => {

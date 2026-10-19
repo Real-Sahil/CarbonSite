@@ -22,16 +22,60 @@ const PACTProductFootprintSchema = z.object({
 
 type PACTProductFootprint = z.infer<typeof PACTProductFootprintSchema>;
 
+// TfS PCF Data Model 3.1 (September 2025): nested productionStage, declared unit names, no production date
+const PACTv31FootprintSchema = z.object({
+  specVersion: z.union([z.string(), z.array(z.string()).min(1)]), // URNs, e.g. urn:tfs-initiative.com:datamodel-version:3.1.0
+  productNameCompany: z.string().optional(),
+  productIds: z.array(z.string()).min(1),
+  declaredUnitOfMeasurement: z.string(),
+  declaredUnitAmount: z.number().positive(),
+  productionStage: z.object({ pcfExcludingBiogenic: z.number().positive() }),
+  pcfIncludingBiogenicUptake: z.number().optional(), // kg CO2e per declared unit
+  completedAt: z.string().optional(), // attestation date, ISO 8601
+});
+
+type PACTv31Footprint = z.infer<typeof PACTv31FootprintSchema>;
+
+// TfS 3.1 declared unit names that map onto the 2.2.0 enum; any other name fails that product only
+const PACT_V31_UNITS = new Map<string, PACTProductFootprint["declaredUnit"]>([
+  ["piece", "unit"],
+  ["kilogram", "kg"],
+  ["liter", "litre"],
+  ["cubic meter", "m3"],
+  ["kilowatt hour", "kWh"],
+  ["megajoule", "MJ"],
+]);
+
+// Maps a 3.1 footprint onto the 2.2.0 shape the parser takes; throws for a unit it cannot map
+function fromPact31(footprint: PACTv31Footprint): Omit<PACTProductFootprint, "specVersion"> {
+  const declaredUnit = PACT_V31_UNITS.get(footprint.declaredUnitOfMeasurement);
+  if (!declaredUnit) {
+    throw new Error(`Unsupported declared unit: ${footprint.declaredUnitOfMeasurement}`);
+  }
+  return {
+    id: footprint.productIds[0],
+    name: footprint.productNameCompany,
+    declaredUnit,
+    pcfExcludingBiogenic: footprint.productionStage.pcfExcludingBiogenic,
+    pcfIncludingBiogenic: footprint.pcfIncludingBiogenicUptake,
+    // shortcut: 3.1 has no production date, attestation date stands in, upgrade when production date is mapped
+    dUProductionDate: footprint.completedAt,
+  };
+}
+
 // Inbound PACT request (supplier sends PCF data)
 const PACTIngestSchema = z.object({
   companyName: z.string(),
-  productFootprints: z.array(PACTProductFootprintSchema).min(1).max(1000),
+  productFootprints: z
+    .array(z.union([PACTProductFootprintSchema, PACTv31FootprintSchema]))
+    .min(1)
+    .max(1000),
   createdAt: z.string().optional(), // ISO datetime
 });
 
 export class PACTPCFConnector implements IConnector {
   name = "pact-pcf";
-  version = "2.2.0";
+  version = "3.1.0";
 
   async ingest(payload: unknown): Promise<ConnectorPayload> {
     const parsed = PACTIngestSchema.parse(payload);
@@ -40,9 +84,12 @@ export class PACTPCFConnector implements IConnector {
     const errors: string[] = [];
 
     for (let idx = 0; idx < parsed.productFootprints.length; idx++) {
-      const footprint = parsed.productFootprints[idx];
+      const raw = parsed.productFootprints[idx];
+      const id = "productIds" in raw ? raw.productIds[0] : raw.id;
 
       try {
+        const footprint = "productIds" in raw ? fromPact31(raw) : raw;
+
         if (!footprint.id || footprint.id.trim() === "") {
           throw new Error("Product ID is required");
         }
@@ -51,11 +98,16 @@ export class PACTPCFConnector implements IConnector {
           throw new Error("PCF value must be > 0");
         }
 
-        const record = this.parsePACTFootprint(footprint, parsed.companyName);
+        const versionWarning =
+          "productIds" in raw || raw.specVersion === "2.2.0"
+            ? undefined
+            : `PACT spec version ${raw.specVersion} differs from implemented 2.2.0. Compatibility may vary.`;
+
+        const record = this.parsePACTFootprint(footprint, parsed.companyName, versionWarning);
         records.push(record);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        errors.push(`Product ${idx + 1} (${footprint.id}): ${msg}`);
+        errors.push(`Product ${idx + 1} (${id}): ${msg}`);
       }
     }
 
@@ -75,8 +127,9 @@ export class PACTPCFConnector implements IConnector {
   }
 
   private parsePACTFootprint(
-    footprint: PACTProductFootprint,
-    companyName: string
+    footprint: Omit<PACTProductFootprint, "specVersion">,
+    companyName: string,
+    versionWarning?: string
   ): ConnectorActivityRecord {
     const activityDate = footprint.dUProductionDate
       ? new Date(footprint.dUProductionDate)
@@ -98,11 +151,8 @@ export class PACTPCFConnector implements IConnector {
       );
     }
 
-    // Warn if this is a placeholder/pre-submission
-    if (footprint.specVersion !== "2.2.0") {
-      warnings.push(
-        `PACT spec version ${footprint.specVersion} differs from implemented 2.2.0. Compatibility may vary.`
-      );
+    if (versionWarning) {
+      warnings.push(versionWarning);
     }
 
     // Store the full PACT XML for audit/traceability if provided
