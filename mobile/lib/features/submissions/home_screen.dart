@@ -233,7 +233,17 @@ class _HomeScreenState extends State<HomeScreen> {
     TextTheme textTheme,
   ) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(16),
+        children: [
+          for (var i = 0; i < 3; i++)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: Skeleton(height: 132, radius: 24),
+            ),
+        ],
+      );
     }
 
     if (_error != null) {

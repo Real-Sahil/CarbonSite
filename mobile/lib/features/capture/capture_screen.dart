@@ -71,6 +71,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   // GPS is always enabled — required for lone-worker safety compliance.
   // A submit-time dialog lets the worker override if GPS is unavailable.
   bool _submitting = false;
+  // Set on success so the button shows a tick before the screen leaves.
+  bool _done = false;
 
   /// Site the submission is filed against. Server-side siteId is REQUIRED
   /// for new submissions — a draft without one can never sync. Seeded from
@@ -622,6 +624,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     ref.read(syncServiceProvider).syncNow();
 
     if (!mounted) return;
+    setState(() => _done = true);
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Saved on this device. Syncing in the background.'),
@@ -959,17 +964,32 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _submitting ? null : _submit,
-              icon: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.cloud_upload_outlined),
-              label: Text(_submitting ? 'Saving…' : 'Submit'),
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: _done
+                    ? const Icon(Icons.check_circle_outline, key: ValueKey('done'))
+                    : _submitting
+                        ? const SizedBox(
+                            key: ValueKey('busy'),
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.cloud_upload_outlined,
+                            key: ValueKey('idle'),
+                          ),
+              ),
+              label: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Text(
+                  _done ? 'Saved' : (_submitting ? 'Saving…' : 'Submit'),
+                  key: ValueKey(_done ? 'saved' : (_submitting ? 'saving' : 'submit')),
+                ),
+              ),
             ),
             const SizedBox(height: 8),
             Text(

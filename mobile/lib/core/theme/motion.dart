@@ -57,6 +57,44 @@ class StaggerIn extends StatelessWidget {
   }
 }
 
+/// A grey block that breathes while content loads. Holds still under reduced motion.
+class Skeleton extends StatefulWidget {
+  final double height;
+  final double radius;
+
+  const Skeleton({super.key, required this.height, this.radius = 12});
+
+  @override
+  State<Skeleton> createState() => _SkeletonState();
+}
+
+class _SkeletonState extends State<Skeleton> with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat(reverse: true);
+  late final Animation<double> _fade = Tween<double>(begin: 0.5, end: 1).animate(_pulse);
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final block = Container(
+      height: widget.height,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(widget.radius),
+      ),
+    );
+    if (_reduced(context)) return block;
+    return FadeTransition(opacity: _fade, child: block);
+  }
+}
+
 /// Scales a tappable child to 0.97 while pressed.
 class PressScale extends StatefulWidget {
   final Widget child;

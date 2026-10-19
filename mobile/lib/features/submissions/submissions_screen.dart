@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/endpoints.dart';
 import '../../core/screenshot/screenshot_mode.dart';
 import '../../core/storage/app_database.dart';
+import '../../core/theme/motion.dart';
 import '../../core/widgets/offline_banner.dart';
 import '../../core/widgets/status_chip.dart';
 import '../sync/sync_service.dart';
@@ -134,7 +135,17 @@ class _SubmissionsScreenState extends ConsumerState<SubmissionsScreen> {
           const OfflineBanner(),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator())
+                ? ListView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+                    children: [
+                      for (var i = 0; i < 4; i++)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 8),
+                          child: Skeleton(height: 64, radius: 12),
+                        ),
+                    ],
+                  )
                 : RefreshIndicator(
                     onRefresh: _refresh,
                     child: (localDrafts.isEmpty &&
