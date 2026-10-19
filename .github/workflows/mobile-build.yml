@@ -135,11 +135,11 @@ jobs:
             xcodebuild -version
             return 0
           }
-          if select_xcode /Applications/Xcode_26.0.app; then
-            echo "XCODE_SELECTED=26.0" >> "$GITHUB_ENV"
-          else
-            XCODE26=$(ls /Applications/ 2>/dev/null | grep -E '^Xcode_26' | sort -V | tail -1)
-            if [ -n "$XCODE26" ] && select_xcode "/Applications/$XCODE26"; then
+          ls /Applications/ | grep -i xcode || true
+          # Newest 26.x first: the runner image's Xcode_26.0 alias can lack the iOS platform component.
+          XCODE26=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if true; then
+            if [ -n "$XCODE26" ] && select_xcode "$XCODE26"; then
               echo "XCODE_SELECTED=26.x" >> "$GITHUB_ENV"
             else
               # Fall back to latest Xcode (any version) — iOS 18 SDK is still App Store valid
@@ -158,10 +158,15 @@ jobs:
         run: |
           sudo xcodebuild -runFirstLaunch 2>&1 | tail -5 || true
 
-          # Download iOS device platform SDK. Exit 70 (CoreSimulatorService) is expected non-fatal.
+          # "Unable to connect to simulator" means CoreSimulatorService was not up yet: start it, then download.
+          for i in 1 2 3; do xcrun simctl list >/dev/null 2>&1 && break; sleep 5; done
           echo "--- attempt 1 ---"
           sudo xcodebuild -downloadPlatform iOS 2>&1 | tee /tmp/xcode_platform_install.log | tail -10 || true
-          xcrun simctl list >/dev/null 2>&1 || true
+          if grep -q "Unable to connect to simulator" /tmp/xcode_platform_install.log; then
+            echo "--- attempt 1b (simulator service was down, retrying) ---"
+            sleep 10; xcrun simctl list >/dev/null 2>&1 || true
+            sudo xcodebuild -downloadPlatform iOS 2>&1 | tee -a /tmp/xcode_platform_install.log | tail -10 || true
+          fi
 
           # Check SDK — verify version matches selected Xcode (not just any iphoneos SDK from another Xcode).
           SDK_PATH="$(xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || echo '')"
