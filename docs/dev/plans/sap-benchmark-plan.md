@@ -70,6 +70,19 @@ Status: the column step is done. `ActivityRecord.ledgerAccount` (nullable text, 
 ### Phase 6: ESG KPI gap audit (no build)
 Compare targets and ESRS pages with SAP's Control Tower scope. Output a short list; build nothing until picked.
 
+Status: audited against `main` (e0b25f61). Nothing built. SAP's Control Tower scope comes from third-party pages only, so the comparison is against what those pages claim, not against SAP's documentation.
+
+Gap list, most urgent first:
+
+1. **Bug: intensity targets are measured as absolute tonnes.** The target form offers "Intensity reduction (per unit of output)", but `target-progress.tsx` ignores `targetType` and computes progress from total tCO2e. `ReductionTarget` stores no output denominator, so an intensity target cannot be measured as one. Options for the owner: store a denominator (additive column plus a unit), or hide the intensity option until it can be measured. Pick one before any other target work.
+2. **Targets roll up all scopes and facilities.** `page.tsx` sums `DashboardAggregate` rows with `SCOPE_ROLLUP_DIMENSIONS` and `facilityId: null`. A target cannot be set for Scope 1 and 2 alone or for Scope 3 alone, which SBTi and ESRS E1-4 both expect. `SbtiTarget` is separate and not checked here.
+3. **No owner, status, due date or interim milestones on carbon targets.** `ReductionTarget` has a creator and a baseline and target period, nothing else. Owner and status exist only on `ReductionInitiative`. Progress is a single end-point, not a trajectory.
+4. **No ESG KPI target outside carbon and social value.** Targets cover carbon (`ReductionTarget`), social value (`SocialValueTarget`, `SvCommitment`) and SBTi (`SbtiTarget`). Waste, water and safety measures have no target object. Whether `EnvironmentalMetricAggregate` is targeted anywhere was not checked.
+5. **Initiatives list is capped at 100 with no paging** (`take: 100` in `targets/page.tsx`). Fine at current sizes; it will truncate silently for a larger org.
+6. **ESRS E1 page is a status board, not a disclosure.** `compliance/esrs-e1/page.tsx` fetches about a dozen list endpoints in the browser and counts met, partial and gap per datapoint (E1-1 to E1-9). Nothing is stored, and the page does not draft the text. The export path was not reviewed.
+
+Not verified: SAP's feature list, its KPI and target model, and whether Control Tower treats targets per scope. The gap list rests on code reads, not on a run of the pages.
+
 ### Deferred
 Product-level (SKU) footprint allocation, SAP-style EHS and product compliance modules, factor library expansion (each library needs a licence check recorded in `docs/THIRD_PARTY_SOURCES.md`).
 
