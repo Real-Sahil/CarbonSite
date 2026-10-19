@@ -306,7 +306,7 @@ class _ProjectCard extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(24),
         side: BorderSide(
           color: colorScheme.outlineVariant,
           width: 1,

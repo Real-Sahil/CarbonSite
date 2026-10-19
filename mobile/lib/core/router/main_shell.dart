@@ -26,30 +26,40 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: widget.navigationShell.currentIndex,
-        onDestinationSelected: (index) => widget.navigationShell.goBranch(
-          index,
-          // Re-tapping the active tab resets it to its root.
-          initialLocation: index == widget.navigationShell.currentIndex,
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        child: Material(
+          color: Theme.of(context).colorScheme.surface,
+          elevation: 6,
+          shadowColor: Colors.black26,
+          shape: const StadiumBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: NavigationBar(
+            selectedIndex: widget.navigationShell.currentIndex,
+            onDestinationSelected: (index) => widget.navigationShell.goBranch(
+              index,
+              // Re-tapping the active tab resets it to its root.
+              initialLocation: index == widget.navigationShell.currentIndex,
+            ),
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.insights_outlined),
+                selectedIcon: Icon(Icons.insights),
+                label: 'Dashboard',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.folder_outlined),
+                selectedIcon: Icon(Icons.folder),
+                label: 'Projects',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.receipt_long_outlined),
+                selectedIcon: Icon(Icons.receipt_long),
+                label: 'Submissions',
+              ),
+            ],
+          ),
         ),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.insights_outlined),
-            selectedIcon: Icon(Icons.insights),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.folder_outlined),
-            selectedIcon: Icon(Icons.folder),
-            label: 'Projects',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long),
-            label: 'Submissions',
-          ),
-        ],
       ),
     );
   }

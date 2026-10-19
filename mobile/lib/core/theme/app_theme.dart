@@ -15,7 +15,7 @@ class AppTheme {
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
 
     return base.copyWith(
-      scaffoldBackgroundColor: scheme.surface,
+      scaffoldBackgroundColor: scheme.surfaceContainerLowest,
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
@@ -28,19 +28,36 @@ class AppTheme {
           color: scheme.onSurface,
         ),
       ),
+      // Floating pill: MainShell supplies the rounded, inset container.
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: scheme.surface,
-        indicatorColor: scheme.primaryContainer,
+        backgroundColor: Colors.transparent,
+        indicatorColor: scheme.primary,
+        indicatorShape: const StadiumBorder(),
         surfaceTintColor: Colors.transparent,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        height: 68,
+        labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
+        height: 64,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (s) => IconThemeData(
+            color: s.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : scheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: const StadiumBorder(),
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -51,13 +68,11 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: scheme.primary,
           side: BorderSide(color: scheme.primary),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          shape: const StadiumBorder(),
         ),
       ),
-      inputDecorationTheme: const InputDecorationTheme(
-        border: OutlineInputBorder(),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
       ),
       snackBarTheme: SnackBarThemeData(
