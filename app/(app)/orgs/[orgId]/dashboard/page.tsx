@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { stageTimer } from "@/lib/dashboard/stage-timer";
+import { scopeEmptyState } from "@/lib/dashboard/empty-state";
 import { getFactorLibraries } from "@/lib/cache/reference";
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
 import { outdatedMethodology } from "@/lib/calculation/methodology";
@@ -710,7 +711,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     await prisma.project
       .findMany({ where: { organizationId: orgId }, select: { id: true, name: true, contract: { select: { name: true } } }, orderBy: { name: "asc" }, take: 200 })
       .catch(onLoadFailure(() => [] as { id: string; name: string; contract: { name: string } }[]))
-  ).map((p) => ({ id: p.id, label: `${p.name} (${p.contract.name})` }));
+  ).map((p) => ({ id: p.id, name: p.name, label: `${p.name} (${p.contract.name})` }));
   const socialValueRefs = sliceFilter?.socialValue ? await resolveSliceRefs(orgId, { socialValue: true }).catch(onLoadFailure(() => ({} as SliceRefs))) : null;
   const socialValueSummary = socialValueRefs?.contractIds
     ? await socialValueBeside(orgId, socialValueRefs.contractIds).catch(onLoadFailure(() => null))
@@ -931,6 +932,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   });
 
   const hasAggregates = scopeRows.some((row) => Number(row.total) > 0 || Number(row.records) > 0);
+  // The empty panel reads the period's live rollups, which a slice filter does not narrow.
+  const projectOnly = sliceFilter ? Object.keys(sliceFilter).join() === "projectId" : false;
+  const scopeEmpty = scopeEmptyState({
+    orgId,
+    periodLabel: currentPeriod?.label ?? null,
+    calculated: liveScopeAggregates.length > 0,
+    hasFigures: liveScopeAggregates.some((a) => Number(a._sum.totalCo2e) > 0 || Number(a._sum.recordCount) > 0),
+    projectName: projectOnly ? (projectOptions.find((p) => p.id === sliceFilter?.projectId)?.name ?? null) : null,
+  });
 
   // Internal carbon price (Settings > Carbon price) applied to this page's
   // location-based scope totals. Informational: nothing is charged here.
@@ -1434,12 +1444,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       ) : (
         <div className="mt-6">
-          <EmptyPanel
-            title="No calculated figures for this period yet"
-            description={`${currentPeriod ? currentPeriod.label : "The current period"} has no calculation run. Approve records, then run a calculation to fill the scope, category, trend and intelligence panels.`}
-            href="#run-calculation"
-            action="Run calculation"
-          />
+          <EmptyPanel {...scopeEmpty} />
         </div>
       )
   );
@@ -2796,16 +2801,18 @@ function EmptyPanel({
 }: {
   title: string;
   description: string;
-  href: string;
-  action: string;
+  href?: string;
+  action?: string;
 }) {
   return (
     <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5">
       <p className="font-normal text-[#131d29] tracking-[-0.42px]">{title}</p>
       <p className="mt-1 max-w-xl text-sm text-[#41505F] tracking-[-0.42px]">{description}</p>
-      <Button asChild size="sm" className="mt-4">
-        <Link href={href}>{action}</Link>
-      </Button>
+      {href && action && (
+        <Button asChild size="sm" className="mt-4">
+          <Link href={href}>{action}</Link>
+        </Button>
+      )}
     </div>
   );
 }
