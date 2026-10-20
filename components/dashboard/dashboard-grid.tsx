@@ -134,7 +134,7 @@ export function DashboardGrid({
               <label className="ml-auto flex items-center gap-2 text-xs text-[#41505F]">
                 Add widget
                 <select
-                  className="h-8 rounded-[10px] border border-[#E3E8EE] bg-white px-2 text-xs"
+                  className="h-8 rounded-[10px] border border-[#CBD2D9] bg-white px-2 text-xs"
                   value=""
                   onChange={(e) => e.target.value && patch(e.target.value, { hidden: false })}
                 >

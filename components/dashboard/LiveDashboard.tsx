@@ -140,14 +140,14 @@ export function LiveDashboard({
 
   if (!live) {
     return (
-      <div className="flex flex-col gap-3 rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-lg border border-[#CBD2D9] bg-[#F9FAFC] p-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-[#41505F]">
           Live updates are off. Turn them on to stream figures as calculations complete.
         </p>
         <button
           type="button"
           onClick={() => setLive(true)}
-          className="self-start rounded-md border border-[#E3E8EE] bg-white px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC] sm:self-auto"
+          className="self-start rounded-md border border-[#CBD2D9] bg-white px-3 py-1.5 text-sm text-[#131d29] hover:bg-[#F9FAFC] sm:self-auto"
         >
           Turn on live updates
         </button>
@@ -182,7 +182,7 @@ export function LiveDashboard({
 
   if (!data) {
     return (
-      <div className="rounded-lg border border-[#E3E8EE] bg-[#F9FAFC] p-4">
+      <div className="rounded-lg border border-[#CBD2D9] bg-[#F9FAFC] p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-[#41505F]">{connected ? "Live. Figures appear here after the first calculation run." : "Connecting to live dashboard..."}</p>
           {statusIndicator}
@@ -199,7 +199,7 @@ export function LiveDashboard({
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+        <div className="rounded-lg border border-[#CBD2D9] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Total CO2e</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-[#131d29]">
             {(data.aggregates.totalCo2e / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -207,7 +207,7 @@ export function LiveDashboard({
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
 
-        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+        <div className="rounded-lg border border-[#CBD2D9] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Scope 1</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-orange-600">
             {(data.aggregates.scope1 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -215,7 +215,7 @@ export function LiveDashboard({
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
 
-        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+        <div className="rounded-lg border border-[#CBD2D9] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Scope 2</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-[#c2400c]">
             {(data.aggregates.scope2 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -223,7 +223,7 @@ export function LiveDashboard({
           <p className="mt-1 text-xs text-[#5B6A78]">tonnes</p>
         </div>
 
-        <div className="rounded-lg border border-[#E3E8EE] bg-white p-4">
+        <div className="rounded-lg border border-[#CBD2D9] bg-white p-4">
           <p className="text-xs font-medium text-[#41505F] uppercase">Scope 3</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-green-600">
             {(data.aggregates.scope3 / 1000).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

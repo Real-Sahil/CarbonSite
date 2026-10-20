@@ -73,6 +73,7 @@ import { loadCarbonPrices } from "@/lib/carbon-price/load";
 import { orgFormat } from "@/lib/i18n/org-format";
 import { getOrgBasics } from "@/lib/i18n/org-basics";
 import { facilityCountries, facilityScope } from "@/lib/dashboard/group-scope";
+import { priorComparablePeriod } from "@/lib/dashboard/prior-period";
 import { loadPeriodCategoryTotals, loadSliceScopes, loadSliceTrend, loadSliceView, parseSliceFilter, resolveSliceRefs, socialValueBeside, type SliceRefs } from "@/lib/dashboard/slice-filter";
 import { aiAssistEnabled } from "@/lib/llm/org-consent";
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid";
@@ -135,7 +136,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     membership = result.membership;
   } catch (err) {
     if (err instanceof AuthError) { dashAuthErr = err; }
-    else { return <div className="p-8"><p className="text-sm text-red-600">Failed to load dashboard. The database may be updating — try refreshing in a moment.</p></div>; }
+    else { return <div className="p-8"><p className="text-sm text-red-600">Failed to load dashboard. The database may be updating, so try refreshing in a moment.</p></div>; }
   }
   if (dashAuthErr) {
     if (dashAuthErr.status === 401) redirect("/sign-in");
@@ -178,9 +179,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       getOrgBasics(orgId).catch(onLoadFailure(() => null)),
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
-        select: { id: true, label: true, status: true, endDate: true },
+        select: { id: true, label: true, status: true, startDate: true, endDate: true },
         orderBy: [{ startDate: "desc" }, { createdAt: "desc" }],
-      }).catch(onLoadFailure(() => [] as { id: string; label: string; status: string; endDate: Date }[])),
+      }).catch(onLoadFailure(() => [] as { id: string; label: string; status: string; startDate: Date; endDate: Date }[])),
       // Contract filter support
       prisma.contract.findMany({
         where: { organizationId: orgId, status: "active" },
@@ -222,7 +223,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   }
 
   if (!org) {
-    return <div className="p-8"><p className="text-sm text-red-600">Organisation not found or database is temporarily unavailable — please refresh.</p></div>;
+    return <div className="p-8"><p className="text-sm text-red-600">Organisation not found or database is temporarily unavailable. Please refresh.</p></div>;
   }
   const organization = org;
   // Numbers and dates follow the organisation's country, not the UK.
@@ -251,12 +252,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         ? contractFacilityIds
         : contractFacilityIds.filter((id) => groupFacilityIds.includes(id));
   const scoped = scopeFacilityIds !== null || sliceFilter !== null;
-  const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string }) => {
+  const dashboardHref = (p: { contractId?: string; entityId?: string; country?: string; facilityId?: string }) => {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries({ supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, siteId: selectedSiteId })) if (v) q.set(k, v);
     if (p.contractId) q.set("contractId", p.contractId);
     if (p.entityId) q.set("entityId", p.entityId);
     if (p.country) q.set("country", p.country);
+    if (p.facilityId) q.set("facilityId", p.facilityId);
     const qs = q.toString();
     return `/orgs/${orgId}/dashboard${qs ? `?${qs}` : ""}`;
   };
@@ -264,11 +266,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const dashboardFilters = activeFilters("dashboard", { facilityId: selectedFacilityId, contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, supplier: selectedSupplier, from: selectedFrom, to: selectedTo, scope: selectedScope, projectId: selectedProjectId, sv: selectedSv, categoryId: selectedCategoryId, siteId: selectedSiteId });
   // The newest period with calculated figures, so a fresh empty period does not
   // blank the page. The period list stays newest first; the prior period is the
-  // one before the current in that list.
+  // newest earlier one of a comparable length (none: no change is shown).
   const currentPeriod =
     reportingPeriods.find((p) => p.id === periodWithRows?.id) ?? reportingPeriods[0] ?? null;
-  const currentIndex = currentPeriod ? reportingPeriods.findIndex((p) => p.id === currentPeriod.id) : -1;
-  const priorPeriod = currentIndex >= 0 ? reportingPeriods[currentIndex + 1] ?? null : null;
+  const priorPeriod = priorComparablePeriod(reportingPeriods, currentPeriod);
 
   // Records the run processed but that contributed no emissions: a unit the
   // factor could not consume, no matching factor, or a zero input amount. Their
@@ -900,7 +901,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const facilityById = new Map<string, { id: string; name: string; totalCo2e: number; recordCount: number }>();
   for (const agg of facilityAggregates) {
     const id = agg.facilityId ?? "";
-    const row = facilityById.get(id) ?? { id, name: agg.facility?.name ?? "Unknown facility", totalCo2e: 0, recordCount: 0 };
+    const row = facilityById.get(id) ?? { id, name: agg.facility?.name ?? (id === "" ? "Unassigned" : "Unknown facility"), totalCo2e: 0, recordCount: 0 };
     row.totalCo2e += Number(agg.totalCo2e);
     row.recordCount += agg.recordCount;
     facilityById.set(id, row);
@@ -959,6 +960,13 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     scope: aggregate.emissionCategory?.scope ?? aggregate.scope,
     value: Number(aggregate.totalCo2e),
   }));
+  // Anything outside the top list shows as one bar, so the bars add up to the scope total.
+  const categoryBarTotal = scopeRows.reduce((sum, row) => sum + Number(row.total), 0);
+  const categoryBarShown = categoryBarData.reduce((sum, d) => sum + d.value, 0);
+  const categoryBarOther = categoryBarTotal - categoryBarShown;
+  if (categoryBarOther > categoryBarTotal * 0.005) {
+    categoryBarData.push({ name: "Other categories", scope: 0, value: categoryBarOther });
+  }
   const trendByPeriod = new Map<
     string,
     { startDate: Date; datum: TrendLineDatum }
@@ -1145,7 +1153,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         {targetCount === 0 && (
           <Link
             href={`/orgs/${orgId}/targets`}
-            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
+            className="group flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5 transition-colors hover:bg-[#FFEDD5]"
           >
             <div className="flex items-center gap-2">
               <Target aria-hidden="true" className="h-4 w-4 text-[#131d29]" />
@@ -1172,10 +1180,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
           answers 402 and the panel would sit on "Connecting" retrying) ── */}
       {liveDashboardEnabled && (
       <section aria-label="Live dashboard" className="mt-8">
-        <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">
+        <p className="mb-3 text-xs font-medium uppercase tracking-widest text-[#5B6A78]">
           Live updates
         </p>
-        <div className="rounded-[14px] border border-[#E3E8EE] bg-white p-6">
+        <div className="rounded-[14px] border border-[#CBD2D9] bg-white p-6">
           <LiveDashboard
             orgId={orgId}
             locale={L}
@@ -1194,7 +1202,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   widgetNodes["industry"] = (
       industryData && (
         <section aria-label="Industry insights" className="mt-8">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-[#5B6A78]">
             {industryData.type === "construction" && "Embodied carbon"}
             {industryData.type === "logistics" && "Logistics insights"}
             {industryData.type === "facilities_management" && "Building energy"}
@@ -1206,9 +1214,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 <MetricCard
                   icon={Layers}
                   label="Embodied carbon total"
-                  value={industryData.totalKgCo2e >= 1000
-                    ? `${(industryData.totalKgCo2e / 1000).toFixed(2)} tCO₂e`
-                    : `${industryData.totalKgCo2e.toFixed(1)} kgCO2e`}
+                  value={formatKgCo2e(L, industryData.totalKgCo2e)}
                   detail={`${industryData.recordCount} material record${industryData.recordCount !== 1 ? "s" : ""}`}
                   href={`/orgs/${orgId}/embodied-carbon`}
                 />
@@ -1226,14 +1232,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 <MetricCard
                   icon={Route}
                   label="Transport emissions (Scope 3)"
-                  value={industryData.transportKgCo2e >= 1000
-                    ? `${(industryData.transportKgCo2e / 1000).toFixed(2)} tCO₂e`
-                    : `${industryData.transportKgCo2e.toFixed(1)} kgCO2e`}
+                  value={formatKgCo2e(L, industryData.transportKgCo2e)}
                   detail={`${industryData.transportRecords} Scope 3 records`}
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=3`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5 transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <Scale aria-hidden="true" className="h-4 w-4 text-[#131d29]" />
@@ -1253,14 +1257,12 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 <MetricCard
                   icon={Gauge}
                   label="Building energy (Scope 2)"
-                  value={industryData.energyKgCo2e >= 1000
-                    ? `${(industryData.energyKgCo2e / 1000).toFixed(2)} tCO₂e`
-                    : `${industryData.energyKgCo2e.toFixed(1)} kgCO2e`}
+                  value={formatKgCo2e(L, industryData.energyKgCo2e)}
                   detail={`${industryData.energyRecords} electricity records`}
                 />
                 <Link
                   href={`/orgs/${orgId}/records?scope=2`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5 transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <LineChart aria-hidden="true" className="h-4 w-4 text-[#131d29]" />
@@ -1287,7 +1289,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 />
                 <Link
                   href={`/orgs/${orgId}/reports`}
-                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px] transition-colors hover:bg-[#FFEDD5]"
+                  className="flex flex-col justify-between rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5 transition-colors hover:bg-[#FFEDD5]"
                 >
                   <div className="flex items-center gap-2">
                     <Handshake aria-hidden="true" className="h-4 w-4 text-[#131d29]" />
@@ -1314,7 +1316,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   widgetNodes["environment"] = (
       hasEnvironmentalData && (
         <section aria-label="Water and waste" className="mt-8">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-[#5B6A78]">
             Water &amp; waste (ESRS E3 / E5)
           </p>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1353,7 +1355,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   );
   widgetNodes["operations"] = (
     <>
-      <p className="mt-8 mb-3 text-[10px] font-medium uppercase tracking-widest text-[#5B6A78]">
+      <p className="mt-8 mb-3 text-xs font-medium uppercase tracking-widest text-[#5B6A78]">
         Operations
       </p>
 
@@ -1406,7 +1408,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             <CardHeader>
               <CardTitle className="text-base">Top categories</CardTitle>
               <CardDescription>
-                Largest emission categories from current calculation aggregates.
+                Largest emission categories from current calculation aggregates. The rest are grouped as Other categories.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1462,23 +1464,23 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link
-                  href={`/orgs/${orgId}/dashboard`}
+                  href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry })}
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     !selectedFacilityId
                       ? "bg-[#c2400c] text-white"
-                      : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
+                      : "border border-[#CBD2D9] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
                   All
                 </Link>
-                {facilityRows.map((fac) => (
+                {facilityRows.filter((fac) => fac.id !== "").map((fac) => (
                   <Link
                     key={fac.id}
-                    href={`/orgs/${orgId}/dashboard?facilityId=${fac.id}`}
+                    href={dashboardHref({ contractId: selectedContractId, entityId: selectedEntityId, country: selectedCountry, facilityId: fac.id })}
                     className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                       selectedFacilityId === fac.id
                         ? "bg-[#c2400c] text-white"
-                        : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
+                        : "border border-[#CBD2D9] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                     }`}
                   >
                     {fac.name}
@@ -1488,10 +1490,10 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             </div>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-[14px] border border-[#E3E8EE]">
+            <div className="overflow-hidden rounded-[14px] border border-[#CBD2D9]">
               <Table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[#E3E8EE] bg-[#F9FAFC]">
+                  <tr className="border-b border-[#CBD2D9] bg-[#F9FAFC]">
                     <th className="px-4 py-3 text-left text-xs font-normal uppercase tracking-wide text-[#41505F]">
                       Facility
                     </th>
@@ -1506,7 +1508,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E3E8EE]">
+                <tbody className="divide-y divide-[#CBD2D9]">
                   {(activeFacility ? [activeFacility] : facilityRows).map((fac) => {
                     const share =
                       facilityTotal > 0
@@ -1560,7 +1562,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               Aggregates rebuilt from immutable calculation runs.
               {activeFacility && (
                 <span className="ml-1 font-normal text-[#131d29]">
-                  Showing all scopes — facility filter applies to the breakdown table above.
+                  Showing all scopes. The facility filter applies to the breakdown table above.
                 </span>
               )}
             </CardDescription>
@@ -1569,7 +1571,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {hasAggregates ? (
               <div className="grid gap-3 md:grid-cols-3">
                 {scopeRows.map((row) => (
-                  <div key={row.scope} className="rounded-[14px] border border-[#E3E8EE] p-[21px]">
+                  <div key={row.scope} className="rounded-[14px] border border-[#CBD2D9] p-5">
                     <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">
                       Scope {row.scope}
                     </p>
@@ -1603,7 +1605,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                     <CardTitle className="text-base">Year-on-year comparison</CardTitle>
                   </div>
                   <CardDescription className="mt-1">
-                    {currentPeriod?.label} vs {priorPeriod.label} — scope-level emissions delta.
+                    {currentPeriod?.label} vs {priorPeriod.label}, scope-level emissions change.
                   </CardDescription>
                 </div>
                 <Badge variant="outline">{priorPeriod.label} to {currentPeriod?.label}</Badge>
@@ -1618,23 +1620,24 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   const priorVal = Number(prior?.total ?? 0);
                   const delta = currentVal - priorVal;
                   const deltaPct = priorVal > 0 ? (delta / priorVal) * 100 : null;
-                  const improved = delta <= 0;
+                  const tone = delta === 0 ? "text-[#41505F]" : delta < 0 ? "text-[#047857]" : "text-red-700";
                   return (
-                    <div key={scope} className="rounded-[14px] border border-[#E3E8EE] p-[21px]">
+                    <div key={scope} className="rounded-[14px] border border-[#CBD2D9] p-5">
                       <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">Scope {scope}</p>
                       <div className="mt-2 flex items-end justify-between gap-2">
                         <div>
-                          <p className="text-xl font-normal tracking-[-0.4px] text-[#131d29]">{formatKgCo2e(L, currentVal)}</p>
+                          <p className="text-xl font-normal tabular-nums tracking-[-0.4px] text-[#131d29]">{formatKgCo2e(L, currentVal)}</p>
                           <p className="text-xs text-[#41505F]">{currentPeriod?.label}</p>
                         </div>
                         {deltaPct !== null && (
-                          <div className={`flex items-center gap-1 text-sm font-medium ${improved ? "text-emerald-600" : "text-red-600"}`}>
-                            {improved ? <TrendingDown className="h-4 w-4" /> : <TrendingUp className="h-4 w-4" />}
-                            {deltaPct > 0 ? "+" : ""}{deltaPct.toFixed(1)}%
+                          <div className={`flex items-center gap-1 text-sm font-medium tabular-nums ${tone}`}>
+                            {delta < 0 && <TrendingDown className="h-4 w-4" aria-hidden />}
+                            {delta > 0 && <TrendingUp className="h-4 w-4" aria-hidden />}
+                            {new Intl.NumberFormat(L, { maximumFractionDigits: 1, signDisplay: "exceptZero" }).format(deltaPct)}%
                           </div>
                         )}
                       </div>
-                      <div className="mt-2 pt-2 border-t border-[#E3E8EE]">
+                      <div className="mt-2 pt-2 border-t border-[#CBD2D9]">
                         <p className="text-xs text-[#5B6A78]">{formatKgCo2e(L, priorVal)} in {priorPeriod.label}</p>
                       </div>
                     </div>
@@ -1658,7 +1661,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
       <CardContent className="space-y-3">
         <ReadinessRow
           icon={ClipboardCheck}
-          label="Approved record coverage"
+          label="Records approved"
           value={formatPercent(approvedRecordCount, recordCount)}
           href={`/orgs/${orgId}/records`}
         />
@@ -1700,7 +1703,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </CardHeader>
         <CardContent>
           <dl className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-[14px] border border-[#E3E8EE] p-[21px]">
+            <div className="rounded-[14px] border border-[#CBD2D9] p-5">
               <dt className="text-xs font-normal uppercase tracking-wide text-[#41505F]">
                 Emissions from reviewed records
               </dt>
@@ -1714,7 +1717,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               ) : (
                 <>
                   <dd className="mt-2 text-2xl font-normal tracking-[-0.4px] text-[#41505F]">
-                    —
+                    No data
                   </dd>
                   <p className="mt-1 text-xs text-[#41505F] tracking-[-0.36px]">
                     Run a calculation to see confidence
@@ -1723,7 +1726,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               )}
             </div>
 
-            <div className="rounded-[14px] border border-[#E3E8EE] p-[21px]">
+            <div className="rounded-[14px] border border-[#CBD2D9] p-5">
               <dt className="text-xs font-normal uppercase tracking-wide text-[#41505F]">
                 Approved records missing evidence
               </dt>
@@ -1739,7 +1742,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </p>
             </div>
 
-            <div className="rounded-[14px] border border-[#E3E8EE] p-[21px]">
+            <div className="rounded-[14px] border border-[#CBD2D9] p-5">
               <dt className="text-xs font-normal uppercase tracking-wide text-[#41505F]">
                 Records pending attention
               </dt>
@@ -1775,7 +1778,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 page could not be loaded and {failedFigureCount !== 1 ? "are" : "is"}{" "}
                 shown as empty. {failedFigureCount !== 1 ? "These are" : "This is"} not
                 a reading of zero. Refresh, and if it persists the database is
-                unreachable rather than the data missing.
+                unreachable rather than the data missing.{" "}
+                <Link href={`/orgs/${orgId}/dashboard`} className="underline underline-offset-2">Reload</Link>
               </div>
             )}
             {staleSnapshots.length > 0 && (
@@ -1799,7 +1803,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </div>
             )}
             {carbonPrice && carbonPriceCost && carbonPriceCost.coveredTco2e > 0 && (
-              <div className="rounded-[14px] border border-[#E3E8EE] bg-white px-4 py-3 text-sm text-[#41505F] tracking-[-0.42px]">
+              <div className="rounded-[14px] border border-[#CBD2D9] bg-white px-4 py-3 text-sm text-[#41505F] tracking-[-0.42px]">
                 At your {(PRICE_TYPES[carbonPrice.priceType as PriceType]?.label ?? "internal carbon price").toLowerCase()} of{" "}
                 {formatMoney(carbonPrice.pricePerTonne, carbonPrice.currency, 2)}/tCO₂e, the Scope {carbonPrice.scopes.join(", ")} emissions
                 on this page carry a carbon cost of{" "}
@@ -1821,7 +1825,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {zeroCo2eCalcCount - noFactorCount > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                {zeroCo2eCalcCount - noFactorCount} calculated record{zeroCo2eCalcCount - noFactorCount !== 1 ? "s" : ""} contributed 0 kg CO2e
+                {zeroCo2eCalcCount - noFactorCount} calculated record{zeroCo2eCalcCount - noFactorCount !== 1 ? "s" : ""} contributed zero emissions
                 for another reason (a unit the factor could not use, or an input amount of zero), so the totals above
                 exclude them. Open the calculation run to see each record&apos;s reason.{" "}
                 <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Open calculations</Link>
@@ -1830,20 +1834,22 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {staleRecordCount > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                {staleRecordCount} record{staleRecordCount !== 1 ? "s" : ""} added since last calculation run — results may be outdated.{" "}
+                {staleRecordCount} record{staleRecordCount !== 1 ? "s" : ""} added since the last calculation run, so results may be outdated.{" "}
                 <Link href={`/orgs/${orgId}/calculations`} className="underline underline-offset-2">Run a calculation</Link>
               </div>
             )}
             {fallbackPct > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                {fallbackPct}% of emissions from fallback factors.
+                {fallbackPct}% of emissions come from fallback factors. Add your own factor for the affected categories, or recalculate on a library that covers them.{" "}
+                <Link href={`/orgs/${orgId}/settings/factors`} className="underline underline-offset-2">Add your own factor</Link>
               </div>
             )}
             {ocrDiscrepancyCount > 0 && (
               <div className="rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 tracking-[-0.42px]">
                 <AlertTriangle className="inline h-4 w-4 mr-2 shrink-0 align-text-bottom" />
-                {ocrDiscrepancyCount} approved submission{ocrDiscrepancyCount !== 1 ? "s" : ""} have OCR vs form data discrepancies.
+                {ocrDiscrepancyCount} approved submission{ocrDiscrepancyCount !== 1 ? "s" : ""} have OCR vs form data discrepancies.{" "}
+                <Link href={`/orgs/${orgId}/submissions`} className="underline underline-offset-2">Review submissions</Link>
               </div>
             )}
           </div>
@@ -1853,15 +1859,15 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   widgetNodes["analytics-reporting"] = (
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
         <Card className="overflow-hidden">
-          <CardHeader className="border-b border-[#E3E8EE] bg-[#c2400c] text-white">
+          <CardHeader className="border-b border-[#CBD2D9] bg-[#c2400c] text-white">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <CardTitle className="text-base text-white">Analytics workbench</CardTitle>
-                <CardDescription className="text-white/85">
+                <CardDescription className="text-white/95">
                   Category concentration and scope movement for the active reporting period.
                 </CardDescription>
               </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-white/85">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[7px] bg-white/10 text-white/95">
                 <LineChart aria-hidden="true" className="h-5 w-5" />
               </div>
             </div>
@@ -2009,8 +2015,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   download={doc.downloadUrl ? true : false}
                   className={`flex items-center justify-between rounded-lg border p-3 transition-all ${
                     doc.downloadUrl
-                      ? "border-[#E3E8EE] hover:border-[#c2400c] hover:bg-[#FFF2EC] cursor-pointer"
-                      : "border-[#E3E8EE] bg-[#F9FAFC] cursor-not-allowed opacity-50"
+                      ? "border-[#CBD2D9] hover:border-[#c2400c] hover:bg-[#FFF2EC] cursor-pointer"
+                      : "border-[#CBD2D9] bg-[#F9FAFC] cursor-not-allowed opacity-50"
                   }`}
                 >
                   <div className="flex-1 min-w-0">
@@ -2036,7 +2042,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   );
   widgetNodes["carbon-intelligence"] = (
     <Suspense fallback={<div aria-hidden="true" className="mt-6 h-40 animate-pulse rounded-[14px] bg-[#E3E8EE]" />}>
-      <CarbonIntelligenceWidget orgId={orgId} role={role} />
+      <CarbonIntelligenceWidget orgId={orgId} role={role} locale={L} />
     </Suspense>
   );
   widgetNodes["social-evidence"] = (
@@ -2088,9 +2094,9 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 detail="Awaiting review from field workers"
               />
             </div>
-            <div className="rounded-[14px] border border-[#E3E8EE]">
+            <div className="rounded-[14px] border border-[#CBD2D9]">
               {initiativeStatusRows.length > 0 ? (
-                <div className="divide-y divide-[#E3E8EE]">
+                <div className="divide-y divide-[#CBD2D9]">
                   {initiativeStatusRows.map((row) => (
                     <div key={row.status} className="flex items-center justify-between gap-4 p-3">
                       <div>
@@ -2284,6 +2290,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             orgId={orgId}
             periods={reportingPeriods.map((p) => ({ id: p.id, label: p.label, endDate: p.endDate.toISOString() }))}
             approvedCountByPeriod={approvedCountByPeriod}
+            locale={L}
             methodologies={methodologies.map((item) => ({
               id: item.id,
               label: `${item.name} (${item.gwpVersion})`,
@@ -2327,7 +2334,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFC]">
       {/* Page header */}
-      <div className="bg-white border-b border-[#E3E8EE]">
+      <div className="bg-white border-b border-[#CBD2D9]">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 py-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -2397,7 +2404,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
 
       {/* Quick setup links — shown to admins who skipped the wizard but haven't run a calculation yet */}
       {role === "admin" && onboardingProgress?.isComplete && calculationRuns.length === 0 && (
-        <div className="mb-8 rounded-[14px] border border-[#E3E8EE] bg-white p-5">
+        <div className="mb-8 rounded-[14px] border border-[#CBD2D9] bg-white p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-sm font-semibold text-[#131d29] tracking-[-0.42px]">Quick setup</h2>
@@ -2420,7 +2427,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-start gap-2.5 rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] px-3 py-2.5 hover:bg-orange-50 hover:border-[#FED7AA] transition-colors"
+                className="flex items-start gap-2.5 rounded-[10px] border border-[#CBD2D9] bg-[#F9FAFC] px-3 py-2.5 hover:bg-orange-50 hover:border-[#FED7AA] transition-colors"
               >
                 <ArrowRight className="h-3.5 w-3.5 text-[#5B6A78] mt-0.5 shrink-0" aria-hidden="true" />
                 <div>
@@ -2453,7 +2460,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
         </div>
       )}
       {role === "viewer" && (
-        <div className="mb-6 rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC] px-4 py-3 flex items-center gap-3">
+        <div className="mb-6 rounded-[10px] border border-[#CBD2D9] bg-[#F9FAFC] px-4 py-3 flex items-center gap-3">
           <Layers className="h-4 w-4 text-[#5B6A78] shrink-0" />
           <span className="text-sm text-[#41505F]">You have read-only access to this dashboard. Contact an admin to request edit permissions.</span>
         </div>
@@ -2499,7 +2506,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     (selectedEntityId ?? "") === e.id
                       ? "bg-[#c2400c] text-white"
-                      : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
+                      : "border border-[#CBD2D9] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
                   {e.name}
@@ -2517,7 +2524,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                   className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                     (selectedCountry ?? "") === c
                       ? "bg-[#c2400c] text-white"
-                      : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
+                      : "border border-[#CBD2D9] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                   }`}
                 >
                   {c ? countryOf(c)?.name ?? c : "All"}
@@ -2551,7 +2558,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                 !selectedContractId
                   ? "bg-[#c2400c] text-white"
-                  : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
+                  : "border border-[#CBD2D9] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
               }`}
             >
               All
@@ -2563,7 +2570,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
                 className={`rounded-full px-3 py-1 text-xs font-normal transition-colors ${
                   selectedContractId === contract.id
                     ? "bg-[#c2400c] text-white"
-                    : "border border-[#E3E8EE] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
+                    : "border border-[#CBD2D9] text-[#41505F] hover:border-[#FED7AA] hover:bg-orange-50"
                 }`}
               >
                 {contract.name}
@@ -2621,7 +2628,7 @@ function InsightCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-[#E3E8EE] bg-white p-[21px]">
+    <div className="rounded-[14px] border border-[#CBD2D9] bg-white p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-normal uppercase tracking-wide text-[#41505F]">{label}</p>
@@ -2649,7 +2656,7 @@ function ProgressRow({
 }) {
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-[14px] border border-[#E3E8EE] p-3">
+    <div className="rounded-[14px] border border-[#CBD2D9] p-3">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="truncate text-sm font-normal text-[#131d29] tracking-[-0.42px]">{label}</p>
@@ -2678,7 +2685,7 @@ function PipelineRow({
   const percent = total > 0 ? (count / total) * 100 : 0;
   const width = `${Math.max(2, Math.min(100, percent))}%`;
   return (
-    <div className="rounded-[14px] border border-[#E3E8EE] p-3">
+    <div className="rounded-[14px] border border-[#CBD2D9] p-3">
       <div className="flex items-center justify-between gap-3">
         <span className="text-sm font-normal capitalize text-[#41505F] tracking-[-0.42px]">{label}</span>
         <span className="text-sm font-normal text-[#131d29] tracking-[-0.42px]">{count.toLocaleString(locale)}</span>
@@ -2703,7 +2710,7 @@ function HealthSignal({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between rounded-[14px] border border-[#E3E8EE] p-[21px] transition-colors hover:bg-orange-50"
+      className="flex items-center justify-between rounded-[14px] border border-[#CBD2D9] p-5 transition-colors hover:bg-orange-50"
     >
       <div>
         <p className="text-sm font-normal text-[#41505F] tracking-[-0.42px]">{label}</p>
@@ -2738,7 +2745,7 @@ function MetricCard({
     tone === "good" ? "text-[#059669]" : tone === "bad" ? "text-red-700" : "text-[#131d29]";
   const content = (
     <Card className={href ? "transition-shadow hover:shadow-md" : undefined}>
-      <CardContent className="p-[21px]">
+      <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-normal text-[#41505F] tracking-[-0.42px]">{label}</p>
@@ -2770,7 +2777,7 @@ function ReadinessRow({
   return (
     <Link
       href={href}
-      className="flex items-center justify-between gap-3 rounded-[14px] border border-[#E3E8EE] p-3 hover:bg-[#F9FAFC] focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="flex items-center justify-between gap-3 rounded-[14px] border border-[#CBD2D9] p-3 hover:bg-[#F9FAFC] focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <div className="flex items-center gap-3">
         <Icon aria-hidden="true" className="h-4 w-4 text-[#41505F]" />
@@ -2793,7 +2800,7 @@ function EmptyPanel({
   action: string;
 }) {
   return (
-    <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-[21px]">
+    <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-orange-50 p-5">
       <p className="font-normal text-[#131d29] tracking-[-0.42px]">{title}</p>
       <p className="mt-1 max-w-xl text-sm text-[#41505F] tracking-[-0.42px]">{description}</p>
       <Button asChild size="sm" className="mt-4">

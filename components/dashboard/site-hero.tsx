@@ -13,7 +13,7 @@ import { SCOPE_COLORS } from "@/components/charts/palette";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
-const FIELD = "h-9 w-full rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
+const FIELD = "h-9 w-full rounded-[10px] border border-[#CBD2D9] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
 
 export function SiteHero({
   orgId,
@@ -87,8 +87,8 @@ export function SiteHero({
   const labelled = new Set([...placed].sort((a, b) => b.kg - a.kg).slice(0, 3).map((s) => s.id));
 
   return (
-    <section aria-labelledby="site-hero-title" className="mb-6 overflow-hidden rounded-[14px] border border-[#E3E8EE] bg-white">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#E3E8EE] px-5 py-4">
+    <section aria-labelledby="site-hero-title" className="mb-6 overflow-hidden rounded-[14px] border border-[#CBD2D9] bg-white">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#CBD2D9] px-5 py-4">
         <div>
           <h2 id="site-hero-title" className="text-base font-semibold text-[#131d29]">Sites</h2>
           <p className="mt-0.5 text-xs text-[#5B6A78]">
@@ -131,7 +131,7 @@ export function SiteHero({
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div>
             {project ? (
-              <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[10px] border border-[#E3E8EE] bg-[#F9FAFC]" role="group" aria-label="Sites on a schematic, sized by emissions. The list beside it gives the same figures.">
+              <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[10px] border border-[#CBD2D9] bg-[#F9FAFC]" role="group" aria-label="Sites on a schematic, sized by emissions. The list beside it gives the same figures.">
                 {spots.map(({ x, y, site: s }) => {
                   const r = radiusFor(s.kg, max);
                   const on = isOn(s);
@@ -147,7 +147,7 @@ export function SiteHero({
                 })}
               </svg>
             ) : (
-              <p className="rounded-[10px] border border-dashed border-[#E3E8EE] p-4 text-sm text-[#41505F]">
+              <p className="rounded-[10px] border border-dashed border-[#CBD2D9] p-4 text-sm text-[#41505F]">
                 None of your sites has a position yet, so none can be pinned. Use the list or the project choice above.
               </p>
             )}
@@ -186,7 +186,7 @@ export function SiteHero({
         </div>
       )}
       {!failed && sites.length > 1 ? (
-        <details className="border-t border-[#E3E8EE] px-5 py-3">
+        <details className="border-t border-[#CBD2D9] px-5 py-3">
           <summary className="cursor-pointer text-sm font-medium text-[#131d29]">Compare all {sites.length} sites</summary>
           <div className="mt-3">
             <Table>

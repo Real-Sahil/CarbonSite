@@ -11,9 +11,9 @@ const ADMIN_ROLES: OrgRole[] = ["admin", "sustainability_director"];
  * and high counts, signals in the last seven days, active integrations). The same
  * counts the Carbon Intelligence overview shows, read for this organisation only.
  */
-export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string; role: OrgRole }) {
+export async function CarbonIntelligenceWidget({ orgId, role, locale }: { orgId: string; role: OrgRole; locale: string }) {
   const since = new Date(Date.now() - SIGNAL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const [alertSeverity, recentSignals, activeCreds] = await Promise.all([
+  const loaded = await Promise.all([
     prisma.impactAlert.groupBy({
       by: ["severity"],
       where: { organizationId: orgId, resolvedAt: null },
@@ -21,7 +21,26 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
     }),
     prisma.carbonSignal.count({ where: { organizationId: orgId, recordedAt: { gte: since } } }),
     prisma.externalApiCredential.count({ where: { organizationId: orgId, isActive: true } }),
-  ]);
+  ]).catch((err: unknown) => {
+    console.error("carbon-intelligence widget load failed", { orgId, err });
+    return null;
+  });
+
+  // One failing read must not take the dashboard down: say so and link to the full page.
+  if (!loaded) {
+    return (
+      <section aria-label="Carbon intelligence" className="mt-6">
+        <div className="rounded-lg border border-[#CBD2D9] bg-white px-5 py-4 text-sm text-[#41505F]">
+          Carbon intelligence could not load just now. Refresh the page, or{" "}
+          <Link href={`/orgs/${orgId}/carbon-intelligence`} className="underline underline-offset-2 hover:text-[#131d29]">
+            open the overview
+          </Link>
+          .
+        </div>
+      </section>
+    );
+  }
+  const [alertSeverity, recentSignals, activeCreds] = loaded;
 
   const severity = Object.fromEntries(alertSeverity.map((r) => [r.severity, r._count._all]));
   const openAlerts = alertSeverity.reduce((sum, r) => sum + r._count._all, 0);
@@ -31,8 +50,8 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
 
   return (
     <section aria-label="Carbon intelligence" className="mt-6">
-      <div className="rounded-lg border border-[#E3E8EE] bg-white">
-        <div className="flex items-center justify-between gap-3 border-b border-[#E3E8EE] px-5 py-4">
+      <div className="rounded-lg border border-[#CBD2D9] bg-white">
+        <div className="flex items-center justify-between gap-3 border-b border-[#CBD2D9] px-5 py-4">
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-[#131d29]" aria-hidden="true" />
             <div>
@@ -48,27 +67,26 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 px-5 py-5 sm:grid-cols-4">
-          <Stat value={openAlerts} label="open alerts" href={`/orgs/${orgId}/carbon-intelligence/alerts`} />
-          <Stat value={critical} label="critical" alarm={critical > 0} />
-          <Stat value={high} label="high severity" alarm={high > 0} />
-          <Stat value={recentSignals} label={`signals, last ${SIGNAL_WINDOW_DAYS} days`} href={`/orgs/${orgId}/carbon-intelligence/signals`} />
+          <Stat locale={locale} value={openAlerts} label="open alerts" href={`/orgs/${orgId}/carbon-intelligence/alerts`} />
+          <Stat locale={locale} value={critical} label="critical" alarm={critical > 0} />
+          <Stat locale={locale} value={high} label="high severity" alarm={high > 0} />
+          <Stat locale={locale} value={recentSignals} label={`signals, last ${SIGNAL_WINDOW_DAYS} days`} href={`/orgs/${orgId}/carbon-intelligence/signals`} />
         </div>
-        <p className="border-t border-[#E3E8EE] px-5 py-3 text-xs text-[#5B6A78]">
-          {openAlerts === 0 && recentSignals === 0
-            ? "No open alerts and no signals this week."
-            : "Open alerts are unresolved threshold breaches and anomalies."}
-          {" "}
+        <p className="border-t border-[#CBD2D9] px-5 py-3 text-xs text-[#5B6A78]">
+          {activeCreds === 0
+            ? "No integrations connected, so no signals can arrive. "
+            : openAlerts === 0 && recentSignals === 0
+              ? "No open alerts and no signals this week. "
+              : "Open alerts are unresolved threshold breaches and anomalies. "}
           {canManageIntegrations ? (
             <>
-              {activeCreds > 0
-                ? `${activeCreds} active integration${activeCreds !== 1 ? "s" : ""}. `
-                : "No integrations connected. "}
+              {activeCreds > 0 && `${activeCreds} active integration${activeCreds !== 1 ? "s" : ""}. `}
               <Link href={`/orgs/${orgId}/carbon-intelligence/integrations`} className="underline underline-offset-2 hover:text-[#131d29]">
-                Manage integrations
+                {activeCreds === 0 ? "Connect an integration" : "Manage integrations"}
               </Link>
             </>
           ) : (
-            `${activeCreds} active integration${activeCreds !== 1 ? "s" : ""}.`
+            activeCreds > 0 && `${activeCreds} active integration${activeCreds !== 1 ? "s" : ""}.`
           )}
         </p>
       </div>
@@ -76,11 +94,11 @@ export async function CarbonIntelligenceWidget({ orgId, role }: { orgId: string;
   );
 }
 
-function Stat({ value, label, href, alarm }: { value: number; label: string; href?: string; alarm?: boolean }) {
+function Stat({ value, label, href, alarm, locale }: { value: number; label: string; href?: string; alarm?: boolean; locale: string }) {
   const body = (
     <>
-      <span className={`text-2xl font-semibold tabular-nums tabular-nums ${alarm ? "text-red-600" : "text-[#131d29]"}`}>
-        {value.toLocaleString("en-GB")}
+      <span className={`text-2xl font-semibold tabular-nums ${alarm ? "text-red-600" : "text-[#131d29]"}`}>
+        {value.toLocaleString(locale)}
       </span>
       <span className="text-xs text-[#5B6A78]">{label}</span>
     </>

@@ -72,7 +72,12 @@ function DeltaChip({ delta, goodUp }: { delta: { value: number; label: string };
  */
 export function KpiStatRow({ stats }: { stats: KpiStat[] }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <div
+      className={cn(
+        "grid gap-3 sm:grid-cols-2",
+        stats.length === 3 ? "lg:grid-cols-3" : stats.length === 2 ? "lg:grid-cols-2" : "lg:grid-cols-4",
+      )}
+    >
       {stats.map((stat) => (
         <KpiCard key={stat.label} stat={stat} />
       ))}
@@ -98,14 +103,14 @@ function KpiCard({ stat }: { stat: KpiStat }) {
       )}
     </>
   );
-  const className = "block rounded-xl border border-[#E3E8EE] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]";
+  const className = "block rounded-xl border border-[#CBD2D9] bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]";
   if (stat.href) {
     return (
       <Link
         href={stat.href}
         className={cn(
           className,
-          "transition-[border-color,box-shadow] duration-200 hover:border-[#FDBA74] hover:shadow-[0_4px_12px_rgba(16,24,40,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]/40",
+          "transition-[border-color,box-shadow] duration-200 hover:border-[#FDBA74] hover:shadow-[0_4px_12px_rgba(16,24,40,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#c2400c]",
         )}
       >
         {body}

@@ -231,6 +231,7 @@ export default async function CalculationsPage({ params, searchParams }: Calcula
                 orgId={orgId}
                 periods={reportingPeriods.map((p) => ({ id: p.id, label: p.label, endDate: p.endDate.toISOString() }))}
                 approvedCountByPeriod={approvedCountByPeriod}
+                locale={L}
                 methodologies={methodologies.map((item) => ({
                   id: item.id,
                   label: `${item.name} (${item.gwpVersion})`,

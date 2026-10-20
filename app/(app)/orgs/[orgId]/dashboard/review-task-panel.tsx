@@ -11,7 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2, ClipboardList, Plus } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export interface ReviewTaskPanelCandidate {
   key: string;
@@ -71,7 +72,7 @@ export function ReviewTaskPanel({
         setError(data.message ?? "Failed to close task.");
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Try again.");
     } finally {
       setLoading(null);
     }
@@ -101,7 +102,7 @@ export function ReviewTaskPanel({
         setError(data.message ?? "Failed to create task.");
       }
     } catch {
-      setError("Network error — try again.");
+      setError("Network error. Try again.");
     } finally {
       setLoading(null);
     }
@@ -112,7 +113,7 @@ export function ReviewTaskPanel({
   return (
     <div className="space-y-4">
       {candidates.length > 0 && assignees.length > 0 && (
-        <div className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#E3E8EE] p-4">
+        <div className="flex flex-wrap items-end gap-3 rounded-[14px] border border-[#CBD2D9] p-4">
           <div className="flex flex-col gap-1">
             <label className="text-xs text-[#41505F] tracking-[-0.36px]">Assign item</label>
             <Select value={selectedCandidate} onValueChange={setSelectedCandidate}>
@@ -155,14 +156,19 @@ export function ReviewTaskPanel({
       {error && <p className="text-sm text-red-600 tracking-[-0.42px]">{error}</p>}
 
       {visibleTasks.length === 0 ? (
-        <div className="rounded-[14px] border border-dashed border-[#FED7AA] bg-[#FFF7ED] p-[21px]">
-          <p className="font-normal text-[#131d29] tracking-[-0.42px]">No open review tasks</p>
-          <p className="mt-1 text-sm text-[#41505F] tracking-[-0.42px]">
-            Assign items above to create tasks for reviewers.
-          </p>
+        <div className="rounded-[14px] border border-dashed border-[#CBD2D9]">
+          <EmptyState
+            icon={ClipboardList}
+            title="No open review tasks"
+            description={
+              candidates.length > 0 && assignees.length > 0
+                ? "Assign items above to create tasks for reviewers."
+                : "Nothing is waiting for review, or no reviewer is available to assign."
+            }
+          />
         </div>
       ) : (
-        <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#E3E8EE]">
+        <div className="divide-y divide-[#e5e7eb] rounded-[14px] border border-[#CBD2D9]">
           {visibleTasks.map((task) => (
             <div key={task.id} className="flex items-start justify-between gap-4 p-4">
               <div className="min-w-0">

@@ -25,6 +25,8 @@ interface CalculationControlsProps {
   methodologies: { id: string; label: string }[];
   factorLibraries: LibraryOption[];
   approvedCountByPeriod: Record<string, number>;
+  /** The organisation's number locale. */
+  locale: string;
 }
 
 type RunStatus = "queued" | "running" | "succeeded" | "failed";
@@ -41,6 +43,7 @@ export function CalculationControls({
   methodologies,
   factorLibraries,
   approvedCountByPeriod,
+  locale,
 }: CalculationControlsProps) {
   const router = useRouter();
   const periodEnd = (id: string) => {
@@ -166,14 +169,14 @@ export function CalculationControls({
         };
         setRun(result);
         if (result.status === "queued" || result.status === "running") {
-          // Worker mode — poll until done
+          // Worker mode: poll until done
           startPolling(result.id);
         } else {
-          // Inline mode — result is already final
+          // Inline mode: result is already final
           router.refresh();
         }
       } catch {
-        setRun({ id: "", status: "failed", errorMessage: "Network error — try again." });
+        setRun({ id: "", status: "failed", errorMessage: "Network error. Try again." });
       }
     });
   }
@@ -197,7 +200,7 @@ export function CalculationControls({
         setRun({ ...run!, errorMessage: null });
         router.refresh();
       } catch {
-        setRun({ ...run!, errorMessage: "Network error — try again." });
+        setRun({ ...run!, errorMessage: "Network error. Try again." });
       }
     });
   }
@@ -318,7 +321,7 @@ export function CalculationControls({
       {periodId && approvedCount > 0 && !run && (
         <p className="w-full flex items-center gap-1.5 text-xs text-[#131d29] tracking-[-0.36px]">
           <CheckCircle2 className="h-3.5 w-3.5" />
-          {approvedCount.toLocaleString("en-GB")} approved record{approvedCount !== 1 ? "s" : ""} ready for this period.
+          {approvedCount.toLocaleString(locale)} approved record{approvedCount !== 1 ? "s" : ""} ready for this period.
         </p>
       )}
 

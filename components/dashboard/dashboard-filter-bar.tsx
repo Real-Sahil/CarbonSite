@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 const FIELD =
-  "h-9 w-full min-w-0 rounded-[10px] border border-[#E3E8EE] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
+  "h-9 w-full min-w-0 rounded-[10px] border border-[#CBD2D9] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
 
 /**
  * Supplier, month range and scope filters for the dashboard. The URL is the
@@ -57,7 +57,7 @@ export function DashboardFilterBar({
   const sliced = SLICE_KEYS.some((k) => filters[k]);
 
   return (
-    <div className="mb-4 rounded-[14px] border border-[#E3E8EE] bg-white p-4" aria-busy={pending}>
+    <div className="mb-4 rounded-[14px] border border-[#CBD2D9] bg-white p-4" aria-busy={pending}>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {input("supplier", "Supplier", { type: "search", placeholder: "Part of a name", maxLength: 64 })}
         {input("from", "From month", { type: "month" })}

@@ -12,6 +12,7 @@ const SENTENCES = new Map<string, string>([
   ["record.sealed", "Sealed an activity record with its evidence"],
   ["field_submission.reviewed", "Reviewed a field submission"],
   ["import.created", "Started an import"],
+  ["calculation.run_triggered", "Started a calculation run"],
   ["org.member.added", "Added a member"],
   ["report.downloaded", "Downloaded a report"],
   ["waste_plan.approved", "Approved a site waste plan"],
