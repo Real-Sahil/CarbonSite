@@ -188,9 +188,10 @@ export function ProTimeSeries({
     <div
       className={
         full
-          ? "fixed inset-0 z-50 flex flex-col gap-3 bg-white p-4 dark:bg-[#0b1220]"
+          ? "fixed inset-0 z-50 flex flex-col gap-3 p-4"
           : "flex flex-col gap-3"
       }
+      style={full ? { background: THEMES[theme].bg } : undefined}
     >
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div aria-live="polite">
