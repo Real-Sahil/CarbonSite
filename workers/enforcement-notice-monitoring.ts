@@ -1,5 +1,5 @@
 // Enforcement notice compliance deadline monitoring.
-// Runs daily: alerts org admins when a notice compliance deadline has passed.
+// Runs daily: alerts org admins once when a notice compliance deadline has passed.
 
 import { prisma } from "@/lib/db";
 import { dispatchNotification } from "@/lib/jobs/dispatch";
@@ -18,6 +18,7 @@ export async function processEnforcementNoticeMonitoring(): Promise<void> {
         status: { in: ["open", "appealed"] },
         complianceDeadline: { lt: today },
         compliedAt: null,
+        overdueAlertedAt: null,
       },
       select: {
         id: true,
@@ -26,47 +27,68 @@ export async function processEnforcementNoticeMonitoring(): Promise<void> {
         complianceDeadline: true,
         issuingBody: true,
       },
+      orderBy: { complianceDeadline: "asc" },
+      take: 500,
     });
 
     let alertCount = 0;
     for (const notice of overdueNotices) {
-      const admins = await prisma.organizationMembership.findMany({
-        where: {
-          organizationId: notice.organizationId,
-          role: { in: ["admin", "editor"] },
-          terminatedAt: null,
-        },
-        select: { userId: true },
-      });
-
-      for (const admin of admins) {
-        await dispatchNotification({
-          type: "enforcement_notice_overdue",
-          recipientUserId: admin.userId,
-          orgId: notice.organizationId,
-          resourceId: notice.id,
-          metadata: {
-            noticeRef: notice.reference,
-            issuingBody: notice.issuingBody,
-            complianceDeadline: notice.complianceDeadline?.toISOString(),
+      try {
+        const admins = await prisma.organizationMembership.findMany({
+          where: {
+            organizationId: notice.organizationId,
+            role: { in: ["admin", "editor"] },
+            terminatedAt: null,
           },
-        }).catch((err) =>
-          logger.error("Failed to dispatch enforcement notice overdue notification", {
-            noticeId: notice.id,
-            error: err instanceof Error ? err.message : String(err),
-          }),
-        );
+          select: { userId: true },
+        });
+
+        let delivered = 0;
+        for (const admin of admins) {
+          try {
+            await dispatchNotification({
+              type: "enforcement_notice_overdue",
+              recipientUserId: admin.userId,
+              orgId: notice.organizationId,
+              resourceId: notice.id,
+              metadata: {
+                noticeRef: notice.reference,
+                issuingBody: notice.issuingBody,
+                complianceDeadline: notice.complianceDeadline?.toISOString(),
+              },
+            });
+            delivered++;
+          } catch (err) {
+            logger.error("Failed to dispatch enforcement notice overdue notification", {
+              noticeId: notice.id,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }
+
+        // Nobody reached: leave it unmarked so tomorrow's run tries again.
+        if (admins.length > 0 && delivered === 0) continue;
+
+        await prisma.enforcementNotice.updateMany({
+          where: { id: notice.id, organizationId: notice.organizationId },
+          data: { overdueAlertedAt: new Date() },
+        });
+
+        await writeAuditLog({
+          organizationId: notice.organizationId,
+          action: "enforcement_notice.updated",
+          resourceType: "EnforcementNotice",
+          resourceId: notice.id,
+          metadata: { reason: "overdue_alert_sent", reference: notice.reference },
+        }).catch(() => null);
+
+        alertCount++;
+      } catch (err) {
+        logger.error("Enforcement notice alert failed", {
+          noticeId: notice.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
-
-      await writeAuditLog({
-        organizationId: notice.organizationId,
-        action: "enforcement_notice.updated",
-        resourceType: "EnforcementNotice",
-        resourceId: notice.id,
-        metadata: { reason: "overdue_alert_sent", reference: notice.reference },
-      }).catch(() => null);
-
-      alertCount++;
     }
 
     logger.info("Enforcement notice monitoring complete", { overdueAlerts: alertCount });

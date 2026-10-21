@@ -47,28 +47,37 @@ export async function processCarbonBudgetAlerts(asOf = new Date()): Promise<{ ch
         where: { organizationId: b.organizationId, role: { in: RECIPIENT_ROLES }, terminatedAt: null },
         select: { userId: true },
       });
+      let delivered = 0;
       for (const m of members) {
-        await dispatchNotification({
-          type: "carbon_budget_forecast",
-          recipientUserId: m.userId,
-          orgId: b.organizationId,
-          resourceId: b.id,
-          metadata: {
-            status: next,
-            projectName: b.project.name,
-            projectId: b.projectId,
-            contractId: b.project.contractId,
-            reason: burndown.reasons[0] ?? null,
-          },
-        }).catch((err) =>
+        try {
+          await dispatchNotification({
+            type: "carbon_budget_forecast",
+            recipientUserId: m.userId,
+            orgId: b.organizationId,
+            resourceId: b.id,
+            metadata: {
+              status: next,
+              projectName: b.project.name,
+              projectId: b.projectId,
+              contractId: b.project.contractId,
+              reason: burndown.reasons[0] ?? null,
+            },
+          });
+          delivered++;
+        } catch (err) {
           logger.error("Failed to dispatch carbon budget alert", {
             budgetId: b.id,
             error: err instanceof Error ? err.message : String(err),
-          }),
-        );
+          });
+        }
       }
+      // Nobody reached: leave the level unchanged so tomorrow's run alerts again.
+      if (members.length > 0 && delivered === 0) continue;
 
-      await prisma.carbonBudget.update({ where: { id: b.id }, data: { forecastAlertLevel: next, forecastAlertedAt: asOf } });
+      await prisma.carbonBudget.updateMany({
+        where: { id: b.id, organizationId: b.organizationId },
+        data: { forecastAlertLevel: next, forecastAlertedAt: asOf },
+      });
       await writeAuditLog({
         organizationId: b.organizationId,
         action: "carbon_budget.forecast_alert",

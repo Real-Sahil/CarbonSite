@@ -24,6 +24,7 @@ export async function processSubmissionSlaMonitoring(): Promise<void> {
         organizationId: true,
         documentType: true,
       },
+      orderBy: { submittedAt: "asc" },
       take: 500,
     });
 
@@ -43,40 +44,52 @@ export async function processSubmissionSlaMonitoring(): Promise<void> {
     }
 
     for (const [orgId, subs] of byOrg) {
-      const reviewers = await prisma.organizationMembership.findMany({
-        where: {
-          organizationId: orgId,
-          role: { in: ["admin", "reviewer"] },
-          terminatedAt: null,
-        },
-        select: { userId: true },
-      });
+      try {
+        const reviewers = await prisma.organizationMembership.findMany({
+          where: {
+            organizationId: orgId,
+            role: { in: ["admin", "reviewer"] },
+            terminatedAt: null,
+          },
+          select: { userId: true },
+        });
 
-      if (reviewers.length === 0) continue;
+        let delivered = 0;
+        for (const reviewer of reviewers) {
+          try {
+            await dispatchNotification({
+              type: "submission_sla_overdue",
+              recipientUserId: reviewer.userId,
+              orgId,
+              resourceId: orgId,
+              metadata: { overdueCount: subs.length },
+            });
+            delivered++;
+          } catch (err) {
+            logger.error("Failed to dispatch sla notification", {
+              userId: reviewer.userId,
+              orgId,
+              error: err instanceof Error ? err.message : String(err),
+            });
+          }
+        }
 
-      for (const reviewer of reviewers) {
-        await dispatchNotification({
-          type: "submission_sla_overdue",
-          recipientUserId: reviewer.userId,
+        // Every dispatch failed: leave unmarked so tomorrow retries. With no
+        // reviewers there is nobody to tell, so mark them or they would fill the batch.
+        if (reviewers.length > 0 && delivered === 0) continue;
+
+        await prisma.fieldSubmission.updateMany({
+          where: { id: { in: subs.map((s) => s.id) }, organizationId: orgId },
+          data: { slaNotifiedAt: new Date() },
+        });
+
+        logger.info("Marked submissions notified", { orgId, count: subs.length });
+      } catch (err) {
+        logger.error("Submission SLA monitoring failed for org", {
           orgId,
-          resourceId: orgId,
-          metadata: { overdueCount: subs.length },
-        }).catch((err) =>
-          logger.error("Failed to dispatch sla notification", {
-            userId: reviewer.userId,
-            orgId,
-            error: err instanceof Error ? err.message : String(err),
-          }),
-        );
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
-
-      // Mark all overdue submissions so we don't re-notify tomorrow
-      await prisma.fieldSubmission.updateMany({
-        where: { id: { in: subs.map((s) => s.id) } },
-        data: { slaNotifiedAt: new Date() },
-      });
-
-      logger.info("Marked submissions notified", { orgId, count: subs.length });
     }
   } catch (error) {
     logger.error("Error in submission SLA monitoring", {

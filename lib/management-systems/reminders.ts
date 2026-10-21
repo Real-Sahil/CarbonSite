@@ -26,7 +26,11 @@ export type Stage = "due_soon" | "overdue";
 const DAY = 86_400_000;
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
-export function reminderStage(dueOn: Date, today: Date, noticeDays = DUE_SOON_DAYS): Stage | null {
+export function reminderStage(
+  dueOn: Date,
+  today: Date,
+  noticeDays = DUE_SOON_DAYS,
+): Stage | null {
   const days = Math.round((dueOn.getTime() - today.getTime()) / DAY);
   if (days < 0) return "overdue";
   return days <= noticeDays ? "due_soon" : null;
@@ -39,8 +43,15 @@ export function reminderStage(dueOn: Date, today: Date, noticeDays = DUE_SOON_DA
  * an unclear case is never chased late. (Diseases are due without delay once
  * diagnosed; 10 days from the record is the reminder, not the legal limit.)
  */
-export function riddorDeadline(incident: { occurredAt: Date; incidentType: string; lostTimeDays: number }): Date {
-  const days = incident.incidentType === "lost_time_injury" && incident.lostTimeDays > 7 ? 15 : 10;
+export function riddorDeadline(incident: {
+  occurredAt: Date;
+  incidentType: string;
+  lostTimeDays: number;
+}): Date {
+  const days =
+    incident.incidentType === "lost_time_injury" && incident.lostTimeDays > 7
+      ? 15
+      : 10;
   const d = new Date(iso(incident.occurredAt) + "T00:00:00Z");
   return new Date(d.getTime() + days * DAY);
 }
@@ -70,8 +81,12 @@ export async function collectDue(today: Date): Promise<Due[]> {
       const rows = await delegate(key).findMany({
         where: {
           [r.field]: { gte: from, lte: to },
-          ...(r.skipStatuses?.length && config.fields.some((f) => f.name === "status") ? { status: { notIn: r.skipStatuses } } : {}),
+          ...(r.skipStatuses?.length &&
+          config.fields.some((f) => f.name === "status")
+            ? { status: { notIn: r.skipStatuses } }
+            : {}),
         },
+        orderBy: { [r.field]: "asc" },
         take: 5000,
       });
       for (const row of rows) {
@@ -86,8 +101,13 @@ export async function collectDue(today: Date): Promise<Due[]> {
           dueOn,
           stage,
           label: r.label,
-          title: String(row[config.titleField] ?? config.singular).slice(0, 120),
-          ownerUserId: r.ownerField ? ((row[r.ownerField] as string | null) ?? null) : null,
+          title: String(row[config.titleField] ?? config.singular).slice(
+            0,
+            120,
+          ),
+          ownerUserId: r.ownerField
+            ? ((row[r.ownerField] as string | null) ?? null)
+            : null,
           path: `management-systems/registers/${key}#row-${row.id}`,
         });
       }
@@ -95,15 +115,28 @@ export async function collectDue(today: Date): Promise<Due[]> {
   }
 
   const statuses = await prisma.msRequirementStatus.findMany({
-    where: { dueOn: { gte: from, lte: to }, status: { in: ["not_started", "in_progress"] } },
-    select: { id: true, organizationId: true, frameworkSlug: true, requirementCode: true, ownerUserId: true, dueOn: true },
+    where: {
+      dueOn: { gte: from, lte: to },
+      status: { in: ["not_started", "in_progress"] },
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      frameworkSlug: true,
+      requirementCode: true,
+      ownerUserId: true,
+      dueOn: true,
+    },
+    orderBy: { dueOn: "asc" },
     take: 5000,
   });
   for (const s of statuses) {
     const stage = reminderStage(s.dueOn!, today);
     const framework = getFramework(s.frameworkSlug);
     if (!stage || !framework) continue;
-    const req = framework.requirements.find((r) => r.code === s.requirementCode);
+    const req = framework.requirements.find(
+      (r) => r.code === s.requirementCode,
+    );
     out.push({
       orgId: s.organizationId,
       source: "requirement",
@@ -121,8 +154,22 @@ export async function collectDue(today: Date): Promise<Due[]> {
   // RIDDOR reports not yet made. The longest deadline is 15 days, so only
   // incidents from the last 15 days plus the overdue lookback can be due.
   const riddor = await prisma.hsIncidentReport.findMany({
-    where: { riddorReportable: true, riddorNotifiedAt: null, occurredAt: { gte: from, lte: today } },
-    select: { id: true, organizationId: true, reference: true, title: true, incidentType: true, occurredAt: true, lostTimeDays: true, ownerUserId: true },
+    where: {
+      riddorReportable: true,
+      riddorNotifiedAt: null,
+      occurredAt: { gte: from, lte: today },
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      reference: true,
+      title: true,
+      incidentType: true,
+      occurredAt: true,
+      lostTimeDays: true,
+      ownerUserId: true,
+    },
+    orderBy: { occurredAt: "asc" },
     take: 5000,
   });
   for (const i of riddor) {
@@ -144,11 +191,26 @@ export async function collectDue(today: Date): Promise<Due[]> {
   }
 
   const certificates = await prisma.msFrameworkAdoption.findMany({
-    where: { status: "certified", certifiedUntil: { gte: from, lte: new Date(today.getTime() + CERTIFICATE_NOTICE_DAYS * DAY) } },
-    select: { id: true, organizationId: true, frameworkSlug: true, certifiedUntil: true },
+    where: {
+      status: "certified",
+      certifiedUntil: {
+        gte: from,
+        lte: new Date(today.getTime() + CERTIFICATE_NOTICE_DAYS * DAY),
+      },
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      frameworkSlug: true,
+      certifiedUntil: true,
+    },
   });
   for (const c of certificates) {
-    const stage = reminderStage(c.certifiedUntil!, today, CERTIFICATE_NOTICE_DAYS);
+    const stage = reminderStage(
+      c.certifiedUntil!,
+      today,
+      CERTIFICATE_NOTICE_DAYS,
+    );
     if (!stage) continue;
     out.push({
       orgId: c.organizationId,
@@ -167,51 +229,107 @@ export async function collectDue(today: Date): Promise<Due[]> {
 }
 
 /** Sends each due reminder once. Returns how many were sent. */
-export async function processManagementSystemReminders(today = new Date(iso(new Date()) + "T00:00:00Z")): Promise<number> {
+export async function processManagementSystemReminders(
+  today = new Date(iso(new Date()) + "T00:00:00Z"),
+): Promise<number> {
   const due = await collectDue(today);
   let sent = 0;
   const editorsByOrg = new Map<string, string[]>();
 
   for (const d of due) {
-    const already = await prisma.msReminderLog.findUnique({
-      where: { organizationId_source_rowId_field_dueOn_stage: { organizationId: d.orgId, source: d.source, rowId: d.rowId, field: d.field, dueOn: d.dueOn, stage: d.stage } },
-      select: { id: true },
-    });
-    if (already) continue;
-
-    let recipients: string[] = [];
-    if (d.ownerUserId) {
-      const owner = await prisma.organizationMembership.findFirst({
-        where: { organizationId: d.orgId, userId: d.ownerUserId, terminatedAt: null },
-        select: { userId: true },
+    try {
+      const already = await prisma.msReminderLog.findUnique({
+        where: {
+          organizationId_source_rowId_field_dueOn_stage: {
+            organizationId: d.orgId,
+            source: d.source,
+            rowId: d.rowId,
+            field: d.field,
+            dueOn: d.dueOn,
+            stage: d.stage,
+          },
+        },
+        select: { id: true },
       });
-      if (owner) recipients = [owner.userId];
-    }
-    if (!recipients.length) {
-      if (!editorsByOrg.has(d.orgId)) {
-        const editors = await prisma.organizationMembership.findMany({
-          where: { organizationId: d.orgId, role: { in: MS_EDITORS }, terminatedAt: null },
+      if (already) continue;
+
+      let recipients: string[] = [];
+      if (d.ownerUserId) {
+        const owner = await prisma.organizationMembership.findFirst({
+          where: {
+            organizationId: d.orgId,
+            userId: d.ownerUserId,
+            terminatedAt: null,
+          },
           select: { userId: true },
         });
-        editorsByOrg.set(d.orgId, editors.map((e) => e.userId));
+        if (owner) recipients = [owner.userId];
       }
-      recipients = editorsByOrg.get(d.orgId)!;
-    }
+      if (!recipients.length) {
+        if (!editorsByOrg.has(d.orgId)) {
+          const editors = await prisma.organizationMembership.findMany({
+            where: {
+              organizationId: d.orgId,
+              role: { in: MS_EDITORS },
+              terminatedAt: null,
+            },
+            select: { userId: true },
+          });
+          editorsByOrg.set(
+            d.orgId,
+            editors.map((e) => e.userId),
+          );
+        }
+        recipients = editorsByOrg.get(d.orgId)!;
+      }
 
-    // Log first: a crash after sending must not send the same reminder tomorrow.
-    await prisma.msReminderLog.create({
-      data: { organizationId: d.orgId, source: d.source, rowId: d.rowId, field: d.field, dueOn: d.dueOn, stage: d.stage },
-    });
-    for (const userId of recipients) {
-      await dispatchNotification({
-        type: "ms_reminder",
-        recipientUserId: userId,
-        orgId: d.orgId,
-        resourceId: d.rowId,
-        metadata: { stage: d.stage, label: d.label, title: d.title, dueOn: iso(d.dueOn), path: d.path, source: d.source },
-      }).catch((err) => logger.error("Failed to dispatch management system reminder", { rowId: d.rowId, error: err instanceof Error ? err.message : String(err) }));
+      // Log first: a crash after sending must not send the same reminder tomorrow.
+      const logKey = {
+        organizationId: d.orgId,
+        source: d.source,
+        rowId: d.rowId,
+        field: d.field,
+        dueOn: d.dueOn,
+        stage: d.stage,
+      };
+      await prisma.msReminderLog.create({ data: logKey });
+      let delivered = 0;
+      for (const userId of recipients) {
+        try {
+          await dispatchNotification({
+            type: "ms_reminder",
+            recipientUserId: userId,
+            orgId: d.orgId,
+            resourceId: d.rowId,
+            metadata: {
+              stage: d.stage,
+              label: d.label,
+              title: d.title,
+              dueOn: iso(d.dueOn),
+              path: d.path,
+              source: d.source,
+            },
+          });
+          delivered++;
+        } catch (err) {
+          logger.error("Failed to dispatch management system reminder", {
+            rowId: d.rowId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+      // Nobody reached: drop the log row so tomorrow's run tries again.
+      if (recipients.length > 0 && delivered === 0) {
+        await prisma.msReminderLog.deleteMany({ where: logKey });
+        continue;
+      }
+      sent++;
+    } catch (err) {
+      logger.error("Management system reminder failed", {
+        rowId: d.rowId,
+        error: err instanceof Error ? err.message : String(err),
+      });
     }
-    sent++;
   }
   return sent;
 }

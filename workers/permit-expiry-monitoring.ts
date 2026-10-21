@@ -11,6 +11,33 @@ import { getLogger } from "@/lib/observability";
 
 const logger = getLogger("permit-expiry-monitoring");
 
+type Notify = Parameters<typeof dispatchNotification>[0];
+
+// Sends to each org admin/editor; false when there were recipients and every send failed.
+async function notifyAdmins(
+  orgId: string,
+  build: (userId: string) => Notify,
+): Promise<boolean> {
+  const admins = await prisma.organizationMembership.findMany({
+    where: { organizationId: orgId, role: { in: ["admin", "editor"] }, terminatedAt: null },
+    select: { userId: true },
+  });
+  let delivered = 0;
+  for (const admin of admins) {
+    try {
+      await dispatchNotification(build(admin.userId));
+      delivered++;
+    } catch (err) {
+      logger.error("Failed to dispatch permit notification", {
+        userId: admin.userId,
+        orgId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  }
+  return admins.length === 0 || delivered > 0;
+}
+
 export async function processPermitExpiryMonitoring(): Promise<void> {
   try {
     const now = new Date();
@@ -30,6 +57,8 @@ export async function processPermitExpiryMonitoring(): Promise<void> {
         expiresOn: true,
         renewalNoticeDays: true,
       },
+      orderBy: { expiresOn: "asc" },
+      take: 5000,
     });
 
     let permitAlertsCount = 0;
@@ -42,46 +71,35 @@ export async function processPermitExpiryMonitoring(): Promise<void> {
 
       if (daysUntilExpiry > noticeDays || daysUntilExpiry < 0) continue;
 
-      const admins = await prisma.organizationMembership.findMany({
-        where: {
-          organizationId: permit.organizationId,
-          role: { in: ["admin", "editor"] },
-          terminatedAt: null,
-        },
-        select: { userId: true },
-      });
-
-      for (const admin of admins) {
-        await dispatchNotification({
+      try {
+        const sent = await notifyAdmins(permit.organizationId, (userId) => ({
           type: "permit_expiry_warning",
-          recipientUserId: admin.userId,
+          recipientUserId: userId,
           orgId: permit.organizationId,
           resourceId: permit.id,
-          metadata: {
-            permitRef: permit.reference ?? permit.id,
-            daysUntilExpiry,
-          },
-        }).catch((err) =>
-          logger.error("Failed to dispatch permit expiry notification", {
-            userId: admin.userId,
-            permitId: permit.id,
-            error: err instanceof Error ? err.message : String(err),
-          }),
-        );
+          metadata: { permitRef: permit.reference ?? permit.id, daysUntilExpiry },
+        }));
+        if (!sent) continue;
+
+        await prisma.environmentalPermit.updateMany({
+          where: { id: permit.id, organizationId: permit.organizationId },
+          data: { expiryAlertSentAt: now },
+        });
+
+        await writeAuditLog({
+          organizationId: permit.organizationId,
+          action: "permit.expiry_alert_sent",
+          resourceType: "EnvironmentalPermit",
+          resourceId: permit.id,
+          metadata: { daysUntilExpiry },
+        }).catch(() => null);
+      } catch (err) {
+        logger.error("Permit expiry alert failed", {
+          permitId: permit.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        continue;
       }
-
-      await prisma.environmentalPermit.update({
-        where: { id: permit.id },
-        data: { expiryAlertSentAt: now },
-      });
-
-      await writeAuditLog({
-        organizationId: permit.organizationId,
-        action: "permit.expiry_alert_sent",
-        resourceType: "EnvironmentalPermit",
-        resourceId: permit.id,
-        metadata: { daysUntilExpiry },
-      }).catch(() => null);
 
       permitAlertsCount++;
     }
@@ -99,6 +117,8 @@ export async function processPermitExpiryMonitoring(): Promise<void> {
       include: {
         permit: { select: { reference: true } },
       },
+      orderBy: { nextDueOn: "asc" },
+      take: 5000,
     });
 
     let conditionAlertsCount = 0;
@@ -111,48 +131,40 @@ export async function processPermitExpiryMonitoring(): Promise<void> {
 
       if (!conditionThresholds.some((t) => daysUntilDue <= t)) continue;
 
-      const admins = await prisma.organizationMembership.findMany({
-        where: {
-          organizationId: condition.organizationId,
-          role: { in: ["admin", "editor"] },
-          terminatedAt: null,
-        },
-        select: { userId: true },
-      });
+      try {
+        const conditionRef =
+          condition.permit?.reference
+            ? `${condition.permit.reference} - ${condition.description.slice(0, 60)}`
+            : condition.description.slice(0, 80);
 
-      const conditionRef =
-        condition.permit?.reference
-          ? `${condition.permit.reference} - ${condition.description.slice(0, 60)}`
-          : condition.description.slice(0, 80);
-
-      for (const admin of admins) {
-        await dispatchNotification({
+        const sent = await notifyAdmins(condition.organizationId, (userId) => ({
           type: "permit_condition_due",
-          recipientUserId: admin.userId,
+          recipientUserId: userId,
           orgId: condition.organizationId,
           resourceId: condition.id,
           metadata: { conditionRef, daysUntilDue },
-        }).catch((err) =>
-          logger.error("Failed to dispatch condition due notification", {
-            userId: admin.userId,
-            conditionId: condition.id,
-            error: err instanceof Error ? err.message : String(err),
-          }),
-        );
+        }));
+        if (!sent) continue;
+
+        await prisma.permitCondition.updateMany({
+          where: { id: condition.id, organizationId: condition.organizationId },
+          data: { conditionAlertSentAt: now },
+        });
+
+        await writeAuditLog({
+          organizationId: condition.organizationId,
+          action: "permit.condition_due_alert_sent",
+          resourceType: "PermitCondition",
+          resourceId: condition.id,
+          metadata: { daysUntilDue },
+        }).catch(() => null);
+      } catch (err) {
+        logger.error("Permit condition alert failed", {
+          conditionId: condition.id,
+          error: err instanceof Error ? err.message : String(err),
+        });
+        continue;
       }
-
-      await prisma.permitCondition.update({
-        where: { id: condition.id },
-        data: { conditionAlertSentAt: now },
-      });
-
-      await writeAuditLog({
-        organizationId: condition.organizationId,
-        action: "permit.condition_due_alert_sent",
-        resourceType: "PermitCondition",
-        resourceId: condition.id,
-        metadata: { daysUntilDue },
-      }).catch(() => null);
 
       conditionAlertsCount++;
     }

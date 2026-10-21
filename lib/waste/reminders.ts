@@ -16,6 +16,7 @@ export async function processWasteDocumentReminders(now = new Date()): Promise<n
   const docs = await prisma.wasteDocument.findMany({
     where: { status: "accepted", kind: { not: "transfer_note" }, validUntil: { gte: floor, lte: horizon } },
     select: { id: true, organizationId: true, kind: true, title: true, issuer: true, validUntil: true },
+    orderBy: { validUntil: "asc" },
     take: 5000,
   });
   let sent = 0;

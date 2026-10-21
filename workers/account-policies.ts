@@ -33,37 +33,60 @@ export type PolicyAction =
 
 /** Whole days from `a` to `b`, counting calendar days in UTC. */
 function daysBetween(a: Date, b: Date): number {
-  const utc = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  const utc = (d: Date) =>
+    Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   return Math.round((utc(b) - utc(a)) / DAY);
 }
 
 /** What the daily run should do for one supplier. Pure, so it can be tested. */
 export function planSupplierPolicies(
   s: SupplierState,
-  policy: { passwordRotationDays: number | null; accountExpiryDays: number | null },
+  policy: {
+    passwordRotationDays: number | null;
+    accountExpiryDays: number | null;
+  },
   now: Date,
 ): PolicyAction[] {
   const actions: PolicyAction[] = [];
 
   if (policy.accountExpiryDays && policy.accountExpiryDays > 0) {
-    const lastActive = s.lastSignInAt && s.lastSignInAt > s.joinedAt ? s.lastSignInAt : s.joinedAt;
+    const lastActive =
+      s.lastSignInAt && s.lastSignInAt > s.joinedAt
+        ? s.lastSignInAt
+        : s.joinedAt;
     const inactive = daysBetween(lastActive, now);
     const remaining = policy.accountExpiryDays - inactive;
     if (remaining <= 0) {
       return [{ kind: "terminate", userId: s.userId, inactiveDays: inactive }];
     }
     if (EXPIRY_WARN_DAYS.includes(remaining)) {
-      actions.push({ kind: "access_expiring", userId: s.userId, daysRemaining: remaining });
+      actions.push({
+        kind: "access_expiring",
+        userId: s.userId,
+        daysRemaining: remaining,
+      });
     }
   }
 
-  if (policy.passwordRotationDays && policy.passwordRotationDays > 0 && s.passwordChangedAt) {
+  if (
+    policy.passwordRotationDays &&
+    policy.passwordRotationDays > 0 &&
+    s.passwordChangedAt
+  ) {
     const age = daysBetween(s.passwordChangedAt, now);
     const remaining = policy.passwordRotationDays - age;
     if (remaining > 0 && PASSWORD_WARN_DAYS.includes(remaining)) {
-      actions.push({ kind: "password_expiring", userId: s.userId, daysRemaining: remaining });
+      actions.push({
+        kind: "password_expiring",
+        userId: s.userId,
+        daysRemaining: remaining,
+      });
     } else if (remaining <= 0 && Math.abs(remaining) % 7 === 0) {
-      actions.push({ kind: "password_overdue", userId: s.userId, daysOverdue: Math.abs(remaining) });
+      actions.push({
+        kind: "password_overdue",
+        userId: s.userId,
+        daysOverdue: Math.abs(remaining),
+      });
     }
   }
 
@@ -73,99 +96,151 @@ export function planSupplierPolicies(
 export async function processAccountPolicies(now = new Date()) {
   const orgs = await prisma.organization.findMany({
     where: {
-      OR: [{ supplierPasswordRotationDays: { gt: 0 } }, { supplierAccountExpiryDays: { gt: 0 } }],
+      OR: [
+        { supplierPasswordRotationDays: { gt: 0 } },
+        { supplierAccountExpiryDays: { gt: 0 } },
+      ],
     },
-    select: { id: true, supplierPasswordRotationDays: true, supplierAccountExpiryDays: true },
+    select: {
+      id: true,
+      supplierPasswordRotationDays: true,
+      supplierAccountExpiryDays: true,
+    },
   });
 
   const summary = { orgs: orgs.length, terminated: 0, notified: 0 };
 
   for (const org of orgs) {
-    const suppliers = await prisma.organizationMembership.findMany({
-      where: { organizationId: org.id, role: "supplier", terminatedAt: null },
-      select: {
-        userId: true,
-        createdAt: true,
-        user: {
-          select: {
-            email: true,
-            sessions: { select: { createdAt: true }, orderBy: { createdAt: "desc" }, take: 1 },
-            accounts: {
-              where: { providerId: "credential" },
-              select: { passwordChangedAt: true, createdAt: true },
-              take: 1,
+    try {
+      const suppliers = await prisma.organizationMembership.findMany({
+        where: { organizationId: org.id, role: "supplier", terminatedAt: null },
+        select: {
+          userId: true,
+          createdAt: true,
+          user: {
+            select: {
+              email: true,
+              sessions: {
+                select: { createdAt: true },
+                orderBy: { createdAt: "desc" },
+                take: 1,
+              },
+              accounts: {
+                where: { providerId: "credential" },
+                select: { passwordChangedAt: true, createdAt: true },
+                take: 1,
+              },
             },
           },
         },
-      },
-    });
+      });
 
-    for (const m of suppliers) {
-      const account = m.user.accounts[0];
-      const actions = planSupplierPolicies(
-        {
-          userId: m.userId,
-          joinedAt: m.createdAt,
-          lastSignInAt: m.user.sessions[0]?.createdAt ?? null,
-          passwordChangedAt: account ? account.passwordChangedAt ?? account.createdAt : null,
-        },
-        { passwordRotationDays: org.supplierPasswordRotationDays, accountExpiryDays: org.supplierAccountExpiryDays },
-        now,
-      );
+      for (const m of suppliers) {
+        try {
+          const account = m.user.accounts[0];
+          const actions = planSupplierPolicies(
+            {
+              userId: m.userId,
+              joinedAt: m.createdAt,
+              lastSignInAt: m.user.sessions[0]?.createdAt ?? null,
+              passwordChangedAt: account
+                ? (account.passwordChangedAt ?? account.createdAt)
+                : null,
+            },
+            {
+              passwordRotationDays: org.supplierPasswordRotationDays,
+              accountExpiryDays: org.supplierAccountExpiryDays,
+            },
+            now,
+          );
 
-      for (const action of actions) {
-        if (action.kind === "terminate") {
-          await prisma.organizationMembership.update({
-            where: { organizationId_userId: { organizationId: org.id, userId: m.userId } },
-            data: { terminatedAt: now },
-          });
-          await writeAuditLog({
-            organizationId: org.id,
-            action: "supplier_account.terminated",
-            resourceType: "OrganizationMembership",
-            resourceId: m.userId,
-            actorUserId: null,
-            metadata: { supplierEmail: m.user.email, reason: "inactivity", inactiveDays: action.inactiveDays },
-          });
-          await notify({ type: "supplier_account_terminated", recipientUserId: m.userId, orgId: org.id, resourceId: m.userId, metadata: { reason: "inactivity" } });
-          summary.terminated++;
-        } else if (action.kind === "access_expiring") {
-          await notify({
-            type: "supplier_account_expiring",
-            recipientUserId: m.userId,
-            orgId: org.id,
-            resourceId: m.userId,
-            metadata: { daysRemaining: action.daysRemaining, daysUntilExpiry: action.daysRemaining },
-          });
-          summary.notified++;
-        } else if (action.kind === "password_expiring") {
-          await notify({
-            type: "supplier_password_expiring",
-            recipientUserId: m.userId,
-            orgId: org.id,
-            resourceId: m.userId,
-            metadata: { daysRemaining: action.daysRemaining, daysUntilExpiry: action.daysRemaining },
-          });
-          summary.notified++;
-        } else {
-          await writeAuditLog({
-            organizationId: org.id,
-            action: "supplier_account.password_reset",
-            resourceType: "OrganizationMembership",
-            resourceId: m.userId,
-            actorUserId: null,
-            metadata: { supplierEmail: m.user.email, reason: "rotation_overdue", daysOverdue: action.daysOverdue },
-          });
-          await notify({
-            type: "supplier_password_expiring",
-            recipientUserId: m.userId,
-            orgId: org.id,
-            resourceId: m.userId,
-            metadata: { daysRemaining: 0, daysUntilExpiry: 0 },
-          });
-          summary.notified++;
+          for (const action of actions) {
+            if (action.kind === "terminate") {
+              await prisma.organizationMembership.update({
+                where: {
+                  organizationId_userId: {
+                    organizationId: org.id,
+                    userId: m.userId,
+                  },
+                },
+                data: { terminatedAt: now },
+              });
+              await writeAuditLog({
+                organizationId: org.id,
+                action: "supplier_account.terminated",
+                resourceType: "OrganizationMembership",
+                resourceId: m.userId,
+                actorUserId: null,
+                metadata: {
+                  supplierEmail: m.user.email,
+                  reason: "inactivity",
+                  inactiveDays: action.inactiveDays,
+                },
+              });
+              await notify({
+                type: "supplier_account_terminated",
+                recipientUserId: m.userId,
+                orgId: org.id,
+                resourceId: m.userId,
+                metadata: { reason: "inactivity" },
+              });
+              summary.terminated++;
+            } else if (action.kind === "access_expiring") {
+              await notify({
+                type: "supplier_account_expiring",
+                recipientUserId: m.userId,
+                orgId: org.id,
+                resourceId: m.userId,
+                metadata: {
+                  daysRemaining: action.daysRemaining,
+                  daysUntilExpiry: action.daysRemaining,
+                },
+              });
+              summary.notified++;
+            } else if (action.kind === "password_expiring") {
+              await notify({
+                type: "supplier_password_expiring",
+                recipientUserId: m.userId,
+                orgId: org.id,
+                resourceId: m.userId,
+                metadata: {
+                  daysRemaining: action.daysRemaining,
+                  daysUntilExpiry: action.daysRemaining,
+                },
+              });
+              summary.notified++;
+            } else {
+              await writeAuditLog({
+                organizationId: org.id,
+                action: "supplier_account.password_reset",
+                resourceType: "OrganizationMembership",
+                resourceId: m.userId,
+                actorUserId: null,
+                metadata: {
+                  supplierEmail: m.user.email,
+                  reason: "rotation_overdue",
+                  daysOverdue: action.daysOverdue,
+                },
+              });
+              await notify({
+                type: "supplier_password_expiring",
+                recipientUserId: m.userId,
+                orgId: org.id,
+                resourceId: m.userId,
+                metadata: { daysRemaining: 0, daysUntilExpiry: 0 },
+              });
+              summary.notified++;
+            }
+          }
+        } catch (err) {
+          console.error(
+            `[account-policies] supplier ${m.userId} in org ${org.id} failed:`,
+            err,
+          );
         }
       }
+    } catch (err) {
+      console.error(`[account-policies] org ${org.id} failed:`, err);
     }
   }
 

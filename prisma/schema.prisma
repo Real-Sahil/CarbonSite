@@ -6572,6 +6572,8 @@ model EnforcementNotice {
   issuedAt           DateTime                @map("issued_at") @db.Date
   complianceDeadline DateTime?               @map("compliance_deadline") @db.Date
   compliedAt         DateTime?               @map("complied_at") @db.Date
+  /// Set when the overdue alert goes out, so the daily monitor alerts once per notice.
+  overdueAlertedAt   DateTime?               @map("overdue_alerted_at") @db.Timestamptz(6)
   facilityId         String?                 @map("facility_id")
   siteId             String?                 @map("site_id")
   permitId           String?                 @map("permit_id")

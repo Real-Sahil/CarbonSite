@@ -4,7 +4,7 @@ import { computeBurndown, escalates } from "../burndown";
 import type { EvmResult } from "../evm";
 
 const db = vi.hoisted(() => ({
-  carbonBudget: { findMany: vi.fn(), update: vi.fn(), findFirst: vi.fn() },
+  carbonBudget: { findMany: vi.fn(), update: vi.fn(), updateMany: vi.fn(), findFirst: vi.fn() },
   organizationMembership: { findMany: vi.fn() },
   project: { findFirst: vi.fn() },
   $queryRaw: vi.fn(),
@@ -111,7 +111,7 @@ describe("processCarbonBudgetAlerts", () => {
     expect(db.organizationMembership.findMany.mock.calls[0][0].where.organizationId).toBe("org-a");
     expect(dispatchNotification).toHaveBeenCalledTimes(2);
     expect(dispatchNotification.mock.calls[0][0]).toMatchObject({ type: "carbon_budget_forecast", orgId: "org-a", metadata: { status: "over" } });
-    expect(db.carbonBudget.update).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ forecastAlertLevel: "over" }) }));
+    expect(db.carbonBudget.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: { id: "b1", organizationId: "org-a" }, data: expect.objectContaining({ forecastAlertLevel: "over" }) }));
   });
 
   it("stays quiet when the level was already alerted, and resets when the budget recovers", async () => {
