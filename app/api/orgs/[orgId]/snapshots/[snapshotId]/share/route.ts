@@ -37,7 +37,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const expiresAt = new Date(Date.now() + body.expiryDays * 86_400_000);
 
     const updated = await prisma.publishedSnapshot.update({
-      where: { id: snapshotId },
+      where: { id: snapshotId, organizationId: orgId },
       data: { shareToken: token, shareTokenExpiresAt: expiresAt },
       select: { id: true, shareToken: true, shareTokenExpiresAt: true },
     });
@@ -77,7 +77,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     if (!snapshot) return apiError("NOT_FOUND", "Snapshot not found.", 404);
 
     await prisma.publishedSnapshot.update({
-      where: { id: snapshotId },
+      where: { id: snapshotId, organizationId: orgId },
       data: { shareToken: null, shareTokenExpiresAt: null },
     });
 

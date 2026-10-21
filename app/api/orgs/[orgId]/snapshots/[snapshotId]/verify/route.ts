@@ -38,7 +38,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const updated = await prisma.publishedSnapshot.update({
-      where: { id },
+      where: { id, organizationId: orgId },
       data: {
         verificationStatus: body.action,
         verifiedByUserId: session.user.id,

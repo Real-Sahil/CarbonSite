@@ -65,7 +65,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const updated = await prisma.calculationRun.update({
-      where: { id: runId },
+      where: { id: runId, organizationId: orgId },
       data: { status: "failed", finishedAt: new Date(), errorMessage: "Cancelled by administrator." },
     });
 
