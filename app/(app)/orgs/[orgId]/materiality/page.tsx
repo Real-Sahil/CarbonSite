@@ -80,7 +80,7 @@ export default async function MaterialityPage({ params }: { params: Promise<{ or
           No materiality assessments yet.
         </div>
       ) : (
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">

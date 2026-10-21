@@ -265,7 +265,7 @@ export default function AuditLogPage() {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-[#5B6A78]">
           Page {page} {loading ? "(loading...)" : ""}
         </p>

@@ -104,7 +104,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
         {docs.length === 0 ? (
           <p className="p-10 text-center text-sm text-[#5B6A78]">No documents yet. Add one, or send a contractor an upload link.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="border-b border-[#E3E8EE]">
               <tr>{["Document", "Kind", "Covers", "Valid until", "From", "Status", "Ask carrier", ""].map((h) => <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#5B6A78]">{h}</th>)}</tr>
             </thead>
@@ -136,7 +136,7 @@ export default async function WasteDocumentsPage({ params, searchParams }: { par
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

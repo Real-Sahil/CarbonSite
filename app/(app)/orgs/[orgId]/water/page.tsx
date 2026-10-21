@@ -99,7 +99,7 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
             <p className="text-xs text-[#5B6A78] mt-1">Add your first water record to start tracking ESRS E3 disclosures.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Metric", "Facility", "Source", "Volume (m3)", "Water-stressed", "Date", ""].map((h) => (
@@ -132,7 +132,7 @@ export default async function WaterPage({ params }: { params: Promise<{ orgId: s
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

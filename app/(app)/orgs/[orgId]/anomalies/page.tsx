@@ -253,19 +253,20 @@ export default function AnomaliesPage() {
           ))}
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t pt-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
             <p className="text-sm text-[#41505F]">
               Showing {offset + 1}–{Math.min(offset + limit, total)} of {total} anomalies
             </p>
             <div className="flex gap-2">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setOffset(Math.max(0, offset - limit))}
                 disabled={offset === 0}
-                className="rounded px-3 py-2 text-sm font-medium disabled:opacity-50"
               >
                 Previous
-              </button>
+              </Button>
               <Button
+                variant="outline"
                 onClick={() => setOffset(offset + limit)}
                 disabled={!hasMore}
               >

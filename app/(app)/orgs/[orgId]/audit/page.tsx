@@ -122,7 +122,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
     filters.resource && !resourceRows.some((row) => row.resourceType === filters.resource)
       ? [...resourceRows, { resourceType: filters.resource }].sort((a, b) => a.resourceType.localeCompare(b.resourceType))
       : resourceRows;
-  const pageCount = Math.ceil(totalCount / PAGE_SIZE);
+  const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
 
   return (
@@ -263,7 +263,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                     </TableBody>
                   </Table>
                 </div>
-                <div className="border-t border-[#E3E8EE] px-6 py-4 flex items-center justify-between">
+                <div className="border-t border-[#E3E8EE] px-4 py-4 sm:px-6 flex flex-wrap items-center justify-between gap-3">
                   <div className="text-xs text-[#41505F]">
                     Page {currentPage} of {pageCount} ({totalCount.toLocaleString("en-GB")} total events)
                   </div>

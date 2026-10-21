@@ -69,7 +69,7 @@ export default async function EnforcementNoticesPage({ params }: PageProps) {
       {notices.length === 0 ? (
         <div className="text-sm text-muted-foreground py-16 text-center">No enforcement notices recorded.</div>
       ) : (
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">

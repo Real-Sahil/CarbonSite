@@ -59,7 +59,7 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-[#E3E8EE] bg-white">
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto"><table className="w-full text-sm">
               <thead className="bg-[#F9FAFC] text-left text-xs text-[#5B6A78]">
                 <tr>
                   <th className="px-5 py-2.5 font-medium">Profile</th>
@@ -86,7 +86,7 @@ export default async function ImportProfilesPage({ params }: { params: Promise<{
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
       </div>

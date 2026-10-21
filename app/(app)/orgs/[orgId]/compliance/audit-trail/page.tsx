@@ -105,7 +105,7 @@ export default function AuditTrailPage() {
     loadLogs();
   }, [orgId, offset, limit, filters]);
 
-  const pages = Math.ceil(total / limit);
+  const pages = Math.max(1, Math.ceil(total / limit));
   const currentPage = Math.floor(offset / limit) + 1;
 
   return (
@@ -213,7 +213,7 @@ export default function AuditTrailPage() {
             </Table>
           </div>
 
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <div className="text-sm text-[#41505F]">
               Page {currentPage} of {pages}
             </div>

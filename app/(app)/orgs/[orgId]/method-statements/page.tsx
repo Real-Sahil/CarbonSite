@@ -59,7 +59,7 @@ export default async function MethodStatementsPage({ params }: PageProps) {
       {items.length === 0 ? (
         <div className="text-sm text-muted-foreground py-16 text-center">No method statements yet.</div>
       ) : (
-        <div className="rounded-md border">
+        <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-muted/40">

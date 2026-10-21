@@ -214,7 +214,7 @@ export default function CompliancePage() {
             <p className="text-xs text-[#5B6A78] mt-1">Add your first regulatory framework to start tracking obligations.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Framework", "Year", "Status", "Owner", "Due date", "Submitted", ""].map((h) => (
@@ -315,7 +315,7 @@ export default function CompliancePage() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
 

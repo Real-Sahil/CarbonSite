@@ -211,7 +211,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       {(onPreviousPage || onNextPage) && (
-        <div className="flex items-center justify-between px-6 py-3 border-t border-[#E3E8EE]">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6 border-t border-[#E3E8EE]">
           <span className="text-xs text-[#5B6A78]">
             {totalCount != null
               ? `${pageRowCount ?? data.length} of ${totalCount.toLocaleString("en-GB")} records`
@@ -224,6 +224,7 @@ export function DataTable<TData, TValue>({
               className="h-7 w-7 p-0 border-[#E3E8EE] text-[#5B6A78] disabled:opacity-40"
               onClick={onPreviousPage}
               disabled={!hasPreviousPage}
+              aria-label="Previous page"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
@@ -233,6 +234,7 @@ export function DataTable<TData, TValue>({
               className="h-7 w-7 p-0 border-[#E3E8EE] text-[#5B6A78] disabled:opacity-40"
               onClick={onNextPage}
               disabled={!hasNextPage}
+              aria-label="Next page"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>

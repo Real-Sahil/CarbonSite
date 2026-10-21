@@ -75,7 +75,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
             <p className="text-xs text-[#5B6A78] mt-1">Add your first carbon credit purchase to track net position.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Project", "Type", "Standard", "Vintage", "Quantity (tCO₂e)", "Purchased", "Verified", ""].map((h) => (
@@ -131,7 +131,7 @@ export default async function OffsetsPage({ params }: { params: Promise<{ orgId:
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

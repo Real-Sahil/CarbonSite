@@ -164,7 +164,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
             <p className="text-xs text-[#5B6A78] mt-1">Add your first waste disposal record to start tracking emissions.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full text-sm">
             <thead className="border-b border-[#E3E8EE]">
               <tr>
                 {["Waste type", "Facility", "Disposal route", "Weight (t)", "CO2e (tCO₂e)", "Date", "EWC", ""].map((h) => (
@@ -203,7 +203,7 @@ export default async function WastePage({ params }: { params: Promise<{ orgId: s
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

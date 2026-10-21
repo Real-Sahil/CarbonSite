@@ -619,7 +619,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
             </CardHeader>
             <CardContent>
               <div className="overflow-hidden rounded-[10px] border border-[#E3E8EE]">
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto"><table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-[#E3E8EE] bg-[#F9FAFC]">
                       <th className="px-3 py-2 text-left text-xs font-normal uppercase tracking-wide text-[#41505F]">Field</th>
@@ -646,7 +646,7 @@ export default async function SubmissionDetailPage({ params }: SubmissionDetailP
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </CardContent>
           </Card>
