@@ -1141,7 +1141,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
             {
               label: "Period change",
               value: periodDeltaPct,
-              format: { kind: "percent" },
+              format: { kind: "percent", locale: L },
               delta:
                 periodDeltaPct !== null
                   ? { value: periodDeltaPct, label: sliceFilter ? "vs previous period, same filters" : "vs previous period" }
@@ -1743,7 +1743,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </dt>
               <dd
                 className={`mt-2 text-2xl font-normal tracking-[-0.4px] ${
-                  missingEvidenceCount > 0 ? "text-amber-600" : "text-[#131d29]"
+                  missingEvidenceCount > 0 ? "text-amber-700" : "text-[#131d29]"
                 }`}
               >
                 {missingEvidenceCount.toLocaleString(L)}
@@ -1759,7 +1759,7 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
               </dt>
               <dd
                 className={`mt-2 text-2xl font-normal tracking-[-0.4px] ${
-                  pendingAttentionCount > 0 ? "text-amber-600" : "text-[#131d29]"
+                  pendingAttentionCount > 0 ? "text-amber-700" : "text-[#131d29]"
                 }`}
               >
                 {pendingAttentionCount.toLocaleString(L)}

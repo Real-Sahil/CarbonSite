@@ -4,7 +4,7 @@
  */
 export type KpiFormat =
   | { kind: "co2e"; locale: string }
-  | { kind: "percent" }
+  | { kind: "percent"; locale: string }
   | { kind: "scopes"; of: number };
 
 /** kgCO₂e below a tonne, tCO₂e above. Same rule as the dashboard's other emissions figures. */
@@ -20,7 +20,7 @@ export function formatKpi(format: KpiFormat, value: number): string {
     case "co2e":
       return formatKgCo2e(format.locale, value);
     case "percent":
-      return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+      return `${value > 0 ? "+" : ""}${value.toLocaleString(format.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
     case "scopes":
       return `${Math.round(value)}/${format.of}`;
   }

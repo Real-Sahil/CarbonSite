@@ -5,7 +5,7 @@ import { formatKpi } from "../kpi-format";
 
 const co2e = { kind: "co2e", locale: "en-GB" } as const;
 const scopes = { kind: "scopes", of: 3 } as const;
-const percent = { kind: "percent" } as const;
+const percent = { kind: "percent", locale: "en-GB" } as const;
 
 function stubReducedMotion(reduce: boolean) {
   vi.stubGlobal("matchMedia", (query: string) => ({
