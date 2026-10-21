@@ -87,7 +87,14 @@ export function SiteFooter() {
         </div>
         <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-8 text-[13px] text-mk-on-dark-3 md:flex-row md:items-center md:justify-between">
           <span>&copy; {new Date().getFullYear()} MetricOra Ltd.</span>
-          <span>Emission factors: DESNZ/DEFRA (Open Government Licence v3.0), US EPA, ADEME Base Carbone (Licence Ouverte 2.0).</span>
+          <span>
+            Emission factors: DESNZ/DEFRA (Open Government Licence v3.0), US EPA, ADEME Base Carbone (Licence Ouverte 2.0).
+            Charts by{" "}
+            <a href="https://www.tradingview.com" target="_blank" rel="noopener" className="underline hover:text-mk-on-dark">
+              TradingView Lightweight Charts
+            </a>
+            .
+          </span>
         </div>
       </div>
     </footer>

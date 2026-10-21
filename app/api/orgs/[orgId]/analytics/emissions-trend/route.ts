@@ -27,7 +27,21 @@ export async function GET(
     });
     if (!latestRun) return NextResponse.json({ data: [] });
 
-    const from = trendWindowStart(period, parseTrendDays(req.nextUrl.searchParams.get("days")));
+    // Anchor the window at the last activity inside the period, not the period end: a
+    // 12-month period with data to February would otherwise show an empty last 30 days.
+    const [{ latest }] = await prisma.$queryRaw<{ latest: Date | null }[]>`
+      SELECT MAX(ar.activity_date) AS latest
+      FROM emission_calculations calc
+      JOIN activity_records ar ON ar.id = calc.activity_record_id
+      WHERE calc.calculation_run_id = ${latestRun.id}
+        AND ar.activity_date >= ${period.startDate}::date
+        AND ar.activity_date <= ${period.endDate}::date
+    `;
+    if (!latest) return NextResponse.json({ data: [] });
+    const from = trendWindowStart(
+      { startDate: period.startDate, endDate: latest },
+      parseTrendDays(req.nextUrl.searchParams.get("days")),
+    );
 
     // Group by activity_date (when the activity occurred) — not calc.created_at (when calc ran).
     // Market-based Scope 2 is left out: the headline inventory is location-based and the two

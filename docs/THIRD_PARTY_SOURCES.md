@@ -43,7 +43,7 @@ Each row becomes a dependency or copied component only at its first use (knip fa
 | Source | Terms found | What we do |
 |---|---|---|
 | Recharts (github.com/recharts/recharts) | MIT (`LICENSE`). | Candidate chart base. Already a dependency. |
-| Lightweight Charts (github.com/tradingview/lightweight-charts) | Apache-2.0 (`LICENSE`); the licence asks for the TradingView attribution, which the library's own logo link provides, so it stays on. | Canvas time-series chart (`components/charts/pro-time-series.tsx`): pan, wheel zoom, pinch, kinetic scroll. Used for the emissions trend. |
+| Lightweight Charts (github.com/tradingview/lightweight-charts) | Apache-2.0 (`LICENSE`); the licence asks for visible attribution with a link to tradingview.com. The on-chart logo is off (`attributionLogo: false`); the credit is the text link in the marketing site footer (`components/marketing/site-footer.tsx`). | Canvas time-series chart (`components/charts/pro-time-series.tsx`): pan, wheel zoom, pinch, kinetic scroll. Used for the emissions trend. |
 | Apache ECharts (github.com/apache/echarts) | Apache 2.0. Keep the notices; embedded d3 code is BSD-3-Clause (`/licenses/LICENSE-d3`). | Candidate for denser charts. Not adopted. |
 | Tremor (github.com/tremorlabs/tremor) | Apache 2.0. The repository says some Tremor Raw subcomponents are MIT, so check each file copied. | Candidate KPI and chart cards. Not adopted. |
 | Magic UI (magicui.design; repo github.com/magicuidesign/magicui) | Repository `LICENSE.md` is MIT. It does not say whether the MIT covers the components or only the library. magicui.design was unreachable from the sandbox. | Candidate: Number Ticker. Adopt only after the component scope is confirmed on the site. |

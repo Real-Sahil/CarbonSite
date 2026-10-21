@@ -18,8 +18,8 @@ import { cumulative, rangeStart, sma, type Point } from "./series-math";
 
 // Canvas time-series chart on TradingView's Lightweight Charts (Apache-2.0,
 // docs/THIRD_PARTY_SOURCES.md). Canvas keeps pan, wheel zoom, pinch and kinetic
-// scroll smooth at thousands of points; the library's own logo link is the
-// attribution its licence asks for, so it stays on.
+// scroll smooth at thousands of points. The library's on-chart logo is off; the
+// credit its licence asks for is a text link in the marketing site footer.
 
 type Kind = "area" | "line" | "bars";
 type Range = "1M" | "3M" | "6M" | "YTD" | "All";
@@ -102,6 +102,7 @@ export function ProTimeSeries({
         textColor: c.text,
         fontFamily: "inherit",
         fontSize: 12,
+        attributionLogo: false,
       },
       grid: { vertLines: { visible: false }, horzLines: { color: c.grid } },
       rightPriceScale: { borderVisible: false },
