@@ -57,6 +57,8 @@ const db = vi.hoisted(() => {
     tenderWatch: model(),
     subcontractorCarbonSubmission: model(),
     activityRecord: model(),
+    supplierDataRequest: model(),
+    supplierReport: model(),
     importProfile: model(),
     importProfileRule: model(),
     $transaction: vi.fn(),
@@ -99,6 +101,11 @@ vi.mock("@/lib/billing/limits", () => ({
   requireFeature: vi.fn().mockResolvedValue(null),
   requireReportType: vi.fn().mockResolvedValue(null),
   requireCapacity: vi.fn().mockResolvedValue(null),
+}));
+vi.mock("@/lib/integrations/zapier", () => ({
+  validateZapierConfig: vi.fn(),
+  verifyZapierApiKey: vi.fn().mockResolvedValue(undefined),
+  ZapierAuthError: class ZapierAuthError extends Error {},
 }));
 vi.mock("@/lib/billing/usage", () => ({ recordUsage: vi.fn() }));
 vi.mock("@/lib/security/rate-limit-async", () => ({ rateLimitRequest: vi.fn().mockResolvedValue(null) }));
@@ -787,4 +794,58 @@ describe("siteId on activity writes", () => {
     expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
     expect(db.activityRecord.createMany).not.toHaveBeenCalled();
   });
+
+  it("zapier record create refuses another organisation's site and writes nothing", async () => {
+    const { POST } = await import("@/app/api/zapier/actions/activity-record-create/route");
+    db.organization.findUnique.mockResolvedValue({ id: ORG_A });
+    db.emissionCategory.findUnique.mockResolvedValue({ id: "c1" });
+    db.site.findFirst.mockResolvedValue(null);
+    const res = await POST(
+      post("/x", { organizationId: ORG_A, apiKey: "k", quantity: 1, unit: "kWh", category: "s2-electricity-lb", siteId: "site-of-b" }),
+    );
+    expect(res.status).toBe(404);
+    expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
+    expect(db.activityRecord.create).not.toHaveBeenCalled();
+  });
+
+  it("supplier request convert refuses another organisation's site and writes nothing", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/supplier-data-requests/[requestId]/convert/route");
+    db.supplierDataRequest.findUnique.mockResolvedValue({
+      id: "r1",
+      organizationId: ORG_A,
+      reportingPeriodId: "p1",
+      supplierEmail: "s@x.test",
+      supplierName: null,
+      categoryCode: "s3-purchased-goods",
+      status: "submitted",
+      submittedData: { quantity: 1, unit: "kg" },
+    });
+    db.site.findFirst.mockResolvedValue(null);
+    const res = await POST(post("/x", { siteId: "site-of-b" }), {
+      params: Promise.resolve({ orgId: ORG_A, requestId: "r1" }),
+    });
+    expect(res.status).toBe(404);
+    expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
+    expect(db.activityRecord.create).not.toHaveBeenCalled();
+  });
+
+  it("supplier report accept refuses another organisation's site and writes nothing", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/supplier-reports/[reportId]/route");
+    db.supplierReport.findUnique.mockResolvedValue({
+      id: "rep1",
+      status: "submitted",
+      supplierEmail: "s@x.test",
+      emissionCategoryId: "c1",
+      unit: "kg",
+      totalAmount: 1,
+    });
+    db.site.findFirst.mockResolvedValue(null);
+    const res = await PATCH(post("/x", { action: "accept", reportingPeriodId: "p1", siteId: "site-of-b" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A, reportId: "rep1" }),
+    });
+    expect(res.status).toBe(404);
+    expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
+    expect(db.activityRecord.create).not.toHaveBeenCalled();
+  });
 });
+

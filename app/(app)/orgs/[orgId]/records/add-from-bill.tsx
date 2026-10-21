@@ -25,13 +25,13 @@ function Confidence({ value }: { value: number | undefined }) {
   );
 }
 
-export function AddFromBill({ orgId, periods, categories, facilities }: { orgId: string; periods: Option[]; categories: Category[]; facilities: Option[] }) {
+export function AddFromBill({ orgId, periods, categories, facilities, sites }: { orgId: string; periods: Option[]; categories: Category[]; facilities: Option[]; sites: Option[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"read" | "save" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [read, setRead] = useState<Read | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
-  const [form, setForm] = useState({ periodId: periods[0]?.id ?? "", categoryId: "", facilityId: "", amount: "", unit: "", date: "", supplier: "", fuelType: "", note: "" });
+  const [form, setForm] = useState({ periodId: periods[0]?.id ?? "", categoryId: "", facilityId: "", siteId: "", amount: "", unit: "", date: "", supplier: "", fuelType: "", note: "" });
 
   async function upload(file: File) {
     setBusy("read");
@@ -79,6 +79,7 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
           reportingPeriodId: form.periodId,
           emissionCategoryId: form.categoryId,
           facilityId: form.facilityId || undefined,
+          siteId: form.siteId || undefined,
           amount: Number(form.amount),
           unit: form.unit,
           activityDate: form.date || undefined,
@@ -179,12 +180,20 @@ export function AddFromBill({ orgId, periods, categories, facilities }: { orgId:
               <label htmlFor="bill-date" className={labelCls}>Activity date<Confidence value={(read.periodEnd ?? read.issueDate)?.confidence} /></label>
               <input id="bill-date" type="date" className={inputCls} value={form.date} onChange={set("date")} />
             </div>
-            <FormField label="Site" htmlFor="bill-site">
-              <select id="bill-site" className={inputCls} value={form.facilityId} onChange={set("facilityId")}>
-                <option value="">No site</option>
+            <FormField label="Facility" htmlFor="bill-facility">
+              <select id="bill-facility" className={inputCls} value={form.facilityId} onChange={set("facilityId")}>
+                <option value="">No facility</option>
                 {facilities.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
               </select>
             </FormField>
+            {sites.length > 0 ? (
+              <FormField label="Project site" htmlFor="bill-site">
+                <select id="bill-site" className={inputCls} value={form.siteId} onChange={set("siteId")}>
+                  <option value="">Not linked to a site</option>
+                  {sites.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              </FormField>
+            ) : null}
             <div>
               <label htmlFor="bill-supplier" className={labelCls}>Supplier<Confidence value={read.supplier?.confidence} /></label>
               <input id="bill-supplier" className={inputCls} value={form.supplier} onChange={set("supplier")} />

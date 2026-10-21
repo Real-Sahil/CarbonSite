@@ -10,12 +10,14 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { handleRouteError, apiError } from "@/lib/validation/api";
+import { orgRefsError } from "@/lib/security/org-refs";
 
 const bodySchema = z.object({
   // Admin can override quantity/unit before committing; defaults to submitted values.
   quantity: z.number().positive().optional(),
   unit: z.string().min(1).optional(),
   notes: z.string().max(1000).trim().optional(),
+  siteId: z.string().min(1).optional(),
 });
 
 type Params = { params: Promise<{ orgId: string; requestId: string }> };
@@ -61,6 +63,8 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const body = bodySchema.parse(await req.json().catch(() => ({})));
+    const refsError = await orgRefsError(orgId, { siteId: body.siteId });
+    if (refsError) return refsError;
 
     // Resolve emission category by code.
     const category = await prisma.emissionCategory.findUnique({
@@ -91,6 +95,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         unit,
         supplierName: request.supplierName ?? request.supplierEmail,
         sourceDescription,
+        siteId: body.siteId,
         reviewStatus: "draft",
         evidenceStatus: "missing",
         createdByUserId: session.user.id,

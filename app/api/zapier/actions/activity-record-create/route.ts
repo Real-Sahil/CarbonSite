@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db';
 import { handleRouteError } from '@/lib/validation/api';
 import { writeAuditLog } from '@/lib/db/audit';
 import { normalizeUnit, UnitError } from '@/lib/calculation/units';
+import { orgRefsError } from '@/lib/security/org-refs';
 
 const createActivityRecordSchema = z.object({
   organizationId: z.string().min(1),
@@ -14,6 +15,7 @@ const createActivityRecordSchema = z.object({
   category: z.string().min(1),
   description: z.string().optional(),
   facilityId: z.string().optional(),
+  siteId: z.string().min(1).optional(),
   date: z.string().datetime().optional(),
   source: z.string().default('zapier'),
 });
@@ -75,6 +77,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const refsError = await orgRefsError(input.organizationId, { siteId: input.siteId });
+    if (refsError) return refsError;
+
     // Get current reporting period
     const reportingPeriod = await prisma.reportingPeriod.findFirst({
       where: { organizationId: input.organizationId },
@@ -107,6 +112,7 @@ export async function POST(req: NextRequest) {
         reportingPeriodId: reportingPeriod.id,
         emissionCategoryId: input.category,
         facilityId: input.facilityId || null,
+        siteId: input.siteId,
         amount: normalized.amount,
         unit: normalized.unit,
         sourceDescription: input.description || `Created via Zapier integration`,

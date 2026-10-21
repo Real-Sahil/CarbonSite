@@ -164,6 +164,7 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
                 periods={periods}
                 categories={categories.map((c) => ({ id: c.id, scope: c.scope, label: c.name, code: c.code }))}
                 facilities={facilities.map((f) => ({ id: f.id, label: f.name }))}
+                sites={sites.map((s) => ({ id: s.id, label: s.name }))}
               />
             </CardContent>
           </Card>

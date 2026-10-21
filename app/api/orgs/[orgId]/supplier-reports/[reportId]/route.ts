@@ -5,13 +5,18 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError } from "@/lib/validation/api";
+import { orgRefsError } from "@/lib/security/org-refs";
 import { writeAuditLog } from "@/lib/db/audit";
 import { isSupplierCurrency } from "@/lib/suppliers/units";
 
 type Params = { params: Promise<{ orgId: string; reportId: string }> };
 
 const ReviewSchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("accept"), reportingPeriodId: z.string().min(1) }),
+  z.object({
+    action: z.literal("accept"),
+    reportingPeriodId: z.string().min(1),
+    siteId: z.string().min(1).optional(),
+  }),
   z.object({ action: z.literal("reject"), rejectionReason: z.string().min(1).max(500) }),
   z.object({ action: z.literal("under_review") }),
 ]);
@@ -102,7 +107,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     // action === "accept" — convert to ActivityRecord
-    const { reportingPeriodId } = parsed.data;
+    const { reportingPeriodId, siteId } = parsed.data;
+    const refsError = await orgRefsError(orgId, { siteId });
+    if (refsError) return refsError;
 
     // Verify reporting period belongs to org
     const period = await prisma.reportingPeriod.findUnique({
@@ -125,6 +132,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         data: {
           organizationId: orgId,
           reportingPeriodId,
+          siteId,
           emissionCategoryId: report.emissionCategoryId,
           amount: isCurrencyUnit ? 0 : report.totalAmount, // spend-based: amount 0, spendAmount holds value
           unit: isCurrencyUnit ? "tCO2e" : report.unit,
