@@ -734,7 +734,7 @@ async function processOneChunk(
   }
 
   // Every calculation of the run, loaded once for the two writes below
-  const calculations = await loadRunCalculations(calculationRunId);
+  const calculations = await loadRunCalculations(orgId, calculationRunId);
 
   // Rebuild DashboardAggregate for this period (live, snapshotId = null)
   await rebuildDashboardAggregates(orgId, run.reportingPeriodId, calculationRunId, calculations);
@@ -794,9 +794,9 @@ async function processOneChunk(
 const SLICE_INSERT_CHUNK = 2000;
 
 /** Every calculation of a run, joined with its record and category. */
-function loadRunCalculations(calculationRunId: string) {
+function loadRunCalculations(orgId: string, calculationRunId: string) {
   return prisma.emissionCalculation.findMany({
-    where: { calculationRunId },
+    where: { organizationId: orgId, calculationRunId },
     include: {
       activityRecord: {
         include: {
@@ -902,7 +902,7 @@ async function computeAndPersistUncertainty(
   calculationRunId: string,
 ): Promise<void> {
   const calculations = await prisma.emissionCalculation.findMany({
-    where: { calculationRunId },
+    where: { organizationId: orgId, calculationRunId },
     select: {
       totalCo2e: true,
       geometricStdDev: true,
@@ -990,6 +990,7 @@ async function autoCreateSupplierDataRequests(
 
   const highUncertaintyRecords = await prisma.emissionCalculation.findMany({
     where: {
+      organizationId: orgId,
       calculationRunId,
       activityRecord: {
         emissionCategory: { scope: 3 },
