@@ -98,19 +98,26 @@ export async function POST(req: NextRequest) {
 
     // Get a system user ID for audit trail (Zapier integration user)
     // In production, create a dedicated Zapier system user
-    const adminMember = await prisma.organizationMembership.findFirst({
-      where: { organizationId: input.organizationId },
-      include: { user: true },
+    const owner = await prisma.organizationMembership.findFirst({
+      where: { organizationId: input.organizationId, role: { in: ['admin', 'editor'] } },
+      orderBy: { createdAt: 'asc' },
     });
 
-    const createdByUserId = adminMember?.userId || '';
+    if (!owner) {
+      return NextResponse.json(
+        { code: 'NO_OWNER', message: 'Organization has no admin or editor to attribute the record to' },
+        { status: 409 },
+      );
+    }
+
+    const createdByUserId = owner.userId;
 
     // Create activity record
     const record = await prisma.activityRecord.create({
       data: {
         organizationId: input.organizationId,
         reportingPeriodId: reportingPeriod.id,
-        emissionCategoryId: input.category,
+        emissionCategoryId: category.id,
         facilityId: input.facilityId || null,
         siteId: input.siteId,
         amount: normalized.amount,
@@ -125,7 +132,7 @@ export async function POST(req: NextRequest) {
     // Log audit event
     await writeAuditLog({
       organizationId: input.organizationId,
-      actorUserId: createdByUserId || undefined,
+      actorUserId: createdByUserId,
       action: 'record.created',
       resourceType: 'ActivityRecord',
       resourceId: record.id,
@@ -145,7 +152,7 @@ export async function POST(req: NextRequest) {
           id: record.id,
           amount: record.amount.toString(),
           unit: record.unit,
-          category: record.emissionCategoryId,
+          category: category.code,
           createdAt: record.createdAt,
         },
       },
