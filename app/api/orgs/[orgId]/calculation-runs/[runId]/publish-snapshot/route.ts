@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { nextSnapshotVersion } from "@/lib/calculation/snapshot-version";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -35,14 +36,9 @@ export async function POST(
       return apiError("RUN_NOT_READY", "Only succeeded calculation runs can be published.", 422);
     }
 
-    const latest = await prisma.publishedSnapshot.findFirst({
-      where: { organizationId: orgId, reportingPeriodId: run.reportingPeriodId },
-      orderBy: { version: "desc" },
-      select: { version: true },
-    });
-    const version = (latest?.version ?? 0) + 1;
 
     const snapshot = await prisma.$transaction(async (tx) => {
+      const version = await nextSnapshotVersion(tx, orgId, run.reportingPeriodId);
       const created = await tx.publishedSnapshot.create({
         data: {
           organizationId: orgId,
@@ -99,7 +95,7 @@ export async function POST(
       metadata: {
         calculationRunId: run.id,
         reportingPeriodId: run.reportingPeriodId,
-        version,
+        version: snapshot.version,
       },
     });
 

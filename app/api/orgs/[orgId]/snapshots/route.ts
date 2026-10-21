@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { nextSnapshotVersion } from "@/lib/calculation/snapshot-version";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -93,14 +94,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     // Determine version number for this period
-    const latestSnapshot = await prisma.publishedSnapshot.findFirst({
-      where: { organizationId: orgId, reportingPeriodId: body.reportingPeriodId },
-      orderBy: { version: "desc" },
-      select: { version: true },
-    });
-    const snapshotVersion = (latestSnapshot?.version ?? 0) + 1;
 
     const snapshot = await prisma.$transaction(async (tx) => {
+      const snapshotVersion = await nextSnapshotVersion(tx, orgId, body.reportingPeriodId);
       const created = await tx.publishedSnapshot.create({
         data: {
           organizationId: orgId,
@@ -173,7 +169,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       action: "snapshot.published",
       resourceType: "published_snapshot",
       resourceId: snapshot.id,
-      metadata: { reportingPeriodId: body.reportingPeriodId, snapshotVersion },
+      metadata: { reportingPeriodId: body.reportingPeriodId, snapshotVersion: snapshot.version },
     });
 
     return json(snapshot, { status: 201, version });
