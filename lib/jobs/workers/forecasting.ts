@@ -27,19 +27,17 @@ interface ForecastResult {
   trainingDataPoints: number;
 }
 
-/** Prophet needs about two years of monthly points to identify yearly seasonality (see api/forecast.py). */
+/** Prophet needs about two years of monthly points to identify yearly seasonality (see services/forecast/forecast.py). */
 const PROPHET_MIN_POINTS = 24;
 
+/** Prophet runs only where FORECAST_SERVICE_URL points; Vercel does not deploy it (function cap). */
 function appOrigin(): string | null {
-  const configured = process.env.NEXT_PUBLIC_APP_URL ?? process.env.BETTER_AUTH_URL;
-  if (configured) return configured.replace(/\/$/, "");
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return null;
+  return process.env.FORECAST_SERVICE_URL?.replace(/\/$/, "") || null;
 }
 
 /**
- * Calls the Prophet forecasting function (api/forecast.py, deployed as a
- * Vercel Python Function in this same project) for a genuinely battle-tested
+ * Calls the Prophet forecasting function (services/forecast/forecast.py, run on
+ * a separate host) for a genuinely battle-tested
  * seasonal model with real out-of-sample accuracy. Returns null on any
  * failure — missing origin, network error, timeout, insufficient data — so
  * the caller can fall back to the pure-TypeScript engine rather than fail

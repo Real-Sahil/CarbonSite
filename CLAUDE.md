@@ -35,7 +35,7 @@ MetricOra is a multi-tenant GHG emissions tracking platform for small-to-mid-mar
 - **UI:** shadcn/ui + Tailwind CSS 4 + `motion` (animations)
 - **Flutter state:** Riverpod; routing: go_router; HTTP: Dio; offline: drift/SQLite; OCR: google_mlkit_text_recognition (on-device, free, offline)
 
-**No Docker. No paid subscriptions.** One deliberate exception: `api/forecast.py`, a stateless Prophet forecasting function deployed as a Vercel Python Function in this same project (no separate host, no Docker) — see `docs/dev/features/platform-services.md` (Forecasting). Everything else is Node/TypeScript.
+**No Docker. No paid subscriptions.** One deliberate exception: `services/forecast/forecast.py`, a stateless Prophet forecasting service (FastAPI, not deployed by Vercel: its 287 MB bundle counted against the Hobby plan's 12-function cap and failed every deployment, so the app uses the TypeScript engine unless `FORECAST_SERVICE_URL` points at a host running it) — see `docs/dev/features/platform-services.md` (Forecasting). Everything else is Node/TypeScript.
 External accounts required: Supabase (Postgres + Storage) + Resend (email) + Google (FCM). No Cloudflare account is used.
 Optional: Redis for production rate limiting (recommended but automatic Postgres fallback provided).
 

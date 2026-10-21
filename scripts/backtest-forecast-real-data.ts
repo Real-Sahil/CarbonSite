@@ -3,7 +3,7 @@
 // in production — and writes it to scripts/real_series.json (gitignored,
 // never commit real customer figures).
 //
-// This exists to re-validate the api/forecast.py yearly_seasonality
+// This exists to re-validate the services/forecast/forecast.py yearly_seasonality
 // length-gating fix against real data instead of the synthetic proxy used
 // to develop it. The fix was backtested against 80 synthetic monthly
 // series and cut median holdout MAPE from 51% to 20% — strong evidence,
@@ -20,7 +20,7 @@ import { getEmissionsHistory } from "../lib/jobs/workers/forecasting";
 import * as fs from "fs";
 import * as path from "path";
 
-const MIN_DATA_POINTS = 12; // matches api/forecast.py's MIN_DATA_POINTS
+const MIN_DATA_POINTS = 12; // matches services/forecast/forecast.py's MIN_DATA_POINTS
 const LOOKBACK_MONTHS = 48; // enough history to catch orgs that DO have 24+ months
 
 async function main() {

@@ -9,7 +9,7 @@
  * function) is a candidate only when it was asked for and reported a real holdout score.
  * Pure TypeScript, no dependencies.
  *
- * The comparison uses the same split and the same error as api/forecast.py: forecast the
+ * The comparison uses the same split and the same error as services/forecast/forecast.py: forecast the
  * last `holdout` months from the earlier ones, mean absolute percentage error.
  */
 

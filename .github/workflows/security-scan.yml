@@ -9,7 +9,7 @@ name: Security scan
 #   Older history is not rescanned on each run; a real credential found there
 #   is rotated, not allowlisted.
 # - OSV-Scanner lists known vulnerabilities for every lockfile (pnpm, Python for
-#   api/forecast.py, the Flutter app, videos/) in the job summary. It warns
+#   services/forecast/forecast.py, the Flutter app, videos/) in the job summary. It warns
 #   but does not fail the build yet: triage the first results, then make
 #   exit code 1 fail. It runs the pinned CLI directly instead of Google's
 #   reusable workflow, which uploads a SARIF artifact and to code scanning,

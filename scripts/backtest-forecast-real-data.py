@@ -1,5 +1,5 @@
 """
-Re-validates the api/forecast.py yearly_seasonality length-gating fix
+Re-validates the services/forecast/forecast.py yearly_seasonality length-gating fix
 against REAL per-org historical data, using the exact same holdout/MAPE
 methodology used to justify that fix on a synthetic proxy dataset (median
 holdout MAPE 51% -> 20% across 80 synthetic series).
@@ -12,7 +12,7 @@ current (length-gated) vs. pre-fix (always yearly_seasonality=True)
 Prophet accuracy, side by side.
 
 Usage (from repo root, with DATABASE_URL pointing at real data):
-  pip install -r requirements.txt -r requirements-dev.txt
+  pip install -r services/forecast/requirements.txt -r requirements-dev.txt
   pnpm tsx scripts/backtest-forecast-real-data.ts
   python3 scripts/backtest-forecast-real-data.py
 """
@@ -25,19 +25,19 @@ import warnings
 warnings.filterwarnings("ignore")
 logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "api"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "services", "forecast"))
 
 import numpy as np
 import pandas as pd
 from prophet import Prophet
 
-import forecast as current_forecast_module  # api/forecast.py, as actually deployed
+import forecast as current_forecast_module  # services/forecast/forecast.py, as actually deployed
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "real_series.json")
 
 
 def holdout_len(n: int) -> int:
-    # Mirrors api/forecast.py's _compute_accuracy() holdout split exactly.
+    # Mirrors services/forecast/forecast.py's _compute_accuracy() holdout split exactly.
     return min(3, max(1, n // 6))
 
 
@@ -49,7 +49,7 @@ def mape(actual, forecast) -> float:
 
 def fit_predict(train_df: pd.DataFrame, h: int, force_yearly):
     """force_yearly=None reuses the current production gating logic
-    (api/forecast.py's own _fit()) exactly as deployed. True reproduces
+    (services/forecast/forecast.py's own _fit()) exactly as deployed. True reproduces
     the pre-fix behavior (yearly_seasonality always on) for comparison."""
     if force_yearly is None:
         model = current_forecast_module._fit(train_df)

@@ -1,7 +1,7 @@
 """
-Regression tests for api/forecast.py.
+Regression tests for services/forecast/forecast.py.
 
-Run: pip install -r requirements.txt -r requirements-dev.txt && pytest tests/python/
+Run: pip install -r services/forecast/requirements.txt -r requirements-dev.txt && pytest tests/python/
 
 Kept out of api/: every file in api/ deploys as a Vercel Python Function, and
 Hobby allows a limited number of functions per deployment.
@@ -24,7 +24,7 @@ import warnings
 warnings.filterwarnings("ignore")
 logging.getLogger("cmdstanpy").setLevel(logging.WARNING)
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "api")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "services", "forecast")))
 
 import pandas as pd
 import pytest
@@ -41,7 +41,7 @@ def _make_points(n, start="2022-01-01", monthly_value=lambda i: 100 + i * 2):
 
 
 class TestYearlySeasonalityGating:
-    """Uses the same oracle api/forecast.py's own metadata construction
+    """Uses the same oracle services/forecast/forecast.py's own metadata construction
     relies on ("yearly" in forecast_df.columns) rather than reaching into
     Prophet internals that could change between versions."""
 
