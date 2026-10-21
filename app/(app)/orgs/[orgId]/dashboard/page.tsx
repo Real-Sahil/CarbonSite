@@ -934,11 +934,17 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   const hasAggregates = scopeRows.some((row) => Number(row.total) > 0 || Number(row.records) > 0);
   // The empty panel reads the period's live rollups, which a slice filter does not narrow.
   const projectOnly = sliceFilter ? Object.keys(sliceFilter).join() === "projectId" : false;
+  // A contract or entity whose facilities hold no records empties the facility-scoped
+  // rollups even though the period was calculated: say the filters match nothing.
+  const facilityNarrowedAfterRun =
+    scopeFacilityIds !== null && latestRun?.reportingPeriodId === currentPeriod?.id;
   const scopeEmpty = scopeEmptyState({
     orgId,
     periodLabel: currentPeriod?.label ?? null,
-    calculated: liveScopeAggregates.length > 0,
-    hasFigures: liveScopeAggregates.some((a) => Number(a._sum.totalCo2e) > 0 || Number(a._sum.recordCount) > 0),
+    calculated: liveScopeAggregates.length > 0 || facilityNarrowedAfterRun,
+    hasFigures:
+      facilityNarrowedAfterRun ||
+      liveScopeAggregates.some((a) => Number(a._sum.totalCo2e) > 0 || Number(a._sum.recordCount) > 0),
     projectName: projectOnly ? (projectOptions.find((p) => p.id === sliceFilter?.projectId)?.name ?? null) : null,
   });
 
