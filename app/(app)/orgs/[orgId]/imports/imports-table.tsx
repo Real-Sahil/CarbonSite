@@ -36,9 +36,10 @@ interface ImportsTableProps {
   orgId: string;
   isAdminOrEditor: boolean;
   periodLabelById: Record<string, string>;
+  sites: { id: string; label: string }[];
 }
 
-export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: ImportsTableProps) {
+export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById, sites }: ImportsTableProps) {
   const [data, setData] = React.useState<ImportBatchRow[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [cursors, setCursors] = React.useState<(string | null)[]>([null]);
@@ -220,6 +221,7 @@ export function ImportsTable({ orgId, isAdminOrEditor, periodLabelById }: Import
             importId={row.original.id}
             canCommit={row.original.state === "ready_to_commit"}
             hasErrorExport={Boolean(row.original.errorCsvStorageKey)}
+            sites={sites}
           />
           {isAdminOrEditor && row.original.state !== "committed" && (
             <DeleteImportButton orgId={orgId} importId={row.original.id} />

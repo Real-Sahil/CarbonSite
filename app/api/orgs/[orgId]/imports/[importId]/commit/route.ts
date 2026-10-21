@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { orgRefsError } from "@/lib/security/org-refs";
 import { parseDataOrigin } from "@/lib/inventory/provenance";
 import { requireActiveBilling, requireWithinUsageLimit } from "@/lib/billing/limits";
 import { recordUsage } from "@/lib/billing/usage";
@@ -15,7 +16,11 @@ import { duplicateKey, findExistingDuplicates, type DuplicateKeyInput } from "@/
 
 type Params = { params: Promise<{ orgId: string; importId: string }> };
 
-const commitBodySchema = z.object({ allowDuplicate: z.boolean().optional() });
+const commitBodySchema = z.object({
+  allowDuplicate: z.boolean().optional(),
+  /** Project site every row of the batch is linked to. */
+  siteId: z.string().min(1).optional(),
+});
 
 /** Rows per createMany inside the commit transaction (about 25 columns each, under Postgres's bind limit). */
 const COMMIT_INSERT_CHUNK = 500;
@@ -28,6 +33,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     const { session } = await requireOrgMember(orgId, ...ROLE_GROUPS.editor);
     // The body is optional: a plain commit sends nothing, a confirmed one sends allowDuplicate.
     const body = commitBodySchema.parse(await req.json().catch(() => ({})));
+
+    const refsError = await orgRefsError(orgId, { siteId: body.siteId });
+    if (refsError) return refsError;
 
     const batch = await prisma.importBatch.findUnique({
       where: { id: importId },
@@ -112,6 +120,7 @@ export async function POST(req: NextRequest, { params }: Params) {
               sourceDescription: (d.sourceDescription as string | undefined) ?? undefined,
               facilityId: (d.facilityId as string | undefined) ?? undefined,
               businessUnitId: (d.businessUnitId as string | undefined) ?? undefined,
+              siteId: body.siteId,
               supplierName: (d.supplierName as string | undefined) ?? undefined,
               country: (d.country as string | undefined) ?? undefined,
               region: (d.region as string | undefined) ?? undefined,

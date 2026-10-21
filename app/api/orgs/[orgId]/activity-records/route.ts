@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
 import { createActivityRecordSchema } from "@/lib/validation/records";
+import { orgRefsError } from "@/lib/security/org-refs";
 import { duplicateKey, findExistingDuplicates } from "@/lib/data-quality/duplicates";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
 import { REVIEW_STATUSES } from "@/lib/saved-views";
@@ -129,6 +130,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    const refsError = await orgRefsError(orgId, { siteId: body.siteId });
+    if (refsError) return refsError;
+
     // The same line entered twice would be counted twice. Ask first; a
     // genuine repeat is sent again with allowDuplicate.
     if (!body.allowDuplicate) {
@@ -165,6 +169,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         sourceDescription: body.sourceDescription,
         facilityId: body.facilityId,
         businessUnitId: body.businessUnitId,
+        siteId: body.siteId,
         supplierName: body.supplierName,
         country: body.country,
         region: body.region,

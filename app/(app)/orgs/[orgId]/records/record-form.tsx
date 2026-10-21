@@ -20,6 +20,8 @@ interface CreateRecordFormProps {
   categories: { id: string; scope: number; label: string; code?: string }[];
   facilities: { id: string; label: string }[];
   businessUnits: { id: string; label: string }[];
+  /** Project sites; the dashboard's project filter matches a record by its site. */
+  sites: { id: string; label: string }[];
 }
 
 export function CreateRecordForm({
@@ -27,11 +29,13 @@ export function CreateRecordForm({
   periods,
   categories,
   facilities,
+  sites,
 }: CreateRecordFormProps) {
   const [open, setOpen] = useState(false);
   const [periodId, setPeriodId] = useState(periods[0]?.id ?? "");
   const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [facilityId, setFacilityId] = useState("");
+  const [siteId, setSiteId] = useState("");
   const [businessUnitId] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
@@ -90,6 +94,7 @@ export function CreateRecordForm({
             reportingPeriodId: periodId,
             emissionCategoryId: categoryId,
             facilityId: facilityId || undefined,
+            siteId: siteId || undefined,
             businessUnitId: businessUnitId || undefined,
             amount: parseFloat(amount),
             unit,
@@ -198,7 +203,17 @@ export function CreateRecordForm({
             </Select>
           </FormField>
         )}
-        <FormField label="Description" htmlFor="record-description" span={facilities.length > 0 ? 2 : 4}>
+        {sites.length > 0 && (
+          <FormField label="Project site" htmlFor="record-site" span={2} hint="Shows under that project on the dashboard">
+            <Select value={siteId} onValueChange={setSiteId}>
+              <SelectTrigger id="record-site" className="w-full"><SelectValue placeholder="Not linked to a site" /></SelectTrigger>
+              <SelectContent>
+                {sites.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
+        <FormField label="Description" htmlFor="record-description" span={4}>
           <Input id="record-description" value={sourceDescription} onChange={(e) => setSourceDescription(e.target.value)} placeholder="Supplier, invoice or note" />
         </FormField>
       </FormSection>

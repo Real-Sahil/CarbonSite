@@ -14,6 +14,7 @@ import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/db/audit";
 import { apiError, handleRouteError } from "@/lib/validation/api";
+import { orgRefsError } from "@/lib/security/org-refs";
 import { createActivityRecordSchema } from "@/lib/validation/records";
 
 type Params = { params: Promise<{ orgId: string }> };
@@ -153,6 +154,9 @@ export async function POST(req: NextRequest, { params }: Params) {
       }
     }
 
+    const refsError = await orgRefsError(orgId, { siteId: body.siteId });
+    if (refsError) return refsError;
+
     const record = await prisma.activityRecord.create({
       data: {
         organizationId: orgId,
@@ -166,6 +170,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         sourceDescription: body.sourceDescription,
         facilityId: body.facilityId,
         businessUnitId: body.businessUnitId,
+        siteId: body.siteId,
         supplierName: body.supplierName,
         country: body.country,
         region: body.region,

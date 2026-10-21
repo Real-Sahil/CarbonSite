@@ -760,3 +760,31 @@ describe("subcontractor rejection link", () => {
     expect(sendEmail).not.toHaveBeenCalled();
   });
 });
+
+describe("siteId on activity writes", () => {
+  const params = { params: Promise.resolve({ orgId: ORG_A }) };
+
+  it("activity-records POST refuses another organisation's site and writes nothing", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/activity-records/route");
+    db.reportingPeriod.findUnique.mockResolvedValue({ organizationId: ORG_A, status: "open" });
+    db.site.findFirst.mockResolvedValue(null);
+    const res = await POST(
+      post("/x", { reportingPeriodId: "p1", emissionCategoryId: "c1", amount: 1, unit: "kWh", siteId: "site-of-b" }),
+      params,
+    );
+    expect(res.status).toBe(404);
+    expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
+    expect(db.activityRecord.create).not.toHaveBeenCalled();
+  });
+
+  it("import commit refuses another organisation's site and writes nothing", async () => {
+    const { POST } = await import("@/app/api/orgs/[orgId]/imports/[importId]/commit/route");
+    db.site.findFirst.mockResolvedValue(null);
+    const res = await POST(post("/x", { siteId: "site-of-b" }), {
+      params: Promise.resolve({ orgId: ORG_A, importId: "imp-1" }),
+    });
+    expect(res.status).toBe(404);
+    expect(db.site.findFirst.mock.calls[0][0].where).toEqual({ id: "site-of-b", organizationId: ORG_A });
+    expect(db.activityRecord.createMany).not.toHaveBeenCalled();
+  });
+});

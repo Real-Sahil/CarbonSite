@@ -13,6 +13,8 @@ export const createActivityRecordSchema = z.object({
   sourceDescription: z.string().max(500).optional(),
   facilityId: z.string().optional(),
   businessUnitId: z.string().optional(),
+  /** The project site the activity belongs to; the dashboard's project filter matches on it. */
+  siteId: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(1).optional()),
   supplierName: z.string().max(200).optional(),
   country: z.string().max(100).optional(),
   region: z.string().max(100).optional(),

@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { orgRefsError } from "@/lib/security/org-refs";
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -95,6 +96,8 @@ export async function POST(
     if (body.businessUnitId && !businessUnit) {
       return apiError("INVALID_BUSINESS_UNIT", "Business unit does not belong to this organisation.", 422);
     }
+    const refsError = await orgRefsError(orgId, { siteId: body.siteId });
+    if (refsError) return refsError;
     if (
       body.distanceAmount &&
       !body.distanceOverrideReason &&
@@ -127,6 +130,7 @@ export async function POST(
         sourceDescription: body.sourceDescription,
         facilityId: body.facilityId,
         businessUnitId: body.businessUnitId,
+        siteId: body.siteId,
         supplierName: body.supplierName,
         country: body.country,
         distanceAmount: routeDistance?.distanceKm ?? body.distanceAmount,

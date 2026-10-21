@@ -48,6 +48,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
 
   let allPeriods: { id: string; label: string }[] = [];
   let profiles: { id: string; name: string }[] = [];
+  let sites: { id: string; label: string }[] = [];
   let allPeriodLabels: Record<string, string> = {};
   const importStats: { total: number; committed: number; attention: number } = {
     total: 0,
@@ -56,7 +57,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
   };
 
   try {
-    const [periodsResult, batchCounts, profileRows] = await Promise.all([
+    const [periodsResult, batchCounts, profileRows, siteRows] = await Promise.all([
       prisma.reportingPeriod.findMany({
         where: { organizationId: orgId },
         select: { id: true, label: true },
@@ -72,7 +73,13 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
         select: { id: true, name: true },
         orderBy: { name: "asc" },
       }),
+      prisma.site.findMany({
+        where: { organizationId: orgId },
+        select: { id: true, name: true },
+        orderBy: { name: "asc" },
+      }),
     ]);
+    sites = siteRows.map((site) => ({ id: site.id, label: site.name }));
     allPeriods = periodsResult;
     profiles = profileRows;
     allPeriodLabels = Object.fromEntries(periodsResult.map((p) => [p.id, p.label]));
@@ -169,6 +176,7 @@ export default async function ImportsPage({ params }: ImportsPageProps) {
                 orgId={orgId}
                 isAdminOrEditor={isAdminOrEditor}
                 periodLabelById={allPeriodLabels}
+                sites={sites}
               />
             </CardContent>
           </Card>

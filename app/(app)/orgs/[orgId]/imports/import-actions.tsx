@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, Download, ExternalLink, Trash2, BarChart3 } from "lucide-react";
 import { QualityReport } from "@/components/imports/QualityReport";
 
@@ -17,6 +18,8 @@ interface ImportBatchActionsProps {
   importId: string;
   canCommit: boolean;
   hasErrorExport: boolean;
+  /** Project sites the batch can be assigned to when committed. */
+  sites: { id: string; label: string }[];
 }
 
 export function ImportBatchActions({
@@ -24,16 +27,18 @@ export function ImportBatchActions({
   importId,
   canCommit,
   hasErrorExport,
+  sites,
 }: ImportBatchActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showQualityModal, setShowQualityModal] = useState(false);
+  const [siteId, setSiteId] = useState("");
 
   function postCommit(allowDuplicate: boolean) {
     return fetch(`/api/orgs/${orgId}/imports/${importId}/commit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ allowDuplicate }),
+      body: JSON.stringify({ allowDuplicate, siteId: siteId || undefined }),
     });
   }
 
@@ -95,6 +100,16 @@ export function ImportBatchActions({
           <BarChart3 aria-hidden="true" className="h-3.5 w-3.5" />
           Quality
         </Button>
+        {canCommit && sites.length > 0 && (
+          <Select value={siteId} onValueChange={setSiteId}>
+            <SelectTrigger aria-label="Project site for this batch" className="h-7 w-36 text-xs">
+              <SelectValue placeholder="No site" />
+            </SelectTrigger>
+            <SelectContent>
+              {sites.map((s) => <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        )}
         {canCommit && (
           <Button
             size="sm"

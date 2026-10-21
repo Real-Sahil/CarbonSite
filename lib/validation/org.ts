@@ -247,6 +247,10 @@ export const createActivityRecordSchema = z.object({
     (value) => (value === "" ? undefined : value),
     z.string().min(1).optional(),
   ),
+  siteId: z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).optional(),
+  ),
   supplierName: z.string().max(160).optional(),
   country: z.string().max(80).optional(),
   distanceAmount: optionalMoneySchema,

@@ -209,6 +209,7 @@ export default async function RecordsPage({ params, searchParams }: RecordsPageP
                   id: businessUnit.id,
                   label: businessUnit.name,
                 }))}
+                sites={sites.map((site) => ({ id: site.id, label: site.name }))}
               />
             </CardContent>
           </Card>
