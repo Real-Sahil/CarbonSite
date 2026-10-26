@@ -133,6 +133,25 @@ export const receiptSchema = z
 export type Receipt = z.infer<typeof receiptSchema>;
 
 /**
+ * EWC code as Defra wants it: six digits, no spaces and no asterisk (Defra's DWT team, October 2026: send 170503 for
+ * 17 05 03*). The asterisk marks a hazardous entry in the List of Waste, but Defra takes hazardous status from the
+ * receiver's own classification (`containsHazardous`), so dropping it here loses nothing. Anything else is returned
+ * as typed, so the schema still refuses it.
+ */
+export function ewcForDefra(code: string): string {
+  const stripped = code.replace(/[\s*]/g, "");
+  return /^\d{6}$/.test(stripped) ? stripped : code;
+}
+
+/** A receipt with each EWC code put into Defra's format. Does not touch `containsHazardous`. */
+export function withDefraEwcCodes<T extends { wasteItems?: { ewcCodes?: string[] }[] }>(receipt: T): T {
+  return {
+    ...receipt,
+    wasteItems: receipt.wasteItems?.map((item) => ({ ...item, ewcCodes: item.ewcCodes?.map(ewcForDefra) })),
+  };
+}
+
+/**
  * Strings with spaces at either end. The schema trims them before checking, so they pass, but the raw request is
  * what goes to Defra: a padded permit number would be sent as typed.
  */

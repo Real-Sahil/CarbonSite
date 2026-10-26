@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { receiptProblems, submissionDeadline } from "../receipt";
+import { ewcForDefra, receiptProblems, submissionDeadline, withDefraEwcCodes } from "../receipt";
 import { baseReceipt } from "./receipt-fixture";
 
 const withItem = (patch: object) => {
@@ -101,6 +101,20 @@ describe("Defra receipt check", () => {
     const r = baseReceipt();
     r.wasteItems[0].ewcCodes = ["17 05 03*"];
     expect(receiptProblems(r).join()).toContain("six digits");
+  });
+
+  it("sends an EWC code with its asterisk or spaces removed, and leaves the hazardous flag alone", () => {
+    expect(ewcForDefra("17 05 03*")).toBe("170503");
+    expect(ewcForDefra("170503*")).toBe("170503");
+    expect(ewcForDefra("170503")).toBe("170503");
+    expect(ewcForDefra("1705")).toBe("1705");
+    const r = baseReceipt();
+    r.wasteItems[0].ewcCodes = ["17 05 03*"];
+    r.wasteItems[0].containsHazardous = false;
+    const fixed = withDefraEwcCodes(r);
+    expect(fixed.wasteItems[0].ewcCodes).toEqual(["170503"]);
+    expect(fixed.wasteItems[0].containsHazardous).toBe(false);
+    expect(receiptProblems(fixed)).toEqual([]);
   });
 
   it("refuses a zero weight (spec: amount must be greater than 0)", () => {
