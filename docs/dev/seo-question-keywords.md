@@ -20,9 +20,9 @@ Nothing here is a measured search volume. Volumes need Search Console data for t
 | What is the 40,000 kWh SECR exemption? | Covered in `what-is-secr`; own page is a gap |
 | Do I need to report home working emissions under SECR? | Post: `secr-home-working-emissions` |
 | How do I report SECR emissions? | Post: `secr-reporting-guide-for-contractors` |
-| SECR report template or example | Gap |
+| SECR report template or example | Post: `secr-report-template-and-example` |
 | SECR emissions intensity ratio: which one to pick? | Gap |
-| SECR vs PPN 006: what is the difference? | Gap |
+| SECR vs PPN 006: what is the difference? | Post: `secr-vs-ppn-006` |
 | SECR software or calculator | Gap (product page, not a post) |
 | What did the 2026 SECR post-implementation review find? | Gap, date-sensitive; cite the DESNZ review directly |
 | Why have the SECR thresholds stopped matching the Companies Act limits? | Covered in `who-has-to-report-under-secr`; own page is a gap |
@@ -37,7 +37,7 @@ Nothing here is a measured search volume. Volumes need Search Console data for t
 | What is the difference between PPN 06/21 and PPN 006? | Covered in `what-is-ppn-006`; own page is a gap |
 | How do I write a carbon reduction plan? | Post: `ppn-006-carbon-reduction-plan-guide` |
 | Carbon reduction plan template or example | Post: `ppn-006-carbon-reduction-plan-example` |
-| Does a subcontractor need a carbon reduction plan? | Gap |
+| Does a subcontractor need a carbon reduction plan? | Post: `do-subcontractors-need-a-carbon-reduction-plan` |
 | Do I need a carbon reduction plan for an NHS contract? | Gap. Do not repeat competitor claims that the NHS asks for commitments at every value; check the current NHS wording first |
 
 ### Contractor carbon reporting
@@ -45,7 +45,7 @@ Nothing here is a measured search volume. Volumes need Search Console data for t
 | Question | Status |
 |---|---|
 | What are Scope 1, 2 and 3 emissions for a contractor? | Post: `scope-1-2-3-emissions-for-contractors` |
-| How do I calculate site fuel emissions? | Gap |
+| How do I calculate site fuel emissions? | Post: `how-to-calculate-site-fuel-emissions-construction` |
 | How do I report subcontractor emissions? | Gap |
 | What is PAS 2080? | Gap |
 

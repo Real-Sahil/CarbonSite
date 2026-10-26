@@ -1,0 +1,106 @@
+---
+title: "How to calculate site fuel emissions on a construction project"
+excerpt: "Diesel in plant, generators and site vehicles is usually the biggest Scope 1 line a contractor has. Here is the sum, the right factor for each fuel, a worked example and the mistakes that make figures disagree."
+date: "2026-10-28"
+author: "MetricOra"
+tags: ["Scope 1", "Construction", "Fuel", "Conversion factors"]
+faq:
+  - q: "How do you calculate CO2e from diesel used on site?"
+    a: "Multiply the litres burnt by the conversion factor for that fuel, in kg CO2e per litre, then divide by 1,000 for tonnes. Use the factor set published for the year the fuel was used, and record which set you used."
+  - q: "Is red diesel the same as diesel for emissions purposes?"
+    a: "No. Red diesel is gas oil, which has its own factor in the government conversion factors. It is slightly higher per litre than road diesel, so using the diesel factor for it understates the figure."
+  - q: "Does HVO count as zero emissions?"
+    a: "No. The conversion factors give HVO a small figure inside the scopes, and report its biogenic CO2 separately, outside the scopes. Reporting it as zero overstates the saving."
+  - q: "Where do the litres come from?"
+    a: "Fuel delivery notes and bowser or tank dip records are the best source. Card or invoice spend is a fallback, but litres from delivery notes are more accurate and easier to evidence."
+  - q: "Are site fuel emissions Scope 1 or Scope 3?"
+    a: "Fuel burnt in plant, generators and vehicles you own or control is Scope 1. Fuel burnt by a subcontractor's own plant is usually their Scope 1 and may fall in your Scope 3, depending on your boundary."
+  - q: "Which conversion factors should I use?"
+    a: "The UK Government GHG conversion factors for company reporting, published by DESNZ each year. Use the set for the year the fuel was used."
+---
+
+For most contractors, diesel is the biggest single line in the inventory. It sits in excavators, dumpers, generators, lighting towers, telehandlers and the pool of vans on site. The sum is simple. The data behind it is where figures go wrong.
+
+## The calculation
+
+**Litres burnt × conversion factor (kg CO2e per litre) ÷ 1,000 = tonnes CO2e.**
+
+That is all of it. Everything that follows is about getting the litres right and picking the right factor.
+
+## Step 1: get the litres
+
+Work from the evidence you already have, best first:
+
+1. **Delivery notes** for bulk and bowser deliveries, with the date, litres and supplier.
+2. **Tank or bowser dips**, so you can deal with stock at the start and end of the period.
+3. **Fuel card transactions** for vans and cars.
+4. **Invoice spend**, only as a fallback. Prices move, so spend converts to litres badly.
+
+Burnt litres are deliveries plus opening stock minus closing stock. If you only add up deliveries, a half-full tank at year end distorts the figure.
+
+## Step 2: use the right factor for each fuel
+
+The UK Government conversion factors list each fuel separately, because they do not burn the same. Examples from the 2026 set, in kg CO2e per litre:
+
+| Fuel | kg CO2e per litre | Notes |
+|---|---|---|
+| Diesel, average biofuel blend | 2.58354 | Typical road diesel. Includes the biofuel blend. |
+| Diesel, 100% mineral, stationary | 2.66155 | Use only where the fuel really is mineral diesel. |
+| Gas oil (red diesel) | 2.75541 | Off-road plant, generators. |
+| HVO | 0.03558 | Biogenic CO2 of 2.43 is reported outside the scopes. |
+| Petrol | 2.075 | Cars and small plant. |
+| Burning oil | 2.54016 | Heaters. |
+| LPG | 1.55713 | Heaters, forklifts. |
+
+Check the published set for the year you are reporting before you copy any figure. Factors change every year. The [2026 changes](/blog/uk-ghg-conversion-factors-2026-what-changed) explain what moved.
+
+## A worked example
+
+A site burns 18,000 litres of gas oil in plant and generators, and 4,000 litres of average blend diesel in vans over a quarter.
+
+- Gas oil: 18,000 × 2.75541 ÷ 1,000 = **49.6 tCO2e**
+- Diesel: 4,000 × 2.58354 ÷ 1,000 = **10.3 tCO2e**
+- Total Scope 1 fuel: **59.9 tCO2e**
+
+Had you used the diesel factor for the gas oil, you would have reported 46.5 tCO2e for it. That is a 3.1 tonne understatement on one site in one quarter.
+
+## HVO needs two figures
+
+If you switch plant to HVO, report two things, not one. The in-scope figure from the factor, which is small. And the biogenic CO2, which the conversion factors report separately, outside the scopes. Showing both lets a reader see the saving without thinking you hid the CO2 that came out of the exhaust. Evidence matters too: keep the supplier's sustainability certificates with the delivery notes.
+
+## Common mistakes
+
+- **One factor for everything.** Gas oil, diesel and petrol are different rows.
+- **Counting deliveries as burnt fuel.** Stock changes matter.
+- **Mixing years.** Apply the factor set for the year the fuel was used, not the year you did the report.
+- **Double counting a subcontractor's fuel.** If their plant, their fuel, their Scope 1, decide where it sits in yours and say so.
+- **Using spend for plant fuel.** Litres exist. Use them.
+- **Treating idling as invisible.** A machine running with nothing in the bucket still burns fuel. See [plant idling, fuel and carbon](/blog/plant-idling-fuel-and-carbon).
+
+## Where this feeds into reporting
+
+The same fuel figure feeds a [SECR report](/blog/secr-reporting-guide-for-contractors), a [PPN 006 Carbon Reduction Plan](/blog/ppn-006-carbon-reduction-plan-guide) and your own [Scope 1, 2 and 3 inventory](/blog/scope-1-2-3-emissions-for-contractors). Waste hauled off site adds a Scope 3 line: see [waste ticket to reported tonne](/blog/waste-ticket-to-reported-tonne).
+
+## Where MetricOra fits
+
+MetricOra lets site teams photograph a fuel delivery note and send it to the review queue, where an office user checks the litres and approves. Approved records are calculated with the factor library for the period, and the library and method are stored against each figure. See [evidence capture](/product#evidence) and the [methodology](/methodology).
+
+## Frequently asked questions
+
+**How do you calculate CO2e from site diesel?** Litres × kg CO2e per litre ÷ 1,000.
+
+**Is red diesel the same as diesel?** No. It is gas oil, with its own factor.
+
+**Does HVO count as zero?** No. A small in-scope figure, plus biogenic CO2 outside the scopes.
+
+**Scope 1 or Scope 3?** Scope 1 for plant you own or control. A subcontractor's own plant is usually their Scope 1.
+
+## Related reading
+
+- [Plant idling, fuel and carbon](/blog/plant-idling-fuel-and-carbon)
+- [UK GHG conversion factors 2026: what changed](/blog/uk-ghg-conversion-factors-2026-what-changed)
+- [Scope 1, 2 and 3 emissions for contractors](/blog/scope-1-2-3-emissions-for-contractors)
+
+## Sources
+
+- [Government conversion factors for company reporting](https://www.gov.uk/government/collections/government-conversion-factors-for-company-reporting), GOV.UK (DESNZ). Figures above are from the 2026 set; check the current set before reporting.
