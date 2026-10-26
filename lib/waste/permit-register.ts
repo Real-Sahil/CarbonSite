@@ -46,6 +46,9 @@ type Item = {
 };
 type SiteInfo = { premises?: string; siteAddress?: { address?: string }; siteType?: { description?: string } };
 
+/** A permit is in force while the register shows it operating, even partly. Closure & aftercare, suspended in full, revoked and surrendered are not. */
+const PERMIT_IN_FORCE = new Set(["effective", "partially suspended", "partially revoked", "part surrendered"]);
+
 /** Pure: an exact reference match is required. An exemption is in force while any of its codes has not expired. */
 export function parsePermit(json: unknown, reference: string, now = new Date()): PermitResult {
   const checkedAt = now.toISOString();
@@ -59,7 +62,7 @@ export function parsePermit(json: unknown, reference: string, now = new Date()):
   const expiries = exemptions.map((e) => e.expiryDate).filter((d): d is string => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
   const expiryDate = expiries.length ? expiries[expiries.length - 1] : null;
   const registerStatus = hit.status?.comment ?? null;
-  const inForce = exemptions.length > 0 ? expiryDate == null || new Date(`${expiryDate}T23:59:59Z`) >= now : registerStatus?.toLowerCase() === "effective";
+  const inForce = exemptions.length > 0 ? expiryDate == null || new Date(`${expiryDate}T23:59:59Z`) >= now : PERMIT_IN_FORCE.has(registerStatus?.trim().toLowerCase() ?? "");
   return {
     status: inForce ? "effective" : "not_effective",
     reference,

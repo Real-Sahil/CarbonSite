@@ -42,6 +42,16 @@ describe("parsePermit", () => {
     const r = parsePermit({ items: [{ ...permit.items[0], status: { comment: "Surrendered" } }] }, "NP3890VV", now);
     expect(r.status).toBe("not_effective");
   });
+  it("treats partly operating permits as in force and keeps the register wording", () => {
+    for (const comment of ["Partially Suspended", "Partially Revoked", "Part Surrendered"]) {
+      expect(parsePermit({ items: [{ ...permit.items[0], status: { comment } }] }, "NP3890VV", now)).toMatchObject({ status: "effective", registerStatus: comment });
+    }
+  });
+  it("does not call a fully suspended, revoked, surrendered or closed permit effective", () => {
+    for (const comment of ["Fully Suspended", "Revoked", "Surrendered", "Closure & Aftercare"]) {
+      expect(parsePermit({ items: [{ ...permit.items[0], status: { comment } }] }, "NP3890VV", now)).toMatchObject({ status: "not_effective", registerStatus: comment });
+    }
+  });
   it("reads an exemption and its codes, and expires it", () => {
     expect(parsePermit(exemption, "EXP/AP3041YF", now)).toMatchObject({ status: "effective", codes: ["T11"], expiryDate: "2027-04-27", holder: "MAC4SALE LTD" });
     expect(parsePermit(exemption, "EXP/AP3041YF", new Date("2027-05-01")).status).toBe("not_effective");
