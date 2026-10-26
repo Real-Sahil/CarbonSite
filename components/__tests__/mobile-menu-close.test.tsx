@@ -39,6 +39,20 @@ describe("mobile menus close once a link is chosen", () => {
     expect(screen.queryByRole("button", { name: "Close menu" })).toBeNull();
   });
 
+  it("org app drawer closes when the route changes without a menu click (back button, redirect)", () => {
+    nav.pathname = "/orgs/org_1/dashboard";
+    const props = { orgId: "org_1", orgName: "Acme Ltd", user: { name: "Pat Example", email: "pat@example.test" }, role: "admin" } as const;
+    const { rerender } = render(<OrgSidebar {...props} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open menu" }));
+    expect(screen.getByRole("button", { name: "Close menu" })).toBeTruthy();
+
+    nav.pathname = "/orgs/org_1/records";
+    rerender(<OrgSidebar {...props} />);
+
+    expect(screen.queryByRole("button", { name: "Close menu" })).toBeNull();
+  });
+
   it("marketing menu closes when a same-page link is chosen", () => {
     nav.pathname = "/product";
     render(<SiteNav />);

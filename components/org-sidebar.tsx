@@ -431,6 +431,12 @@ export function OrgSidebar({ orgId, orgName, user, role, projects = [], selected
     setOpenGroup((prev) => (prev === label ? null : label));
   }
 
+  // Any route change closes the mobile drawer, including ones that never pass through a menu click
+  // (browser back, a redirect, a link in the page itself).
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   // Keep the accordion in sync with the active route (e.g. after clicking a link elsewhere).
   useEffect(() => {
     const active = navGroups.find((g) => groupIsActive(g, pathname));
