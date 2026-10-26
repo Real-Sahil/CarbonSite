@@ -20,6 +20,11 @@ describe("englandRegistration", () => {
   it("normalises CBDU and CBDL numbers and refuses others", () => {
     expect(englandRegistration("cbdu 564741")).toBe("CBDU564741");
     expect(englandRegistration("CBDL-12345")).toBe("CBDL12345");
+    // Older England registrations have fewer digits (CBDL628 is on the register).
+    expect(englandRegistration("cbdl 628")).toBe("CBDL628");
+    expect(englandRegistration("CBDL7")).toBe("CBDL7");
+    expect(englandRegistration("CBDL")).toBeNull();
+    expect(englandRegistration("CB/A12345678")).toBeNull();
     expect(englandRegistration("WCR/R/1234")).toBeNull();
     expect(englandRegistration(null)).toBeNull();
   });

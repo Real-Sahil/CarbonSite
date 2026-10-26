@@ -1,9 +1,11 @@
 /**
  * England's public register of waste carriers, brokers and dealers (Environment Agency, "Public
  * Registers Online" API, no key). A registration number is looked up and the holder, tier and expiry
- * are reported back. Used under the Environment Agency Conditional Licence: commercial reuse is
- * allowed with the attribution below, and nothing here implies the Agency endorses MetricOra or
- * has checked a transfer note. Scotland (SEPA), Wales (NRW) and Northern Ireland keep their own
+ * are reported back. Offered under the Environment Agency Conditional Licence, whose special
+ * conditions for this dataset limit use to internal or personal purposes for one year; whether a
+ * per-number lookup shown to customers fits is unconfirmed (docs/THIRD_PARTY_SOURCES.md), so
+ * only the saved result of a check is kept and the register is never bulk-loaded. Nothing here
+ * implies the Agency endorses MetricOra or has checked a transfer note. Scotland (SEPA), Wales (NRW) and Northern Ireland keep their own
  * registers, so a number in another format is "not checked", never "invalid".
  */
 export const REGISTER_ATTRIBUTION = "Contains Environment Agency information © Environment Agency and/or database right";
@@ -14,7 +16,7 @@ const ENDPOINT = process.env.CARRIER_REGISTER_URL ?? "https://environment.data.g
 /** "cbdu 564741" → "CBDU564741"; null when it is not an England carrier number (CBDU or CBDL plus digits). */
 export function englandRegistration(raw: string | null | undefined): string | null {
   const r = (raw ?? "").toUpperCase().replace(/[\s-]/g, "");
-  return /^CBD[UL]\d{4,7}$/.test(r) ? r : null;
+  return /^CBD[UL]\d{1,7}$/.test(r) ? r : null;
 }
 
 export type RegisterResult =
