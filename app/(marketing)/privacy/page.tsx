@@ -5,7 +5,7 @@ import { LegalShell } from "@/components/marketing/legal-shell";
 export const metadata: Metadata = withSocial({
   title: "Privacy Policy",
   alternates: { canonical: "/privacy" },
-  description: "How MetricOra collects, uses, and protects your data.",
+  description: "How MetricOra collects, uses, stores and protects personal data for web and field app users, and the rights you have under UK GDPR.",
 });
 
 export default function PrivacyPage() {

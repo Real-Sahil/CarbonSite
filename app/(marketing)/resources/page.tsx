@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
+import { PageJsonLd } from "@/lib/seo/json-ld";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro, reveal } from "@/components/marketing/kit";
@@ -52,6 +53,7 @@ const LINKS = [
 export default function ResourcesPage() {
   return (
     <>
+      <PageJsonLd meta={metadata} />
       <Section tone="dark" size="lg" video="/marketing/loops/calc.mp4" poster="/marketing/loops/calc.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Guides</Eyebrow>

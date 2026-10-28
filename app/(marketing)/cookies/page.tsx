@@ -6,7 +6,7 @@ export const metadata: Metadata = withSocial({
   title: "Cookie Policy",
   alternates: { canonical: "/cookies" },
   robots: { index: false, follow: true },
-  description: "Information about how MetricOra uses cookies.",
+  description: "Which cookies MetricOra sets on its website and web app, what each one is for, and how to change your choices.",
 });
 
 export default function CookiesPage() {

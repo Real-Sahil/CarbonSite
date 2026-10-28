@@ -5,7 +5,7 @@ import { LegalShell } from "@/components/marketing/legal-shell";
 export const metadata: Metadata = withSocial({
   title: "Terms of Service",
   alternates: { canonical: "/terms" },
-  description: "Legal terms governing your use of MetricOra.",
+  description: "The terms that govern use of the MetricOra carbon reporting platform and field app, including accounts, data, payment and liability.",
 });
 
 export default function TermsPage() {
