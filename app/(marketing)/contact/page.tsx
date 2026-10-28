@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
+import { PageJsonLd } from "@/lib/seo/json-ld";
 import { CheckList, Eyebrow, H1, H3, Lead, Section } from "@/components/marketing/kit";
 import { ContactForm } from "./contact-form";
 
@@ -18,6 +19,7 @@ const PREPARE = [
 export default function ContactPage() {
   return (
     <>
+      <PageJsonLd meta={metadata} type="ContactPage" />
       <Section tone="dark" size="lg" video="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Book a pilot</Eyebrow>

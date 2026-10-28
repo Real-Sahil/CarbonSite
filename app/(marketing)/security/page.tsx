@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
+import { PageJsonLd } from "@/lib/seo/json-ld";
 import { Body, ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, ProductShot, Section, SectionIntro, CheckList, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
@@ -46,6 +47,7 @@ const CONTROLS = [
 export default function SecurityPage() {
   return (
     <>
+      <PageJsonLd meta={metadata} />
       <Section tone="dark" size="lg" video="/marketing/loops/prove.mp4" poster="/marketing/loops/prove.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Security</Eyebrow>

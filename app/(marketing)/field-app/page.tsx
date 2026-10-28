@@ -1,6 +1,7 @@
 import { GuideLinks } from "@/components/marketing/guide-links";
 import type { Metadata } from "next";
 import { withSocial } from "@/lib/seo/page-meta";
+import { PageJsonLd } from "@/lib/seo/json-ld";
 import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, ProductLoop, Section, SectionIntro, reveal } from "@/components/marketing/kit";
 import { AppStoreBadge, GooglePlayBadge } from "@/components/marketing/brand-marks";
 
@@ -30,6 +31,7 @@ const FIELDS = [
 export default function FieldAppPage() {
   return (
     <>
+      <PageJsonLd meta={metadata} />
       <Section tone="dark" size="lg" video="/marketing/loops/review.mp4" poster="/marketing/loops/review.jpg" className="pt-24 sm:pt-24">
         <div className="flex max-w-3xl flex-col gap-6">
           <Eyebrow tone="dark">Field app</Eyebrow>
