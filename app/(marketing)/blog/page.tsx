@@ -6,7 +6,7 @@ import { Eyebrow, H1, Lead, Section } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
   title: "Carbon reporting guides: PPN 006, SECR, Scope 3",
-  description: "How MetricOra calculates, reviews and reports emissions, explained with worked examples.",
+  description: "Plain-English guides to PPN 006 Carbon Reduction Plans, SECR and Scope 3 for UK contractors, with worked examples of how emissions are calculated.",
   alternates: { canonical: "/blog" },
 });
 

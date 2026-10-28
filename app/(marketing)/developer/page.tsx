@@ -3,8 +3,8 @@ import { withSocial } from "@/lib/seo/page-meta";
 import { Body, ClosingCta, Eyebrow, H1, H3, Lead, Section, SectionIntro } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
-  title: "Developers",
-  description: "MetricOra API keys, data ingest endpoints, snapshot export and signed outbound webhooks.",
+  title: "Developer API and data ingest",
+  description: "MetricOra API keys, machine-to-machine data ingest endpoints for utilities, fleet and cards, snapshot export and signed outbound webhooks.",
   alternates: { canonical: "/developer" },
 });
 

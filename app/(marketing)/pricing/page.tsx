@@ -9,7 +9,7 @@ import { StripeNote } from "@/components/marketing/brand-marks";
 
 export const metadata: Metadata = withSocial({
   title: "Carbon reporting software pricing",
-  description: "Priced per organisation by sites and web users. Essentials £199 a year for a PPN 006 Carbon Reduction Plan, Starter £99 a month, Growth £299 a month, Enterprise from £750 a month. 30-day trial.",
+  description: "Priced per organisation. Essentials £199 a year for a PPN 006 Carbon Reduction Plan, Starter £99 a month, Growth £299, Enterprise from £750.",
   alternates: { canonical: "/pricing" },
 });
 

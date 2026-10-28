@@ -12,7 +12,7 @@ import { Body, ButtonLink, CheckList, ClosingCta, Eyebrow, H1, H3, Lead, Product
 export const metadata: Metadata = withSocial({
   title: { absolute: "MetricOra | Carbon evidence and reporting for UK contractors" },
   description:
-    "Carbon figures that hold up when a tender evaluator, verifier or main contractor checks them. Guided PPN 006 Carbon Reduction Plan, SECR and GHG Protocol reports from one set of reviewed records.",
+    "Carbon figures that hold up when a verifier checks them. Guided PPN 006 Carbon Reduction Plan, SECR and GHG Protocol reports from reviewed records.",
   alternates: { canonical: "/" },
 });
 

@@ -1,0 +1,22 @@
+# MetricOra
+
+> Carbon evidence and reporting software for UK contractors: guided PPN 006 Carbon Reduction Plans, SECR and GHG Protocol reports built from reviewed records, with a field app for site teams.
+
+## Product
+- [Product](https://www.metricora.co.uk/product): how records, calculations, review and reports fit together
+- [Field app](https://www.metricora.co.uk/field-app): photograph waste tickets, delivery notes and fuel receipts, offline
+- [Methodology](https://www.metricora.co.uk/methodology): how emissions are calculated and which factor libraries are used
+- [Pricing](https://www.metricora.co.uk/pricing): plans priced per organisation
+
+## Solutions
+- [Construction](https://www.metricora.co.uk/solutions/construction)
+- [Waste and haulage](https://www.metricora.co.uk/solutions/waste-haulage)
+- [Public sector](https://www.metricora.co.uk/solutions/public-sector)
+
+## Guides
+- [Blog](https://www.metricora.co.uk/blog): guides to PPN 006, SECR and Scope 3
+- [Resources](https://www.metricora.co.uk/resources)
+
+## Trust
+- [Security](https://www.metricora.co.uk/security)
+- [Developer API](https://www.metricora.co.uk/developer)

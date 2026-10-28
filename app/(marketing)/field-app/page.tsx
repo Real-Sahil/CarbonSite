@@ -7,7 +7,7 @@ import { AppStoreBadge, GooglePlayBadge } from "@/components/marketing/brand-mar
 export const metadata: Metadata = withSocial({
   title: "Site carbon data app for tickets and fuel",
   description:
-    "The MetricOra field app lets site teams and subcontractors photograph waste tickets, delivery notes and fuel receipts, read them on the phone and submit them offline for review. Android and iPhone.",
+    "Site teams and subcontractors photograph waste tickets, delivery notes and fuel receipts, read them on the phone and submit them offline for review.",
   alternates: { canonical: "/field-app" },
 });
 

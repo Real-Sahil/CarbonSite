@@ -3,7 +3,7 @@ import { withSocial } from "@/lib/seo/page-meta";
 import { Body, ButtonLink, ClosingCta, Eyebrow, H1, H3, Lead, ProductShot, Section, SectionIntro, CheckList, reveal } from "@/components/marketing/kit";
 
 export const metadata: Metadata = withSocial({
-  title: "Security",
+  title: "Security and data isolation",
   description: "How MetricOra isolates each organisation's data, controls access by role, records every change and backs up your records.",
   alternates: { canonical: "/security" },
 });

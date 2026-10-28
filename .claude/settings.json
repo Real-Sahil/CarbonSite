@@ -82,13 +82,20 @@
         "source": "github",
         "repo": "bradautomates/claude-video"
       }
+    },
+    "agricidaniel-claude-seo": {
+      "source": {
+        "source": "github",
+        "repo": "AgriciDaniel/claude-seo"
+      }
     }
   },
   "enabledPlugins": {
     "founder@emotix": true,
     "ponytail@ponytail": true,
     "superpowers@superpowers-marketplace": true,
-    "watch@claude-video": true
+    "watch@claude-video": true,
+    "claude-seo@agricidaniel-claude-seo": true
   },
   "autoCompactWindow": 250000
 }
