@@ -7,10 +7,8 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useRef } from "react";
 import { SCOPE_COLORS } from "@/components/charts/palette";
-import { radiusFor, type SiteTotal } from "@/lib/map/site-map";
-
-type Placed = SiteTotal & { latitude: number; longitude: number };
-const keyOf = (s: SiteTotal) => `${s.kind ?? "facility"}:${s.id}`;
+import type { SiteTotal } from "@/lib/map/site-map";
+import { buildSiteCollection, cameraFor, keyOf, selectedFilter, type PlacedSite as Placed } from "@/lib/map/tiles-data";
 
 export function SiteHeroTiles({
   sites,
@@ -39,22 +37,7 @@ export function SiteHeroTiles({
     live.current = { byKey, onPick, onFail, formatKg };
   });
 
-  const data = useMemo(() => {
-    const max = Math.max(1, ...sites.map((s) => s.kg));
-    return {
-      type: "FeatureCollection" as const,
-      features: sites.map((s) => ({
-        type: "Feature" as const,
-        geometry: { type: "Point" as const, coordinates: [s.longitude, s.latitude] },
-        properties: {
-          key: keyOf(s),
-          r: radiusFor(s.kg, max, 18, 6),
-          colour: s.kind === "site" ? SCOPE_COLORS[0] : SCOPE_COLORS[1],
-          label: `${s.name}: ${formatKg(s.kg)}`,
-        },
-      })),
-    };
-  }, [sites, formatKg]);
+  const data = useMemo(() => buildSiteCollection(sites, formatKg, { site: SCOPE_COLORS[0], facility: SCOPE_COLORS[1] }), [sites, formatKg]);
   const dataRef = useRef(data);
   useEffect(() => {
     dataRef.current = data;
@@ -89,7 +72,7 @@ export function SiteHeroTiles({
             id: "sites-selected",
             type: "circle",
             source: "sites",
-            filter: ["in", ["get", "key"], ["literal", selectedKey ? selectedKey.split("|") : []]],
+            filter: selectedFilter(selectedKey) as import("maplibre-gl").FilterSpecification,
             paint: { "circle-radius": ["+", ["get", "r"], 4], "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#111827", "circle-stroke-width": 2.5 },
           });
           map!.on("click", "sites", (e) => {
@@ -107,12 +90,12 @@ export function SiteHeroTiles({
             map!.getCanvas().style.cursor = "";
             popup.remove();
           });
-          const pts = dataRef.current.features;
-          if (pts.length > 1) {
+          const cam = cameraFor(dataRef.current);
+          if (cam.kind === "bounds") {
             const b = new maplibre.LngLatBounds();
-            pts.forEach((f) => b.extend(f.geometry.coordinates as [number, number]));
-            map!.fitBounds(b, { padding: 50, maxZoom: 11, duration: 0 });
-          } else if (pts.length === 1) map!.jumpTo({ center: pts[0].geometry.coordinates as [number, number], zoom: 10 });
+            cam.points.forEach((p) => b.extend(p));
+            map!.fitBounds(b, { padding: cam.padding, maxZoom: cam.maxZoom, duration: 0 });
+          } else if (cam.kind === "centre") map!.jumpTo({ center: cam.centre, zoom: cam.zoom });
         });
       } catch {
         live.current.onFail();
@@ -130,7 +113,7 @@ export function SiteHeroTiles({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.getLayer("sites-selected")) return;
-    map.setFilter("sites-selected", ["in", ["get", "key"], ["literal", selectedKey ? selectedKey.split("|") : []]]);
+    map.setFilter("sites-selected", selectedFilter(selectedKey) as import("maplibre-gl").FilterSpecification);
   }, [selectedKey]);
 
   return <div ref={el} className="h-[300px] w-full overflow-hidden rounded-[10px] border border-[#CBD2D9] sm:h-[340px]" role="img" aria-label="Map of sites sized by emissions. The list beside it has the same figures and can also be used to choose a site." />;
