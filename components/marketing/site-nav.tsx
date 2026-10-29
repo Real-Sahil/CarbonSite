@@ -84,6 +84,7 @@ export const NAV: (NavGroup | NavItem)[] = [
           { href: "/blog", label: "Blog" },
           { href: "/resources", label: "Guides" },
           { href: "/tools/site-fuel-emissions-calculator", label: "Fuel calculator" },
+          { href: "/tools/site-waste-emissions-calculator", label: "Waste calculator" },
           { href: "/developer", label: "Developers" },
         ],
       },
