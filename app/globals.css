@@ -676,6 +676,18 @@
 @media (prefers-reduced-motion: reduce) {
   .earthy *, .earthy *::before, .earthy *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .earthy .e-card[data-lift]:hover { transform: none; }
+  .earthy .e-press:active { transform: none; }
+}
+/* Phase 7: the glass bar goes solid when the person asks for less transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  .earthy .e-tabbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* Windows high contrast: shadows disappear, so cards and the focus ring lean on system colours. */
+@media (forced-colors: active) {
+  .earthy .e-card { border: 1px solid CanvasText; box-shadow: none; }
+  .earthy .e-tabbar { border-top: 1px solid CanvasText; background: Canvas; }
+  .earthy :focus-visible { outline: 2px solid Highlight; }
+  .earthy [aria-current="page"] { text-decoration: underline; }
 }
 
 /* ── Earthy shell ─────────────────────────────────────────────────────────────
@@ -711,3 +723,11 @@
 .earthy-shell [class~="border-[#fed7aa]"] { border-color: var(--moss-200); }
 .earthy-shell [class~="border-[#131d29]/[0.08]"] { border-color: var(--line); }
 .earthy-shell [class~="bg-white"] { background-color: var(--surface); }
+
+/* Phase 7: touch targets. The mobile header's icon buttons are 36px; give them 44px on phones and touch screens. */
+@media (pointer: coarse), (max-width: 767px) {
+  .earthy header button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

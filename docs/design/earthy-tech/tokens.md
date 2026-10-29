@@ -244,6 +244,10 @@ Dark theme: moss-200 9.92, terra-300 7.18, brick-300 6.05 on the dark ground and
 
 Two-red separation: terra-700 and brick-700 differ by only 1.26:1 in luminance, so lightness cannot separate them. They are separated by role, by an icon and a word on every brick instance, and by never appearing in one component. This is the single largest open risk in the palette and must be tested with a side-by-side proof, including under simulated red-green colour deficiency, before approval.
 
+Phase 7 recheck, from the token hex values: the dormant state's ink-3 on surface-sunk is 4.62 in light and 6.84 in dark, so it passes. Dark ink-3 on surface is 5.79 and ink-2 on surface 8.32. Moss-500 fills on sunk reach 3.77, above the 3:1 needed for graphics. Card borders (line-strong on surface, 1.65) are decoration only: no card relies on its border to be found, so they carry no contrast requirement. The focus ring is moss-700 (7.10 on surface) in light and moss-200 (8.92) in dark.
+
+Preference handling in `app/globals.css`: reduced motion removes hover lift and press scale; reduced transparency makes the tab bar solid; forced colours replaces shadows with system-colour borders and the focus ring with `Highlight`. Hover effects sit inside `@media (hover: hover)`.
+
 Still to verify once visual proofs exist: contrast of chart fills against each other and the ground, grain legibility effects at 200% zoom, the three font candidates' licences, and the dormant state's legibility (ink-3 on surface-sunk).
 
 ## Open questions for review
