@@ -1,6 +1,6 @@
 # Design decisions (owner, supersede earlier drafts in this folder)
 
-Status: design only. No production UI code is authorised yet.
+Status: design approved (desktop and mobile artefacts). Implementation plan in `implementation_plan.md`. No production UI code is authorised until the owner says to build.
 
 1. **Two reds stay split.** Terracotta (`--hi`) marks interactive and neutral information, such as Scope 3 bars. Brick (`--neg`) is reserved for alerts such as the behind-glidepath variance, always with an icon and a word.
 2. **Fonts, SIL OFL only.** Serif for narrative headers: Newsreader (Instrument Serif is the alternative). Mono for data: JetBrains Mono (Fira Code is the alternative). UI sans: Geist (Inter is the alternative). Record each licence in `docs/THIRD_PARTY_SOURCES.md` before any font is bundled.
