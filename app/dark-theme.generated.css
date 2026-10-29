@@ -276,6 +276,7 @@
 [data-theme="dark"] [class~="bg-[#E3E8EE]"] { background-color: #11161c; }
 [data-theme="dark"] [class~="bg-[#ECFDF5]"] { background-color: #042918; }
 [data-theme="dark"] [class~="bg-[#F0FDFA]"] { background-color: #062c23; }
+[data-theme="dark"] [class~="bg-[#F1F4F7]"] { background-color: #10161c; }
 [data-theme="dark"] [class~="bg-[#F1F5F9]"] { background-color: #0e1720; }
 [data-theme="dark"] [class~="bg-[#F8F9FA]"] { background-color: #171b20; }
 [data-theme="dark"] [class~="bg-[#F9FAFC]"] { background-color: #131926; }

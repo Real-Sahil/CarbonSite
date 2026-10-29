@@ -6,11 +6,18 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useState, useTransition } from "react";
 import { fitProjection, hasPosition, type SiteTotal } from "@/lib/map/site-map";
 import { compareRows, filtersAfterPin, filtersAfterProject, pinFilter, spreadCoincident, toQuery, type CompareKey } from "@/lib/map/site-hero";
 import { MAP_H, MAP_W, SiteHeroMap } from "@/components/dashboard/site-hero-map";
+import { mapStyleUrl } from "@/lib/map/style";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+const SiteHeroTiles = dynamic(() => import("@/components/dashboard/site-hero-tiles").then((m) => m.SiteHeroTiles), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full animate-pulse rounded-[10px] bg-[#F1F4F7] sm:h-[340px]" aria-hidden />,
+});
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
 const FIELD = "h-9 w-full rounded-[10px] border border-[#CBD2D9] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
@@ -35,6 +42,7 @@ export function SiteHero({
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
+  const [tilesFailed, setTilesFailed] = useState(false);
   const [sort, setSort] = useState<{ key: CompareKey; dir: "asc" | "desc" }>({ key: "kg", dir: "desc" });
   const placed = sites.filter(hasPosition);
   const selectedProject = filters.projectId ?? "";
@@ -61,6 +69,7 @@ export function SiteHero({
     startTransition(() => router.replace(`${pathname}${toQuery(next)}`));
   }
 
+  const fmtKg = useCallback((kg: number) => tonnes(kg, locale), [locale]);
   const max = Math.max(1, ...placed.map((s) => s.kg));
   const project = placed.length ? fitProjection(placed as { latitude: number; longitude: number }[], MAP_W, MAP_H, 56) : null;
   const spots = project ? spreadCoincident(placed.map((s) => ({ ...project(s as { latitude: number; longitude: number }), site: s }))) : [];
@@ -130,13 +139,23 @@ export function SiteHero({
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <div className="min-w-0">
             {project ? (
-              <SiteHeroMap spots={spots} max={max} labelled={labelled} isOn={isOn} onPick={pick} formatKg={(kg) => tonnes(kg, locale)} />
+              tilesFailed ? (
+                <SiteHeroMap spots={spots} max={max} labelled={labelled} isOn={isOn} onPick={pick} formatKg={(kg) => tonnes(kg, locale)} />
+              ) : (
+                <SiteHeroTiles sites={placed as (SiteTotal & { latitude: number; longitude: number })[]} styleUrl={mapStyleUrl()} isOn={isOn} onPick={pick} formatKg={fmtKg} onFail={() => setTilesFailed(true)} />
+              )
             ) : (
               <p className="rounded-[10px] border border-dashed border-[#CBD2D9] p-4 text-sm text-[#41505F]">
                 None of your sites has a position yet, so none can be pinned. Use the list or the project choice above.
               </p>
             )}
-            {project ? <p className="mt-1 text-xs text-[#5B6A78]">Schematic, not to a map scale. Drag to pan, use + and - or ctrl/cmd + scroll to zoom. Sites at the same place are spread out so each can be chosen.</p> : null}
+            {project ? (
+              <p className="mt-1 text-xs text-[#5B6A78]">
+                {tilesFailed
+                  ? "The street map could not be loaded, so this is a schematic, not to a map scale. Drag to pan, use + and - or ctrl/cmd + scroll to zoom. Sites at the same place are spread out so each can be chosen."
+                  : "Map data from OpenStreetMap contributors, tiles by OpenFreeMap. Pins are placed from each site's saved position or postcode. Use two fingers (or ctrl/cmd + scroll) to move the map; tap a pin to filter the dashboard."}
+              </p>
+            ) : null}
           </div>
 
           <div>

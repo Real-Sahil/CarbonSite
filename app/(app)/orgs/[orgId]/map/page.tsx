@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { mapStyleUrl } from "@/lib/map/style";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthError, requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
@@ -23,8 +24,8 @@ export default async function MapPage({ params }: { params: Promise<{ orgId: str
   const locale = orgFormat(org ?? {}).locale;
   const latest = snapshots[snapshots.length - 1];
   const sites = latest ? await loadSnapshotSites(orgId, latest.id) : null;
-  // Tiles come from a third-party host, so they load only when the owner sets a style URL.
-  const styleUrl = process.env.NEXT_PUBLIC_MAP_STYLE_URL?.trim() || null;
+  // Tiles come from OpenFreeMap unless the owner sets another style URL (lib/map/style.ts).
+  const styleUrl = mapStyleUrl();
 
   return (
     <div className="mx-auto max-w-[1100px] px-4 py-8 sm:px-8">

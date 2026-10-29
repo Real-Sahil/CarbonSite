@@ -174,6 +174,12 @@ export default function PrivacyPage() {
                 mapping service)
               </li>
               <li>
+                <strong>OpenFreeMap (Hungary, delivered through Cloudflare):</strong>{" "}
+                Street map tiles from OpenStreetMap data on the dashboard and Site map.
+                Your browser asks them for tiles directly, so they see your IP address
+                and the area of the map you view, never your site names or figures.
+              </li>
+              <li>
                 <strong>Sentry:</strong> Error monitoring (EU region)
               </li>
               <li>
