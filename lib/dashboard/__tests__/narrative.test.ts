@@ -35,9 +35,9 @@ describe("needsYouLine", () => {
 describe("glidepathLine", () => {
   const g = (status: "ahead" | "on_track" | "behind", partial = false) => ({ expectedTonnes: 100, gapTonnes: status === "ahead" ? -8 : status === "behind" ? 8 : 0, status, partial });
   it("null without a target", () => expect(glidepathLine(null, fmt)).toBeNull());
-  it("behind", () => expect(glidepathLine(g("behind"), fmt)).toBe("8 t behind your glidepath."));
-  it("ahead, part way through", () => expect(glidepathLine(g("ahead", true), fmt)).toBe("8 t ahead of your glidepath so far this period."));
-  it("on track", () => expect(glidepathLine(g("on_track"), fmt)).toBe("On the glidepath to your target."));
+  it("behind", () => expect(glidepathLine(g("behind"), fmt)).toBe("8 t above the straight path to your target."));
+  it("ahead, part way through", () => expect(glidepathLine(g("ahead", true), fmt)).toBe("8 t below the straight path to your target so far this period (indicative)."));
+  it("on track", () => expect(glidepathLine(g("on_track"), fmt)).toBe("In line with the straight path to your target."));
 });
 
 describe("hotspotLine", () => {

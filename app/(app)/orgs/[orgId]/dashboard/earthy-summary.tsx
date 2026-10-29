@@ -64,6 +64,7 @@ export async function EarthySummary({ orgId, firstName }: { orgId: string; first
         actual: s?.totalTonnes != null ? fmt.tonnes(s.totalTonnes) : null,
         level: s?.target.targetTonnes != null ? fmt.tonnes(s.target.targetTonnes) : null,
         status: result?.status ?? null,
+        partial: result?.partial ?? false,
       }}
       hotspot={{ line: hotspotLine(s?.hotspot ?? null, fmt), sharePct: s?.hotspot?.sharePct ?? null }}
       social={{ line: socialPhaseLine(s?.socialPhase ?? null), phase: s?.socialPhase ?? "data_mapping" }}

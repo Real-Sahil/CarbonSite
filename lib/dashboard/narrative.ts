@@ -40,11 +40,12 @@ export function needsYouLine(i: { pendingSubmissions: number; openReviews: numbe
 export function glidepathLine(g: GlidepathResult | null, fmt: NarrativeFormat): string | null {
   if (!g) return null;
   const gap = fmt.tonnes(Math.abs(g.gapTonnes));
-  const basis = g.partial ? " so far this period" : "";
-  if (g.status === "on_track") return `On the glidepath to your target${basis}.`;
+  // A running period is a year-to-date reading, not a verdict: the line is the straight one between the baseline and the target.
+  const basis = g.partial ? " so far this period (indicative)" : "";
+  if (g.status === "on_track") return `In line with the straight path to your target${basis}.`;
   return g.status === "behind"
-    ? `${gap} behind your glidepath${basis}.`
-    : `${gap} ahead of your glidepath${basis}.`;
+    ? `${gap} above the straight path to your target${basis}.`
+    : `${gap} below the straight path to your target${basis}.`;
 }
 
 export function hotspotLine(h: { label: string; sharePct: number } | null, fmt: NarrativeFormat): string | null {

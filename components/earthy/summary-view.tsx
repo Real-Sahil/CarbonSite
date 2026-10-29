@@ -13,7 +13,7 @@ export type SummaryViewProps = {
   periodLabel: string | null;
   hasData: boolean;
   total: { value: string; unit: string; scopes: { label: string; value: string }[] };
-  target: { line: string | null; hasTarget: boolean; actual: string | null; level: string | null; status: "ahead" | "on_track" | "behind" | null };
+  target: { line: string | null; hasTarget: boolean; actual: string | null; level: string | null; status: "ahead" | "on_track" | "behind" | null; partial: boolean };
   hotspot: { line: string | null; sharePct: number | null };
   social: { line: string | null; phase: SocialPhase };
   audit: { regimeLabel: string; satisfied: number; applicable: number; partial: number; gap: number; percent: number | null } | null;
@@ -39,7 +39,11 @@ function Tile({ title, children, href, hrefLabel }: { title: string; children: R
 
 export function SummaryView(p: SummaryViewProps) {
   const root = base(p.orgId);
-  const statusWord = p.target.status === "behind" ? "Behind" : p.target.status === "ahead" ? "Ahead" : p.target.status === "on_track" ? "On track" : null;
+  // Official status only for a complete period; a running one is labelled year to date and never raised as an alert.
+  const behind = p.target.status === "behind" && !p.target.partial;
+  const statusWord = p.target.status === null ? null
+    : p.target.partial ? "Year to date"
+    : p.target.status === "behind" ? "Above the path" : p.target.status === "ahead" ? "Below the path" : "In line";
   const phaseAt = SOCIAL_PHASE_ORDER.indexOf(p.social.phase);
 
   return (
@@ -82,8 +86,8 @@ export function SummaryView(p: SummaryViewProps) {
                 {p.target.line ? (
                   <>
                     <p className="flex items-center gap-2 text-base">
-                      {p.target.status === "behind" && <AlertTriangle className="size-4 shrink-0" style={{ color: "var(--neg)" }} aria-hidden="true" />}
-                      <span style={p.target.status === "behind" ? { color: "var(--neg)" } : undefined}>
+                      {behind && <AlertTriangle className="size-4 shrink-0" style={{ color: "var(--neg)" }} aria-hidden="true" />}
+                      <span style={behind ? { color: "var(--neg)" } : undefined}>
                         {statusWord ? <strong>{statusWord}. </strong> : null}
                         {p.target.line}
                       </span>
