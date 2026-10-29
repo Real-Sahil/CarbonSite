@@ -609,3 +609,60 @@
   background: linear-gradient(180deg, #FFF2EC 0%, #F9FAFC 100%);
   color: #131D29;
 }
+
+/* ── Earthy Tech (Executive Summary only) ─────────────────────────────────────
+   Scoped under .earthy so nothing else in the app, and none of the marketing
+   site, picks these up. Two reds on purpose: terracotta (--hi) is interactive
+   and neutral, brick (--neg) is for alerts and always comes with an icon and a
+   word. docs/design/earthy-tech/decisions.md has the owner's decisions. */
+.earthy {
+  --ground: #F5EFE4; --surface: #FBF7EF; --sunk: #EFE7D8; --line: #E3D9C6; --line-strong: #CFC2A8;
+  --ink: #1F2A22; --ink-2: #4A5648; --ink-3: #5F6A5B;
+  --moss-100: #DCE6D8; --moss-200: #B9CFB8; --moss-300: #9DB89A; --moss-500: #4F7F5F; --moss-700: #2F5D43; --moss-900: #1E3A2B;
+  --terra-100: #F1D9CC; --terra-300: #E39A7C; --terra-600: #B5502F; --terra-700: #9A4126;
+  --brick-100: #F3D4CB; --brick-600: #A63A22; --brick-700: #8E2B16;
+  --ochre-700: #7A5410; --ochre-200: #EBD9A8;
+  --action: var(--moss-700); --action-bg: var(--moss-100);
+  --hi: var(--terra-700); --hi-bg: var(--terra-100);
+  --neg: var(--brick-700); --neg-bg: var(--brick-100);
+  --card-hi: rgba(255, 255, 255, .75); --card-lo: rgba(120, 98, 60, .09);
+  --shadow: 0 1px 2px rgba(60, 48, 24, .05), 0 6px 18px rgba(60, 48, 24, .05);
+  --shadow-lift: 0 2px 4px rgba(60, 48, 24, .06), 0 12px 28px rgba(60, 48, 24, .09);
+  --e-serif: var(--font-newsreader), Georgia, serif;
+  --e-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --e-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --e-ease: cubic-bezier(.22, 1, .36, 1);
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--e-sans);
+}
+:root[data-theme="dark"] .earthy {
+  --ground: #16221A; --surface: #1D2B22; --sunk: #121C16; --line: #2C3C32; --line-strong: #3E5045;
+  --ink: #EDE6D6; --ink-2: #C9C2B0; --ink-3: #A8A28F;
+  --action: var(--moss-200); --action-bg: #26402F;
+  --hi: var(--terra-300); --hi-bg: #3A2519;
+  --neg: #E8806A; --neg-bg: #3B1F19;
+  --ochre-700: #EBD9A8;
+  --card-hi: rgba(255, 255, 255, .05); --card-lo: rgba(0, 0, 0, .25);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 6px 18px rgba(0, 0, 0, .25);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, .35), 0 12px 28px rgba(0, 0, 0, .35);
+}
+.earthy .e-serif { font-family: var(--e-serif); }
+.earthy .e-mono { font-family: var(--e-mono); font-variant-numeric: tabular-nums; }
+.earthy .e-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 var(--card-hi), inset 0 -1px 0 var(--card-lo), var(--shadow);
+  transition: transform .25s var(--e-ease), box-shadow .25s var(--e-ease);
+}
+.earthy .e-press { transition: transform .15s var(--e-ease); }
+.earthy .e-press:active { transform: scale(.97); }
+@media (hover: hover) {
+  .earthy .e-card[data-lift]:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 var(--card-hi), var(--shadow-lift); }
+}
+.earthy :focus-visible { outline: 2px solid var(--action); outline-offset: 2px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  .earthy *, .earthy *::before, .earthy *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .earthy .e-card[data-lift]:hover { transform: none; }
+}

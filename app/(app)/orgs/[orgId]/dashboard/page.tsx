@@ -96,10 +96,12 @@ import { activeFilters } from "@/lib/saved-views";
 import { mayShare, viewRoles } from "@/lib/saved-views/roles";
 import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from "@/lib/dashboard/page-data";
 import { loadAnalyticsPeriod } from "@/lib/analytics/period";
+import { earthyEnabled } from "@/lib/dashboard/earthy-flag";
+import { EarthySummary } from "./earthy-summary";
 
 interface DashboardPageProps {
   params: Promise<{ orgId: string }>;
-  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; siteId?: string }>;
+  searchParams: Promise<{ facilityId?: string; contractId?: string; entityId?: string; country?: string; supplier?: string; from?: string; to?: string; scope?: string; projectId?: string; sv?: string; categoryId?: string; siteId?: string; earthy?: string }>;
 }
 
 
@@ -165,6 +167,11 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   // (the org layout sends them away first; kept as a second guard).
   if (role === "field_worker") redirect("/app");
   if (role === "supplier") redirect("/supplier-portal");
+
+  // Executive Summary rollout (docs/design/earthy-tech): off unless the org is listed or an admin previews with ?earthy=1.
+  if (earthyEnabled(orgId, { previewParam: rawParams.earthy, isAdmin: role === "admin" })) {
+    return <EarthySummary orgId={orgId} firstName={session!.user.name?.split(" ")[0] ?? null} />;
+  }
 
   // Everything here depends only on the organisation, so it is fetched in one
   // stage. Counts and the latest run's figures come from one statement each
