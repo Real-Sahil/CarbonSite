@@ -1,7 +1,6 @@
 "use client";
 
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
 import { formatTonnesValue, scopeColor } from "@/components/charts/palette";
 import { ProductFrame } from "@/components/marketing/kit";
 
@@ -129,8 +128,21 @@ function Doughnut({ seen }: { seen: boolean }) {
   );
 }
 
+// Not motion's useReducedMotion: that would ship the whole animation library to the home page for one media query.
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduce(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+  return reduce;
+}
+
 export function DemoAnalytics() {
-  const reduce = useReducedMotion() ?? false;
+  const reduce = usePrefersReducedMotion();
   const { ref, seen } = useSeen<HTMLDivElement>();
 
   return (

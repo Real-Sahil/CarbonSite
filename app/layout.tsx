@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Newsreader } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { MotionProvider } from "@/components/motion-provider";
 import { ScrollProvider } from "@/components/scroll-provider";
 import { Providers } from "@/components/providers";
 import { THEME_INIT_SCRIPT } from "@/lib/theme/preference";
@@ -62,7 +61,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <Providers>
           <ScrollProvider>
-            <MotionProvider>{children}</MotionProvider>
+            {children}
           </ScrollProvider>
         </Providers>
         <SpeedInsights />

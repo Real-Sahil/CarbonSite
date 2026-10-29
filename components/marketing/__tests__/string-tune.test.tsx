@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, render, waitFor, cleanup } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const use = vi.fn();
 const start = vi.fn();
@@ -35,6 +35,20 @@ function setReduced(on: boolean) {
   act(() => listeners.forEach((l) => l()));
 }
 
+// The component waits for an idle moment before starting; the stub runs the callback on the next tick
+// and records it so a test can check nothing starts earlier.
+let idleCallbacks: Array<() => void> = [];
+function stubIdle(immediate: boolean) {
+  idleCallbacks = [];
+  window.requestIdleCallback = ((cb: () => void) => {
+    if (immediate) setTimeout(cb, 0);
+    else idleCallbacks.push(cb);
+    return 1;
+  }) as unknown as typeof window.requestIdleCallback;
+  window.cancelIdleCallback = (() => {}) as typeof window.cancelIdleCallback;
+}
+beforeEach(() => stubIdle(true));
+
 const on = () => document.documentElement.classList.contains("st-on");
 
 afterEach(() => {
@@ -50,6 +64,17 @@ describe("StringTuneEffects", () => {
     await new Promise((r) => setTimeout(r, 30));
     expect(start).not.toHaveBeenCalled();
     expect(on()).toBe(false);
+  });
+
+  it("does not load the library until the browser is idle", async () => {
+    stubIdle(false);
+    media(false);
+    render(<StringTuneEffects />);
+    await new Promise((r) => setTimeout(r, 30));
+    expect(start).not.toHaveBeenCalled();
+    act(() => idleCallbacks.forEach((cb) => cb()));
+    await waitFor(() => expect(on()).toBe(true));
+    expect(start).toHaveBeenCalledTimes(1);
   });
 
   it("starts the library, turns the effects on and off again on unmount", async () => {

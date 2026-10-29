@@ -77,9 +77,21 @@ export function StringTuneEffects() {
       if (reduce.matches) halt();
       else if (!starting && !running) void start();
     };
-    sync();
+    // First start waits for the page load and an idle moment, so the library's download and parse
+    // never compete with the hero image for the main thread.
+    let idle = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(sync, { timeout: 3000 });
+      else timer = setTimeout(sync, 1500);
+    };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
     reduce.addEventListener("change", sync);
     return () => {
+      window.removeEventListener("load", schedule);
+      if (idle) window.cancelIdleCallback(idle);
+      if (timer) clearTimeout(timer);
       reduce.removeEventListener("change", sync);
       halt();
     };

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MotionProvider } from "@/components/motion-provider";
 import { MissingPageLedger } from "@/components/not-found/missing-page-ledger";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
@@ -28,7 +29,7 @@ export default function NotFound() {
             and nothing to estimate.
           </p>
           <div className="mt-10">
-            <MissingPageLedger />
+            <MotionProvider><MissingPageLedger /></MotionProvider>
           </div>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">

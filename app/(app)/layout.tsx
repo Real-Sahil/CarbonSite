@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import React from "react";
 import { needsTermsAcceptance } from "@/lib/legal/terms";
 import { brandingVars } from "@/lib/branding/css-vars";
+import { MotionProvider } from "@/components/motion-provider";
 import { TermsGate } from "./terms-gate";
 
 export default async function AppLayout({
@@ -23,7 +24,7 @@ export default async function AppLayout({
   // The gate is rendered here, not on its own route, because Vercel's Hobby plan caps functions per deployment.
   const terms = await prisma.user.findUnique({ where: { id: session.user.id }, select: { termsVersion: true } });
   if (needsTermsAcceptance(terms?.termsVersion)) {
-    return <TermsGate />;
+    return <MotionProvider><TermsGate /></MotionProvider>;
   }
 
   // Apply white-label branding when accessed via a tenant subdomain.
@@ -45,8 +46,9 @@ export default async function AppLayout({
   }
 
   if (brandingStyle) {
-    return <div style={brandingStyle}>{children}</div>;
+    return <MotionProvider><div style={brandingStyle}>{children}</div></MotionProvider>;
   }
 
-  return children;
+  // Only the signed-in app animates with motion, so only it pays for the library; public pages stay lean.
+  return <MotionProvider>{children}</MotionProvider>;
 }
