@@ -68,7 +68,7 @@ export function LoopVideo({
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="none"
       aria-label={label}
       aria-hidden={label ? undefined : true}
     />

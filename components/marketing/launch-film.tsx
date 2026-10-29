@@ -34,6 +34,8 @@ export function LaunchFilm() {
   useEffect(() => {
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
     if (conn?.saveData) return;
+    // Phones keep the poster; the film is 2 MB and "Play with sound" still loads it on request.
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
     let cancelled = false;
     const start = () => {
       const run = () => !cancelled && setReady(true);
