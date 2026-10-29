@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Plus, Save, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ApiDataSourcesPanel } from "./api-data-sources";
 import { PilotKitPanel } from "./pilot-kit-panel";
 import { countryProfile } from "@/lib/country/profile";
@@ -775,10 +774,10 @@ function PanelHeader({ title, description }: { title: string; description: strin
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div>
-      <Label className="mb-1.5 block text-xs font-medium text-[#41505F]">{label}</Label>
+    <label className="block">
+      <span className="mb-1.5 block text-xs font-medium text-[#41505F]">{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
 

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Download, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 const FRAMEWORKS = ['CSRD', 'SBTi', 'CDP', 'GHG-Protocol'] as const;
 
@@ -458,9 +457,9 @@ function PanelHeader({ title, description }: { title: string; description: strin
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-1">
-      <Label className="text-xs font-medium text-[#41505F]">{label}</Label>
+    <label className="block space-y-1">
+      <span className="block text-xs font-medium text-[#41505F]">{label}</span>
       {children}
-    </div>
+    </label>
   );
 }

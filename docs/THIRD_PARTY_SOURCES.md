@@ -84,3 +84,5 @@ Installed by `scripts/dev-tools/install-agent-tools.sh` into the owner's `~/.cla
 | liquid-glass (github.com/samasante/liquid-glass) | MIT | Front-end library, not a global tool. Not installed. Add it to a project only with its first use. |
 | Theatre.js (github.com/theatre-js/theatre) | `@theatre/core` Apache 2.0; `@theatre/studio` AGPL 3.0 | Animation library, not a global tool. Not installed. The studio is a design-time editor; keep it out of the production bundle. |
 | OpnForm (github.com/OpnForm/OpnForm) | AGPL 3.0, with a separate commercial licence for the enterprise folders | A full form-builder application, not installable as a tool. Read for ideas only; never copy code. |
+| @cyclonedx/cyclonedx-npm (github.com/CycloneDX/cyclonedx-node-npm) | Apache 2.0 (npm registry) | Run with `npx` in the manual `sbom.yml` workflow only; not a dependency. Produces the CycloneDX SBOM of production dependencies. |
+| axe-core / @axe-core/playwright | MPL 2.0 (LICENSE read) | Dev dependency for the Playwright accessibility specs; MPL file-level copyleft does not reach our code because it is not redistributed. |

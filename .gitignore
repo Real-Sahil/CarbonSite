@@ -68,3 +68,6 @@ npm-debug.log*
 # and after each commit by graphify's git hooks, so it is never committed
 graphify-out/
 *.graphify-bak
+
+# Playwright output (the signed-in a11y spec stores a throwaway session here)
+/test-results/

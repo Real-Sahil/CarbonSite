@@ -1,0 +1,32 @@
+name: SBOM
+
+# Software bill of materials for the production dependencies (CycloneDX 1.6),
+# for tenders and customers that ask for supply-chain evidence. Manual only, so
+# it uses no scheduled Actions minutes: run it when cutting a release.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: CycloneDX SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # npm ls reports peer-dependency gaps on a pnpm tree, which do not change the component list.
+      - name: Generate SBOM
+        run: npx --yes @cyclonedx/cyclonedx-npm@4.1.2 --omit dev --output-format JSON --output-file sbom.cdx.json --ignore-npm-errors
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom.cdx.json
+          retention-days: 7
