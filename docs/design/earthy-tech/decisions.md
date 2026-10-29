@@ -13,3 +13,6 @@ Status: design approved (desktop and mobile artefacts). Implementation plan in `
 6. **Summary renders inside the existing org shell for now.** The rail and mobile tab bar (plan phase 6) are not built yet. The Summary is behind `earthyEnabled()` (`EARTHY_DASHBOARD_ORGS`, or `?earthy=1` for an admin), default off.
 7. **Audit tile shows no number** until real TCFD and FCA datapoint sets exist (plan phase 5).
 8. **Glidepath rule awaiting owner sign-off:** linear line from the baseline total to the target level at the target date; a complete period is compared in full, a running period pro rata; on track means within 2% of the line.
+9. **Breakpoint is 768px** (Tailwind `md`), not 760px: one breakpoint for the rail, the tab bar and the header.
+10. **No tooltip, toast or scrubber yet.** Phase 7 builds none, because the Summary has no chart that needs them and knip fails on unused files. Add them with the first chart that does.
+11. **Phase 8 done:** regime setting security test, Playwright spec at 1440 and 390, docs and rollout notes. The flag and the old dashboard are removed in a later release after the owner signs off the glidepath rule. Not measured: a Lighthouse comparison (the tool was blocked in the build environment), so the effect of `preload: false` on JetBrains Mono on LCP is unverified.

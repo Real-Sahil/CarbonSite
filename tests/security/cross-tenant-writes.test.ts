@@ -849,3 +849,44 @@ describe("siteId on activity writes", () => {
   });
 });
 
+
+describe("disclosure regime setting", () => {
+  it("asks for an admin and writes only to the caller's organisation", async () => {
+    const { requireOrgMember } = await import("@/lib/auth/session");
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/route");
+    db.organization.update.mockResolvedValue({ id: ORG_A, disclosureRegime: "esrs_e1" });
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}`, { disclosureRegime: "esrs_e1", organizationId: ORG_B }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(vi.mocked(requireOrgMember).mock.calls[0]).toEqual([ORG_A, "admin"]);
+    expect(db.organization.update.mock.calls[0][0].where).toEqual({ id: ORG_A });
+    expect(db.organization.update.mock.calls[0][0].data).toEqual({ disclosureRegime: "esrs_e1" });
+  });
+
+  it("rejects a regime that is not on the list", async () => {
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/route");
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}`, { disclosureRegime: "made_up" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBe(400);
+    expect(db.organization.update).not.toHaveBeenCalled();
+  });
+
+  it("writes nothing when the caller is not an admin", async () => {
+    const { requireOrgMember } = await import("@/lib/auth/session");
+    const { PATCH } = await import("@/app/api/orgs/[orgId]/route");
+    vi.mocked(requireOrgMember).mockRejectedValueOnce(new Error("FORBIDDEN"));
+
+    const res = await PATCH(post(`/api/orgs/${ORG_A}`, { disclosureRegime: "uk_secr" }, "PATCH"), {
+      params: Promise.resolve({ orgId: ORG_A }),
+    });
+
+    expect(res.status).toBeGreaterThanOrEqual(400);
+    expect(db.organization.update).not.toHaveBeenCalled();
+  });
+});
