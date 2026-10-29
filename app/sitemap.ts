@@ -15,6 +15,7 @@ const PAGES: { path: string; priority: number; freq: MetadataRoute.Sitemap[numbe
   { path: "/methodology", priority: 0.7, freq: "monthly" },
   { path: "/security", priority: 0.7, freq: "monthly" },
   { path: "/resources", priority: 0.6, freq: "monthly" },
+  { path: "/tools/site-fuel-emissions-calculator", priority: 0.7, freq: "monthly" },
   { path: "/developer", priority: 0.5, freq: "monthly" },
   { path: "/blog", priority: 0.6, freq: "weekly" },
   { path: "/contact", priority: 0.6, freq: "yearly" },

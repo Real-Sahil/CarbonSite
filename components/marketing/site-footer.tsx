@@ -26,6 +26,7 @@ const COLS = [
       { href: "/security", label: "Security" },
       { href: "/blog", label: "Blog" },
       { href: "/resources", label: "Guides" },
+      { href: "/tools/site-fuel-emissions-calculator", label: "Fuel calculator" },
       { href: "/developer", label: "Developers" },
       { href: "/contact", label: "Contact" },
     ],
