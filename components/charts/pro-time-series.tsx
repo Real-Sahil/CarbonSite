@@ -189,7 +189,7 @@ export function ProTimeSeries({
     <div
       className={
         full
-          ? "fixed inset-0 z-50 flex flex-col gap-3 p-4"
+          ? "fixed inset-0 z-50 flex h-[100dvh] w-full flex-col gap-3 overflow-hidden px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]"
           : "flex flex-col gap-3"
       }
       style={full ? { background: THEMES[theme].bg } : undefined}
@@ -246,12 +246,12 @@ export function ProTimeSeries({
         ref={hostRef}
         role="img"
         aria-label={`${label}: ${points.length} daily values from ${fmtDate(points[0].time)} to ${fmtDate(last.time)}, latest ${format(last.value)} ${unit}. Full values are in the table below the chart.`}
-        className={full ? "min-h-0 flex-1" : "h-80 w-full touch-pan-y"}
+        className={full ? "min-h-0 min-w-0 flex-1 overflow-hidden" : "h-80 w-full min-w-0 touch-pan-y"}
       />
 
       <details className="text-xs text-slate-600 dark:text-slate-400">
         <summary className="cursor-pointer">Show values as a table</summary>
-        <div className="mt-2 max-h-56 overflow-auto">
+        <div className={`mt-2 overflow-auto ${full ? "max-h-32" : "max-h-56"}`}>
           <table className="w-full text-left tabular-nums">
             <thead>
               <tr>

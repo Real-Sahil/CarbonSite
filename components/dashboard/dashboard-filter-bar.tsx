@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 const FIELD =
   "h-9 w-full min-w-0 rounded-[10px] border border-[#CBD2D9] bg-white px-3 text-sm text-[#131d29] focus:outline-none focus:ring-2 focus:ring-[#c2400c]/40";
 
+// Mobile browsers size a native month picker to its own content and ignore width: 100%, so it overflows its card.
+const NATIVE_PICKER = "block max-w-full appearance-none box-border";
+
 /**
  * Supplier, month range and scope filters for the dashboard. The URL is the
  * state: `filters` is every filter the page has set (this bar's and the entity,
@@ -44,7 +47,7 @@ export function DashboardFilterBar({
       <input
         key={filters[key] ?? ""}
         id={`dashboard-filter-${key}`}
-        className={FIELD}
+        className={props.type === "month" ? `${FIELD} ${NATIVE_PICKER}` : FIELD}
         defaultValue={filters[key] ?? ""}
         onKeyDown={(e) => { if (e.key === "Enter") set(key, e.currentTarget.value.trim()); }}
         onBlur={(e) => { if (e.currentTarget.value.trim() !== (filters[key] ?? "")) set(key, e.currentTarget.value.trim()); }}

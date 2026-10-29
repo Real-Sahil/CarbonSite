@@ -7,9 +7,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { fitProjection, hasPosition, radiusFor, type SiteTotal } from "@/lib/map/site-map";
+import { fitProjection, hasPosition, type SiteTotal } from "@/lib/map/site-map";
 import { compareRows, filtersAfterPin, filtersAfterProject, pinFilter, spreadCoincident, toQuery, type CompareKey } from "@/lib/map/site-hero";
-import { SCOPE_COLORS } from "@/components/charts/palette";
+import { MAP_H, MAP_W, SiteHeroMap } from "@/components/dashboard/site-hero-map";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const tonnes = (kg: number, locale: string) => `${(kg / 1000).toLocaleString(locale, { maximumFractionDigits: 1 })} tCO₂e`;
@@ -62,8 +62,7 @@ export function SiteHero({
   }
 
   const max = Math.max(1, ...placed.map((s) => s.kg));
-  const W = 720, H = 300;
-  const project = placed.length ? fitProjection(placed as { latitude: number; longitude: number }[], W, H, 56) : null;
+  const project = placed.length ? fitProjection(placed as { latitude: number; longitude: number }[], MAP_W, MAP_H, 56) : null;
   const spots = project ? spreadCoincident(placed.map((s) => ({ ...project(s as { latitude: number; longitude: number }), site: s }))) : [];
   const top = [...sites].sort((a, b) => b.kg - a.kg).slice(0, 8);
   const unplaced = sites.length - placed.length;
@@ -95,7 +94,7 @@ export function SiteHero({
             {periodLabel ? `Live figures for ${periodLabel}.` : "Live figures."} Choose a site to filter the whole dashboard. Figures move as records change; the published view is on the <Link href={`/orgs/${orgId}/map`} className="underline underline-offset-2">Site map</Link>.
           </p>
         </div>
-        <div className="w-full sm:w-72">
+        <div className="w-full min-w-0 sm:w-72">
           <label htmlFor="site-hero-project" className="text-xs text-[#5B6A78]">Choose a project</label>
           <select
             id="site-hero-project"
@@ -129,29 +128,15 @@ export function SiteHero({
         </p>
       ) : (
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-          <div>
+          <div className="min-w-0">
             {project ? (
-              <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full rounded-[10px] border border-[#CBD2D9] bg-[#F9FAFC]" role="group" aria-label="Sites on a schematic, sized by emissions. The list beside it gives the same figures.">
-                {spots.map(({ x, y, site: s }) => {
-                  const r = radiusFor(s.kg, max);
-                  const on = isOn(s);
-                  const colour = s.kind === "site" ? SCOPE_COLORS[0] : SCOPE_COLORS[1];
-                  return (
-                    <g key={s.id} role="button" tabIndex={0} aria-pressed={on} aria-label={`${s.name}, ${tonnes(s.kg, locale)}`} className="cursor-pointer outline-none focus-visible:[&>circle]:stroke-[#111827]" onClick={() => pick(s)} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(s); } }}>
-                      <circle cx={x} cy={y} r={r} fill={colour} fillOpacity={on ? 0.85 : 0.5} stroke={on ? "#111827" : colour} strokeWidth={on ? 3 : 1.5}>
-                        <title>{`${s.name}: ${tonnes(s.kg, locale)}`}</title>
-                      </circle>
-                      {labelled.has(s.id) ? <text x={x} y={y - r - 6} textAnchor="middle" fontSize={11} fill="#374151">{s.name}</text> : null}
-                    </g>
-                  );
-                })}
-              </svg>
+              <SiteHeroMap spots={spots} max={max} labelled={labelled} isOn={isOn} onPick={pick} formatKg={(kg) => tonnes(kg, locale)} />
             ) : (
               <p className="rounded-[10px] border border-dashed border-[#CBD2D9] p-4 text-sm text-[#41505F]">
                 None of your sites has a position yet, so none can be pinned. Use the list or the project choice above.
               </p>
             )}
-            {project ? <p className="mt-1 text-xs text-[#5B6A78]">Schematic, not to a map scale. Sites at the same place are spread out so each can be chosen.</p> : null}
+            {project ? <p className="mt-1 text-xs text-[#5B6A78]">Schematic, not to a map scale. Drag to pan, use + and - or ctrl/cmd + scroll to zoom. Sites at the same place are spread out so each can be chosen.</p> : null}
           </div>
 
           <div>

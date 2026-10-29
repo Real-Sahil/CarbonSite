@@ -23,9 +23,9 @@ export function ExpandChart({ title, children }: { title: string; children: (exp
             <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </DialogTrigger>
-        <DialogContent className="max-w-[min(96vw,1200px)] p-5">
-          <DialogTitle className="mb-3 text-sm font-medium text-[#131d29]">{title}</DialogTitle>
-          {children(true)}
+        <DialogContent className="max-h-[92dvh] w-[96vw] max-w-[min(96vw,1200px)] overflow-y-auto overflow-x-hidden p-5">
+          <DialogTitle className="mb-3 pr-8 text-sm font-medium text-[#131d29]">{title}</DialogTitle>
+          <div className="min-w-0">{children(true)}</div>
         </DialogContent>
       </Dialog>
       {children(false)}
