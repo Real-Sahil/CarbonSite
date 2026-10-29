@@ -18,6 +18,8 @@ export type SummaryViewProps = {
   social: { line: string | null; phase: SocialPhase };
   audit: { regimeLabel: string; satisfied: number; applicable: number; partial: number; gap: number; percent: number | null } | null;
   needsYou: { line: string | null; pendingSubmissions: number; openReviews: number };
+  /** Analytics panels, rendered under the tiles when the period has data. */
+  charts?: React.ReactNode;
 };
 
 const base = (orgId: string) => `/orgs/${orgId}`;
@@ -107,7 +109,7 @@ export function SummaryView(p: SummaryViewProps) {
               </Tile>
             </div>
             <div className="md:col-span-2">
-              <Tile title="Biggest source" href={`${root}/dashboard`} hrefLabel="Full dashboard">
+              <Tile title="Biggest source" href={`${root}/records`} hrefLabel="Open the records">
                 {p.hotspot.line ? (
                   <>
                     <p className="text-base">{p.hotspot.line}</p>
@@ -153,6 +155,8 @@ export function SummaryView(p: SummaryViewProps) {
             </div>
           </div>
         )}
+
+        {p.hasData && p.charts}
 
         <section className="e-card p-5 max-md:order-2" aria-label="Needs you">
           <h2 className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>Needs you</h2>

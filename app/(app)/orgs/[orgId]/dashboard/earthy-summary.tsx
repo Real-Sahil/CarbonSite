@@ -7,6 +7,8 @@ import { loadExecutiveSummary } from "@/lib/dashboard/executive-summary";
 import { glidepathLine, greeting, hotspotLine, needsYouLine, socialPhaseLine } from "@/lib/dashboard/narrative";
 import { isDisclosureRegime } from "@/lib/compliance/regimes";
 import { loadRegimeReadiness } from "@/lib/compliance/regime-readiness";
+import { loadSummaryCharts } from "@/lib/dashboard/summary-charts";
+import { SummaryChartsView } from "@/components/earthy/summary-charts";
 import { SummaryView } from "@/components/earthy/summary-view";
 
 // Server wrapper for the Executive Summary: a few cheap reads, one grouped loader statement, then the
@@ -30,6 +32,8 @@ export async function EarthySummary({ orgId, firstName }: { orgId: string; first
   const period = current ? periods.find((p) => p.id === current.id) ?? null : null;
   const prior = priorComparablePeriod(periods, period);
   const s = period ? await loadExecutiveSummary(orgId, period, prior) : null;
+
+  const charts = period && s?.hasData ? await loadSummaryCharts(orgId, period.id, (s.totalTonnes ?? 0) * 1000) : null;
 
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Europe/London" }).format(new Date()));
   const result = s?.target.result ?? null;
@@ -69,6 +73,13 @@ export async function EarthySummary({ orgId, firstName }: { orgId: string; first
       hotspot={{ line: hotspotLine(s?.hotspot ?? null, fmt), sharePct: s?.hotspot?.sharePct ?? null }}
       social={{ line: socialPhaseLine(s?.socialPhase ?? null), phase: s?.socialPhase ?? "data_mapping" }}
       audit={readiness ? { regimeLabel: readiness.label, satisfied: readiness.satisfied, applicable: readiness.applicable, partial: readiness.partial, gap: readiness.gap, percent: readiness.percent } : null}
+      charts={charts && s ? (
+        <SummaryChartsView
+          {...charts}
+          periodLabel={period?.label ?? null}
+          scopesKg={{ scope1: s.scopeTonnes.scope1 * 1000, scope2: s.scopeTonnes.scope2 * 1000, scope3: s.scopeTonnes.scope3 * 1000 }}
+        />
+      ) : null}
       needsYou={{
         line: needsYouLine(s?.needsYou ?? { pendingSubmissions: 0, openReviews: 0 }),
         pendingSubmissions: s?.needsYou.pendingSubmissions ?? 0,
