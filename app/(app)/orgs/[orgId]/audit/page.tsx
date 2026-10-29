@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { EmptyState as EmptyPanel } from "@/components/ui/empty-state";
 import { VerifyChain } from "./verify-chain";
+import { EventDetail } from "./event-detail";
 import { MAX_OFFSET, pageHref, wholeNumberParam } from "@/lib/api/pagination";
 
 interface AuditPageProps {
@@ -38,6 +39,8 @@ interface AuditPageProps {
     until?: string;
     offset?: string;
     limit?: string;
+    before?: string;
+    after?: string;
   }>;
 }
 
@@ -84,10 +87,19 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   }
 
   const where = buildAuditWhere(orgId, filters);
+  // Next and Previous page by chain number, not by skipping rows, so a deep page costs the same as the first
+  // and new events arriving do not shift the page under the reader. Page numbers and Last still use the offset.
+  const before = seqParam(filters.before);
+  const after = seqParam(filters.after);
+  const cursorWhere: Prisma.AuditLogWhereInput = {
+    ...where,
+    ...(before !== null ? { chainSeq: { lt: before } } : after !== null ? { chainSeq: { gt: after } } : {}),
+  };
+  const useCursor = before !== null || after !== null;
   const optionsSince = new Date(Date.now() - OPTIONS_WINDOW_MS);
   const dbResult = await Promise.all([
     prisma.auditLog.findMany({
-      where,
+      where: cursorWhere,
       select: {
         id: true,
         createdAt: true,
@@ -102,8 +114,8 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
         redactedAt: true,
         actor: { select: { name: true, email: true } },
       },
-      orderBy: { createdAt: "desc" },
-      skip: offset,
+      orderBy: { chainSeq: after !== null ? "asc" : "desc" },
+      ...(useCursor ? {} : { skip: offset }),
       take: PAGE_SIZE,
     }),
     prisma.auditLog.findMany({
@@ -126,7 +138,8 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       <div className="p-8"><p className="text-red-600 text-sm">Failed to load audit logs. The database may be updating — try refreshing in a moment.</p></div>
     );
   }
-  const [logs, actionRows, resourceRows, totalCount] = dbResult;
+  const [fetched, actionRows, resourceRows, totalCount] = dbResult;
+  const logs = after !== null ? [...fetched].reverse() : fetched;
   const actionOptions =
     filters.action && !actionRows.some((row) => row.action === filters.action)
       ? [...actionRows, { action: filters.action }].sort((a, b) => a.action.localeCompare(b.action))
@@ -153,11 +166,15 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   const exportHref = pageHref(`/api/orgs/${orgId}/audit-logs/export`, {
     action: filters.action,
     resourceType: filters.resource,
+    actor: filters.actor?.trim() || undefined,
     from: validDate(filters.since) ? `${filters.since}T00:00:00.000Z` : undefined,
     to: validDate(filters.until) ? `${filters.until}T23:59:59.999Z` : undefined,
   });
-  const hrefFor = (nextOffset: number, size: number) =>
+  const newest = logs[0]?.chainSeq.toString();
+  const oldest = logs[logs.length - 1]?.chainSeq.toString();
+  const hrefFor = (nextOffset: number, size: number, cursor?: { before?: string; after?: string }) =>
     pageHref(`/orgs/${orgId}/audit`, {
+      ...cursor,
       action: filters.action,
       resource: filters.resource,
       actor: filters.actor,
@@ -282,7 +299,8 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Actor</TableHead>
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Resource</TableHead>
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Chain</TableHead>
-                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Metadata</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Metadata</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6"><span className="sr-only">Open</span></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -319,8 +337,21 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                               {log.redactedAt ? "Redacted" : log.hashVersion === 2 ? "Recomputable" : "Links only"}
                             </p>
                           </TableCell>
-                          <TableCell className="py-3.5 pr-6">
+                          <TableCell className="py-3.5">
                             <MetadataCell value={log.metadata} ipAddress={log.ipAddress} userAgent={log.userAgent} />
+                          </TableCell>
+                          <TableCell className="py-3.5 pr-6">
+                            <EventDetail
+                              time={log.createdAt.toISOString()}
+                              action={formatLabel(log.action)}
+                              actor={log.actor?.name ?? log.actor?.email ?? "System"}
+                              resourceType={formatLabel(log.resourceType)}
+                              resourceId={log.resourceId}
+                              chain={`#${log.chainSeq.toString()}, ${log.redactedAt ? "redacted" : log.hashVersion === 2 ? "recomputable" : "links only"}`}
+                              ipAddress={log.ipAddress}
+                              userAgent={log.userAgent}
+                              metadata={formatMetadata(log.metadata)}
+                            />
                           </TableCell>
                         </TableRow>
                       ))}
@@ -345,9 +376,9 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                     ))}
                     <span className="mx-1 h-4 w-px bg-[#E3E8EE]" aria-hidden="true" />
                     <PageLink href={currentPage > 1 ? hrefFor(0, PAGE_SIZE) : null}>First</PageLink>
-                    <PageLink href={currentPage > 1 ? hrefFor(offset - PAGE_SIZE, PAGE_SIZE) : null}>Previous</PageLink>
+                    <PageLink href={currentPage > 1 ? hrefFor(offset - PAGE_SIZE, PAGE_SIZE, { after: newest }) : null}>Previous</PageLink>
                     <span className="px-1 text-xs text-[#41505F]">Page {currentPage} of {pageCount}</span>
-                    <PageLink href={currentPage < pageCount ? hrefFor(offset + PAGE_SIZE, PAGE_SIZE) : null}>Next</PageLink>
+                    <PageLink href={currentPage < pageCount ? hrefFor(offset + PAGE_SIZE, PAGE_SIZE, { before: oldest }) : null}>Next</PageLink>
                     <PageLink href={currentPage < pageCount ? hrefFor((pageCount - 1) * PAGE_SIZE, PAGE_SIZE) : null}>Last</PageLink>
                   </nav>
                 </div>
@@ -389,6 +420,10 @@ function buildAuditWhere(
         }
       : {}),
   };
+}
+
+function seqParam(value: string | undefined): bigint | null {
+  return value && /^\d{1,18}$/.test(value) ? BigInt(value) : null;
 }
 
 function validDate(value: string | undefined) {

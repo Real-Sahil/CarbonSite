@@ -10,6 +10,7 @@ import { handleRouteError, apiError } from "@/lib/validation/api";
 const QuerySchema = z.object({
   action: z.string().optional(),
   resourceType: z.string().optional(),
+  actor: z.string().trim().max(200).optional(),
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
   format: z.enum(["csv", "json"]).default("csv"),
@@ -47,13 +48,23 @@ export async function GET(
       return apiError("VALIDATION_ERROR", "Invalid query parameters", 400, parsed.error.flatten());
     }
 
-    const { action, resourceType, from, to, format } = parsed.data;
+    const { action, resourceType, actor, from, to, format } = parsed.data;
 
     const logs = await prisma.auditLog.findMany({
       where: {
         organizationId: orgId,
         ...(action ? { action } : {}),
         ...(resourceType ? { resourceType } : {}),
+        ...(actor
+          ? {
+              actor: {
+                OR: [
+                  { name: { contains: actor, mode: "insensitive" as const } },
+                  { email: { contains: actor, mode: "insensitive" as const } },
+                ],
+              },
+            }
+          : {}),
         ...(from || to
           ? {
               createdAt: {
