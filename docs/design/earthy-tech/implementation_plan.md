@@ -8,7 +8,7 @@ The approved artefact is the desktop and mobile showcase (one page, two frames).
 
 In scope: the new Executive Summary at `/orgs/{orgId}/dashboard`, its shared components, the tokens and fonts it needs, the UK regime setting that the Audit tile depends on, and the responsive behaviour (desktop rail, mobile tab bar).
 
-Out of scope for this plan: the Carbon, Social and Audit module pages the tiles link to (they keep their current pages until each gets its own pass), the CSRD module (stays a dormant, greyed tab), and the Flutter field app in `mobile/`. "Mobile" here means the responsive web view of the Summary. The field app is a separate surface with its own capture flow and is not restyled by this work. If the owner wants the field app brought into the same look, that is a second plan.
+Out of scope for this plan: the marketing site (`app/(marketing)`, owner decision: it stays exactly as it is, so no token, font or copy change reaches it; the `.earthy` scope in phase 1 is what keeps the new palette out of it), the Carbon, Social and Audit module pages the tiles link to (they keep their current pages until each gets its own pass), the CSRD module (stays a dormant, greyed tab), and the Flutter field app in `mobile/`. "Mobile" here means the responsive web view of the Summary. The field app is a separate surface with its own capture flow and is not restyled by this work. If the owner wants the field app brought into the same look, that is a second plan.
 
 ## Principles that constrain every phase
 
