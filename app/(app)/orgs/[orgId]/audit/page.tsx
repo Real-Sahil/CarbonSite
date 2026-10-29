@@ -35,6 +35,7 @@ interface AuditPageProps {
     actor?: string;
     resource?: string;
     since?: string;
+    until?: string;
     offset?: string;
     limit?: string;
   }>;
@@ -58,8 +59,10 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
 
   let authErr: AuthError | null = null;
   let canVerify = false;
+  let canExport = false;
   try {
     const { membership } = await requireOrgMember(orgId, ...ROLE_GROUPS.dataReaders);
+    canExport = ["admin", "auditor"].includes(membership.role);
     canVerify = ["admin", "sustainability_director", "sustainability_manager", "reviewer", "auditor"].includes(membership.role);
   } catch (err) {
     if (err instanceof AuthError) {
@@ -92,6 +95,11 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
         resourceType: true,
         resourceId: true,
         metadata: true,
+        ipAddress: true,
+        userAgent: true,
+        chainSeq: true,
+        hashVersion: true,
+        redactedAt: true,
         actor: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -129,12 +137,32 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       : resourceRows;
   const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const presets = [
+    { label: "24 hours", days: 1 },
+    { label: "7 days", days: 7 },
+    { label: "30 days", days: 30 },
+  ];
+  const presetHref = (days: number) =>
+    pageHref(`/orgs/${orgId}/audit`, {
+      action: filters.action,
+      resource: filters.resource,
+      actor: filters.actor,
+      since: new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10),
+    });
+  // The export route has no actor filter, so the link says nothing about one; it carries the rest.
+  const exportHref = pageHref(`/api/orgs/${orgId}/audit-logs/export`, {
+    action: filters.action,
+    resourceType: filters.resource,
+    from: validDate(filters.since) ? `${filters.since}T00:00:00.000Z` : undefined,
+    to: validDate(filters.until) ? `${filters.until}T23:59:59.999Z` : undefined,
+  });
   const hrefFor = (nextOffset: number, size: number) =>
     pageHref(`/orgs/${orgId}/audit`, {
       action: filters.action,
       resource: filters.resource,
       actor: filters.actor,
       since: filters.since,
+      until: filters.until,
       limit: size === DEFAULT_SIZE ? undefined : size,
       offset: Math.max(0, nextOffset) || undefined,
     });
@@ -179,7 +207,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 py-5">
-            <form className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" method="get">
+            <form className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto]" method="get">
               <Field label="Action">
                 <select name="action" defaultValue={filters.action ?? ""} className={selectClass}>
                   <option value="">All actions</option>
@@ -206,6 +234,9 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
               <Field label="Since">
                 <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
               </Field>
+              <Field label="Until">
+                <Input name="until" type="date" defaultValue={validDate(filters.until) ?? ""} />
+              </Field>
               <div className="flex items-end gap-2">
                 <input type="hidden" name="limit" value={PAGE_SIZE} />
                 <Button type="submit" className="w-full lg:w-auto">Apply</Button>
@@ -214,6 +245,19 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                 </Button>
               </div>
             </form>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[#5B6A78]">
+              <span>Quick range</span>
+              {presets.map((preset) => (
+                <a key={preset.label} href={presetHref(preset.days)} className="rounded-md border border-[#E3E8EE] px-2 py-1 text-[#41505F] hover:bg-[#F9FAFC]">
+                  {preset.label}
+                </a>
+              ))}
+              {canExport && (
+                <a href={exportHref} className="ml-auto rounded-md border border-[#E3E8EE] px-2 py-1 text-[#41505F] hover:bg-[#F9FAFC]">
+                  Export CSV
+                </a>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -237,6 +281,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Action</TableHead>
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Actor</TableHead>
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Resource</TableHead>
+                        <TableHead className="text-xs font-medium text-[#5B6A78] py-3">Chain</TableHead>
                         <TableHead className="text-xs font-medium text-[#5B6A78] py-3 pr-6">Metadata</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -268,8 +313,14 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                               </p>
                             </div>
                           </TableCell>
+                          <TableCell className="py-3.5">
+                            <p className="text-xs tabular-nums text-[#41505F]">#{log.chainSeq.toString()}</p>
+                            <p className="text-xs text-[#5B6A78]">
+                              {log.redactedAt ? "Redacted" : log.hashVersion === 2 ? "Recomputable" : "Links only"}
+                            </p>
+                          </TableCell>
                           <TableCell className="py-3.5 pr-6">
-                            <MetadataCell value={log.metadata} />
+                            <MetadataCell value={log.metadata} ipAddress={log.ipAddress} userAgent={log.userAgent} />
                           </TableCell>
                         </TableRow>
                       ))}
@@ -318,8 +369,14 @@ function buildAuditWhere(
     organizationId: orgId,
     ...(filters.action ? { action: filters.action } : {}),
     ...(filters.resource ? { resourceType: filters.resource } : {}),
-    ...(validDate(filters.since)
-      ? { createdAt: { gte: new Date(`${filters.since}T00:00:00.000Z`) } }
+    ...(validDate(filters.since) || validDate(filters.until)
+      ? {
+          createdAt: {
+            ...(validDate(filters.since) ? { gte: new Date(`${filters.since}T00:00:00.000Z`) } : {}),
+            // "Until" includes the whole chosen day.
+            ...(validDate(filters.until) ? { lte: new Date(`${filters.until}T23:59:59.999Z`) } : {}),
+          },
+        }
       : {}),
     ...(actor
       ? {
@@ -353,15 +410,21 @@ function PageLink({ href, children }: { href: string | null; children: React.Rea
 }
 
 // Metadata is collapsed by default: a full JSON block on every row made each page very long.
-function MetadataCell({ value }: { value: unknown }) {
+function MetadataCell({ value, ipAddress, userAgent }: { value: unknown; ipAddress: string | null; userAgent: string | null }) {
   const text = formatMetadata(value);
-  if (text === "{}") return <span className="text-xs text-[#5B6A78]">None</span>;
+  if (text === "{}" && !ipAddress && !userAgent) return <span className="text-xs text-[#5B6A78]">None</span>;
   const keys = value && typeof value === "object" ? Object.keys(value as object).length : 0;
   return (
     <details className="max-w-xl">
       <summary className="cursor-pointer text-xs text-[#41505F]">
         {keys > 0 ? `${keys} ${keys === 1 ? "field" : "fields"}` : "Details"}
       </summary>
+      {(ipAddress || userAgent) && (
+        <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs text-[#41505F]">
+          {ipAddress && (<><dt className="text-[#5B6A78]">IP address</dt><dd>{ipAddress}</dd></>)}
+          {userAgent && (<><dt className="text-[#5B6A78]">Browser</dt><dd className="break-all">{userAgent}</dd></>)}
+        </dl>
+      )}
       <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-[#F9FAFC] border border-[#E3E8EE] p-2 text-xs leading-5 text-[#41505F]">
         {text}
       </pre>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,14 @@ const actionColors: Record<string, string> = {
 export default function AuditLogsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  function clearFilter(key: string) {
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete(key);
+    const text = next.toString();
+    router.push(text ? `?${text}` : '?');
+  }
   const orgId = Array.isArray(params.orgId) ? params.orgId[0] : params.orgId;
 
   const [logs, setLogs] = useState<AuditEntry[]>([]);
@@ -144,19 +152,19 @@ export default function AuditLogsPage() {
             {resourceType && (
               <Badge variant="secondary">
                 Resource: {resourceType}
-                <button className="ml-2">×</button>
+                <button className="ml-2" aria-label="Clear resource filter" onClick={() => clearFilter('resourceType')}>×</button>
               </Badge>
             )}
             {action && (
               <Badge variant="secondary">
                 Action: {action}
-                <button className="ml-2">×</button>
+                <button className="ml-2" aria-label="Clear action filter" onClick={() => clearFilter('action')}>×</button>
               </Badge>
             )}
             {framework && (
               <Badge variant="secondary">
                 Framework: {framework}
-                <button className="ml-2">×</button>
+                <button className="ml-2" aria-label="Clear framework filter" onClick={() => clearFilter('framework')}>×</button>
               </Badge>
             )}
           </div>
