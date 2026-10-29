@@ -146,7 +146,7 @@ export function SiteNav(_props: { theme?: "light" | "dark" } = {}) {
         )}
       >
         <div className="mx-auto flex h-16 w-full max-w-[1200px] items-center px-4 sm:px-8">
-          <Link href="/" className={cn("mr-8 flex shrink-0 items-center gap-2.5 text-[15px] font-semibold tracking-tight", current)}>
+          <Link href="/" aria-label="MetricOra home" className={cn("mr-8 flex shrink-0 items-center gap-2.5 text-[15px] font-semibold tracking-tight", current)}>
             <LogoMark size={22} />
             <span className="hidden sm:inline">MetricOra</span>
           </Link>
