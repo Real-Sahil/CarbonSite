@@ -55,8 +55,8 @@ const nextConfig: NextConfig = {
   // Icon and chart packages ship many modules; this makes the bundler import only the names each file uses.
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts", "date-fns"],
-    // Inlines the page's CSS into the HTML so it no longer blocks the first paint on a slow connection.
-    inlineCss: true,
+    // Do not add inlineCss: it pushed the deployment past the Hobby plan's 12 function cap (deploy failed with
+    // exceeded_serverless_functions_per_deployment).
   },
   // Browser Sentry (instrumentation-client.ts) reuses the server DSN.
   env: {
