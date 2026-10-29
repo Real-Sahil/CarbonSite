@@ -87,7 +87,7 @@ describe("who can reach the Summary", () => {
 
 describe("the preview switch", () => {
   it("is ignored for anyone who is not an admin", () => {
-    expect(earthyEnabled("org-a", { env: "", previewParam: "1", isAdmin: false })).toBe(false);
+    expect(earthyEnabled("org-a", { env: "off", previewParam: "1", isAdmin: false })).toBe(false);
   });
 
   it("does not turn on for an organisation missing from the list", () => {
@@ -96,9 +96,9 @@ describe("the preview switch", () => {
   });
 
   it("treats the preview cookie like the URL choice: admins only, and the layout checks the role", () => {
-    expect(earthyEnabled("org-a", { env: "", previewParam: "1", isAdmin: false })).toBe(false);
+    expect(earthyEnabled("org-a", { env: "off", previewParam: "1", isAdmin: false })).toBe(false);
     expect(earthyEnabled("org-a", { env: "", previewParam: "0", isAdmin: true })).toBe(false);
-    expect(earthyEnabled("org-a", { env: "", previewParam: "1", isAdmin: true })).toBe(true);
+    expect(earthyEnabled("org-a", { env: "off", previewParam: "1", isAdmin: true })).toBe(true);
     const layout = readFileSync("app/(app)/orgs/[orgId]/layout.tsx", "utf8");
     expect(layout).toMatch(/earthyEnabled\(orgId, \{[^}]*isAdmin: membership!\.role === "admin"/s);
   });

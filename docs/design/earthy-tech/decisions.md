@@ -10,7 +10,7 @@ Status: design approved (desktop and mobile artefacts). Implementation plan in `
 ## Build notes (implementation started)
 
 5. **Serif is allowed on this surface only.** The taste skill bans serif defaults; the owner chose Newsreader for the Executive Summary, scoped under `.earthy` (`.e-serif`). Do not "fix" it back, and do not use it elsewhere.
-6. **Summary renders inside the existing org shell for now.** The rail and mobile tab bar (plan phase 6) are not built yet. The Summary is behind `earthyEnabled()` (`EARTHY_DASHBOARD_ORGS`, or `?earthy=1` for an admin), default off.
+6. **Summary renders inside the existing org shell for now.** The rail and mobile tab bar (plan phase 6) are not built yet. The Summary is behind `earthyEnabled()` and is on by default for every organisation (owner decision: global theme for current and future users); `EARTHY_DASHBOARD_ORGS=off` or a list is the rollback lever.
 7. **Audit tile shows no number** until real TCFD and FCA datapoint sets exist (plan phase 5).
 8. **Glidepath rule awaiting owner sign-off:** linear line from the baseline total to the target level at the target date; a complete period is compared in full, a running period pro rata; on track means within 2% of the line.
 9. **Breakpoint is 768px** (Tailwind `md`), not 760px: one breakpoint for the rail, the tab bar and the header.
