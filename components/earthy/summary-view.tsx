@@ -45,7 +45,7 @@ export function SummaryView(p: SummaryViewProps) {
   return (
     <div className="earthy min-h-full px-4 py-8 sm:px-8">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        <header className="flex flex-col gap-2">
+        <header className="flex flex-col gap-2 max-md:order-1">
           {p.isDemo && (
             <span className="w-fit rounded-full px-3 py-1 text-xs font-medium" style={{ background: "var(--hi-bg)", color: "var(--hi)" }}>Demo data</span>
           )}
@@ -53,7 +53,7 @@ export function SummaryView(p: SummaryViewProps) {
         </header>
 
         {!p.hasData ? (
-          <div className="e-card">
+          <div className="e-card max-md:order-2">
             <EmptyState icon={Upload} title="No emissions recorded yet" description="Import activity data or add a record, then run a calculation. This page fills in from there.">
               <Link href={`${root}/imports`} className="e-press inline-flex min-h-11 items-center gap-1 text-sm font-medium" style={{ color: "var(--action)" }}>
                 Go to Imports <ArrowRight className="size-4" aria-hidden="true" />
@@ -61,7 +61,7 @@ export function SummaryView(p: SummaryViewProps) {
             </EmptyState>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-6">
+          <div className="grid gap-4 md:grid-cols-6 max-md:order-3">
             <div className="md:col-span-3">
               <Tile title={`Total${p.periodLabel ? `, ${p.periodLabel}` : ""}`} href={`${root}/records`} hrefLabel="See the records">
                 <p className="e-mono text-4xl font-medium">
@@ -150,7 +150,7 @@ export function SummaryView(p: SummaryViewProps) {
           </div>
         )}
 
-        <section className="e-card p-5" aria-label="Needs you">
+        <section className="e-card p-5 max-md:order-2" aria-label="Needs you">
           <h2 className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--ink-3)" }}>Needs you</h2>
           {p.needsYou.line ? (
             <div className="mt-3 flex flex-col gap-1">

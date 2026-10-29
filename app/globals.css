@@ -661,6 +661,17 @@
 @media (hover: hover) {
   .earthy .e-card[data-lift]:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 var(--card-hi), var(--shadow-lift); }
 }
+/* Phone navigation (phase 6): fixed glass bar, the only blurred surface; the page clears it plus the home indicator. */
+.earthy .e-tabbar {
+  position: fixed; inset: auto 0 0 0; z-index: 40;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2);
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 767px) {
+  .earthy-shell main { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
+}
 .earthy :focus-visible { outline: 2px solid var(--action); outline-offset: 2px; border-radius: 6px; }
 @media (prefers-reduced-motion: reduce) {
   .earthy *, .earthy *::before, .earthy *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

@@ -18,6 +18,7 @@ import { getSelectedProject } from "@/lib/project/selected";
 import { brandingCss, brandingVars } from "@/lib/branding/css-vars";
 import { cookies } from "next/headers";
 import { EARTHY_COOKIE, earthyEnabled } from "@/lib/dashboard/earthy-flag";
+import { EarthyTabBar } from "@/components/earthy/tab-bar";
 
 interface OrgLayoutProps {
   children: React.ReactNode;
@@ -183,6 +184,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     isAdmin: membership!.role === "admin",
   });
 
+  const reviewWaiting = earthy
+    ? await prisma.fieldSubmission
+        .count({ where: { organizationId: orgId, status: { in: ["pending", "submitted", "under_review", "needs_info"] } } })
+        .catch(() => 0)
+    : 0;
+
   return (
     <div className={`flex flex-col md:flex-row min-h-[100dvh] ${earthy ? "earthy earthy-shell" : "bg-[#F9FAFC]"}`}>
       {cssVars && <style>{cssVars}</style>}
@@ -210,6 +217,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </OrgLocaleProvider>
         </main>
       </div>
+      {earthy && <EarthyTabBar orgId={orgId} recordsBadge={reviewWaiting} />}
     </div>
   );
 }
