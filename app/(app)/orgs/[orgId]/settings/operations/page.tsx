@@ -53,7 +53,7 @@ export default async function OperationsSettingsPage({
   const data = await Promise.all([
     prisma.organization.findUniqueOrThrow({
       where: { id: orgId },
-      select: { name: true, industry: true, hqCountry: true, reportingCurrency: true, fiscalYearStartMonth: true },
+      select: { name: true, industry: true, hqCountry: true, reportingCurrency: true, fiscalYearStartMonth: true, disclosureRegime: true },
     }),
     prisma.reportingPeriod.findMany({
       where: { organizationId: orgId },
@@ -107,6 +107,7 @@ export default async function OperationsSettingsPage({
           hqCountry: org.hqCountry ?? "",
           reportingCurrency: org.reportingCurrency,
           fiscalYearStartMonth: org.fiscalYearStartMonth,
+          disclosureRegime: org.disclosureRegime ?? "",
         }}
         periods={periods.map((period) => ({
           id: period.id,

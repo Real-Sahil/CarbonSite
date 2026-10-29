@@ -7,6 +7,7 @@ import { requireOrgMember, ROLE_GROUPS } from "@/lib/auth/session";
 import { handleRouteError, apiError } from "@/lib/validation/api";
 import { writeAuditLog } from "@/lib/db/audit";
 import { withApiVersion, checkDeprecationWarning } from "@/lib/api/versioned-handler";
+import { DISCLOSURE_REGIME_KEYS } from "@/lib/compliance/regimes";
 
 export async function GET(
   _req: NextRequest,
@@ -48,6 +49,7 @@ const UpdateOrgSchema = z.object({
   hqCountry: z.string().max(100).nullable().optional(),
   reportingCurrency: z.string().length(3).optional(),
   fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
+  disclosureRegime: z.enum(DISCLOSURE_REGIME_KEYS).nullable().optional(),
 });
 
 export async function PATCH(
@@ -65,8 +67,8 @@ export async function PATCH(
       return apiError("VALIDATION_ERROR", "Invalid request body", 400, parsed.error.flatten());
     }
 
-    const { name, industry, hqCountry, reportingCurrency, fiscalYearStartMonth } = parsed.data;
-    if (name === undefined && industry === undefined && hqCountry === undefined && reportingCurrency === undefined && fiscalYearStartMonth === undefined) {
+    const { name, industry, hqCountry, reportingCurrency, fiscalYearStartMonth, disclosureRegime } = parsed.data;
+    if (name === undefined && industry === undefined && hqCountry === undefined && reportingCurrency === undefined && fiscalYearStartMonth === undefined && disclosureRegime === undefined) {
       return apiError("NO_FIELDS", "No updatable fields provided", 400);
     }
 
@@ -78,6 +80,7 @@ export async function PATCH(
         ...(hqCountry !== undefined ? { hqCountry } : {}),
         ...(reportingCurrency !== undefined ? { reportingCurrency } : {}),
         ...(fiscalYearStartMonth !== undefined ? { fiscalYearStartMonth } : {}),
+        ...(disclosureRegime !== undefined ? { disclosureRegime } : {}),
       },
     });
 

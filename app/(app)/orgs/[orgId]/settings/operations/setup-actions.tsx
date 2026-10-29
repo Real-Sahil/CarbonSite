@@ -1,5 +1,6 @@
 "use client";
 
+import { DISCLOSURE_REGIMES, DISCLOSURE_REGIME_KEYS } from "@/lib/compliance/regimes";
 import { Table } from "@/components/ui/table";
 import { FormEvent, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -91,6 +92,7 @@ type OrgProfile = {
   hqCountry: string;
   reportingCurrency: string;
   fiscalYearStartMonth: number;
+  disclosureRegime: string;
 };
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -144,6 +146,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
   const [hqCountry, setHqCountry] = useState(initialCountry);
   const [currency, setCurrency] = useState(profile.reportingCurrency);
   const [startMonth, setStartMonth] = useState(profile.fiscalYearStartMonth);
+  const [regime, setRegime] = useState(profile.disclosureRegime);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -153,6 +156,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
     industry !== profile.industry ||
     hqCountry !== initialCountry ||
     startMonth !== profile.fiscalYearStartMonth ||
+    regime !== profile.disclosureRegime ||
     currency !== profile.reportingCurrency;
 
   function save() {
@@ -166,6 +170,7 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
           hqCountry: hqCountry || null,
           reportingCurrency: currency || undefined,
           fiscalYearStartMonth: startMonth,
+          disclosureRegime: regime || null,
         });
         setSuccess("Organisation profile saved.");
         router.refresh();
@@ -222,6 +227,14 @@ function OrgProfilePanel({ orgId, profile }: { orgId: string; profile: OrgProfil
             <select id="org-fy" value={startMonth} disabled={isPending} onChange={(e) => setStartMonth(Number(e.target.value))} className={selectClass}>
               {MONTH_NAMES.map((m, i) => (
                 <option key={m} value={i + 1}>{m}</option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label="Disclosure regime" htmlFor="org-regime" span={2} hint="The Executive Summary reports audit readiness against this set of datapoints.">
+            <select id="org-regime" value={regime} disabled={isPending} onChange={(e) => setRegime(e.target.value)} className={selectClass}>
+              <option value="">Not chosen</option>
+              {DISCLOSURE_REGIME_KEYS.map((k) => (
+                <option key={k} value={k}>{DISCLOSURE_REGIMES[k].label}</option>
               ))}
             </select>
           </FormField>

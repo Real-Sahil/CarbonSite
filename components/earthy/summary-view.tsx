@@ -16,6 +16,7 @@ export type SummaryViewProps = {
   target: { line: string | null; hasTarget: boolean; actual: string | null; level: string | null; status: "ahead" | "on_track" | "behind" | null };
   hotspot: { line: string | null; sharePct: number | null };
   social: { line: string | null; phase: SocialPhase };
+  audit: { regimeLabel: string; satisfied: number; applicable: number; partial: number; gap: number; percent: number | null } | null;
   needsYou: { line: string | null; pendingSubmissions: number; openReviews: number };
 };
 
@@ -126,10 +127,24 @@ export function SummaryView(p: SummaryViewProps) {
               </Tile>
             </div>
             <div className="md:col-span-2">
-              <Tile title="Audit" href={`${root}/settings`} hrefLabel="Choose a disclosure regime">
-                <p className="text-sm" style={{ color: "var(--ink-2)" }}>
-                  Readiness is shown once a disclosure regime is chosen and its datapoint set is loaded. Until then there is no number to show.
-                </p>
+              <Tile title="Audit" href={p.audit ? `${root}/compliance/crosswalk` : `${root}/settings/operations`} hrefLabel={p.audit ? "Open the crosswalk" : "Choose a disclosure regime"}>
+                {p.audit && p.audit.percent != null ? (
+                  <>
+                    <p className="text-base">
+                      {p.audit.satisfied} of {p.audit.applicable} {p.audit.regimeLabel} datapoints satisfied
+                    </p>
+                    <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: "var(--sunk)" }} role="img" aria-label={`${Math.round(p.audit.percent)} percent ready`}>
+                      <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, p.audit.percent))}%`, background: "var(--moss-500)" }} />
+                    </div>
+                    <p className="text-sm" style={{ color: "var(--ink-2)" }}>{p.audit.partial} partial, {p.audit.gap} {p.audit.gap === 1 ? "gap" : "gaps"}.</p>
+                  </>
+                ) : p.audit ? (
+                  <p className="text-sm" style={{ color: "var(--ink-2)" }}>No {p.audit.regimeLabel} datapoints are loaded, so there is no number to show.</p>
+                ) : (
+                  <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                    Choose a disclosure regime in settings and readiness against its datapoints appears here.
+                  </p>
+                )}
               </Tile>
             </div>
           </div>
