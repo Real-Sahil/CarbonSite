@@ -25,10 +25,33 @@ export function LaunchFilm() {
   const ref = useRef<HTMLVideoElement>(null);
   const [withSound, setWithSound] = useState(false);
   const [still, setStill] = useState(false);
+  // The film (2 MB) is fetched only once the page has loaded and the browser is
+  // idle, so the poster is the largest paint and the video never competes with
+  // the CSS and scripts on a slow connection.
+  const [ready, setReady] = useState(false);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+    if (conn?.saveData) return;
+    let cancelled = false;
+    const start = () => {
+      const run = () => !cancelled && setReady(true);
+      if ("requestIdleCallback" in window) window.requestIdleCallback(run, { timeout: 3000 });
+      else setTimeout(run, 1500);
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+    return () => {
+      cancelled = true;
+      window.removeEventListener("load", start);
+    };
+  }, []);
 
   useEffect(() => {
     const video = ref.current;
-    if (!video || withSound) return;
+    if (!video || withSound || !ready) return;
+    video.load();
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const apply = () => setStill(mq.matches);
     apply();
@@ -45,7 +68,7 @@ export function LaunchFilm() {
       io.disconnect();
       mq.removeEventListener("change", apply);
     };
-  }, [withSound]);
+  }, [withSound, ready]);
 
   // Swap to the cut with sound and start it inside the click, so the browser
   // counts it as the visitor's own action and allows audio.
@@ -57,6 +80,18 @@ export function LaunchFilm() {
   return (
     <figure className="m-0">
       <div className="relative overflow-hidden rounded-[12px] border border-white/10 bg-mk-ink shadow-[0_24px_60px_-24px_rgba(0,0,0,0.6)]">
+        {!withSound ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={FILM.poster}
+            alt=""
+            width={1280}
+            height={720}
+            fetchPriority="high"
+            decoding="async"
+            className="block aspect-video h-auto w-full"
+          />
+        ) : null}
         {withSound ? (
           <video
             key="sound"
@@ -70,22 +105,27 @@ export function LaunchFilm() {
           >
             <source src={FILM.soundWebm} type="video/webm" />
             <source src={FILM.soundMp4} type="video/mp4" />
+            <track kind="captions" />
           </video>
         ) : (
           <video
             key="loop"
             ref={ref}
-            className="block aspect-video h-auto w-full"
-            poster={FILM.poster}
+            className={`absolute inset-0 block h-full w-full transition-opacity duration-300 ${playing ? "opacity-100" : "opacity-0"}`}
             muted
             loop
             playsInline
-            autoPlay={!still}
-            preload="metadata"
+            preload="none"
+            onPlaying={() => setPlaying(true)}
             aria-label={LABEL}
           >
-            <source src={FILM.webm} type="video/webm" />
-            <source src={FILM.mp4} type="video/mp4" />
+            {ready ? (
+              <>
+                <source src={FILM.webm} type="video/webm" />
+                <source src={FILM.mp4} type="video/mp4" />
+              </>
+            ) : null}
+            <track kind="captions" />
           </video>
         )}
         {!withSound ? (
