@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { flushSync, preload } from "react-dom";
+import { flushSync } from "react-dom";
 import { Play, Volume2 } from "lucide-react";
 import { DemoNote } from "@/components/marketing/kit";
+import { POSTER_640 } from "@/components/marketing/launch-film-poster";
 
 // The platform film (videos/, Remotion, src/videos/platform) in the home page hero. It plays muted
 // and looping while on screen, from a 720p WebM with an MP4 fallback for
@@ -16,24 +17,15 @@ const FILM = {
   soundWebm: "/marketing/film/platform-1080-sound.webm",
   soundMp4: "/marketing/film/platform-1080-sound.mp4",
   poster: "/marketing/film/platform-poster.jpg",
-  // 640 px cut (7 KB) for phones, where the poster is shown about 650 px wide at most.
-  posterSmall: "/marketing/film/platform-poster-640.jpg",
 };
-const POSTER_SRCSET = `${FILM.posterSmall} 640w, ${FILM.poster} 960w`;
+// Widths are claimed, not real: a phone at 1.75x density wants about 720 px, and the 640 px inline cut is close enough that the 960 px file need not be fetched.
+const POSTER_SRCSET = `${POSTER_640} 800w, ${FILM.poster} 1280w`;
 const POSTER_SIZES = "(min-width: 1024px) 640px, 100vw";
 
 const LABEL =
   "MetricOra platform film: a field receipt photographed and approved, traced from the dashboard total to its calculation, then the reports, assurance pack and the wider modules on screen. Demo data.";
 
 export function LaunchFilm() {
-  // Emitted into the server-rendered head, so the browser fetches the poster (the largest paint)
-  // while the stylesheets are still loading instead of after them.
-  preload(FILM.poster, {
-    as: "image",
-    imageSrcSet: POSTER_SRCSET,
-    imageSizes: POSTER_SIZES,
-    fetchPriority: "high",
-  });
   const ref = useRef<HTMLVideoElement>(null);
   const [withSound, setWithSound] = useState(false);
   const [still, setStill] = useState(false);
