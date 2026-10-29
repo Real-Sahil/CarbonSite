@@ -666,3 +666,37 @@
   .earthy *, .earthy *::before, .earthy *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .earthy .e-card[data-lift]:hover { transform: none; }
 }
+
+/* ── Earthy shell ─────────────────────────────────────────────────────────────
+   Wraps the org layout (sidebar, top bar, page) when the earthy flag is on, so
+   the cream Summary does not sit inside the cool-white, orange product shell.
+   It remaps the product tokens that Tailwind utilities read, then overrides the
+   few hard-coded hex classes in the sidebar and top bar by class name. Nothing
+   else changes; remove this block with the flag. A descendant redefining a
+   variable beats the root's inherited value, so it also wins in dark mode. */
+.earthy-shell {
+  --color-primary: var(--moss-700);
+  --color-primary-hover: var(--moss-900);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--ground);
+  --color-surface-muted: var(--sunk);
+  --color-border: var(--line);
+  --color-border-strong: var(--line-strong);
+  --color-text-primary: var(--ink);
+  --color-text-secondary: var(--ink-2);
+  --color-text-muted: var(--ink-3);
+  --logo-from: var(--moss-700);
+  --logo-to: var(--moss-500);
+}
+.earthy-shell [class~="bg-[#F9FAFC]"], .earthy-shell [class~="bg-[#F9FAFC]/90"] { background-color: var(--ground); }
+.earthy-shell [class~="hover:bg-[#F9FAFC]"]:hover, .earthy-shell [class~="focus:bg-[#F9FAFC]"]:focus { background-color: var(--sunk); }
+.earthy-shell [class~="bg-[#E3E8EE]"] { background-color: var(--line); }
+.earthy-shell [class~="bg-[#fff7ed]"] { background-color: var(--action-bg); }
+.earthy-shell [class~="text-[#131d29]"], .earthy-shell [class~="hover:text-[#131d29]"]:hover, .earthy-shell [class~="focus:text-[#131d29]"]:focus { color: var(--ink); }
+.earthy-shell [class~="text-[#41505F]"], .earthy-shell [class~="hover:text-[#41505F]"]:hover { color: var(--ink-2); }
+.earthy-shell [class~="text-[#5B6A78]"] { color: var(--ink-3); }
+.earthy-shell [class~="text-[#c2400c]"] { color: var(--action); }
+.earthy-shell [class~="border-[#E3E8EE]"], .earthy-shell [class~="hover:border-[#E3E8EE]"]:hover { border-color: var(--line); }
+.earthy-shell [class~="border-[#fed7aa]"] { border-color: var(--moss-200); }
+.earthy-shell [class~="border-[#131d29]/[0.08]"] { border-color: var(--line); }
+.earthy-shell [class~="bg-white"] { background-color: var(--surface); }

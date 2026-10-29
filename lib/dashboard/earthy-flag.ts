@@ -3,6 +3,9 @@
 // preview any organisation they administer with ?earthy=1, so the owner can look before the variable moves.
 // Off by default: the current dashboard stays the fallback until sign-off. Delete this file with the old page.
 
+/** Cookie that carries an admin's ?earthy=1 / ?earthy=0 choice, so the layout (which cannot see search params) agrees with the page. */
+export const EARTHY_COOKIE = "earthy_preview";
+
 export function earthyEnabled(
   orgId: string,
   opts: { env?: string | undefined; previewParam?: string | undefined; isAdmin?: boolean } = {},

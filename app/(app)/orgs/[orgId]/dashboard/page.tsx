@@ -38,6 +38,7 @@ import {
   Upload,
 } from "lucide-react";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getSelectedProject } from "@/lib/project/selected";
 import { TaskLauncher } from "@/components/dashboard/task-launcher";
 import { WasteKpisWidget } from "@/components/waste/waste-kpis-widget";
@@ -96,7 +97,8 @@ import { activeFilters } from "@/lib/saved-views";
 import { mayShare, viewRoles } from "@/lib/saved-views/roles";
 import { loadDashboardCounts, loadLatestRunStats, loadPublishedLibraries } from "@/lib/dashboard/page-data";
 import { loadAnalyticsPeriod } from "@/lib/analytics/period";
-import { earthyEnabled } from "@/lib/dashboard/earthy-flag";
+import { EARTHY_COOKIE, earthyEnabled } from "@/lib/dashboard/earthy-flag";
+import { EarthyPreviewSync } from "@/components/earthy/preview-sync";
 import { EarthySummary } from "./earthy-summary";
 
 interface DashboardPageProps {
@@ -169,9 +171,17 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
   if (role === "supplier") redirect("/supplier-portal");
 
   // Executive Summary rollout (docs/design/earthy-tech): off unless the org is listed or an admin previews with ?earthy=1.
-  if (earthyEnabled(orgId, { previewParam: rawParams.earthy, isAdmin: role === "admin" })) {
-    return <EarthySummary orgId={orgId} firstName={session!.user.name?.split(" ")[0] ?? null} />;
+  // The URL choice wins over the cookie the layout reads, and is stored again so the sidebar follows.
+  const earthyChoice = rawParams.earthy ?? (await cookies()).get(EARTHY_COOKIE)?.value;
+  if (earthyEnabled(orgId, { previewParam: earthyChoice, isAdmin: role === "admin" })) {
+    return (
+      <>
+        {role === "admin" && (rawParams.earthy === "1" || rawParams.earthy === "0") ? <EarthyPreviewSync value={rawParams.earthy} /> : null}
+        <EarthySummary orgId={orgId} firstName={session!.user.name?.split(" ")[0] ?? null} />
+      </>
+    );
   }
+  if (role === "admin" && rawParams.earthy === "0") return <EarthyPreviewSync value="0" />;
 
   // Everything here depends only on the organisation, so it is fetched in one
   // stage. Counts and the latest run's figures come from one statement each

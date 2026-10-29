@@ -94,4 +94,12 @@ describe("the preview switch", () => {
     expect(earthyEnabled("org-b", { env: "org-a", isAdmin: false })).toBe(false);
     expect(earthyEnabled("org-a", { env: "org-a", isAdmin: false })).toBe(true);
   });
+
+  it("treats the preview cookie like the URL choice: admins only, and the layout checks the role", () => {
+    expect(earthyEnabled("org-a", { env: "", previewParam: "1", isAdmin: false })).toBe(false);
+    expect(earthyEnabled("org-a", { env: "", previewParam: "0", isAdmin: true })).toBe(false);
+    expect(earthyEnabled("org-a", { env: "", previewParam: "1", isAdmin: true })).toBe(true);
+    const layout = readFileSync("app/(app)/orgs/[orgId]/layout.tsx", "utf8");
+    expect(layout).toMatch(/earthyEnabled\(orgId, \{[^}]*isAdmin: membership!\.role === "admin"/s);
+  });
 });

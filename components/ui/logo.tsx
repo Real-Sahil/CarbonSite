@@ -24,8 +24,8 @@ export function LogoMark({ size = 24, className }: LogoMarkProps) {
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#f97316" />
-          <stop offset="100%" stopColor="#fbbf24" />
+          <stop offset="0%" style={{ stopColor: "var(--logo-from, #f97316)" }} />
+          <stop offset="100%" style={{ stopColor: "var(--logo-to, #fbbf24)" }} />
         </linearGradient>
       </defs>
       <rect width="64" height="64" rx={rx} fill={`url(#${gradientId})`} />
