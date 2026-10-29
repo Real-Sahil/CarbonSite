@@ -36,10 +36,12 @@ interface AuditPageProps {
     resource?: string;
     since?: string;
     offset?: string;
+    limit?: string;
   }>;
 }
 
-const PAGE_SIZE = 100;
+const PAGE_SIZES = [25, 50, 100] as const;
+const DEFAULT_SIZE = 25;
 // The filter dropdowns list the actions and resource types written in the last year. Over the whole
 // trail, each DISTINCT scan grew with every row ever written, on every page load. A selected value
 // older than the window is still offered, so the filter keeps what the person chose.
@@ -49,7 +51,10 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
   const { orgId } = await params;
   const filters = await searchParams;
   // A malformed offset is 0, not NaN: NaN reaches Prisma as skip and fails the whole load.
-  const offset = wholeNumberParam(filters.offset, 0, 0, MAX_OFFSET);
+  const requested = wholeNumberParam(filters.limit, DEFAULT_SIZE, 1, 100);
+  const PAGE_SIZE = (PAGE_SIZES as readonly number[]).includes(requested) ? requested : DEFAULT_SIZE;
+  // Snap a hand-edited offset to a page boundary so page links and "Page N of M" stay consistent.
+  const offset = Math.floor(wholeNumberParam(filters.offset, 0, 0, MAX_OFFSET) / PAGE_SIZE) * PAGE_SIZE;
 
   let authErr: AuthError | null = null;
   let canVerify = false;
@@ -124,6 +129,15 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
       : resourceRows;
   const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const hrefFor = (nextOffset: number, size: number) =>
+    pageHref(`/orgs/${orgId}/audit`, {
+      action: filters.action,
+      resource: filters.resource,
+      actor: filters.actor,
+      since: filters.since,
+      limit: size === DEFAULT_SIZE ? undefined : size,
+      offset: Math.max(0, nextOffset) || undefined,
+    });
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFC]">
@@ -161,7 +175,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
           <CardHeader className="px-6 py-4 border-b border-[#E3E8EE]">
             <CardTitle className="text-sm font-semibold text-[#131d29]">Event filters</CardTitle>
             <CardDescription className="text-xs text-[#5B6A78] mt-0.5">
-              Filter directly against stored audit rows. Page size: {PAGE_SIZE} events per page.
+              Filter directly against stored audit rows.
             </CardDescription>
           </CardHeader>
           <CardContent className="px-6 py-5">
@@ -193,6 +207,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                 <Input name="since" type="date" defaultValue={validDate(filters.since) ?? ""} />
               </Field>
               <div className="flex items-end gap-2">
+                <input type="hidden" name="limit" value={PAGE_SIZE} />
                 <Button type="submit" className="w-full lg:w-auto">Apply</Button>
                 <Button asChild variant="outline" className="w-full lg:w-auto border-[#E3E8EE] text-[#41505F]">
                   <a href={`/orgs/${orgId}/audit`}>Clear</a>
@@ -254,9 +269,7 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                             </div>
                           </TableCell>
                           <TableCell className="py-3.5 pr-6">
-                            <pre className="max-h-28 max-w-xl overflow-auto rounded-md bg-[#F9FAFC] border border-[#E3E8EE] p-2 text-xs leading-5 text-[#41505F]">
-                              {formatMetadata(log.metadata)}
-                            </pre>
+                            <MetadataCell value={log.metadata} />
                           </TableCell>
                         </TableRow>
                       ))}
@@ -264,33 +277,28 @@ export default async function AuditPage({ params, searchParams }: AuditPageProps
                   </Table>
                 </div>
                 <div className="border-t border-[#E3E8EE] px-4 py-4 sm:px-6 flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-xs text-[#41505F]">
-                    Page {currentPage} of {pageCount} ({totalCount.toLocaleString("en-GB")} total events)
-                  </div>
-                  <div className="flex gap-2">
-                    {offset === 0 ? (
-                      <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">
-                        Previous
-                      </Button>
-                    ) : (
-                      <Button asChild variant="outline">
-                        <a href={pageHref(`/orgs/${orgId}/audit`, { action: filters.action, resource: filters.resource, actor: filters.actor, since: filters.since, offset: Math.max(0, offset - PAGE_SIZE) || undefined })}>
-                          Previous
-                        </a>
-                      </Button>
-                    )}
-                    {offset + PAGE_SIZE >= totalCount ? (
-                      <Button variant="outline" disabled className="opacity-50 cursor-not-allowed">
-                        Next
-                      </Button>
-                    ) : (
-                      <Button asChild variant="outline">
-                        <a href={pageHref(`/orgs/${orgId}/audit`, { action: filters.action, resource: filters.resource, actor: filters.actor, since: filters.since, offset: offset + PAGE_SIZE })}>
-                          Next
-                        </a>
-                      </Button>
-                    )}
-                  </div>
+                  <p className="text-xs text-[#41505F]">
+                    Showing {(offset + 1).toLocaleString("en-GB")} to {Math.min(offset + PAGE_SIZE, totalCount).toLocaleString("en-GB")} of {totalCount.toLocaleString("en-GB")} events
+                  </p>
+                  <nav aria-label="Audit trail pages" className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-[#5B6A78]">Per page</span>
+                    {PAGE_SIZES.map((size) => (
+                      <a
+                        key={size}
+                        href={hrefFor(0, size)}
+                        aria-current={size === PAGE_SIZE ? "true" : undefined}
+                        className={`inline-flex h-8 min-w-8 items-center justify-center rounded-md border px-2 text-xs ${size === PAGE_SIZE ? "border-[#131d29] bg-[#131d29] text-white" : "border-[#E3E8EE] text-[#41505F] hover:bg-[#F9FAFC]"}`}
+                      >
+                        {size}
+                      </a>
+                    ))}
+                    <span className="mx-1 h-4 w-px bg-[#E3E8EE]" aria-hidden="true" />
+                    <PageLink href={currentPage > 1 ? hrefFor(0, PAGE_SIZE) : null}>First</PageLink>
+                    <PageLink href={currentPage > 1 ? hrefFor(offset - PAGE_SIZE, PAGE_SIZE) : null}>Previous</PageLink>
+                    <span className="px-1 text-xs text-[#41505F]">Page {currentPage} of {pageCount}</span>
+                    <PageLink href={currentPage < pageCount ? hrefFor(offset + PAGE_SIZE, PAGE_SIZE) : null}>Next</PageLink>
+                    <PageLink href={currentPage < pageCount ? hrefFor((pageCount - 1) * PAGE_SIZE, PAGE_SIZE) : null}>Last</PageLink>
+                  </nav>
                 </div>
               </>
             )}
@@ -333,6 +341,32 @@ function validDate(value: string | undefined) {
 
 function formatLabel(value: string) {
   return value.replace(/[._]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function PageLink({ href, children }: { href: string | null; children: React.ReactNode }) {
+  if (!href) return <Button variant="outline" size="sm" disabled className="opacity-50">{children}</Button>;
+  return (
+    <Button asChild variant="outline" size="sm">
+      <a href={href}>{children}</a>
+    </Button>
+  );
+}
+
+// Metadata is collapsed by default: a full JSON block on every row made each page very long.
+function MetadataCell({ value }: { value: unknown }) {
+  const text = formatMetadata(value);
+  if (text === "{}") return <span className="text-xs text-[#5B6A78]">None</span>;
+  const keys = value && typeof value === "object" ? Object.keys(value as object).length : 0;
+  return (
+    <details className="max-w-xl">
+      <summary className="cursor-pointer text-xs text-[#41505F]">
+        {keys > 0 ? `${keys} ${keys === 1 ? "field" : "fields"}` : "Details"}
+      </summary>
+      <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-[#F9FAFC] border border-[#E3E8EE] p-2 text-xs leading-5 text-[#41505F]">
+        {text}
+      </pre>
+    </details>
+  );
 }
 
 function formatMetadata(value: unknown) {

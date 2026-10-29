@@ -50,7 +50,8 @@ export default function AuditLogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [, setNextCursor] = useState<string | null>(null);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const resourceType = searchParams.get('resourceType') || '';
   const action = searchParams.get('action') || '';
@@ -83,6 +84,29 @@ export default function AuditLogsPage() {
 
     fetchLogs();
   }, [orgId, resourceType, action, framework]);
+
+  async function loadMore() {
+    if (!nextCursor) return;
+    try {
+      setLoadingMore(true);
+      const query = new URLSearchParams();
+      if (resourceType) query.append('resourceType', resourceType);
+      if (action) query.append('action', action);
+      if (framework) query.append('framework', framework);
+      query.append('limit', '25');
+      query.append('cursor', nextCursor);
+      const response = await fetch(`/api/orgs/${orgId}/audit/logs?${query}`);
+      if (!response.ok) throw new Error('Failed to fetch more audit logs');
+      const data: AuditLogsResponse = await response.json();
+      setLogs((prev) => [...prev, ...data.logs]);
+      setNextCursor(data.pagination.nextCursor);
+      setHasMore(data.pagination.hasMore);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoadingMore(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -213,7 +237,9 @@ export default function AuditLogsPage() {
       {/* Pagination */}
       {hasMore && (
         <div className="flex justify-center">
-          <Button variant="outline">Load More</Button>
+          <Button variant="outline" onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? 'Loading...' : 'Load more'}
+          </Button>
         </div>
       )}
     </div>
