@@ -1,0 +1,68 @@
+%% Navigation and data flow: Executive Summary down to the Scope 3 ledger.
+%% Every hop keeps its filter in the URL, so any view can be shared or saved.
+flowchart TD
+  subgraph L0["Level 0: Narrative"]
+    EXEC["Executive Summary<br/>NarrativeGreeting + SummaryBento"]
+  end
+
+  subgraph L1["Level 1: Module"]
+    CARB["Carbon Accounting<br/>Scope 1 / 2 / 3 overview"]
+    SOC["Social Values<br/>DEI, supply chain labour risk, community"]
+    AUD["Audit Hub<br/>CSRD, SEC, TCFD readiness"]
+  end
+
+  subgraph L2["Level 2: Scope"]
+    S1["Scope 1 view"]
+    S2["Scope 2 view<br/>location and market based"]
+    S3["Scope 3 view<br/>15 GHG Protocol categories"]
+  end
+
+  subgraph L3["Level 3: Category and hotspot"]
+    CAT["Category view<br/>e.g. Waste, Purchased goods"]
+    SANKEY["SankeyHotspotTracker<br/>category to supplier to site"]
+  end
+
+  subgraph L4["Level 4: Evidence"]
+    LEDGER["Scope 3 data ledger<br/>one row per activity record"]
+    ROW["Record drawer<br/>source file, OCR vs corrected, factor, formula"]
+    AUDLOG["Audit trail entry<br/>hash chain link"]
+  end
+
+  EXEC -->|"tap hotspot sentence"| SANKEY
+  EXEC -->|"tap net zero tile"| CARB
+  EXEC -->|"tap people tile"| SOC
+  EXEC -->|"tap readiness ring"| AUD
+  EXEC -->|"tap Needs you row"| ROW
+
+  CARB --> S1
+  CARB --> S2
+  CARB --> S3
+  S3 -->|"choose category"| CAT
+  CAT --> SANKEY
+  CAT -->|"Show the records"| LEDGER
+  SANKEY -->|"click a flow"| LEDGER
+  LEDGER -->|"open row"| ROW
+  ROW -->|"History"| AUDLOG
+
+  SOC -->|"supplier risk flag"| LEDGER
+  AUD -->|"missing datapoint"| CARB
+  AUD -->|"export"| PACK["Export pack<br/>CSRD / TCFD / SEC readiness"]
+  ROW -->|"approve or correct"| RECALC["Recalculate and rebuild aggregates"]
+  RECALC -->|"sentence updates"| EXEC
+
+  CRUMB["Breadcrumb + filter chips<br/>URL is the state"] -.-> L1
+  CRUMB -.-> L2
+  CRUMB -.-> L3
+  CRUMB -.-> L4
+
+  subgraph DATA["Data layer (read path)"]
+    AGG["Pre-computed aggregates<br/>never raw calculations"]
+    REC["Activity records + calculations<br/>immutable rows"]
+    LIB["Factor libraries<br/>with attribution"]
+    SNAP["Published snapshots"]
+  end
+  EXEC -.reads.-> AGG
+  S3 -.reads.-> AGG
+  LEDGER -.reads.-> REC
+  ROW -.reads.-> LIB
+  AUD -.reads.-> SNAP
