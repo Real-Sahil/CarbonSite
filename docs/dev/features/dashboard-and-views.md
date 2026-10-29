@@ -42,3 +42,5 @@ Tests: `lib/dashboard/__tests__/widgets.test.ts`, `lib/dashboard/__tests__/hero-
 ## Time-series chart (canvas)
 
 `components/charts/pro-time-series.tsx` is the one interactive time-series chart, on TradingView's Lightweight Charts (canvas; licence in `docs/THIRD_PARTY_SOURCES.md`, on-chart logo off; the text credit lives in the marketing site footer). It gives wheel and pinch zoom, drag pan with kinetic scroll, a crosshair legend (value, change and percent against the previous point), Area/Line/Bars, 1M/3M/6M/YTD/All, a 7-day average, cumulative, reset zoom, PNG export, full screen and a data-table fallback. Pure maths is in `components/charts/series-math.ts` (tested). Used by `EmissionsTrendChart`, which loads the whole period and opens on `days`. Dark mode follows `data-theme` on `<html>`. Categorical charts stay on Recharts.
+
+**Page timing counter:** each dashboard load adds to `page_timing_days` (loads, slow, very slow per day) through `recordPageLoad()`; the `monitor-health` job alerts when slow loads pass 5% (see `operations.md`).

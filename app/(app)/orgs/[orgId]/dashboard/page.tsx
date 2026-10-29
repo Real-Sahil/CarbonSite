@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 
+import { after } from "next/server";
 import { stageTimer } from "@/lib/dashboard/stage-timer";
+import { recordPageLoad } from "@/lib/monitoring/health";
 import { scopeEmptyState } from "@/lib/dashboard/empty-state";
 import { getFactorLibraries } from "@/lib/cache/reference";
 import { currentFactorLibraries, supersedingLibrary } from "@/lib/calculation/library-for-period";
@@ -2340,7 +2342,8 @@ export default async function DashboardPage({ params, searchParams }: DashboardP
     role,
   ).map((w) => ({ ...w, node: widgetNodes[w.id] }));
   timer.mark("layout");
-  timer.done({ orgId });
+  const totalMs = timer.done({ orgId });
+  after(() => recordPageLoad("dashboard", totalMs));
 
   return (
     <div className="min-h-[100dvh] bg-[#F9FAFC]">

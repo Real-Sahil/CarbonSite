@@ -1,6 +1,6 @@
 /**
  * Scheduled monitoring jobs. Called by the Supabase pg_cron schedule in
- * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045, 20260927000050, 20261015000099 and 20261016000101 (daily), 20261005000076 (monthly). Each job only alerts once per record or per
+ * migrations 20260922000010, 20260923000005, 20260923000016, 20260926000045, 20260927000050, 20261015000099 and 20261016000101 (daily), 20261005000076 (monthly), 20261021000109 (monitor-health, six-hourly). Every run, ok or failed, is recorded in monitor_heartbeats. Each job only alerts once per record or per
  * threshold day, so a repeated or late call is safe.
  */
 
@@ -20,6 +20,7 @@ import { anonymiseExpiredAuditRows } from "@/lib/audit/anonymise";
 import { anchorAllAuditChains } from "@/lib/audit/anchor";
 import { processMonthlyChecklistReminders } from "@/lib/completeness/reminders";
 import { processSubcontractorReminders } from "@/lib/subcontractor/reminders";
+import { recordHeartbeat, runMonitorHealth } from "@/lib/monitoring/health";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -75,6 +76,12 @@ const JOBS: Record<string, () => Promise<"queued" | "processed">> = {
     await processSubcontractorReminders();
     return "processed";
   },
+  // Every six hours (migration 20261021000109): logs an error, which reaches Sentry, for any
+  // job above that stopped reporting or keeps failing, and for a page with too many slow loads.
+  "monitor-health": async () => {
+    await runMonitorHealth();
+    return "processed";
+  },
 };
 
 async function handle(req: NextRequest, { params }: { params: Promise<{ job: string }> }) {
@@ -89,9 +96,11 @@ async function handle(req: NextRequest, { params }: { params: Promise<{ job: str
   const startedAt = Date.now();
   try {
     const outcome = await run();
+    await recordHeartbeat(job, true);
     return NextResponse.json({ job, outcome, ms: Date.now() - startedAt });
   } catch (err) {
     console.error(`[schedule/monitors] ${job} failed:`, err);
+    await recordHeartbeat(job, false, err instanceof Error ? err.message : String(err));
     return NextResponse.json({ job, error: "Job failed" }, { status: 500 });
   }
 }

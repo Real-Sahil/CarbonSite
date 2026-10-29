@@ -8438,3 +8438,29 @@ model SiteWastePlan {
   @@unique([organizationId, projectId])
   @@map("site_waste_plans")
 }
+
+/// One row per scheduled monitor job (app/api/admin/schedule/monitors/[job]): when it last ran and last succeeded.
+/// The monitor-health job reads it to spot a job pg_cron has stopped calling. No organisation data.
+model MonitorHeartbeat {
+  job           String    @id
+  lastRunAt     DateTime  @map("last_run_at") @db.Timestamptz(6)
+  lastSuccessAt DateTime? @map("last_success_at") @db.Timestamptz(6)
+  lastError     String?   @map("last_error")
+  runs          Int       @default(0)
+
+  @@map("monitor_heartbeats")
+}
+
+/// Page loads counted per day and page: all loads, those at or over 3 s, and those at or over 9 s.
+/// Counts only, no organisation or user; the monitor-health job alerts when more than 5% of a day's loads
+/// reach 3 s, which is the same as the 95th percentile passing 3 s.
+model PageTimingDay {
+  day      DateTime @db.Date
+  page     String
+  loads    Int      @default(0)
+  slow     Int      @default(0)
+  verySlow Int      @default(0) @map("very_slow")
+
+  @@id([day, page])
+  @@map("page_timing_days")
+}

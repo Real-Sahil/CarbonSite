@@ -132,3 +132,12 @@ jobs:
           echo "Backup $STAMP"
       - name: Restore and verify
         run: ARCHIVE=backup.dump.gpg MANIFEST=manifest.csv scripts/backup/restore-drill.sh
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - name: Verify the audit chains in the restored copy
+        run: DATABASE_URL="$RESTORE_URL" pnpm tsx scripts/backup/verify-restored-chain.ts
