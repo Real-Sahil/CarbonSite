@@ -192,7 +192,7 @@ export default function HomePage() {
         </div>
       </Section>
 
-      <Section tone="dark" video="/marketing/loops/record.mp4" poster="/marketing/loops/record.jpg">
+      <Section tone="dark">
         <div className="grid items-center gap-14 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <SectionIntro
@@ -321,7 +321,7 @@ export default function HomePage() {
         </div>
       </Section>
 
-      <Section tone="dark" video="/marketing/loops/compliance.mp4" poster="/marketing/loops/compliance.jpg">
+      <Section tone="dark">
         <div className="grid items-center gap-14 lg:grid-cols-2">
           <div className="flex flex-col gap-6">
             <SectionIntro
