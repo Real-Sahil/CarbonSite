@@ -39,9 +39,6 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.775.0
         version: 3.1063.0
-      '@designcodeio/threeui':
-        specifier: ^1.1.0
-        version: 1.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.185.1)
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -288,9 +285,6 @@ importers:
       tesseract.js:
         specifier: ^7.0.0
         version: 7.0.0(encoding@0.1.13)
-      three:
-        specifier: ^0.185.1
-        version: 0.185.1
       ts-pattern:
         specifier: ^5.9.0
         version: 5.9.0
@@ -712,13 +706,6 @@ packages:
   '@csstools/css-tokenizer@4.0.0':
     resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
     engines: {node: '>=20.19.0'}
-
-  '@designcodeio/threeui@1.1.0':
-    resolution: {integrity: sha512-7VOgCL0dswnQaGy/kkqQe3wMfLSAJ5JlzmrSjT6B7wkM+QHXmtH84CKN3kroT2xA3JdXr1/HZ6y8+VCENOe0ag==}
-    peerDependencies:
-      react: '>=18 <20'
-      react-dom: '>=18 <20'
-      three: '>=0.149 <1'
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -7123,15 +7110,6 @@ packages:
     resolution: {integrity: sha512-e2zZ96wSChazBsbENf/Pcm/4swHt2cEKQ92rhUjkL9GCKiTDJIaTBenjE/m9DXi0QBmTMDkFDdOomUy20A1tDQ==}
     engines: {node: '>=20'}
 
-  three@0.128.0:
-    resolution: {integrity: sha512-i0ap/E+OaSfzw7bD1TtYnPo3VEplkl70WX5fZqZnfZsE3k3aSFudqrrC9ldFZfYFkn1zwDmBcdGfiIm/hnbyZA==}
-
-  three@0.165.0:
-    resolution: {integrity: sha512-cc96IlVYGydeceu0e5xq70H8/yoVT/tXBxV/W8A/U6uOq7DXc4/s1Mkmnu6SqoYGhSRWWYFOhVwvq6V0VtbplA==}
-
-  three@0.185.1:
-    resolution: {integrity: sha512-5aojFCXKwnjBRZvUnt3WFfEcvUJgkN5LlijRFN95hMy8WVkG4I0QNcJE+OuWvuJ0bOdStrbfXn0pkd6/QyiAlg==}
-
   tiny-inflate@1.0.3:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
 
@@ -8165,14 +8143,6 @@ snapshots:
       css-tree: 3.2.1
 
   '@csstools/css-tokenizer@4.0.0': {}
-
-  '@designcodeio/threeui@1.1.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.185.1)':
-    dependencies:
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-      three: 0.185.1
-      three128: three@0.128.0
-      three165: three@0.165.0
 
   '@dnd-kit/accessibility@3.1.1(react@19.2.4)':
     dependencies:
@@ -15255,12 +15225,6 @@ snapshots:
   thread-stream@4.2.0:
     dependencies:
       real-require: 1.0.0
-
-  three@0.128.0: {}
-
-  three@0.165.0: {}
-
-  three@0.185.1: {}
 
   tiny-inflate@1.0.3: {}
 

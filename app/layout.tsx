@@ -7,7 +7,6 @@ import { ScrollProvider } from "@/components/scroll-provider";
 import { Providers } from "@/components/providers";
 import { THEME_INIT_SCRIPT } from "@/lib/theme/preference";
 import "./globals.css";
-import "@designcodeio/threeui/style.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 // Daylight display face: light weight for headings, italic for the accent word.
