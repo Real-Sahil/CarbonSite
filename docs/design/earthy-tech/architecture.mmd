@@ -8,7 +8,7 @@ flowchart TD
   subgraph L1["Level 1: Module"]
     CARB["Carbon Accounting<br/>Scope 1 / 2 / 3 overview"]
     SOC["Social Values<br/>DEI, supply chain labour risk, community"]
-    AUD["Audit Hub<br/>CSRD, SEC, TCFD readiness"]
+    AUD["Audit Hub<br/>UK first: FCA SDR, TCFD. CSRD dormant tab"]
   end
 
   subgraph L2["Level 2: Scope"]
@@ -30,7 +30,7 @@ flowchart TD
 
   EXEC -->|"tap hotspot sentence"| SANKEY
   EXEC -->|"tap net zero tile"| CARB
-  EXEC -->|"tap people tile"| SOC
+  EXEC -->|"tap social baseline tile"| SOC
   EXEC -->|"tap readiness ring"| AUD
   EXEC -->|"tap Needs you row"| ROW
 
@@ -46,7 +46,7 @@ flowchart TD
 
   SOC -->|"supplier risk flag"| LEDGER
   AUD -->|"missing datapoint"| CARB
-  AUD -->|"export"| PACK["Export pack<br/>CSRD / TCFD / SEC readiness"]
+  AUD -->|"export"| PACK["Export pack<br/>UK regime readiness, CSRD when chosen"]
   ROW -->|"approve or correct"| RECALC["Recalculate and rebuild aggregates"]
   RECALC -->|"sentence updates"| EXEC
 

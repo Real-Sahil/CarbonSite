@@ -28,11 +28,11 @@ Below the greeting sits a softened bento grid of five tiles, each with a one-sen
 
 1. Net zero path: "You are 38 tonnes behind this year's glidepath. Closing it needs about 3 tonnes less per month." A thin line shows actual against target.
 2. Hotspot: "Waste hauling is 31% of Scope 3 and the biggest mover." A small Sankey preview.
-3. People: "Supplier labour risk is flagged on 2 of 41 suppliers." (Only shown once supplier risk data exists.)
-4. Audit readiness: "CSRD E1 is 8 of 11 datapoints ready." A ring.
+3. Social baseline: "Social baseline in progress. Phase 1 of 4, data integration: 2 of 5 inputs connected." Shown from day one, as named phases and never a letter grade. Once inputs exist it can add a supplier line such as "Labour risk is flagged on 2 of 41 suppliers."
+4. Audit readiness: "UK climate disclosure is 8 of 11 datapoints ready." A ring. The UK regime is the default view, and CSRD sits beside it, dormant.
 5. Needs you: the three items from the greeting, as three tappable rows.
 
-Hover physics: a tile lifts 2px and its corner radius relaxes slightly (a spring, about 200ms). Nothing bounces.
+Hover physics: a tile lifts 2px and its shadow deepens (a spring, about 200ms). Its corners do not change. Nothing bounces.
 
 **20 to 40 seconds. The first tap.**
 Priya taps "Waste hauling is 31%". The tile expands in place (shared-layout transition) into the hotspot view: a Sankey from Scope 3 to categories to suppliers. The sentence above it updates: "Three haulers account for most of it. Thames Valley Skips is up 22% on tonnes."
@@ -58,4 +58,4 @@ No change overnight: "Quiet night. Nothing moved since yesterday."
 
 ## Claims we will not make
 
-No score without a published method. The Social Impact score on the summary is shown only when its inputs exist and its formula is one click away. No "compliant" or "assured" wording anywhere: the Audit Hub says "ready", "partly ready" and "missing", with the missing items listed and linked.
+No score without a published method. The social tile never shows a letter grade: it shows named phases of a baseline in progress, derived from which inputs exist, and the method is one click away. No "compliant" or "assured" wording anywhere: the Audit Hub says "ready", "partly ready" and "missing", with the missing items listed and linked.

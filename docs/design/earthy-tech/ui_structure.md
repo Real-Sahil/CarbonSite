@@ -1,16 +1,27 @@
 # UI structure: component tree
 
-Status: draft for review. This is a specification in words. No component has been built, and none will be until the four artefacts are approved.
+Status: revision 2, final for visual review. Incorporates the owner's decisions on the Social Impact baseline, UK-first Audit Hub, typography split, the two-hue colour rule, uniform radii and archival empty states. This is a specification in words. No component has been built, and none will be until the artefacts are approved.
+
+## Decisions applied in this revision
+
+1. The Social Impact baseline appears on the Executive Summary from day one, as "Baseline in Progress" with named phases. It never shows a letter grade or a bare score.
+2. The Audit Hub opens on the UK regime (FCA SDR and UK-adopted TCFD). CSRD sits beside it, un-toggled, with an explanatory tooltip.
+3. Serif is used for the narrative greeting and primary page titles only. Every data label is mono. Every other interface element is sans.
+4. Terracotta marks interaction. A separate burnt brick red marks compliance alerts and negative trends. The two never share a component.
+5. All corners are uniform and soft (12 to 16px). No uneven radii.
+6. Empty states use cleaned, tinted public-domain archival sketches that bloom into colour when a data source connects.
 
 ## How to read this
 
 Every component is listed with its purpose, the props it takes (name, meaning) and its empty state. Props describe the data contract, not an implementation. Names are working titles.
 
-Three rules apply to every component:
+Five rules apply to every component:
 
 1. **Sentences come from templates with data guards.** A component that shows a sentence receives structured values, never prose. If a required value is missing, the component renders its empty state instead of a gap or a zero.
 2. **Numbers are links.** Any figure in a sentence can be tapped to open the view that produced it. The destination is always a URL, so the state can be shared.
 3. **Empty states are written by a person, not a template.** Each says what is missing, why that is fine or not, and the one next step, with a link to the page where it is fixed.
+4. **Type roles are fixed.** Serif appears only in `NarrativeGreeting` and primary page titles. Mono is used for every data label: figures, units, ledger headers, axis labels, chip values, table dates and hashes. Sans is used for everything else, including tile headline sentences.
+5. **Two reds, two jobs.** Terracotta means "you can act here": hover, selected state, primary highlight, links in running text. Brick red means "something is wrong or worsening": a compliance alert, a negative trend, a failed check. A component uses one or the other, never both, and brick red always travels with an icon and a word.
 
 ## The tree
 
@@ -31,7 +42,7 @@ AppShell
         NetZeroTile
         HotspotTile
           SankeyPreview
-        PeopleTile
+        SocialBaselineTile
         AuditReadinessTile
           ReadinessRing
         NeedsYouTile
@@ -59,7 +70,7 @@ AppShell
         SupplyChainLabourRiskTile
         CommunityInvestmentTile
       SupplierRiskList
-      SocialImpactScoreCard
+      SocialBaselineCard
     AuditHubPage
       FrameworkTabs
       ReadinessSummary
@@ -136,15 +147,20 @@ Purpose: names the biggest and fastest-moving source and shows a small Sankey. T
 Props: topCategory (code, label, share, changeVsPrior), topFlows (up to 5), scope.
 Empty state: "No emissions calculated for this period. Run a calculation after you import." Link to Calculations.
 
-### PeopleTile
-Purpose: one sentence on supplier labour risk and one on inclusion, only when data exists.
-Props: flaggedSuppliers, totalSuppliersAssessed, inclusionMetricsAvailable.
-Empty state: not shown at all until supplier risk or workforce data exists. The Social Values page carries the invitation to add it, so the summary never advertises a gap in a module the customer has not chosen to use.
+### SocialBaselineTile
+Purpose: shows the Social Impact baseline from the first login, framed as "Baseline in Progress". It states the current phase in words and what completes it. It never shows a letter grade, a percentage score or a rank.
+Props: phases (ordered list: id, label, status of not started, in progress or complete, completedAt), currentPhaseId, nextAction (label, route), inputsAvailable (inclusion, labourRisk, community), methodVersion, methodRoute.
+Phases (proposed): Phase 1 Data integration (connect a workforce return, supplier list or community records), Phase 2 First measurement (inputs read and checked), Phase 3 Baseline set (first full period measured and signed off), Phase 4 Tracking (change against the baseline). Names are for review.
+Sentence template: "Social baseline in progress. Phase 1, data integration: workforce return added, supplier list and community records still to come."
+Empty state (nothing connected): the tile shows the four phases as a quiet row with Phase 1 highlighted and one action, "Add your first social data". The archival sketch (a seedling) sits behind the text at low strength and blooms when the first source connects.
+Honesty rule: the phase is derived from which inputs exist, never from a judgement of performance. The method link opens the published formula or, until a score is introduced, the milestone definitions. A numeric or graded score is not shown until the method is published and a full period has been measured; this tile is where it would first appear, with the words "Baseline set" replacing "in progress".
+Colour: terracotta for the next-action highlight; no brick red, because an unfinished baseline is not an alert.
 
 ### AuditReadinessTile
-Purpose: how many required datapoints for the chosen framework are ready, as a ring and a sentence. Wording is "ready", "partly ready" or "missing", never "compliant".
-Props: framework (CSRD E1, TCFD, SEC), readyCount, partialCount, missingCount, totalCount.
-Empty state: "No framework chosen. Pick the one you report under and we will list what is needed." Link to Audit Hub.
+Purpose: how many required datapoints for the primary regime are ready, as a ring and a sentence. The primary regime is the UK one (FCA SDR and UK-adopted TCFD). Wording is "ready", "partly ready" or "missing", never "compliant".
+Props: framework (UK regime by default), readyCount, partialCount, missingCount, totalCount, hasCriticalGap.
+Empty state: "Nothing to check yet. Once a period is calculated we will list what the UK regime asks for and what you already have." Link to Audit Hub.
+Colour: a critical gap (a required datapoint missing near a deadline) uses brick red with an icon and the word "Missing". Otherwise the ring is moss.
 
 ### NeedsYouTile
 Purpose: the review queue and expiring items in one tile for those who skip the greeting.
@@ -248,23 +264,27 @@ Purpose: flagged suppliers with their emissions share beside the risk, so the tw
 Props: suppliers (name, flags, tco2e, share, lastAssessedAt).
 Empty state: "No suppliers flagged." with the count assessed.
 
-### SocialImpactScoreCard
-Purpose: a single score, shown only when the inputs exist and the formula is published. The formula is one click away and each input is listed with its weight.
-Props: score, inputs (label, value, weight, available), formulaVersion.
-Empty state: "No score yet. It needs inclusion, labour risk and community data. Here is the formula." The card never shows a number built from partial inputs without saying which are missing.
+### SocialBaselineCard
+Purpose: the full version of the Summary's baseline tile. Lists every phase with its checklist, which inputs are connected, what each phase needs and who can complete it. When the baseline is set, it shows change against that baseline in words and mono figures, with the method one click away.
+Props: phases (id, label, status, requirements with done flags, completedAt), inputs (label, value, weight, available), methodVersion, baselineSetAt optional.
+Empty state: "No social data connected yet. Phase 1 starts with a workforce return, a supplier list or community records. Pick whichever you have." Three links, one per input. The card never shows a number built from partial inputs without saying which are missing.
+Honesty rule: no letter grade, ever. Milestones describe how complete the measurement is, not how well the organisation is doing.
 
 ## Audit Hub
 
 ### FrameworkTabs
-Purpose: switch between CSRD (ESRS), TCFD and SEC climate disclosure readiness.
-Props: frameworks (id, label, readiness summary), selected.
-Empty state: a framework the organisation has not chosen is listed but marked "Not chosen" with a short line on who it applies to.
+Purpose: choose the disclosure regime. The Audit Hub opens on the UK regime, labelled "UK: FCA SDR and TCFD", as the primary and pre-selected view. Beside it sits a CSRD (ESRS) module, shown un-toggled and grayed out, so it is visible without competing for attention.
+Props: frameworks (id, label, readiness summary, state of primary, available or dormant), selected (defaults to the UK regime), dormantReason, enableAction.
+Behaviour of the dormant CSRD module: it can be focused and read with a keyboard and screen reader (announced as "CSRD, not enabled"). Its tooltip reads: "CSRD may apply if your group has significant revenue in the EU. Check the thresholds with your adviser. Turn this on to see what it would ask for." Activating the toggle enables the module and it then behaves like the UK tab. Gray here means "not enabled", not "broken" or "failed", so it carries no brick red.
+Wording rule: the tooltip says "may apply" and points to advice. The product does not tell an organisation that a law applies to it, because it cannot know the group structure.
+Scope note: FCA SDR applies to FCA-regulated firms and TCFD-aligned disclosure applies to certain companies. A contractor may be in neither. The tab therefore says "what this regime asks for" and shows readiness against its datapoints, and never states that the organisation is required to report.
+Empty state: a tab with no datapoints loaded says "This regime's datapoints are not loaded yet" and names the date they will be, rather than appearing empty.
 
 ### ReadinessSummary
-Purpose: one sentence and a ring for the chosen framework.
+Purpose: one sentence and a ring for the chosen regime.
 Props: framework, ready, partial, missing, total, lastChecked.
 Empty state: "Nothing to assess until a period is calculated."
-Wording rule: "ready", "partly ready", "missing". The words "compliant", "assured" and "certified" are not used.
+Wording rule: "ready", "partly ready", "missing". The words "compliant", "assured" and "certified" are not used. Missing items use brick red with an icon and the word.
 
 ### DatapointChecklist
 Purpose: each required datapoint with its status, the figure or answer behind it, and the link to the page that supplies it.
@@ -289,9 +309,23 @@ Empty state: "No audit entries yet."
 ## Shared
 
 ### EmptyState
-Purpose: the one empty state used everywhere. One short sentence of what is missing, one sentence of why it matters or that it is fine, one action. A small hand-drawn botanical mark (leaf, seed, root) sits above, never a generic circle with an icon.
-Props: title, body, primaryAction (label, route), secondaryAction optional, illustration (leaf, seed, root, field).
+Purpose: the one empty state used everywhere. One short sentence of what is missing, one sentence of why it matters or that it is fine, one action. Above it sits an archival sketch, never a generic circle with an icon.
+Props: title, body, primaryAction (label, route), secondaryAction optional, sketch (id from the archive: botanical or architectural, with source and licence recorded), tintPair (moss, terracotta), connected (boolean, drives the bloom).
 Tone: warm, plain, specific. No exclamation marks, no "Oops".
+
+Artwork rules:
+- Subjects are 19th-century botanical plates and architectural elevations or details, chosen for the module: botanical for Carbon and Social (seedling, leaf, root, field grass), architectural for Audit and Imports (arch, doorway, ledger room, drawing of a bridge or lock).
+- Every sketch comes from a source that states it is public domain or carries a CC0 or public-domain mark, for example the Biodiversity Heritage Library, the Internet Archive, Wikimedia Commons, or a national library's open collection. The source, the work's creator and date, the exact licence and the retrieval date are recorded in `docs/THIRD_PARTY_SOURCES.md` for each image. A scan from a modern publisher or museum is checked individually, because a scan of a public-domain work is not always free to reuse. Nothing is loaded until its licence has been checked.
+- Cleaning: remove paper stain and foxing, flatten the background to transparent, keep the line work. Tinting is done with the tokens, not baked in: line work takes `--color-moss-700`, the fill layer takes `--color-moss-300` and `--color-terra-300` accents. Each sketch is stored as a line layer and a separate fill layer so the bloom can act on the fill only.
+- Each sketch has descriptive alternative text, or is marked decorative when the heading already says what is missing.
+- Size: at most 240px high inside a tile, 360px on a full page empty state, never behind running text at reduced contrast that harms reading.
+
+The bloom (data source connected):
+1. The line layer holds still. The fill layer starts at zero opacity and nearly uncoloured, then fills with colour from the base of the sketch upwards over about 700ms (a vertical reveal of the fill layer, driven by transform and opacity only, with a soft edge).
+2. The sketch holds for about 300ms, then the empty state fades and the data widget rises into the same place using the shared layout transition.
+3. The bloom plays once per source, the first time it connects, and not on later visits.
+4. Under reduced motion there is no bloom. The sketch swaps to its filled state and the widget replaces it at once.
+5. The bloom never delays access. A user who acts again, or a widget that has data ready sooner, cuts the animation short and shows the widget immediately.
 
 ### Toast
 Purpose: confirmation after an action, with Undo where the action can be reversed. Appears bottom left, leaves by itself.
@@ -300,7 +334,7 @@ Empty state: not applicable.
 
 ## Motion and interaction notes
 
-Hover on a tile lifts it 2px and relaxes its corner radius slightly, on a spring of about 200ms. The expand-in-place transition from tile to full view uses a shared layout animation. Counters tween once on first load. All motion collapses to an instant state change under reduced-motion, and nothing relies on motion to carry meaning.
+Hover on a tile lifts it 2px on a spring of about 200ms and deepens its shadow. The corner radius does not change, since every corner is uniform and soft. The physical feel comes from the lift, the shadow, the film grain and the warm ground. The expand-in-place transition from tile to full view uses a shared layout animation. Counters tween once on first load. The empty state bloom is described under `EmptyState`. All motion collapses to an instant state change under reduced motion, and nothing relies on motion to carry meaning.
 
 ## Responsive behaviour
 
@@ -308,6 +342,8 @@ Wide: rail left, bento in a twelve-column grid. Tablet: rail collapses to icons,
 
 ## Open questions for review
 
-1. Should the Social Impact score exist at all on the Executive Summary, or only inside Social Values until the method has been used for a full year?
-2. Which framework is the default in the Audit Hub for a UK customer, CSRD or the UK's own regime? This affects the first tab.
-3. Is the botanical mark set drawn commissioned, or chosen from an open licence? Licence must be checked before use.
+The previous six questions are answered by the decisions at the top. What remains, none of which blocks visual review:
+
+1. Phase names for the social baseline. The four proposed are Data integration, First measurement, Baseline set and Tracking. Rename freely.
+2. Who counts as "in scope" for the UK regime tab. FCA SDR applies to FCA-authorised firms, so a contractor may see an entire regime that does not apply to them. Should the tab ask one question at first use ("Are you FCA-regulated or in a group that reports under TCFD?") and rank the answer, or always show it?
+3. Archive picks. Once the direction is approved, shortlist up to twelve sketches with source and licence for you to choose from, before anything is cleaned or loaded.
