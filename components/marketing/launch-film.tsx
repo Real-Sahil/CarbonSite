@@ -104,7 +104,7 @@ export function LaunchFilm() {
             width={1280}
             height={720}
             fetchPriority="high"
-            decoding="async"
+            decoding="sync"
             className="block aspect-video h-auto w-full"
           />
         ) : null}
