@@ -3,6 +3,7 @@
 // of a real deployment before anyone splits a page by guesswork.
 
 import { createLogger } from "@/lib/logger";
+import { recordPerfSample } from "@/lib/monitoring/perf-samples";
 
 const log = createLogger("page-timing");
 
@@ -24,7 +25,11 @@ export function stageTimer(page: string, slowAfterMs = DEFAULT_SLOW_MS) {
     done(context: { orgId: string }): number {
       const total = Math.round(performance.now() - start);
       // Slow loads are logged at info; only a very slow one (3x the threshold) is a warning, which also reaches Sentry.
-      if (total >= slowAfterMs) (total >= slowAfterMs * 3 ? log.warn : log.info).call(log, `${page} was slow`, { ...context, totalMs: total, stages });
+      if (total >= slowAfterMs) {
+        (total >= slowAfterMs * 3 ? log.warn : log.info).call(log, `${page} was slow`, { ...context, totalMs: total, stages });
+        // Also kept in perf_samples, because Hobby logs last one hour. Not awaited; the write handles its own errors.
+        void recordPerfSample({ orgId: context.orgId, page, totalMs: total, stages });
+      }
       return total;
     },
   };

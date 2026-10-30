@@ -196,6 +196,7 @@ model Verification {
 
 model Organization {
   reportLayouts ReportLayout[]
+  perfSamples   PerfSample[]
   submissionLinks              SubmissionLink[]
   id                           String                @id @default(cuid())
   name                         String
@@ -8485,4 +8486,22 @@ model ReportLayout {
 
   @@unique([organizationId, reportType])
   @@map("report_layouts")
+}
+
+/// One slow page load: which page, how long, and how long each stage took. Written only past the slow threshold
+/// (lib/dashboard/stage-timer.ts) and pruned after 14 days, so the slowest stage can be read after Vercel's
+/// one-hour log window has gone. Holds the organisation id and timings only, never data.
+model PerfSample {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  page           String
+  totalMs        Int      @map("total_ms")
+  stages         Json
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([page, createdAt])
+  @@index([organizationId, createdAt])
+  @@map("perf_samples")
 }

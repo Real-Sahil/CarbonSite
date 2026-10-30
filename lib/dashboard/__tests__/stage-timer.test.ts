@@ -2,10 +2,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const warn = vi.fn();
 const info = vi.fn();
+const record = vi.fn();
+vi.mock("@/lib/monitoring/perf-samples", () => ({ recordPerfSample: record }));
 vi.mock("@/lib/logger", () => ({ createLogger: () => ({ warn, info }) }));
 
 describe("stageTimer", () => {
-  beforeEach(() => { warn.mockReset(); info.mockReset(); });
+  beforeEach(() => { warn.mockReset(); info.mockReset(); record.mockReset(); });
 
   it("stays quiet for a fast load and returns the total", async () => {
     const { stageTimer } = await import("../stage-timer");
@@ -13,6 +15,7 @@ describe("stageTimer", () => {
     t.mark("org");
     expect(t.done({ orgId: "o1" })).toBeGreaterThanOrEqual(0);
     expect(warn).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
   });
 
   it("logs the stages, with only the organisation id, when the load is slow", async () => {
@@ -26,6 +29,8 @@ describe("stageTimer", () => {
     expect(message).toBe("dashboard was slow");
     expect(Object.keys(context).sort()).toEqual(["orgId", "stages", "totalMs"]);
     expect(Object.keys(context.stages)).toEqual(["org", "aggregates"]);
+    expect(record).toHaveBeenCalledTimes(1);
+    expect(Object.keys(record.mock.calls[0][0]).sort()).toEqual(["orgId", "page", "stages", "totalMs"]);
   });
 
   it("logs a slow load at info, and only a very slow one (3x the threshold) as a warning", async () => {
