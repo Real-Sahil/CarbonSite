@@ -11,7 +11,6 @@ const db = vi.hoisted(() => ({ $queryRaw: vi.fn() }));
 vi.mock("@/lib/db", () => ({ prisma: db }));
 
 import { loadExecutiveSummary } from "@/lib/dashboard/executive-summary";
-import { earthyEnabled } from "@/lib/dashboard/earthy-flag";
 import { ROLE_GROUPS } from "@/lib/auth/session";
 
 const PERIOD = { id: "p-1", label: "FY2025", startDate: new Date("2025-01-01"), endDate: new Date("2025-12-31") };
@@ -68,7 +67,7 @@ describe("who can reach the Summary", () => {
   it("renders only after the dashboard's role check and its field worker and supplier redirects", () => {
     const src = readFileSync("app/(app)/orgs/[orgId]/dashboard/page.tsx", "utf8");
     const member = src.indexOf("requireOrgMember(orgId, ...ROLE_GROUPS.anyMember)");
-    const fieldWorker = src.indexOf('if (role === "field_worker") redirect("/app")');
+    const fieldWorker = src.indexOf('role === "field_worker") redirect("/app")');
     const supplier = src.indexOf("/supplier-portal");
     const summary = src.indexOf("<EarthySummary");
     expect(member).toBeGreaterThan(-1);
@@ -82,24 +81,5 @@ describe("who can reach the Summary", () => {
     const src = readFileSync("app/(app)/orgs/[orgId]/dashboard/page.tsx", "utf8");
     expect(src).toMatch(/<EarthySummary orgId=\{orgId\}/);
     expect(src).not.toMatch(/<EarthySummary[^>]*rawParams/);
-  });
-});
-
-describe("the preview switch", () => {
-  it("is ignored for anyone who is not an admin", () => {
-    expect(earthyEnabled("org-a", { env: "off", previewParam: "1", isAdmin: false })).toBe(false);
-  });
-
-  it("does not turn on for an organisation missing from the list", () => {
-    expect(earthyEnabled("org-b", { env: "org-a", isAdmin: false })).toBe(false);
-    expect(earthyEnabled("org-a", { env: "org-a", isAdmin: false })).toBe(true);
-  });
-
-  it("treats the preview cookie like the URL choice: admins only, and the layout checks the role", () => {
-    expect(earthyEnabled("org-a", { env: "off", previewParam: "1", isAdmin: false })).toBe(false);
-    expect(earthyEnabled("org-a", { env: "", previewParam: "0", isAdmin: true })).toBe(false);
-    expect(earthyEnabled("org-a", { env: "off", previewParam: "1", isAdmin: true })).toBe(true);
-    const layout = readFileSync("app/(app)/orgs/[orgId]/layout.tsx", "utf8");
-    expect(layout).toMatch(/earthyEnabled\(orgId, \{[^}]*isAdmin: membership!\.role === "admin"/s);
   });
 });

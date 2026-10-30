@@ -12,7 +12,7 @@ import { SummaryChartsView } from "@/components/earthy/summary-charts";
 import { SummaryView } from "@/components/earthy/summary-view";
 
 // Server wrapper for the Executive Summary: a few cheap reads, one grouped loader statement, then the
-// closed set of sentences. Rendered by dashboard/page.tsx behind earthyEnabled().
+// closed set of sentences. Rendered by dashboard/page.tsx.
 export async function EarthySummary({ orgId, firstName }: { orgId: string; firstName: string | null }) {
   const [org, periods, current, regimeRow] = await Promise.all([
     getOrgBasics(orgId).catch(() => null),

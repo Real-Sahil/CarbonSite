@@ -307,15 +307,12 @@
 [data-theme="dark"] [class~="border-[#E3E8EE]"] { border-color: #11161c; }
 [data-theme="dark"] [class~="border-[#FDE3B0]"] { border-color: #4f3502; }
 [data-theme="dark"] [class~="border-[#FED7AA]"] { border-color: #552e01; }
-[data-theme="dark"] [class~="border-[#FEF9C3]"] { border-color: #3c3701; }
 [data-theme="dark"] [class~="border-[#c2400c]"] { border-color: #f3713d; }
 [data-theme="dark"] [class~="border-[#c2400c]/20"] { border-color: color-mix(in srgb, #f3713d 20%, transparent); }
 [data-theme="dark"] [class~="border-[#c2400c]/40"] { border-color: color-mix(in srgb, #f3713d 40%, transparent); }
 [data-theme="dark"] [class~="border-[#fed7aa]"] { border-color: #552e01; }
 [data-theme="dark"] [class~="border-l-[#131d29]"] { border-left-color: #d6e0ec; }
-[data-theme="dark"] [class~="decoration-[#5B6A78]"] { text-decoration-color: #8796a4; }
 [data-theme="dark"] [class~="divide-[#131d29]/10"] > :not(:last-child) { border-color: color-mix(in srgb, #d6e0ec 10%, transparent); }
-[data-theme="dark"] [class~="divide-[#CBD2D9]"] > :not(:last-child) { border-color: #262d34; }
 [data-theme="dark"] [class~="divide-[#E3E8EE]"] > :not(:last-child) { border-color: #11161c; }
 [data-theme="dark"] [class~="divide-[#E5E7EB]"] > :not(:last-child) { border-color: #14161a; }
 [data-theme="dark"] [class~="divide-[#F3F4F6]"] > :not(:last-child) { border-color: #13161a; }
@@ -339,10 +336,6 @@
 [data-theme="dark"] [class~="focus:text-[#131d29]"]:focus { color: #d6e0ec; }
 [data-theme="dark"] [class~="from-[#F9FAFC]"] { --tw-gradient-from: #131926; }
 [data-theme="dark"] [class~="from-[#c2400c]"] { --tw-gradient-from: #f3713d; }
-[data-theme="dark"] .group:hover [class~="group-hover:bg-[#c2400c]"] { background-color: #f3713d; }
-[data-theme="dark"] .group:hover [class~="group-hover:border-[#FED7AA]"] { border-color: #552e01; }
-[data-theme="dark"] .group:hover [class~="group-hover:ring-[#c2400c]"] { --tw-ring-color: #f3713d; }
-[data-theme="dark"] .group:hover [class~="group-hover:text-[#c2400c]"] { color: #f3713d; }
 [data-theme="dark"] [class~="hover:bg-[#131d29]"]:hover { background-color: #d6e0ec; }
 [data-theme="dark"] [class~="hover:bg-[#E0F2FE]"]:hover { background-color: #011421; }
 [data-theme="dark"] [class~="hover:bg-[#F8F9FA]/50"]:hover { background-color: color-mix(in srgb, #171b20 50%, transparent); }
@@ -366,9 +359,7 @@
 [data-theme="dark"] [class~="hover:text-[#c2400c]"]:hover { color: #f3713d; }
 [data-theme="dark"] [class~="placeholder:text-[#5B6A78]"]::placeholder { color: #8796a4; }
 [data-theme="dark"] [class~="stroke-[#111827]"] { stroke: #d8dfee; }
-[data-theme="dark"] [class~="stroke-[#c2400c]"] { stroke: #f3713d; }
 [data-theme="dark"] [class~="text-[#047857]"] { color: #87fbda; }
-[data-theme="dark"] [class~="text-[#059669]"] { color: #69facd; }
 [data-theme="dark"] [class~="text-[#111827]"] { color: #d8dfee; }
 [data-theme="dark"] [class~="text-[#131d29]"] { color: #d6e0ec; }
 [data-theme="dark"] [class~="text-[#1d4ed8]"] { color: #2758e2; }

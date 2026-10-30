@@ -27,9 +27,7 @@ test("sign up and create an organisation", async ({ page }) => {
 test.describe("signed in", () => {
   test.use({ storageState: "test-results/earthy-summary-state.json" });
 
-  // The layout reads the preview cookie on the request after ?earthy=1 sets it.
   async function openSummary(page: import("@playwright/test").Page) {
-    await page.goto(`/orgs/${orgId}/dashboard?earthy=1`, { waitUntil: "networkidle" });
     await page.goto(`/orgs/${orgId}/dashboard`, { waitUntil: "networkidle" });
   }
 

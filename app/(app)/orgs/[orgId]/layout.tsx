@@ -16,8 +16,6 @@ import { OrgLocaleProvider } from "@/components/org/org-locale";
 import { buttonVariants } from "@/components/ui/button";
 import { getSelectedProject } from "@/lib/project/selected";
 import { brandingCss, brandingVars } from "@/lib/branding/css-vars";
-import { cookies } from "next/headers";
-import { EARTHY_COOKIE, earthyEnabled } from "@/lib/dashboard/earthy-flag";
 import { EarthyTabBar } from "@/components/earthy/tab-bar";
 
 interface OrgLayoutProps {
@@ -178,20 +176,12 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
     getSelectedProject(orgId).catch(() => null),
   ]);
 
-  // Earthy Tech rollout (docs/design/earthy-tech): the whole shell follows the same flag as the Summary.
-  const earthy = earthyEnabled(orgId, {
-    previewParam: (await cookies()).get(EARTHY_COOKIE)?.value,
-    isAdmin: membership!.role === "admin",
-  });
-
-  const reviewWaiting = earthy
-    ? await prisma.fieldSubmission
-        .count({ where: { organizationId: orgId, status: { in: ["pending", "submitted", "under_review", "needs_info"] } } })
-        .catch(() => 0)
-    : 0;
+  const reviewWaiting = await prisma.fieldSubmission
+    .count({ where: { organizationId: orgId, status: { in: ["pending", "submitted", "under_review", "needs_info"] } } })
+    .catch(() => 0);
 
   return (
-    <div className={`flex flex-col md:flex-row min-h-[100dvh] ${earthy ? "earthy earthy-shell" : "bg-[#F9FAFC]"}`}>
+    <div className="flex flex-col md:flex-row min-h-[100dvh] earthy earthy-shell">
       {cssVars && <style>{cssVars}</style>}
       <AppearanceSync saved={themePreference} />
       <OrgSidebar orgId={orgId} orgName={org.name} user={user} role={membership!.role} projects={projects} selectedProjectId={selectedProject?.id ?? null} themePreference={themePreference} />
@@ -217,7 +207,7 @@ export default async function OrgLayout({ children, params }: OrgLayoutProps) {
           </OrgLocaleProvider>
         </main>
       </div>
-      {earthy && <EarthyTabBar orgId={orgId} recordsBadge={reviewWaiting} />}
+      <EarthyTabBar orgId={orgId} recordsBadge={reviewWaiting} />
     </div>
   );
 }
