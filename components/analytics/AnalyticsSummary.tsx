@@ -23,9 +23,11 @@ export function AnalyticsSummary({ orgId }: { orgId: string }) {
   });
 
   const { data: trendData } = useQuery({
-    queryKey: ["emissions-trend", orgId, 30],
+    // Same key and URL as EmissionsTrendChart, so one request serves both. The summary only reads
+    // the tail of the series (last day against a week earlier), which the full period contains.
+    queryKey: ["emissions-trend", orgId],
     queryFn: async () => {
-      const res = await fetch(`/api/orgs/${orgId}/analytics/emissions-trend?days=30`);
+      const res = await fetch(`/api/orgs/${orgId}/analytics/emissions-trend`);
       if (!res.ok) throw new Error("Failed to fetch emissions trend");
       return res.json();
     },
