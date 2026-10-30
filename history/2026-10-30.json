@@ -1,0 +1,17 @@
+{
+  "anchoredAt": "2026-10-30T20:28:45.088Z",
+  "heads": {
+    "cmuy15pye0006js06348svo36": {
+      "headSeq": "473",
+      "headHash": "319302de2187b22cd1e6a79ee677d690f32c2f4628198cbb84f4f095f0cb5a67"
+    },
+    "cmugqzh5h0000kz04il089fix": {
+      "headSeq": "430",
+      "headHash": "7b08f117c1c1a4478edd7569f3b37be59532fc5d77389e5317ae44220d7ea746"
+    },
+    "cmtqvysuc0000ld04jh1ymbom": {
+      "headSeq": "486",
+      "headHash": "dbb2fbf4e9900545ab3e71fc9dbde497b8e0298da05664431641e6041acdc53e"
+    }
+  }
+}
