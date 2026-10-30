@@ -7,6 +7,7 @@
 import { brandStyles, esc } from "./shared";
 import { loc } from "./locale";
 import { narrativeLabel } from "../narrative-label";
+import { GHG_PROTOCOL_BLOCKS, blockPosition, normaliseLayout, type ResolvedBlock } from "../layout";
 import type { AuditNarrative } from "../narrative-generator";
 
 export interface GhgProtocolCategoryRow {
@@ -97,7 +98,9 @@ const SCOPE3_CATEGORIES: Record<number, string> = {
   15: "Investments",
 };
 
-export function renderGhgProtocolHtml(data: GhgProtocolData): string {
+export function renderGhgProtocolHtml(data: GhgProtocolData, layout?: ResolvedBlock[]): string {
+  const titles = new Map((layout ?? []).map((b) => [b.id, b.title]));
+  const titleOf = (id: string) => esc(titles.get(id) ?? GHG_PROTOCOL_BLOCKS.find((b) => b.id === id)?.defaultTitle ?? "");
   const logoHtml = data.logoDataUri
     ? `<img src="${esc(data.logoDataUri)}" alt="${esc(data.orgName)} logo" style="height:48px;max-width:200px;object-fit:contain;">`
     : `<span style="font-size:1.1rem;font-weight:700;color:#fff;">${esc(data.orgName)}</span>`;
@@ -105,7 +108,7 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
   const paragraphs = (t: string) => t.split(/\n+/).filter((l) => l.trim()).map((l) => `<p style="font-size:0.84rem;line-height:1.55;margin:0 0 8px;color:#374151;">${esc(l)}</p>`).join("");
   const n = data.narrative;
   const summaryHtml = n
-    ? `<p class="section-title">Summary</p>
+    ? `<p class="section-title">${titleOf("summary")}</p>
   <p style="font-size:0.72rem;font-style:italic;color:#6b7280;margin:-6px 0 10px;">${esc(narrativeLabel(n))}</p>
   ${paragraphs(n.executive_summary)}
   ${n.key_findings.length > 0 ? `<p style="font-size:0.8rem;font-weight:700;margin:10px 0 4px;">Key findings</p><ul style="margin:0 0 8px 18px;padding:0;font-size:0.82rem;line-height:1.5;color:#374151;">${n.key_findings.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>` : ""}
@@ -183,6 +186,154 @@ export function renderGhgProtocolHtml(data: GhgProtocolData): string {
     </div>
   </div>` : "";
 
+
+  const evidenceHtml = data.evidenceTiers
+      ? `<p class="section-title">${titleOf("evidence")}</p>
+  <table style="width:100%;border-collapse:collapse;">
+    <tr><th>Evidence tier</th><th class="num">Share of total</th></tr>
+    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Verified: metered, invoiced or supplier data with evidence attached, approved in review</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.verified.toFixed(1)}%</td></tr>
+    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Partially verified: one of those is missing</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.partial.toFixed(1)}%</td></tr>
+    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Estimated: estimates and proxies, or records with neither evidence nor approval</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.estimated.toFixed(1)}%</td></tr>
+  </table>`
+      : "";
+
+  const sections: Record<string, string> = {
+    header: `<!-- Header -->
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+    <div>
+      <div>${logoHtml}</div>
+      <h1>GHG Protocol Corporate Inventory</h1>
+      <p>Scope 1, 2 &amp; 3 — ${esc(data.periodLabel)} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
+      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString(loc())} records</div>
+    </div>
+    <div style="text-align:right;font-size:0.8rem;opacity:0.85;">
+      <p>Published: ${fmt(data.publishedAt)}</p>
+      <p>By: ${esc(data.publishedBy)}</p>
+    </div>
+  </div>
+</div>`,
+    kpis: `<!-- KPI row -->
+<div class="kpi-row">
+  <div class="kpi" style="border-top:3px solid #16a34a;">
+    <div class="kpi-label">Scope 1</div>
+    <div class="kpi-value" style="color:#16a34a;">${fmtT(data.scope1Kg)}</div>
+    <div class="kpi-unit">tCO₂e &nbsp;·&nbsp; ${scope1Pct}</div>
+  </div>
+  <div class="kpi" style="border-top:3px solid #0ea5e9;">
+    <div class="kpi-label">Scope 2 (location)</div>
+    <div class="kpi-value" style="color:#0ea5e9;">${fmtT(data.scope2LocationKg)}</div>
+    <div class="kpi-unit">tCO₂e &nbsp;·&nbsp; ${scope2LPct}</div>
+  </div>
+  ${data.scope2MarketKg > 0 ? `
+  <div class="kpi" style="border-top:3px solid #67e8f9;">
+    <div class="kpi-label">Scope 2 (market)</div>
+    <div class="kpi-value" style="color:#0ea5e9;">${fmtT(data.scope2MarketKg)}</div>
+    <div class="kpi-unit">tCO₂e (market-based)</div>
+  </div>` : ""}
+  <div class="kpi" style="border-top:3px solid #84cc16;">
+    <div class="kpi-label">Scope 3</div>
+    <div class="kpi-value" style="color:#84cc16;">${fmtT(data.scope3Kg)}</div>
+    <div class="kpi-unit">tCO₂e &nbsp;·&nbsp; ${scope3Pct}</div>
+  </div>
+  <div class="kpi" style="border-top:3px solid #228B22;">
+    <div class="kpi-label">Grand Total</div>
+    <div class="kpi-value" style="color:#228B22;">${fmtT(data.totalKg)}</div>
+    <div class="kpi-unit">tCO₂e (S1 + S2 LB + S3)</div>
+  </div>
+</div>`,
+    progress: `<!-- Progress vs baseline -->
+  ${progressHtml}`,
+    summary: `<!-- Summary written by the reporting team (only when one has been saved) -->
+  ${summaryHtml}`,
+    scope_proportions: `<!-- Scope bar chart -->
+  <p class="section-title">${titleOf("scope_proportions")}</p>
+  <div class="scope-bar">
+    ${data.scope1Kg > 0 ? `<div class="scope-bar-seg" style="width:${pct(data.scope1Kg, data.totalKg)};background:#16a34a;">S1</div>` : ""}
+    ${data.scope2LocationKg > 0 ? `<div class="scope-bar-seg" style="width:${pct(data.scope2LocationKg, data.totalKg)};background:#0ea5e9;">S2</div>` : ""}
+    ${data.scope3Kg > 0 ? `<div class="scope-bar-seg" style="width:${pct(data.scope3Kg, data.totalKg)};background:#84cc16;">S3</div>` : ""}
+  </div>
+  <div style="font-size:0.72rem;color:#6b7280;display:flex;gap:16px;margin-bottom:16px;">
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#16a34a;border-radius:2px;display:inline-block;"></span> Scope 1 (${scope1Pct})</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#0ea5e9;border-radius:2px;display:inline-block;"></span> Scope 2 (${scope2LPct})</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#84cc16;border-radius:2px;display:inline-block;"></span> Scope 3 (${scope3Pct})</span>
+  </div>`,
+    scope1: `<!-- Scope 1 detail -->
+  <p class="section-title">${titleOf("scope1")}</p>
+  <table>
+    <thead><tr>
+      <th>Category</th><th>Code</th>
+      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
+      <th style="text-align:right;">CH₄ (tCO₂e)</th>
+      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
+      <th style="text-align:right;">Total (tCO₂e)</th>
+    </tr></thead>
+    <tbody>${catRows(s1Cats)}</tbody>
+    <tfoot><tr style="background:#f0faf0;font-weight:700;">
+      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 1 total</td>
+      <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#228B22;">${fmtT(data.scope1Kg)}</td>
+    </tr></tfoot>
+  </table>`,
+    scope2: `<!-- Scope 2 detail -->
+  <p class="section-title">${titleOf("scope2")}</p>
+  <table>
+    <thead><tr>
+      <th>Category</th><th>Code</th>
+      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
+      <th style="text-align:right;">CH₄ (tCO₂e)</th>
+      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
+      <th style="text-align:right;">Total (tCO₂e)</th>
+    </tr></thead>
+    <tbody>${catRows(s2Cats)}</tbody>
+    <tfoot><tr style="background:#f0faf0;font-weight:700;">
+      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 2 total (location-based)</td>
+      <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#0ea5e9;">${fmtT(data.scope2LocationKg)}</td>
+    </tr></tfoot>
+  </table>
+  ${data.scope2MarketKg > 0 ? `<p style="font-size:0.78rem;color:#6b7280;margin:6px 0 0;">Scope 2 market-based total: <strong>${fmtT(data.scope2MarketKg)} tCO₂e</strong> (GHG Protocol dual-reporting; both location and market-based figures disclosed).</p>` : ""}`,
+    scope3: `<!-- Scope 3 detail -->
+  <p class="section-title">${titleOf("scope3")}</p>
+  <table>
+    <thead><tr>
+      <th>Category</th><th>Code</th>
+      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
+      <th style="text-align:right;">CH₄ (tCO₂e)</th>
+      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
+      <th style="text-align:right;">Total (tCO₂e)</th>
+    </tr></thead>
+    <tbody>${catRows(s3Cats)}</tbody>
+    <tfoot><tr style="background:#f0faf0;font-weight:700;">
+      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 3 total</td>
+      <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#84cc16;">${fmtT(data.scope3Kg)}</td>
+    </tr></tfoot>
+  </table>
+  ${missingS3.length ? `<p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">
+    Not reported in this inventory: ${missingS3.map((n) => `${n}. ${SCOPE3_CATEGORIES[n]}`).join("; ")}. The GHG Protocol Scope 3 Standard asks for every relevant category, with a reason for any left out.
+  </p>` : ""}`,
+    gas_breakdown: `<!-- Gas breakdown -->
+  <p class="section-title">${titleOf("gas_breakdown")}</p>
+  ${gasTableHtml}`,
+    evidence: evidenceHtml,
+    assurance_note: `<!-- Reporting assurance note -->
+  <div style="margin-top:24px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
+    <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin:0 0 8px;">Reporting Assurance &amp; Limitations</p>
+    <p style="font-size:0.8rem;color:#374151;margin:0 0 4px;">
+      This inventory is prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition) and uses ${esc(data.factorLibrary)} emission factors with ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}).
+    </p>
+    <p style="font-size:0.8rem;color:#374151;margin:0;">
+      Data is sourced from ${data.recordCount.toLocaleString(loc())} approved activity records. Immutable calculation snapshot v${data.snapshotVersion} published ${fmt(data.publishedAt)}.
+      This report has not been externally assured — independent third-party verification is recommended for public disclosure.
+    </p>
+  </div>`,
+    footer: `<div class="footer">
+  <span>${esc(data.orgName)} — GHG Protocol Inventory — ${esc(data.periodLabel)}</span>
+  <span>v${data.snapshotVersion} · ${fmt(data.publishedAt)} · ${esc(data.publishedBy)} · MetricOra</span>
+</div>`,
+  };
+  const printed = (resolved: ResolvedBlock[], position: "top" | "flow" | "bottom") =>
+    resolved.filter((b) => !b.hidden && blockPosition("ghg_protocol", b.id) === position).map((b) => sections[b.id]);
+  const resolved = layout ?? normaliseLayout("ghg_protocol");
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -212,160 +363,13 @@ th:not(:first-child):not(:nth-child(2)) { text-align: right; }
 </head>
 <body>
 
-<!-- Header -->
-<div class="header">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-    <div>
-      <div>${logoHtml}</div>
-      <h1>GHG Protocol Corporate Inventory</h1>
-      <p>Scope 1, 2 &amp; 3 — ${esc(data.periodLabel)} &nbsp;|&nbsp; ${fmt(data.periodStart)} – ${fmt(data.periodEnd)}</p>
-      <div class="header-meta">Snapshot v${data.snapshotVersion} · ${esc(data.factorLibrary)} · ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}) · ${data.recordCount.toLocaleString(loc())} records</div>
-    </div>
-    <div style="text-align:right;font-size:0.8rem;opacity:0.85;">
-      <p>Published: ${fmt(data.publishedAt)}</p>
-      <p>By: ${esc(data.publishedBy)}</p>
-    </div>
-  </div>
-</div>
-
-<!-- KPI row -->
-<div class="kpi-row">
-  <div class="kpi" style="border-top:3px solid #16a34a;">
-    <div class="kpi-label">Scope 1</div>
-    <div class="kpi-value" style="color:#16a34a;">${fmtT(data.scope1Kg)}</div>
-    <div class="kpi-unit">tCO₂e &nbsp;·&nbsp; ${scope1Pct}</div>
-  </div>
-  <div class="kpi" style="border-top:3px solid #0ea5e9;">
-    <div class="kpi-label">Scope 2 (location)</div>
-    <div class="kpi-value" style="color:#0ea5e9;">${fmtT(data.scope2LocationKg)}</div>
-    <div class="kpi-unit">tCO₂e &nbsp;·&nbsp; ${scope2LPct}</div>
-  </div>
-  ${data.scope2MarketKg > 0 ? `
-  <div class="kpi" style="border-top:3px solid #67e8f9;">
-    <div class="kpi-label">Scope 2 (market)</div>
-    <div class="kpi-value" style="color:#0ea5e9;">${fmtT(data.scope2MarketKg)}</div>
-    <div class="kpi-unit">tCO₂e (market-based)</div>
-  </div>` : ""}
-  <div class="kpi" style="border-top:3px solid #84cc16;">
-    <div class="kpi-label">Scope 3</div>
-    <div class="kpi-value" style="color:#84cc16;">${fmtT(data.scope3Kg)}</div>
-    <div class="kpi-unit">tCO₂e &nbsp;·&nbsp; ${scope3Pct}</div>
-  </div>
-  <div class="kpi" style="border-top:3px solid #228B22;">
-    <div class="kpi-label">Grand Total</div>
-    <div class="kpi-value" style="color:#228B22;">${fmtT(data.totalKg)}</div>
-    <div class="kpi-unit">tCO₂e (S1 + S2 LB + S3)</div>
-  </div>
-</div>
+${printed(resolved, "top").join("\n\n")}
 
 <div class="content">
-  <!-- Progress vs baseline -->
-  ${progressHtml}
-
-  <!-- Summary written by the reporting team (only when one has been saved) -->
-  ${summaryHtml}
-
-  <!-- Scope bar chart -->
-  <p class="section-title">Scope Proportions</p>
-  <div class="scope-bar">
-    ${data.scope1Kg > 0 ? `<div class="scope-bar-seg" style="width:${pct(data.scope1Kg, data.totalKg)};background:#16a34a;">S1</div>` : ""}
-    ${data.scope2LocationKg > 0 ? `<div class="scope-bar-seg" style="width:${pct(data.scope2LocationKg, data.totalKg)};background:#0ea5e9;">S2</div>` : ""}
-    ${data.scope3Kg > 0 ? `<div class="scope-bar-seg" style="width:${pct(data.scope3Kg, data.totalKg)};background:#84cc16;">S3</div>` : ""}
-  </div>
-  <div style="font-size:0.72rem;color:#6b7280;display:flex;gap:16px;margin-bottom:16px;">
-    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#16a34a;border-radius:2px;display:inline-block;"></span> Scope 1 (${scope1Pct})</span>
-    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#0ea5e9;border-radius:2px;display:inline-block;"></span> Scope 2 (${scope2LPct})</span>
-    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#84cc16;border-radius:2px;display:inline-block;"></span> Scope 3 (${scope3Pct})</span>
-  </div>
-
-  <!-- Scope 1 detail -->
-  <p class="section-title">Scope 1 — Direct Emissions</p>
-  <table>
-    <thead><tr>
-      <th>Category</th><th>Code</th>
-      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
-      <th style="text-align:right;">CH₄ (tCO₂e)</th>
-      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
-      <th style="text-align:right;">Total (tCO₂e)</th>
-    </tr></thead>
-    <tbody>${catRows(s1Cats)}</tbody>
-    <tfoot><tr style="background:#f0faf0;font-weight:700;">
-      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 1 total</td>
-      <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#228B22;">${fmtT(data.scope1Kg)}</td>
-    </tr></tfoot>
-  </table>
-
-  <!-- Scope 2 detail -->
-  <p class="section-title">Scope 2 — Indirect Energy Emissions</p>
-  <table>
-    <thead><tr>
-      <th>Category</th><th>Code</th>
-      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
-      <th style="text-align:right;">CH₄ (tCO₂e)</th>
-      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
-      <th style="text-align:right;">Total (tCO₂e)</th>
-    </tr></thead>
-    <tbody>${catRows(s2Cats)}</tbody>
-    <tfoot><tr style="background:#f0faf0;font-weight:700;">
-      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 2 total (location-based)</td>
-      <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#0ea5e9;">${fmtT(data.scope2LocationKg)}</td>
-    </tr></tfoot>
-  </table>
-  ${data.scope2MarketKg > 0 ? `<p style="font-size:0.78rem;color:#6b7280;margin:6px 0 0;">Scope 2 market-based total: <strong>${fmtT(data.scope2MarketKg)} tCO₂e</strong> (GHG Protocol dual-reporting; both location and market-based figures disclosed).</p>` : ""}
-
-  <!-- Scope 3 detail -->
-  <p class="section-title">Scope 3 — Value Chain Emissions</p>
-  <table>
-    <thead><tr>
-      <th>Category</th><th>Code</th>
-      ${hasGasSplit ? `<th style="text-align:right;">CO₂ (tCO₂e)</th>
-      <th style="text-align:right;">CH₄ (tCO₂e)</th>
-      <th style="text-align:right;">N₂O (tCO₂e)</th>` : ""}
-      <th style="text-align:right;">Total (tCO₂e)</th>
-    </tr></thead>
-    <tbody>${catRows(s3Cats)}</tbody>
-    <tfoot><tr style="background:#f0faf0;font-weight:700;">
-      <td colspan="${hasGasSplit ? 5 : 2}" style="padding:9px 14px;font-size:0.82rem;">Scope 3 total</td>
-      <td style="padding:9px 14px;text-align:right;font-variant-numeric:tabular-nums;color:#84cc16;">${fmtT(data.scope3Kg)}</td>
-    </tr></tfoot>
-  </table>
-  ${missingS3.length ? `<p style="font-size:0.78rem;color:#6b7280;margin:8px 0 0;">
-    Not reported in this inventory: ${missingS3.map((n) => `${n}. ${SCOPE3_CATEGORIES[n]}`).join("; ")}. The GHG Protocol Scope 3 Standard asks for every relevant category, with a reason for any left out.
-  </p>` : ""}
-
-  <!-- Gas breakdown -->
-  <p class="section-title">Per-Gas Breakdown (GWP AR6)</p>
-  ${gasTableHtml}
-
-  ${
-    data.evidenceTiers
-      ? `<p class="section-title">Evidence Behind These Figures</p>
-  <table style="width:100%;border-collapse:collapse;">
-    <tr><th>Evidence tier</th><th class="num">Share of total</th></tr>
-    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Verified: metered, invoiced or supplier data with evidence attached, approved in review</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.verified.toFixed(1)}%</td></tr>
-    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Partially verified: one of those is missing</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.partial.toFixed(1)}%</td></tr>
-    <tr><td style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;">Estimated: estimates and proxies, or records with neither evidence nor approval</td><td class="num" style="padding:9px 14px;border-bottom:1px solid #f3f4f6;font-size:0.81rem;text-align:right;font-variant-numeric:tabular-nums;">${data.evidenceTiers.estimated.toFixed(1)}%</td></tr>
-  </table>`
-      : ""
-  }
-
-  <!-- Reporting assurance note -->
-  <div style="margin-top:24px;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
-    <p style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;margin:0 0 8px;">Reporting Assurance &amp; Limitations</p>
-    <p style="font-size:0.8rem;color:#374151;margin:0 0 4px;">
-      This inventory is prepared in accordance with the GHG Protocol Corporate Accounting and Reporting Standard (Revised Edition) and uses ${esc(data.factorLibrary)} emission factors with ${esc(data.methodology)} (GWP ${esc(data.gwpVersion)}).
-    </p>
-    <p style="font-size:0.8rem;color:#374151;margin:0;">
-      Data is sourced from ${data.recordCount.toLocaleString(loc())} approved activity records. Immutable calculation snapshot v${data.snapshotVersion} published ${fmt(data.publishedAt)}.
-      This report has not been externally assured — independent third-party verification is recommended for public disclosure.
-    </p>
-  </div>
+  ${printed(resolved, "flow").join("\n\n  ")}
 </div>
 
-<div class="footer">
-  <span>${esc(data.orgName)} — GHG Protocol Inventory — ${esc(data.periodLabel)}</span>
-  <span>v${data.snapshotVersion} · ${fmt(data.publishedAt)} · ${esc(data.publishedBy)} · MetricOra</span>
-</div>
+${printed(resolved, "bottom").join("\n\n")}
 
 </body>
 </html>`;

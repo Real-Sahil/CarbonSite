@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Plus, CheckCircle, XCircle, AlertCircle, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FormActions, FormDisclosure, FormError, FormField, FormSection } from "@/components/forms/form-kit";
+import { ReportLayoutEditor } from "./layout-editor";
 
 type SnapshotOption = {
   id: string;
@@ -420,6 +421,8 @@ export function CreateReportForm({
           . Generating here prints figures only.
         </div>
       )}
+
+      {reportType === "ghg_protocol" && <ReportLayoutEditor orgId={orgId} reportType="ghg_protocol" />}
 
       {reportType === "secr" && (
         <FormDisclosure title="SECR intensity metrics">

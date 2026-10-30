@@ -104,6 +104,8 @@ export type AuditAction =
   | "snapshot.assurance_retracted"
   | "report.generation_triggered"
   | "report.published"
+  | "report_layout.saved"
+  | "report_layout.reset"
   | "report.downloaded"
   | "report.deleted"
   | "target.created"

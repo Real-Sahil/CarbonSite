@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { summariseTiers } from "@/lib/data-quality/evidence-tier";
 import { countsTowardHeadline, scope2MethodOf } from "@/lib/calculation/scope2-method";
 import type { ReportData } from "./template";
+import { loadReportLayout } from "./layout/store";
 import { renderReportHtml } from "./template";
 import type { Aggregation, CalculationRow } from "./aggregation";
 import { aggregate, co2eBreakdownKg, fetchCalculations, hasMarketBasedScope2, splitScope2 } from "./aggregation";
@@ -600,7 +601,8 @@ const handlers: Record<string, ReportHandler> = {
       // Only the team's own words: this layout has never printed generated wording.
       narrative: basePdfData.narrative?.source === "team" ? basePdfData.narrative : undefined,
     };
-    return { html: withLocale(ctx.report.organization.hqCountry, () => renderGhgProtocolHtml(data)), pdfkitData: basePdfData };
+    const layout = await loadReportLayout(ctx.orgId, "ghg_protocol");
+    return { html: withLocale(ctx.report.organization.hqCountry, () => renderGhgProtocolHtml(data, layout)), pdfkitData: basePdfData };
   },
 
   cdp: async (ctx) => {
