@@ -1,0 +1,60 @@
+name: Audit chain anchor
+
+# Copies each organisation's audit-chain head (sequence and hash) to the `audit-anchors` branch of
+# this repository. The in-database chain proves its own links but not that the newest rows are
+# still there; this copy lives outside Supabase, so cutting or rewriting the chain is caught at
+# the next run. Before adding new heads it checks every earlier head against production and fails
+# without committing when one no longer matches. The branch holds hashes only, no audit content.
+
+on:
+  schedule:
+    - cron: "40 5 * * 0"   # Sundays 05:40 UTC, after the restore drill
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: audit-anchor
+  cancel-in-progress: false
+
+jobs:
+  anchor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma generate
+      - name: Fetch the anchors branch
+        run: |
+          if git ls-remote --exit-code --heads origin audit-anchors >/dev/null; then
+            git clone --depth 1 --branch audit-anchors "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" anchors
+          else
+            mkdir anchors
+            git -C anchors init -q -b audit-anchors
+            git -C anchors remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+            printf '# Audit chain anchors\n\nWritten weekly by .github/workflows/audit-anchor.yml. `latest.json` holds one head (chainSeq and hash) per organisation; `history/` keeps each week'"'"'s copy. Never edit by hand.\n' > anchors/README.md
+          fi
+      - name: Check earlier anchors and write the new ones
+        run: pnpm tsx scripts/audit/anchor-github.ts anchors/latest.json
+      - name: Commit and push
+        run: |
+          cd anchors
+          mkdir -p history
+          cp latest.json "history/$(date -u +%Y-%m-%d).json"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "No change"; exit 0; fi
+          git commit -q -m "Audit chain anchors $(date -u +%Y-%m-%d)"
+          git push origin audit-anchors
