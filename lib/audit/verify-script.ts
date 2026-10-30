@@ -59,6 +59,9 @@ const rowHash = (r) =>
     .update(JSON.stringify([2, r.previousHash ?? "", organizationId, r.actor ?? "", r.action, r.resourceType, r.resourceId ?? "", canonicalJson(r.metadata ?? {}), new Date(r.createdAt).toISOString()]))
     .digest("hex");
 
+// Rows hashed over a float the database stored with fewer digits: checked as older rows (link only).
+const FLOAT_DRIFT = new Set(["d3d00ba29e004c4e5727e51f93ce15b0ee81b108912b172ad6aba48719c2f9b7"]);
+
 const table = parseCsv(readFileSync(file, "utf8")).filter((r) => r.length > 1);
 const head = table.shift() ?? [];
 const col = (name) => {
@@ -81,7 +84,7 @@ for (const f of table) {
     else if (!linked) broken = { seq, reason: "does not follow the row before it (a row was removed, added or reordered)" };
     else redacted++;
     if (broken) break;
-  } else if (f[C.hash_version] === "2") {
+  } else if (f[C.hash_version] === "2" && !FLOAT_DRIFT.has(hash)) {
     let metadata;
     try { metadata = JSON.parse(f[C.metadata] || "{}"); } catch { metadata = undefined; }
     const row = { previousHash, actor: clean(f[C.actor_user_id]) || null, action: clean(f[C.action]), resourceType: clean(f[C.resource_type]), resourceId: clean(f[C.resource_id]) || null, metadata, createdAt: f[C.created_at] };

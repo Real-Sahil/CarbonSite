@@ -12,6 +12,29 @@ import { createHash } from "node:crypto";
 
 export const CHAIN_VERSION = 2;
 
+/**
+ * Rows hashed over a float that the database then stored with fewer digits (1.8279515999999998
+ * hashed, 1.8279516 stored), so their contents can never be recomputed. Found by the restore drill
+ * on 30 Oct 2026; the rows are append-only and stay as written. They are checked as legacy rows
+ * (link only) and listed here by hash so nothing else can hide behind the exception.
+ */
+export const FLOAT_DRIFT_HASHES: ReadonlySet<string> = new Set([
+  "d3d00ba29e004c4e5727e51f93ce15b0ee81b108912b172ad6aba48719c2f9b7", // base_year.created, org cmtqvysuc0000ld04jh1ymbom, chainSeq 464
+]);
+
+/**
+ * Rounds every non-integer number to 15 significant digits, which survives any trip through the
+ * database's JSON storage. The writer hashes and stores this form, so the two always agree.
+ */
+export function stableNumbers<T>(value: T): T {
+  if (typeof value === "number") return (Number.isInteger(value) ? value : Number(value.toPrecision(15))) as T;
+  if (Array.isArray(value)) return value.map(stableNumbers) as T;
+  if (value && typeof value === "object" && !(value instanceof Date)) {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, stableNumbers(v)])) as T;
+  }
+  return value;
+}
+
 /** JSON with object keys sorted at every level, so the same data always gives the same text. */
 export function canonicalJson(value: unknown): string {
   // A Date has no own keys, so it would hash as {}; hash it as the ISO string a stored row reads back as.
@@ -105,7 +128,7 @@ export class ChainVerifier {
       if (!row.hash) r.firstBreak = { chainSeq: seq, reason: "missing_hash" };
       else if (!linked) r.firstBreak = { chainSeq: seq, reason: "link" };
       else r.redacted++;
-    } else if (row.hashVersion === CHAIN_VERSION) {
+    } else if (row.hashVersion === CHAIN_VERSION && !(row.hash && FLOAT_DRIFT_HASHES.has(row.hash))) {
       if (!row.hash) r.firstBreak = { chainSeq: seq, reason: "missing_hash" };
       else if (!linked) r.firstBreak = { chainSeq: seq, reason: "link" };
       else if (rowHash({ ...row, organizationId: this.organizationId }) !== row.hash) r.firstBreak = { chainSeq: seq, reason: "content" };

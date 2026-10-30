@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "./index";
-import { CHAIN_VERSION, ChainVerifier, rowHash, type ChainResult } from "@/lib/audit/chain";
+import { CHAIN_VERSION, ChainVerifier, rowHash, stableNumbers, type ChainResult } from "@/lib/audit/chain";
 
 export type AuditAction =
   | "auth.sign_in"
@@ -469,7 +469,8 @@ export async function writeAuditLog(params: {
   ipAddress?: string | null;
   userAgent?: string | null;
 }) {
-  const metadata = params.metadata ?? {};
+  // Floats are rounded before hashing so the stored JSON recomputes to the hash (see stableNumbers).
+  const metadata = stableNumbers(params.metadata ?? {});
 
   // One writer at a time per organisation, so the chain cannot fork: each row reads the true last
   // row (by chainSeq) and inserts after it before the next writer starts.

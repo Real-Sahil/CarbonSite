@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CHAIN_VERSION, ChainVerifier, canonicalJson, rowHash, type ChainRow } from "../chain";
+import { CHAIN_VERSION, ChainVerifier, FLOAT_DRIFT_HASHES, canonicalJson, rowHash, stableNumbers, type ChainRow } from "../chain";
 
 const ORG = "org-1";
 const t0 = new Date("2026-10-01T09:00:00.000Z");
@@ -21,6 +21,21 @@ const run = (rows: ChainRow[], anchor?: string | null) => {
   rows.forEach((r) => v.feed(r));
   return v.result();
 };
+
+describe("stableNumbers and the known float-drift row", () => {
+  it("rounds floats to 15 digits so storage with fewer digits cannot change the hash", () => {
+    expect(stableNumbers({ total: 1.8279515999999998, n: 5, nested: [0.1 + 0.2] })).toEqual({ total: 1.8279516, n: 5, nested: [0.3] });
+  });
+  it("checks the recorded base-year row by link only, and still catches any other changed row", () => {
+    const drifted = { chainSeq: 464, createdAt: new Date("2026-10-07T09:59:49.078Z"), actorUserId: "DtAri7JwDiyKqFQBsSqbAOSpQNcP5n9L", action: "base_year.created", resourceType: "BaseYear", resourceId: "cmuxxrseg0001js06ndrn35n4", metadata: { label: "Sustainability Goals base year", frozenTotalCo2e: 1.8279516, reportingPeriodId: "cmtrj9xxh0001ju04h265meth", significanceThresholdPercent: 5 }, previousHash: "d7a7e3cf389b05af3e928d770fb089e8a453f4182c44b562360416d8ac3a3350", hash: [...FLOAT_DRIFT_HASHES][0], hashVersion: CHAIN_VERSION } satisfies ChainRow;
+    const ok = new ChainVerifier("cmtqvysuc0000ld04jh1ymbom", drifted.previousHash);
+    ok.feed(drifted);
+    expect(ok.result()).toMatchObject({ status: "intact", legacy: 1, verified: 0 });
+    const other = new ChainVerifier("cmtqvysuc0000ld04jh1ymbom", drifted.previousHash);
+    other.feed({ ...drifted, hash: "0".repeat(64) });
+    expect(other.result()).toMatchObject({ status: "broken", firstBreak: { reason: "content" } });
+  });
+});
 
 describe("canonicalJson", () => {
   it("sorts keys at every level and ignores insertion order", () => {
