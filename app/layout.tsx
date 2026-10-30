@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Newsreader } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
+import { preconnect } from "react-dom";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ScrollProvider } from "@/components/scroll-provider";
 import { Providers } from "@/components/providers";
@@ -53,11 +54,23 @@ export const metadata: Metadata = {
   },
 };
 
+// The browser Sentry client reports to this host; opening the connection early keeps it off the critical path.
+function sentryOrigin(): string | null {
+  try {
+    const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN ?? process.env.SENTRY_DSN;
+    return dsn ? new URL(dsn).origin : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const sentry = sentryOrigin();
+  if (sentry) preconnect(sentry);
   return (
     <html lang="en" className={`${inter.variable} ${newsreader.variable} ${GeistMono.variable} ${GeistSans.variable} ${jetbrainsMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
