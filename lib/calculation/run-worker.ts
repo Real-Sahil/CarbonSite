@@ -32,7 +32,7 @@ import { computeCo2e, toDecimal } from "./engine";
 import { calculateDataQualityScore, calculateConfidenceInterval } from "./quality";
 import { assessTemporalRepresentativeness } from "./temporal-representativeness";
 import { runMonteCarlo, naiveLinearInterval } from "./monte-carlo";
-import type { ActivityRecord } from "@prisma/client";
+import type { ActivityRecord, Prisma } from "@prisma/client";
 import { industryMissingWarning, isNaicsFactor, isNafFactor, isUkSicFactor, isUnverifiedFactor, nafDivision, naicsCode, ukSicDigits, UNVERIFIED_FACTOR_WARNING, type IndustryScheme } from "./industry-code";
 import { selectSpendSupplement } from "./spend-supplement";
 import { MAX_INTERRUPTED_ATTEMPTS, interruptionsExhausted } from "./interruption";
@@ -258,6 +258,14 @@ async function processOneChunk(
 
   const chunkDeadline = Date.now() + CHUNK_TIME_BUDGET_MS;
 
+  // Calculations of the page in hand, written with one createMany. With
+  // connection_limit=1 every statement is a round trip, so one insert per
+  // record was the cost that capped a run at about 250 records a second.
+  const pending: Prisma.EmissionCalculationUncheckedCreateInput[] = [];
+  const queueCalculation = ({ data }: { data: Prisma.EmissionCalculationUncheckedCreateInput }) => {
+    pending.push(data);
+  };
+
   for (;;) {
     const records = await prisma.activityRecord.findMany({
       where: { ...activityRecordWhere, calculations: { none: { calculationRunId } } },
@@ -323,7 +331,7 @@ async function processOneChunk(
 
       const allocation = marketAllocations.get(record.id);
       if (allocation && allocation.uncoveredKwh <= 1e-9) {
-        await writeInstrumentCalculation({
+        writeInstrumentCalculation(queueCalculation, {
           orgId, calculationRunId, record, normalized, allocation, unitWarnings,
           factorLibraryId: run.factorLibraryId, factorLibraryVersion, methodologyVersionName,
         });
@@ -398,7 +406,7 @@ async function processOneChunk(
 
         const confidenceInterval = calculateConfidenceInterval(0, qualityScore.geometricStdDev);
 
-        await prisma.emissionCalculation.create({
+        queueCalculation({
           data: {
             organizationId: orgId,
             activityRecordId: record.id,
@@ -549,7 +557,7 @@ async function processOneChunk(
             });
             const confidenceInterval = calculateConfidenceInterval(0, qualityScore.geometricStdDev);
 
-            await prisma.emissionCalculation.create({
+            queueCalculation({
               data: {
                 organizationId: orgId,
                 activityRecordId: record.id,
@@ -620,7 +628,7 @@ async function processOneChunk(
         );
       } catch (calcErr) {
         const errMsg = calcErr instanceof Error ? calcErr.message : "Calculation error";
-        await prisma.emissionCalculation.create({
+        queueCalculation({
           data: {
             organizationId: orgId,
             activityRecordId: record.id,
@@ -674,7 +682,7 @@ async function processOneChunk(
         result.warnings.push(temporalRepresentativeness.warning);
       }
 
-      await prisma.emissionCalculation.create({
+      queueCalculation({
         data: {
           organizationId: orgId,
           activityRecordId: record.id,
@@ -707,6 +715,10 @@ async function processOneChunk(
               : null,
         },
       });
+    }
+
+    if (pending.length > 0) {
+      await prisma.emissionCalculation.createMany({ data: pending.splice(0), skipDuplicates: true });
     }
 
     await prisma.calculationRun.update({
@@ -748,7 +760,7 @@ async function processOneChunk(
   });
 
   // Monte Carlo uncertainty propagation for the run's inventory total
-  await computeAndPersistUncertainty(orgId, calculationRunId);
+  await computeAndPersistUncertainty(orgId, calculationRunId, calculations);
 
   // Broadcast dashboard update to connected SSE clients
   try {
@@ -900,18 +912,8 @@ async function rebuildDashboardAggregates(
 async function computeAndPersistUncertainty(
   orgId: string,
   calculationRunId: string,
+  calculations: Awaited<ReturnType<typeof loadRunCalculations>>,
 ): Promise<void> {
-  const calculations = await prisma.emissionCalculation.findMany({
-    where: { organizationId: orgId, calculationRunId },
-    select: {
-      totalCo2e: true,
-      geometricStdDev: true,
-      confidenceIntervalLower: true,
-      confidenceIntervalUpper: true,
-      activityRecord: { select: { emissionCategory: { select: { scope: true } } } },
-    },
-  });
-
   if (calculations.length === 0) return;
 
   const toMonteCarloInput = (rows: typeof calculations) =>
@@ -1089,7 +1091,7 @@ async function autoCreateSupplierDataRequests(
  * A market-based record wholly covered by contractual instruments. Its CO2e
  * is the instruments' own rates; no library factor is involved.
  */
-async function writeInstrumentCalculation(args: {
+function writeInstrumentCalculation(queueCalculation: (row: { data: Prisma.EmissionCalculationUncheckedCreateInput }) => void, args: {
   orgId: string;
   calculationRunId: string;
   record: ActivityRecord & { emissionCategory: { scope: number } };
@@ -1099,7 +1101,7 @@ async function writeInstrumentCalculation(args: {
   factorLibraryId: string;
   factorLibraryVersion: string;
   methodologyVersionName: string;
-}): Promise<void> {
+}): void {
   const { record, allocation } = args;
   const first = allocation.portions[0];
   // Supplier-specific contractual data is the top tier of the Scope 2 quality
@@ -1114,7 +1116,7 @@ async function writeInstrumentCalculation(args: {
     unitConversionComplex: false,
   });
   const ci = calculateConfidenceInterval(allocation.instrumentCo2eKg, qualityScore.geometricStdDev);
-  await prisma.emissionCalculation.create({
+  queueCalculation({
     data: {
       organizationId: args.orgId,
       activityRecordId: record.id,

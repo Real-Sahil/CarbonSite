@@ -57,11 +57,30 @@ function standardNormal(rand: () => number): number {
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
+/** Iterations used for an inventory small enough to afford them. */
+const DEFAULT_ITERATIONS = 5000;
+/** Fewest iterations a large inventory is ever given. */
+const MIN_ITERATIONS = 1000;
+/** Ceiling on iterations x records per call, so a 100k-record run finishes inside a serverless request. */
+const MAX_DRAWS = 50_000_000;
+
+/**
+ * Default iteration count for an inventory of `recordCount` records. Up to
+ * 10,000 records it is 5,000, as before; beyond that it falls towards 1,000 to
+ * keep the draws bounded. A sum of tens of thousands of independent records is
+ * close to normal, so its percentiles settle with far fewer iterations. The
+ * count used is stored on the result, so a figure can always be re-run.
+ */
+export function defaultIterations(recordCount: number): number {
+  if (recordCount <= 0) return DEFAULT_ITERATIONS;
+  return Math.max(MIN_ITERATIONS, Math.min(DEFAULT_ITERATIONS, Math.floor(MAX_DRAWS / recordCount)));
+}
+
 export function runMonteCarlo(
   records: MonteCarloRecordInput[],
   options: { iterations?: number; seed?: number } = {},
 ): MonteCarloResult {
-  const iterations = options.iterations ?? 5000;
+  const iterations = options.iterations ?? defaultIterations(records.length);
   const seed = options.seed ?? 42;
   const rand = mulberry32(seed);
 
@@ -84,17 +103,25 @@ export function runMonteCarlo(
     };
   }
 
+  // ln(geometricStdDev) is the lognormal distribution's sigma parameter. It is
+  // the same in every iteration, so take it (and the medians) out of the hot
+  // loop: the loop runs iterations x records times. Guard exactly 1 (zero
+  // uncertainty): sigma is 0 and the draw is the median, which is valid, not an
+  // error. The draws and their order are unchanged, so results stay identical.
+  const count = simulated.length;
+  const medians = new Float64Array(count);
+  const sigmas = new Float64Array(count);
+  for (let k = 0; k < count; k++) {
+    medians[k] = simulated[k].totalCo2e;
+    sigmas[k] = Math.log(simulated[k].geometricStdDev);
+  }
+
   const totals = new Array<number>(iterations);
   for (let i = 0; i < iterations; i++) {
     let sum = fixedOffset;
-    for (const record of simulated) {
-      // ln(geometricStdDev) is the lognormal distribution's sigma parameter;
-      // guard against exactly 1 (zero uncertainty) producing ln(1) = 0,
-      // which is valid (the draw always returns the median) rather than an
-      // error, so no epsilon nudge is needed here.
-      const sigma = Math.log(record.geometricStdDev);
+    for (let k = 0; k < count; k++) {
       const z = standardNormal(rand);
-      sum += record.totalCo2e * Math.exp(z * sigma);
+      sum += medians[k] * Math.exp(z * sigmas[k]);
     }
     totals[i] = sum;
   }

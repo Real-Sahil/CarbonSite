@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runMonteCarlo, naiveLinearInterval } from "../monte-carlo";
+import { runMonteCarlo, naiveLinearInterval, defaultIterations } from "../monte-carlo";
 import { pedigreeConfidenceInterval } from "../pedigree";
 
 describe("runMonteCarlo", () => {
@@ -81,5 +81,18 @@ describe("naiveLinearInterval", () => {
     ]);
     expect(result.lower).toBe(15);
     expect(result.upper).toBe(28);
+  });
+});
+
+describe("defaultIterations", () => {
+  it("keeps 5,000 iterations up to 10,000 records", () => {
+    expect(defaultIterations(0)).toBe(5000);
+    expect(defaultIterations(10_000)).toBe(5000);
+  });
+
+  it("falls towards 1,000 as the inventory grows", () => {
+    expect(defaultIterations(25_000)).toBe(2000);
+    expect(defaultIterations(51_000)).toBe(1000);
+    expect(defaultIterations(500_000)).toBe(1000);
   });
 });
