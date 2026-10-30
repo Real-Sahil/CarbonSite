@@ -36,8 +36,11 @@ test.describe("signed in", () => {
   for (const [name, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]] as const) {
     test(`${name}: no horizontal overflow and no console errors`, async ({ page }) => {
       const errors: string[] = [];
-      // A blocked tile or font host is the network, not the page.
-      page.on("console", (m) => { if (m.type() === "error" && !m.text().startsWith("Failed to load resource")) errors.push(m.text()); });
+      // A blocked tile or font host is the network, not the page. Vercel's
+      // /_vercel/ scripts only exist on Vercel, so a local app answers them with HTML.
+      page.on("console", (m) => {
+        if (m.type() === "error" && !m.text().startsWith("Failed to load resource") && !m.text().includes("/_vercel/")) errors.push(m.text());
+      });
       page.on("pageerror", (e) => errors.push(e.message));
       await page.setViewportSize({ width, height });
       await openSummary(page);
