@@ -47,10 +47,14 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   // Set these on Vercel with the tokens from Google Search Console and Bing
-  // Webmaster Tools (HTML tag method) to verify the domain.
+  // Webmaster Tools (HTML tag method) to verify the domain. The Meta tag is a
+  // public domain-verification token, rendered server-side into <head>.
   verification: {
     google: process.env.GOOGLE_SITE_VERIFICATION,
-    other: process.env.BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION } : undefined,
+    other: {
+      "facebook-domain-verification": "709h8z5b7h1gl21hdb12e8cfiqcu9i",
+      ...(process.env.BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION } : {}),
+    },
   },
 };
 
